@@ -80,15 +80,15 @@ No se programan reuniones ni recordatorios automáticamente. Se registran result
 
 ## Roadmap
 
-| Fase | Objetivo | Condición de salida |
-|---|---|---|
-| 0 | Base ejecutable y calidad | Plantilla local, TS estricto, scripts operativos, estilos base y decisiones técnicas |
-| 1 | Dominio y persistencia | Casos de uso locales, integridad, identidad estable y transacciones probadas |
-| 2 | Biblioteca y altas | Crear → guardar → buscar → abrir → calificar, con persistencia |
-| 3 | Ediciones y colección | Pistas, variantes, copias y deseos con reglas independientes |
-| 4 | MVP utilizable | Respaldo/restauración, PWA/offline, migraciones y validación completa |
-| 5 | Metadatos externos | Investigación y propuesta antes de cualquier integración |
-| 6 | Sincronización | Prueba técnica de identidad, permisos, conflictos, migración y costos |
+| Fase | Objetivo                  | Condición de salida                                                                  |
+| ---- | ------------------------- | ------------------------------------------------------------------------------------ |
+| 0    | Base ejecutable y calidad | Plantilla local, TS estricto, scripts operativos, estilos base y decisiones técnicas |
+| 1    | Dominio y persistencia    | Casos de uso locales, integridad, identidad estable y transacciones probadas         |
+| 2    | Biblioteca y altas        | Crear → guardar → buscar → abrir → calificar, con persistencia                       |
+| 3    | Ediciones y colección     | Pistas, variantes, copias y deseos con reglas independientes                         |
+| 4    | MVP utilizable            | Respaldo/restauración, PWA/offline, migraciones y validación completa                |
+| 5    | Metadatos externos        | Investigación y propuesta antes de cualquier integración                             |
+| 6    | Sincronización            | Prueba técnica de identidad, permisos, conflictos, migración y costos                |
 
 No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito opcional separado y debe especificar proveedor, condiciones vigentes y validación.
 
