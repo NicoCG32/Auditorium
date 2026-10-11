@@ -1,0 +1,33 @@
+# Diseño base
+
+La identidad de Auditorium parte de negro, carmesí y blanco hueso, con superficies y detalles inspirados en fundas de vinilo. La interfaz usa fuentes del sistema, sin recursos remotos necesarios para el renderizado.
+
+## Tokens
+
+`src/styles/base.css` concentra las variables semánticas. Tailwind las expone como utilidades mediante `@theme inline`; los componentes consumen nombres como `bg-background`, `text-foreground` y `text-muted`.
+
+| Token       | Valor   | Uso                                |
+| ----------- | ------- | ---------------------------------- |
+| background  | #0C0C0E | Fondo principal                    |
+| surface     | #1B1B20 | Superficies                        |
+| foreground  | #C8BEB0 | Texto principal                    |
+| muted       | #AAA398 | Texto secundario legible           |
+| accent      | #8E1522 | Franjas y fondos carmesí           |
+| accent-text | #DF5968 | Texto destacado sobre fondo oscuro |
+| focus       | #EF7681 | Foco visible de teclado            |
+| border      | #38383F | Separadores decorativos            |
+
+El carmesí profundo se reserva para fondos y decoración. El gris secundario se aclara respecto de la paleta conceptual para mantener legibilidad. Comprobar contraste en cada combinación real al añadir componentes; los tokens no garantizan por sí solos accesibilidad de cualquier uso.
+
+## Interacción y adaptación
+
+- Diseño de una columna en móvil y dos en escritorio, sin anchos fijos de contenido.
+- Enlace «Ir al contenido» visible al recibir foco; destino principal identificable.
+- Foco visible de tres píxeles y enlaces con área de al menos 44 píxeles de alto.
+- Sin animaciones continuas; las transiciones se desactivan con `prefers-reduced-motion`.
+- Decoración de vinilo en CSS, marcada como decorativa para lectores de pantalla, sin portadas ajenas.
+- No mostrar controles de funciones pendientes. La bienvenida comunica que la biblioteca está en preparación.
+
+El tema oscuro es el único implementado actualmente. Las variables permiten incorporar otros temas más adelante; no se implementa todavía selector de tema ni persistencia de preferencias.
+
+Referencias: [Tailwind con Vite](https://tailwindcss.com/docs/installation/using-vite), [variables de tema](https://tailwindcss.com/docs/theme) y [contraste de texto](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum).
