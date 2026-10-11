@@ -119,4 +119,3 @@ Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia d
 - Criterios de aceptación.
 - Dependencias.
 - Evidencia de validación al completar.
-
