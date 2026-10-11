@@ -1,6 +1,6 @@
 import { z } from 'zod'
+import { entityIdSchema as id } from '../shared/scalars'
 
-const id = z.uuid().transform((value) => value.toLowerCase())
 const text = z.string().trim().min(1, 'El texto no puede estar vacío.')
 const position = z.int().positive()
 const year = z.int().min(1).max(9999)
