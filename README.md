@@ -24,7 +24,7 @@ npm run preview
 
 `build` comprueba los tipos de la aplicación y de la configuración y genera los archivos estáticos en `dist/`. `preview` permite revisar esa compilación localmente. Los artefactos generados y las dependencias no se versionan.
 
-Por ahora hay una pantalla de bienvenida sin funciones de biblioteca. El diseño base y los tokens corresponden a la siguiente tarea. El almacenamiento local, los respaldos y la PWA se incorporarán en sus fases respectivas.
+Por ahora hay una pantalla de bienvenida responsive con tema oscuro, tokens semánticos y navegación al contenido por teclado, sin funciones de biblioteca. El almacenamiento local, los respaldos y la PWA se incorporarán en sus fases respectivas.
 
 ## Verificaciones
 
@@ -55,3 +55,5 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Plan de desarrollo](docs/PLAN_DESARROLLO.md)
 - [Backlog y seguimiento en GitHub Projects](https://github.com/users/NicoCG32/projects/4)
 - [Hitos de entrega](https://github.com/NicoCG32/Auditorium/milestones)
+- [Diseño base](docs/DISENO_BASE.md)
+- Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).

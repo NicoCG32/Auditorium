@@ -1,0 +1,186 @@
+@import 'tailwindcss';
+
+:root {
+  color-scheme: dark;
+  --background: #0c0c0e;
+  --surface: #1b1b20;
+  --foreground: #c8beb0;
+  --muted: #aaa398;
+  --accent: #8e1522;
+  --accent-text: #df5968;
+  --focus: #ef7681;
+  --border: #38383f;
+  --record-surface: #131316;
+  --record-groove: #27272c;
+  --record-hole: #0c0c0e;
+  --font-ui: 'Segoe UI', Arial, sans-serif;
+  --font-identity: 'Arial Black', 'Segoe UI', Arial, sans-serif;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-text: var(--accent-text);
+  --color-focus: var(--focus);
+  --color-border: var(--border);
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-identity);
+}
+
+@layer base {
+  html {
+    background: var(--background);
+    font-family: var(--font-ui);
+  }
+
+  body {
+    margin: 0;
+    color: var(--foreground);
+  }
+
+  ::selection {
+    color: var(--foreground);
+    background: var(--accent);
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 5px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      transition: none !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .skip-link {
+    position: fixed;
+    z-index: 10;
+    inset-block-start: 1rem;
+    inset-inline-start: 1rem;
+    display: grid;
+    min-block-size: 2.75rem;
+    align-items: center;
+    padding: 0.75rem 1.25rem;
+    color: var(--background);
+    background: var(--foreground);
+    font-weight: 600;
+    transform: translateY(-200%);
+    transition: transform 150ms ease;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+  }
+
+  .brand-mark {
+    display: block;
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    border: 2px solid var(--accent-text);
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      var(--accent-text) 0 15%,
+      transparent 17% 100%
+    );
+  }
+
+  .welcome-title {
+    font-size: clamp(2.75rem, 6.2vw, 5rem);
+    line-height: 1.05;
+    letter-spacing: -0.065em;
+    overflow-wrap: anywhere;
+  }
+
+  .record-art {
+    inline-size: 100%;
+    max-inline-size: 29rem;
+    margin-inline: auto;
+    padding: 0.75rem;
+  }
+
+  .record-sleeve {
+    position: relative;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0.75rem 0.75rem 0 var(--record-surface);
+  }
+
+  .sleeve-rule {
+    position: absolute;
+    inset: 0 auto 0 0;
+    inline-size: 17%;
+    background: var(--accent);
+  }
+
+  .sleeve-caption,
+  .sleeve-signature {
+    position: absolute;
+    z-index: 1;
+    inset-inline-start: 7%;
+    font-size: clamp(0.625rem, 1.2vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+
+  .sleeve-caption {
+    inset-block-start: 7%;
+  }
+
+  .sleeve-signature {
+    inset-block-end: 7%;
+  }
+
+  .vinyl-record {
+    position: absolute;
+    inset-block-start: 17%;
+    inset-inline-start: 23%;
+    display: grid;
+    inline-size: 78%;
+    aspect-ratio: 1;
+    place-items: center;
+    border: 1px solid var(--record-groove);
+    border-radius: 50%;
+    background: repeating-radial-gradient(
+      circle,
+      var(--record-surface) 0 2px,
+      var(--record-groove) 3px,
+      var(--record-surface) 4px 6px
+    );
+  }
+
+  .record-label {
+    display: flex;
+    inline-size: 34%;
+    aspect-ratio: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    border-radius: 50%;
+    background: var(--accent);
+    font-size: clamp(0.5rem, 1.2vw, 0.75rem);
+    font-weight: 700;
+    letter-spacing: 0.1em;
+  }
+
+  .record-spindle {
+    inline-size: 10%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--record-hole);
+  }
+}
