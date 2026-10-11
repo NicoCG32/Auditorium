@@ -2,7 +2,7 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-La Fase 0 está completada y la Fase 1 incorpora el dominio del catálogo. Actualmente incluye una plantilla ejecutable con React, Vite y TypeScript estricto, junto con modelos y reglas de artistas, álbumes, ediciones y pistas probados. El MVP previsto será local, con registro manual, ediciones y ejemplares diferenciados, respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
+La Fase 0 está completada y la Fase 1 incorpora el dominio del catálogo y de la biblioteca personal. Actualmente incluye una plantilla ejecutable con React, Vite y TypeScript estricto, junto con modelos y reglas de artistas, álbumes, ediciones, pistas, escucha y calificaciones probados. El MVP previsto será local, con registro manual, ediciones y ejemplares diferenciados, respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
 
 ## Desarrollo local
 
@@ -57,4 +57,5 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Hitos de entrega](https://github.com/NicoCG32/Auditorium/milestones)
 - [Diseño base](docs/DISENO_BASE.md)
 - [Dominio del catálogo y validación](docs/DOMINIO_CATALOGO.md)
+- [Biblioteca personal y calificaciones](docs/DOMINIO_BIBLIOTECA.md)
 - Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).
