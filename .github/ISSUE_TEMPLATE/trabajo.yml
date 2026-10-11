@@ -34,7 +34,7 @@ body:
     attributes:
       label: Criterios de aceptación
       description: Escribe condiciones comprobables, una por línea.
-      placeholder: "- [ ] Resultado observable"
+      placeholder: '- [ ] Resultado observable'
     validations:
       required: true
   - type: textarea
