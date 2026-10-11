@@ -1,0 +1,51 @@
+name: Trabajo de producto
+description: Proponer una historia, tarea o investigación con un resultado verificable.
+body:
+  - type: textarea
+    id: resultado
+    attributes:
+      label: Resultado esperado
+      description: Describe el problema y el resultado observable.
+    validations:
+      required: true
+  - type: dropdown
+    id: fase
+    attributes:
+      label: Fase
+      options:
+        - Fase 0 — Base ejecutable
+        - Fase 1 — Dominio y persistencia
+        - Fase 2 — Biblioteca y altas
+        - Fase 3 — Ediciones y colección
+        - Fase 4 — MVP offline y respaldo
+        - Fase 5 — Metadatos externos
+        - Fase 6 — Sincronización
+    validations:
+      required: true
+  - type: textarea
+    id: alcance
+    attributes:
+      label: Alcance
+      description: Indica qué incluye este trabajo y qué queda para otro hito.
+    validations:
+      required: true
+  - type: textarea
+    id: aceptacion
+    attributes:
+      label: Criterios de aceptación
+      description: Escribe condiciones comprobables, una por línea.
+      placeholder: "- [ ] Resultado observable"
+    validations:
+      required: true
+  - type: textarea
+    id: dependencias
+    attributes:
+      label: Dependencias y decisiones pendientes
+      description: Enlaza issues previas o indica que no hay dependencias.
+  - type: textarea
+    id: validacion
+    attributes:
+      label: Validación prevista
+      description: Explica cómo se comprobará el resultado. Usa datos ficticios en ejemplos.
+    validations:
+      required: true
