@@ -13,3 +13,14 @@ export interface LocalRepository {
   readSnapshot(): Promise<LocalSnapshot>
   close(): void
 }
+
+export interface SnapshotMutation<T> {
+  snapshot: LocalSnapshot
+  result: T
+}
+
+export interface TransactionalLocalRepository extends LocalRepository {
+  mutate<T>(
+    change: (snapshot: LocalSnapshot) => SnapshotMutation<T>,
+  ): Promise<T>
+}
