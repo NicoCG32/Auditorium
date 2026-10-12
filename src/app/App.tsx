@@ -1,7 +1,11 @@
-import type { LocalRepository } from '../domain/repositories/local-repository'
+import type { TransactionalLocalRepository } from '../domain/repositories/local-repository'
 import { LibraryPage } from '../ui/library/LibraryPage'
 
-export function App({ repository }: { repository: LocalRepository }) {
+export function App({
+  repository,
+}: {
+  repository: TransactionalLocalRepository
+}) {
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">
       <a className="skip-link" href="#contenido">

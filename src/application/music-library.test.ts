@@ -48,6 +48,123 @@ function setup() {
 
 const albumInput = { title: 'Eclipse', artists: [{ name: 'Umbral Eléctrico' }] }
 
+describe('registro manual con revisión de coincidencias', () => {
+  test('artista y título crean una entrada con tipo álbum y sin metadatos inventados', async () => {
+    const { service, repository } = setup()
+    const result = await service.registerAlbum(albumInput)
+    expect(result.status).toBe('created')
+    if (result.status !== 'created') throw new Error('Falta alta ficticia.')
+    expect(result.album.releaseType).toBe('album')
+    expect(result.album).not.toHaveProperty('originalYear')
+    expect((await repository.readSnapshot()).library.userAlbums).toEqual([
+      result.userAlbum,
+    ])
+  })
+  test('coincidencias normalizadas no escriben ni generan identificadores', async () => {
+    const { service, repository, createId } = setup()
+    const existing = await service.createAlbum(albumInput)
+    if (!existing.userAlbum) throw new Error('Falta entrada ficticia.')
+    await service.rateAlbum(existing.userAlbum.id, 9.5)
+    const before = await repository.readSnapshot()
+    createId.mockClear()
+    const result = await service.registerAlbum({
+      title: ' ECLIPSE ',
+      artists: [{ name: 'umbral   electrico' }],
+    })
+    expect(result).toMatchObject({
+      status: 'review',
+      candidates: [
+        { album: existing.album, activeEntryId: existing.userAlbum.id },
+      ],
+    })
+    expect(createId).not.toHaveBeenCalled()
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+  test('confirmar otra obra conserva homónimos y valoraciones existentes', async () => {
+    const { service, repository } = setup()
+    const existing = await service.createAlbum(albumInput)
+    if (!existing.userAlbum) throw new Error('Falta entrada ficticia.')
+    await service.rateAlbum(existing.userAlbum.id, 9.5)
+    const before = await repository.readSnapshot()
+    const result = await service.registerAlbum(albumInput, [existing.album.id])
+    expect(result.status).toBe('created')
+    const after = await repository.readSnapshot()
+    expect(after.catalog.albums).toHaveLength(2)
+    expect(after.catalog.artists).toHaveLength(2)
+    expect(after.library.albumRatings).toEqual(before.library.albumRatings)
+  })
+  test('reutilizar artista exige referencia y no fusiona por nombre', async () => {
+    const { service, repository } = setup()
+    const original = await service.createAlbum(albumInput)
+    const artist = original.artists[0]
+    if (!artist) throw new Error('Falta artista ficticio.')
+    await service.registerAlbum({
+      title: 'Otra órbita',
+      artists: [{ artistId: artist.id }],
+    })
+    expect((await repository.readSnapshot()).catalog.artists).toHaveLength(1)
+  })
+  test('dos altas concurrentes equivalentes producen una alta y una revisión', async () => {
+    const first = setup(),
+      second = setup()
+    const results = await Promise.all([
+      first.service.registerAlbum(albumInput),
+      second.service.registerAlbum(albumInput),
+    ])
+    expect(results.map((result) => result.status).sort()).toEqual([
+      'created',
+      'review',
+    ])
+    expect(
+      (await first.repository.readSnapshot()).library.userAlbums,
+    ).toHaveLength(1)
+  })
+  test('una coincidencia nueva entre revisión y confirmación exige revisarla', async () => {
+    const first = setup()
+    const existing = await first.service.createAlbum(albumInput)
+    const second = setup()
+    await second.service.createAlbum({ ...albumInput, originalYear: 2003 })
+    const before = await first.repository.readSnapshot()
+    const result = await first.service.registerAlbum(albumInput, [
+      existing.album.id,
+    ])
+    expect(result.status).toBe('review')
+    if (result.status !== 'review') throw new Error('Falta revisión ficticia.')
+    expect(result.candidates).toHaveLength(2)
+    expect(await first.repository.readSnapshot()).toEqual(before)
+  })
+  test('catálogo sin relación activa se propone y se añade sin recrear música', async () => {
+    const { service, repository } = setup()
+    const catalog = await service.createAlbum({
+      ...albumInput,
+      addToLibrary: false,
+    })
+    const before = await repository.readSnapshot()
+    const result = await service.registerAlbum(albumInput)
+    expect(result).toMatchObject({
+      status: 'review',
+      candidates: [{ album: catalog.album }],
+    })
+    if (result.status !== 'review') throw new Error('Falta candidato ficticio.')
+    expect(result.candidates[0]).not.toHaveProperty('activeEntryId')
+    await service.addAlbumToLibrary(catalog.album.id)
+    const after = await repository.readSnapshot()
+    expect(after.catalog).toEqual(before.catalog)
+    expect(after.library.userAlbums).toHaveLength(1)
+  })
+  test('entradas inválidas y confirmaciones inválidas se rechazan antes de escribir', async () => {
+    const { service, repository } = setup()
+    const before = await repository.readSnapshot()
+    await expect(
+      service.registerAlbum({ ...albumInput, addToLibrary: false }),
+    ).rejects.toBeInstanceOf(ZodError)
+    await expect(
+      service.registerAlbum(albumInput, ['invalido']),
+    ).rejects.toBeInstanceOf(ZodError)
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+})
+
 async function originalAlbum(service: MusicLibrary) {
   const created = await service.createAlbum(albumInput)
   const release = await service.addRelease({

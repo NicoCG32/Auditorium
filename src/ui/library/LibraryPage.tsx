@@ -1,19 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   defaultLibraryFilters,
   projectLibrary,
   queryLibrary,
   type LibraryAlbum,
 } from '../../application/library-query'
-import type { LocalRepository } from '../../domain/repositories/local-repository'
+import { MusicLibrary } from '../../application/music-library'
+import type {
+  LocalSnapshot,
+  TransactionalLocalRepository,
+} from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { AlbumCard } from './AlbumCard'
+import { AlbumForm } from './AlbumForm'
+import { AlbumSummary } from './AlbumSummary'
 import { LibraryControls } from './LibraryControls'
 
 type LoadState =
   | { status: 'loading' }
   | { status: 'error'; message: string }
-  | { status: 'ready'; albums: LibraryAlbum[] }
+  | { status: 'ready'; albums: LibraryAlbum[]; snapshot: LocalSnapshot }
 function errorMessage(error: unknown) {
   if (error instanceof LocalStorageError) {
     if (error.code === 'blocked')
@@ -30,18 +36,30 @@ function errorMessage(error: unknown) {
   return 'No se pudo leer tu biblioteca. Vuelve a intentar.'
 }
 
-export function LibraryPage({ repository }: { repository: LocalRepository }) {
+export function LibraryPage({
+  repository,
+}: {
+  repository: TransactionalLocalRepository
+}) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [request, setRequest] = useState(0)
   const [filters, setFilters] = useState(defaultLibraryFilters)
   const [view, setView] = useState<'grid' | 'list'>('grid')
+  const [formOpen, setFormOpen] = useState(false)
+  const [selectedId, setSelectedId] = useState<string>()
+  const [notice, setNotice] = useState('')
+  const addButton = useRef<HTMLButtonElement>(null)
+  const focusAdd = useRef(false)
+  const focusEntry = useRef<string | undefined>(undefined)
+  const content = useRef<HTMLDivElement>(null)
+  const library = useMemo(() => new MusicLibrary(repository), [repository])
   useEffect(() => {
     let active = true
     void repository
       .readSnapshot()
       .then((snapshot) => {
         const albums = projectLibrary(snapshot)
-        if (active) setState({ status: 'ready', albums })
+        if (active) setState({ status: 'ready', albums, snapshot })
       })
       .catch((error: unknown) => {
         if (active) setState({ status: 'error', message: errorMessage(error) })
@@ -50,14 +68,56 @@ export function LibraryPage({ repository }: { repository: LocalRepository }) {
       active = false
     }
   }, [repository, request])
+  useEffect(() => {
+    if (!formOpen && focusAdd.current) {
+      addButton.current?.focus()
+      focusAdd.current = false
+    }
+    if (
+      state.status === 'ready' &&
+      selectedId === undefined &&
+      !formOpen &&
+      focusEntry.current
+    ) {
+      const target = content.current?.querySelector<HTMLButtonElement>(
+        `[data-entry-id="${focusEntry.current}"] button`,
+      )
+      if (target) {
+        target.focus()
+        focusEntry.current = undefined
+      }
+    }
+  }, [state, selectedId, formOpen])
   function refresh() {
     setState({ status: 'loading' })
     setRequest((previous) => previous + 1)
   }
+  function complete(entryId: string, openExisting: boolean) {
+    setFormOpen(false)
+    setFilters(defaultLibraryFilters)
+    setSelectedId(openExisting ? entryId : undefined)
+    focusEntry.current = openExisting ? undefined : entryId
+    setNotice(
+      openExisting
+        ? 'Álbum disponible en tu biblioteca.'
+        : 'Álbum guardado en tu biblioteca.',
+    )
+    refresh()
+  }
   const visible =
     state.status === 'ready' ? queryLibrary(state.albums, filters) : []
+  const selected =
+    state.status === 'ready'
+      ? state.albums.find((entry) => entry.id === selectedId)
+      : undefined
+  const selectedAlbum =
+    state.status === 'ready' && selected
+      ? state.snapshot.catalog.albums.find(
+          (album) => album.id === selected.albumId,
+        )
+      : undefined
   return (
-    <>
+    <div ref={content}>
       <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
         <div>
           <p className="mb-4 text-xs font-semibold tracking-[0.2em] text-accent-text uppercase">
@@ -70,15 +130,35 @@ export function LibraryPage({ repository }: { repository: LocalRepository }) {
             Los álbumes que te acompañan y los que te quedan por descubrir.
           </p>
         </div>
-        <button
-          type="button"
-          className="action-button"
-          onClick={refresh}
-          disabled={state.status === 'loading'}
-        >
-          Actualizar biblioteca
-        </button>
+        <div className="flex flex-wrap gap-3">
+          <button
+            ref={addButton}
+            type="button"
+            className="primary-button"
+            disabled={state.status !== 'ready' || formOpen}
+            onClick={() => {
+              setSelectedId(undefined)
+              setNotice('')
+              setFormOpen(true)
+            }}
+          >
+            Añadir álbum
+          </button>
+          <button
+            type="button"
+            className="action-button"
+            onClick={refresh}
+            disabled={state.status === 'loading' || formOpen}
+          >
+            Actualizar biblioteca
+          </button>
+        </div>
       </div>
+      {notice ? (
+        <p className="mb-6 text-sm text-accent-text" role="status">
+          {notice}
+        </p>
+      ) : null}
       {state.status === 'loading' ? (
         <div className="library-empty" role="status">
           <p>Cargando tu biblioteca…</p>
@@ -99,6 +179,25 @@ export function LibraryPage({ repository }: { repository: LocalRepository }) {
             Volver a intentar
           </button>
         </section>
+      ) : formOpen ? (
+        <AlbumForm
+          snapshot={state.snapshot}
+          library={library}
+          onComplete={complete}
+          onCancel={() => {
+            focusAdd.current = true
+            setFormOpen(false)
+          }}
+        />
+      ) : selected && selectedAlbum ? (
+        <AlbumSummary
+          album={selectedAlbum}
+          entry={selected}
+          onBack={() => {
+            focusEntry.current = selected.id
+            setSelectedId(undefined)
+          }}
+        />
       ) : state.albums.length === 0 ? (
         <section className="library-empty" aria-labelledby="empty-title">
           <span className="empty-record" aria-hidden="true" />
@@ -109,15 +208,15 @@ export function LibraryPage({ repository }: { repository: LocalRepository }) {
             Aún no hay álbumes
           </h2>
           <p className="mt-4 max-w-md text-muted">
-            Los álbumes que registres aparecerán en este espacio. Actualiza la
-            biblioteca para consultar los últimos cambios guardados.
+            Empieza con un artista y un título. Después podrás completar el
+            resto.
           </p>
           <button
             type="button"
-            className="action-button mt-6"
-            onClick={refresh}
+            className="primary-button mt-6"
+            onClick={() => setFormOpen(true)}
           >
-            Consultar cambios guardados
+            Añadir tu primer álbum
           </button>
         </section>
       ) : (
@@ -166,12 +265,17 @@ export function LibraryPage({ repository }: { repository: LocalRepository }) {
               className={view === 'grid' ? 'album-grid' : 'album-list'}
             >
               {visible.map((album) => (
-                <AlbumCard key={album.id} album={album} view={view} />
+                <AlbumCard
+                  key={album.id}
+                  album={album}
+                  view={view}
+                  onOpen={() => setSelectedId(album.id)}
+                />
               ))}
             </ul>
           )}
         </>
       )}
-    </>
+    </div>
   )
 }

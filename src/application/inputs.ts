@@ -33,6 +33,12 @@ export const createAlbumInputSchema = albumSchema
     addToLibrary: z.boolean().default(true),
   })
 
+export const manualAlbumInputSchema = createAlbumInputSchema.omit({
+  addToLibrary: true,
+})
+export type CreateAlbumInput = z.output<typeof createAlbumInputSchema>
+export type ManualAlbumInput = z.output<typeof manualAlbumInputSchema>
+
 export const addReleaseInputSchema = releaseSchema
   .omit({ id: true })
   .extend({ copyCoreTracks: z.boolean().default(true) })

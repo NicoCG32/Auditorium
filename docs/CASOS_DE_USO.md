@@ -1,12 +1,13 @@
 # Casos de uso del núcleo local
 
-DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/application/`. La aplicación recibe un repositorio transaccional y proveedores síncronos de UUID/reloj; no importa React ni Dexie. La interfaz actual consulta snapshots; los formularios de los siguientes hitos usarán los casos de escritura.
+DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/application/`. La aplicación recibe un repositorio transaccional y proveedores síncronos de UUID/reloj; no importa React ni Dexie. LIB-02 conecta el formulario manual al caso `registerAlbum`, con revisión transaccional de coincidencias antes de crear. Ver [registro manual](REGISTRO_MANUAL.md).
 
 ## Operaciones
 
 | Caso de uso                           | Resultado                                                                                         |
 | ------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | createAlbum                           | Crea álbum, créditos, artistas nuevos indicados y, por defecto, entrada personal en una operación |
+| registerAlbum                         | Devuelve coincidencias para revisión o crea álbum y relación personal tras la decisión explícita  |
 | addAlbumToLibrary                     | Crea una entrada activa o devuelve la existente sin alterar notas o fechas                        |
 | addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria        |
 | addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada             |
@@ -54,6 +55,6 @@ Las pruebas de integración usan IndexedDB simulado y datos ficticios para el fl
 
 El adaptador prioriza integridad leyendo y validando un snapshot completo; persiste únicamente las diferencias. Consultas y scopes más acotados podrán incorporarse si las mediciones de colecciones grandes lo requieren, manteniendo las reglas y sus pruebas.
 
-El esquema permanece en v1 porque las tablas no cambian. Formularios, búsqueda, ejemplares y deseos pertenecen a sus próximos hitos. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en esta tarea.
+El esquema permanece en v1 porque las tablas no cambian. Consulta y registro manual ya usan el núcleo local; los editores de calificaciones, ejemplares y deseos pertenecen a sus próximos hitos. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
 
 Referencia: [transacciones de Dexie](<https://dexie.org/docs/Dexie/Dexie.transaction()>).

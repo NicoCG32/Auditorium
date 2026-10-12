@@ -1,4 +1,16 @@
 import type { ListeningStatus } from '../../domain/library/schemas'
+import type { Album } from '../../domain/catalog/schemas'
+
+export const releaseTypeLabels: Record<Album['releaseType'], string> = {
+  album: 'Álbum',
+  ep: 'EP',
+  single: 'Single',
+  live: 'En vivo',
+  demo: 'Demo',
+  compilation: 'Recopilación',
+  soundtrack: 'Banda sonora',
+  other: 'Otro',
+}
 
 export const listeningLabels: Record<ListeningStatus, string> = {
   untracked: 'Sin registrar',

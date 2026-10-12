@@ -2,7 +2,7 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-Las Fases 0 y 1 están completadas: base ejecutable, dominio, persistencia local y casos de uso transaccionales. La Fase 2 comienza con consulta y búsqueda de biblioteca. El MVP previsto será local, con registro manual, ediciones y ejemplares diferenciados, respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
+Las Fases 0 y 1 están completadas: base ejecutable, dominio, persistencia local y casos de uso transaccionales. La Fase 2 incorpora consulta, búsqueda y registro manual con revisión de duplicados. El MVP previsto será local, con ediciones y ejemplares diferenciados, respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
 
 ## Desarrollo local
 
@@ -24,7 +24,7 @@ npm run preview
 
 `build` comprueba los tipos de la aplicación y de la configuración y genera los archivos estáticos en `dist/`. `preview` permite revisar esa compilación localmente. Los artefactos generados y las dependencias no se versionan.
 
-La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Incluye estados de carga, vacío, sin resultados y errores con reintento. El formulario manual y la ficha corresponden a las siguientes tareas de Fase 2. Los respaldos y la PWA pertenecen a Fase 4.
+La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes con artista y título, revisar coincidencias y abrir una ficha básica de lectura. Incluye estados de carga, vacío, sin resultados y errores con reintento. La edición de calificaciones corresponde a LIB-03. Los respaldos y la PWA pertenecen a Fase 4.
 
 ## Verificaciones
 
@@ -62,4 +62,5 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Casos de uso y transacciones](docs/CASOS_DE_USO.md)
 - [Validación de integridad y persistencia](docs/VALIDACION_PERSISTENCIA.md)
 - [Consulta y búsqueda de biblioteca](docs/CONSULTA_BIBLIOTECA.md)
+- [Registro manual y revisión de duplicados](docs/REGISTRO_MANUAL.md)
 - Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).
