@@ -26,6 +26,6 @@ Las preferencias de búsqueda y vista duran mientras la pantalla permanezca mont
 
 La pantalla conserva el enlace para saltar al contenido, foco visible, etiquetas de controles nativos, botones de vista con estado `aria-pressed`, anuncios de carga/conteo y alerta de error. Las portadas decorativas no se leen. Las vistas se adaptan a móvil, tablet y escritorio, con títulos largos que pueden partirse sin perder contenido.
 
-Las pruebas verifican la proyección, búsqueda por varios créditos, notas ausentes, umbral inclusivo de 8, combinación de filtros y órdenes estables. Las pruebas de interfaz leen IndexedDB simulado real para el adaptador: estado vacío, actualización, filtros, reapertura, reintento y cancelación de respuestas tardías. La comprobación manual recorre el mismo componente con IndexedDB del navegador, datos ficticios y una base independiente del producto.
+Las pruebas verifican la proyección, búsqueda por varios créditos, notas ausentes, umbral inclusivo de 8, combinación de filtros y órdenes estables. Las pruebas de interfaz usan el adaptador sobre IndexedDB simulado: estado vacío, actualización, filtros, reapertura, reintento y cancelación de respuestas tardías. La comprobación manual recorre el mismo componente con IndexedDB del navegador, datos ficticios y una base independiente del producto.
 
 Referencias: [persistencia local](PERSISTENCIA_LOCAL.md), [efectos y limpieza en React](https://react.dev/reference/react/useEffect) y [plan de desarrollo](PLAN_DESARROLLO.md).
