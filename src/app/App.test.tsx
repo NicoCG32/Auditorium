@@ -715,7 +715,9 @@ test('registro activo sugerido abre su ficha sin duplicar ni alterar valoracione
   )
   fireEvent.click(screen.getByRole('button', { name: 'Abrir álbum existente' }))
   await screen.findByRole('button', { name: 'Volver a biblioteca' })
-  expect(screen.getByRole('heading', { name: 'Eclipse' })).toHaveFocus()
+  await waitFor(() =>
+    expect(screen.getByRole('heading', { name: 'Eclipse' })).toHaveFocus(),
+  )
   expect(screen.getByText('9,5 / 10')).toBeVisible()
   expect(await repository.readSnapshot()).toEqual(before)
 })
