@@ -32,6 +32,25 @@ export function asLocalStorageError(error: unknown): LocalStorageError {
     )
   }
   const name = error instanceof Error ? error.name : ''
+  if (
+    name === 'BulkError' &&
+    error instanceof Error &&
+    'failures' in error &&
+    Array.isArray(error.failures)
+  ) {
+    if (
+      error.failures.some(
+        (failure: unknown) =>
+          failure instanceof Error && failure.name === 'QuotaExceededError',
+      )
+    ) {
+      return new LocalStorageError(
+        'quota_exceeded',
+        'No hay espacio disponible para completar las escrituras.',
+        error,
+      )
+    }
+  }
   switch (name) {
     case 'MissingAPIError':
     case 'SecurityError':

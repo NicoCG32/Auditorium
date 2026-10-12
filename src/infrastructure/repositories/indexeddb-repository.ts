@@ -1,13 +1,16 @@
+import { ZodError } from 'zod'
 import { catalogSchema } from '../../domain/catalog/catalog'
 import { localIdentitySchema, type LocalIdentity } from '../../domain/identity'
 import { createLibrarySchema } from '../../domain/library/library'
 import type {
-  LocalRepository,
+  TransactionalLocalRepository,
+  SnapshotMutation,
   LocalSnapshot,
 } from '../../domain/repositories/local-repository'
 import { AuditoriumDatabase, DATABASE_VERSION } from '../db/database'
 import { asLocalStorageError, LocalStorageError } from '../db/errors'
 import { checkNativeSchema } from '../db/preflight'
+import { writeSnapshotChanges } from '../db/write-changes'
 import {
   fromStoredUserAlbum,
   IDENTITY_KEY,
@@ -20,7 +23,7 @@ export interface IndexedDbOptions {
   now?: () => Date
 }
 
-export class IndexedDbRepository implements LocalRepository {
+export class IndexedDbRepository implements TransactionalLocalRepository {
   private readonly database: AuditoriumDatabase
   private readonly createId: () => string
   private readonly now: () => Date
@@ -156,66 +159,139 @@ export class IndexedDbRepository implements LocalRepository {
   async readSnapshot(): Promise<LocalSnapshot> {
     await this.open()
     try {
+      return await this.database.transaction('r', this.database.tables, () =>
+        this.readInsideTransaction(),
+      )
+    } catch (error) {
+      throw asLocalStorageError(error)
+    }
+  }
+
+  private async readInsideTransaction(): Promise<LocalSnapshot> {
+    try {
+      const [
+        record,
+        artists,
+        albums,
+        albumArtists,
+        tracks,
+        coreTracks,
+        releases,
+        releaseTracks,
+        userAlbums,
+        albumRatings,
+        trackRatings,
+      ] = await Promise.all([
+        this.database.metadata.get(IDENTITY_KEY),
+        this.database.artists.toArray(),
+        this.database.albums.toArray(),
+        this.database.albumArtists.toArray(),
+        this.database.tracks.toArray(),
+        this.database.coreTracks.toArray(),
+        this.database.releases.toArray(),
+        this.database.releaseTracks.toArray(),
+        this.database.userAlbums.toArray(),
+        this.database.albumRatings.toArray(),
+        this.database.trackRatings.toArray(),
+      ])
+      if (record === undefined)
+        throw new LocalStorageError(
+          'identity_missing',
+          'Falta la identidad local del snapshot.',
+        )
+      const metadata = identityRecordSchema.parse(record)
+      const identity = localIdentitySchema.parse({
+        userId: metadata.userId,
+        createdAt: metadata.createdAt,
+      })
+      const catalog = catalogSchema.parse({
+        artists,
+        albums,
+        albumArtists,
+        tracks,
+        coreTracks,
+        releases,
+        releaseTracks,
+      })
+      const library = createLibrarySchema({
+        catalog,
+        localUserId: identity.userId,
+      }).parse({
+        userAlbums: userAlbums.map(fromStoredUserAlbum),
+        albumRatings,
+        trackRatings,
+      })
+      return { identity, catalog, library }
+    } catch (error) {
+      throw asLocalStorageError(error)
+    }
+  }
+
+  async mutate<T>(
+    change: (snapshot: LocalSnapshot) => SnapshotMutation<T>,
+  ): Promise<T> {
+    await this.open()
+    let operationFailure: Error | undefined
+    try {
       return await this.database.transaction(
-        'r',
+        'rw',
         this.database.tables,
         async () => {
-          const [
-            record,
-            artists,
-            albums,
-            albumArtists,
-            tracks,
-            coreTracks,
-            releases,
-            releaseTracks,
-            userAlbums,
-            albumRatings,
-            trackRatings,
-          ] = await Promise.all([
-            this.database.metadata.get(IDENTITY_KEY),
-            this.database.artists.toArray(),
-            this.database.albums.toArray(),
-            this.database.albumArtists.toArray(),
-            this.database.tracks.toArray(),
-            this.database.coreTracks.toArray(),
-            this.database.releases.toArray(),
-            this.database.releaseTracks.toArray(),
-            this.database.userAlbums.toArray(),
-            this.database.albumRatings.toArray(),
-            this.database.trackRatings.toArray(),
-          ])
-          if (record === undefined)
-            throw new LocalStorageError(
-              'identity_missing',
-              'Falta la identidad local del snapshot.',
+          const before = await this.readInsideTransaction()
+          let mutation: SnapshotMutation<T>
+          let next: LocalSnapshot
+          try {
+            mutation = change(structuredClone(before))
+            const result: unknown = mutation.result
+            if (
+              result !== null &&
+              (typeof result === 'object' || typeof result === 'function') &&
+              'then' in result &&
+              typeof result.then === 'function'
+            ) {
+              throw new TypeError(
+                'El resultado transaccional debe ser síncrono; no se permiten promesas externas.',
+              )
+            }
+            const identity = localIdentitySchema.parse(
+              mutation.snapshot.identity,
             )
-          const metadata = identityRecordSchema.parse(record)
-          const identity = localIdentitySchema.parse({
-            userId: metadata.userId,
-            createdAt: metadata.createdAt,
-          })
-          const catalog = catalogSchema.parse({
-            artists,
-            albums,
-            albumArtists,
-            tracks,
-            coreTracks,
-            releases,
-            releaseTracks,
-          })
-          const library = createLibrarySchema({
-            catalog,
-            localUserId: identity.userId,
-          }).parse({
-            userAlbums: userAlbums.map(fromStoredUserAlbum),
-            albumRatings,
-            trackRatings,
-          })
-          return { identity, catalog, library }
+            if (
+              identity.userId !== before.identity.userId ||
+              identity.createdAt !== before.identity.createdAt
+            ) {
+              throw new ZodError([
+                {
+                  code: 'custom',
+                  path: ['identity'],
+                  message:
+                    'La mutación musical no puede cambiar la identidad local.',
+                },
+              ])
+            }
+            const catalog = catalogSchema.parse(mutation.snapshot.catalog)
+            const library = createLibrarySchema({
+              catalog,
+              localUserId: identity.userId,
+            }).parse(mutation.snapshot.library)
+            next = { identity, catalog, library }
+          } catch (error) {
+            operationFailure =
+              error instanceof Error || error instanceof ZodError
+                ? error
+                : new Error('Falló la operación de dominio.', { cause: error })
+            throw operationFailure
+          }
+          try {
+            await writeSnapshotChanges(this.database, before, next)
+          } catch (error) {
+            throw asLocalStorageError(error)
+          }
+          return mutation.result
         },
       )
     } catch (error) {
+      if (operationFailure) throw operationFailure
       throw asLocalStorageError(error)
     }
   }

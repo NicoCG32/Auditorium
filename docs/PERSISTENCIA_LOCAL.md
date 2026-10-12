@@ -1,6 +1,6 @@
 # Persistencia local — esquema inicial
 
-DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. Los casos de uso de escritura musical y sus transacciones se incorporarán en DATA-02. La bienvenida todavía no abre la base ni carga una colección.
+DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. La bienvenida todavía no abre la base ni carga una colección.
 
 ## Apertura e identidad
 
