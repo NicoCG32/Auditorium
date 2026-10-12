@@ -24,7 +24,7 @@ npm run preview
 
 `build` comprueba los tipos de la aplicación y de la configuración y genera los archivos estáticos en `dist/`. `preview` permite revisar esa compilación localmente. Los artefactos generados y las dependencias no se versionan.
 
-Por ahora hay una pantalla de bienvenida responsive con tema oscuro, tokens semánticos y navegación al contenido por teclado, sin funciones de biblioteca. El almacenamiento local, los respaldos y la PWA se incorporarán en sus fases respectivas.
+Por ahora hay una pantalla de bienvenida responsive con tema oscuro, tokens semánticos y navegación al contenido por teclado, sin funciones de biblioteca. El núcleo local ya dispone de almacenamiento y casos de uso; su conexión con la interfaz comienza en Fase 2. Los respaldos y la PWA pertenecen a Fase 4.
 
 ## Verificaciones
 
@@ -60,4 +60,5 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Biblioteca personal y calificaciones](docs/DOMINIO_BIBLIOTECA.md)
 - [Identidad y persistencia local](docs/PERSISTENCIA_LOCAL.md)
 - [Casos de uso y transacciones](docs/CASOS_DE_USO.md)
+- [Validación de integridad y persistencia](docs/VALIDACION_PERSISTENCIA.md)
 - Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).
