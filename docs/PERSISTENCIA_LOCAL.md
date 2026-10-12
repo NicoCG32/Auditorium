@@ -1,4 +1,4 @@
-# Persistencia local — esquema inicial
+# Persistencia local — esquemas v1 y v2
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
@@ -12,9 +12,9 @@ La identidad es un UUID aleatorio y una fecha UTC de creación, almacenados bajo
 
 Si falta la identidad pero la base contiene datos, la operación falla. No se infiere un propietario ni se crea uno de reemplazo. Una identidad inválida también genera un error conservando los registros originales.
 
-## Esquema v1
+## Esquema actual v2
 
-Nombre predeterminado: `auditorium`. Versión lógica: 1. Se materializan únicamente las entidades implementadas, además de metadata.
+Nombre predeterminado: `auditorium`. Versión lógica actual: 2. La definición v1 se conserva como historial; v2 añade la colección de ejemplares. Se materializan únicamente las entidades implementadas, además de metadata.
 
 | Tabla         | Clave e índices principales                                             |
 | ------------- | ----------------------------------------------------------------------- |
@@ -29,6 +29,7 @@ Nombre predeterminado: `auditorium`. Versión lógica: 1. Se materializan única
 | userAlbums    | id; activeAlbumKey único; usuario/álbum, álbum, escucha y fecha de alta |
 | albumRatings  | entrada personal como clave primaria                                    |
 | trackRatings  | entrada personal/pista como clave primaria; pista                       |
+| ownedItems    | id; entrada personal, edición, medio, formato y fecha de registro       |
 
 IndexedDB no ofrece claves foráneas. Los validadores de dominio comprueban las referencias antes de escribir dentro de la transacción. Los índices únicos complementan esas reglas.
 
@@ -50,7 +51,7 @@ No borrar, vaciar o recrear automáticamente la base ante un fallo. No registrar
 
 ## Evolución y verificación
 
-La definición `SCHEMA_V1` queda como historial inmutable. Los futuros cambios requerirán otra versión y, cuando afecten datos, migraciones explícitas y probadas. Esta es la primera versión publicada del esquema; no se inventan migraciones entre versiones que todavía no existen.
+`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
 
 Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reapertura, seis conexiones simultáneas, snapshots, claves únicas, rollback, bloqueos, cuotas y datos/esquemas inválidos. También se verificó IndexedDB real en dos pestañas, con ocho conexiones simultáneas y reapertura tras recargar. Las páginas auxiliares de esa comprobación no forman parte del producto.
 

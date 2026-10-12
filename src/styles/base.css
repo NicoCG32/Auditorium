@@ -63,6 +63,47 @@
 }
 
 @layer components {
+  .owned-panel {
+    margin-block-start: 2rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--border);
+  }
+  .owned-fields {
+    display: grid;
+    gap: 1rem;
+    min-inline-size: 0;
+  }
+  .owned-panel input,
+  .owned-panel select,
+  .owned-panel textarea {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 2.75rem;
+    margin-block-start: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--muted);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 1rem;
+  }
+  .owned-panel textarea {
+    resize: vertical;
+  }
+  .owned-card,
+  .owned-confirm {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    min-inline-size: 0;
+  }
+  .owned-confirm {
+    border-color: var(--focus);
+  }
+  @media (min-width: 40rem) {
+    .owned-fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
   .track-lists-panel {
     margin-block-start: 2rem;
     padding-block-start: 1.5rem;

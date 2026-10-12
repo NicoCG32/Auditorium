@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { entityIdSchema as id, utcTimestampSchema } from '../shared/scalars'
+import { ownedItemDataSchema, ownedItemSchema } from './owned-items'
 
 export const listeningStatusSchema = z.enum([
   'untracked',
@@ -59,6 +60,7 @@ export const libraryDataSchema = z.strictObject({
   userAlbums: z.array(userAlbumSchema),
   albumRatings: z.array(albumRatingSchema),
   trackRatings: z.array(trackRatingSchema),
+  ownedItems: z.array(ownedItemSchema).default([]),
 })
 
 const target = { userAlbumId: id }
@@ -68,6 +70,15 @@ const rating = {
   updatedAt: utcTimestampSchema,
 }
 export const libraryChangeSchema = z.discriminatedUnion('type', [
+  z.strictObject({
+    type: z.literal('add_owned_item'),
+    ...ownedItemDataSchema.shape,
+  }),
+  z.strictObject({
+    type: z.literal('remove_owned_item'),
+    ...target,
+    ownedItemId: id,
+  }),
   z.strictObject({ type: z.literal('set_album_rating'), ...rating }),
   z.strictObject({
     type: z.literal('set_track_rating'),

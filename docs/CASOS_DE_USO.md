@@ -12,6 +12,8 @@ DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/appli
 | addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria              |
 | addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada                   |
 | saveTrackList                         | Guarda la lista original o la de una edición como lote validado, con referencia inicial de concurrencia |
+| addOwnedItem                          | Registra una copia física o compra digital con UUID propio, validando entrada, formato y edición        |
+| removeOwnedItem                       | Retira únicamente el ejemplar seleccionado, conservando catálogo y las demás colecciones personales     |
 | rateAlbum / rateTrack                 | Guarda la nota visible validada como unidades enteras, independientemente                               |
 | removeAlbumRating / removeTrackRating | Quita exclusivamente la nota seleccionada                                                               |
 | updatePersonalExperience              | Guarda escucha y comentario juntos; opcionalmente rechaza una referencia de experiencia desactualizada  |
@@ -59,6 +61,6 @@ Las pruebas de integración usan IndexedDB simulado y datos ficticios para el fl
 
 El adaptador prioriza integridad leyendo y validando un snapshot completo; persiste únicamente las diferencias. Consultas y scopes más acotados podrán incorporarse si las mediciones de colecciones grandes lo requieren, manteniendo las reglas y sus pruebas.
 
-El esquema permanece en v1 porque las tablas no cambian. Consulta, registro manual, listas, experiencia y valoraciones de álbum y pistas usan el núcleo local. Ver [calificaciones de pistas](CALIFICACIONES_PISTAS.md) para identidad compartida, independencia y recuperación de errores en la interfaz. Ejemplares y deseos pertenecen a sus próximos hitos. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
+El esquema v2 añade [ejemplares](EJEMPLARES.md), con migración aditiva desde v1. `addOwnedItem` registra cada copia con ID propio; `removeOwnedItem` retira solo el ID elegido tras la confirmación de interfaz. Ambas operaciones conservan catálogo y otras colecciones personales. Consulta, registro manual, listas, experiencia y valoraciones de álbum y pistas usan el núcleo local. Ver [calificaciones de pistas](CALIFICACIONES_PISTAS.md) para identidad compartida, independencia y recuperación de errores en la interfaz. Deseos pertenecen al próximo hito. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
 
 Referencia: [transacciones de Dexie](<https://dexie.org/docs/Dexie/Dexie.transaction()>).

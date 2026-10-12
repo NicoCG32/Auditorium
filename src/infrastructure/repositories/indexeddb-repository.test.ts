@@ -9,7 +9,12 @@ import {
   makeLibrary,
   times,
 } from '../../domain/library/library.fixture'
-import { AuditoriumDatabase, DATABASE_VERSION, SCHEMA_V1 } from '../db/database'
+import {
+  AuditoriumDatabase,
+  DATABASE_VERSION,
+  SCHEMA_V1,
+  SCHEMA_V2,
+} from '../db/database'
 import { asLocalStorageError, LocalStorageError } from '../db/errors'
 import {
   fromStoredUserAlbum,
@@ -65,7 +70,7 @@ async function seed(database: AuditoriumDatabase) {
 }
 
 describe('identidad persistente', () => {
-  test('crea esquema v1 e identidad válida sin sembrar música', async () => {
+  test('crea esquema actual e identidad válida sin sembrar música', async () => {
     const { database, repository, createId, now } = makeStore()
     const identity = await repository.open()
     expect(identity).toEqual({
@@ -74,7 +79,7 @@ describe('identidad persistente', () => {
     })
     expect(database.verno).toBe(DATABASE_VERSION)
     expect(database.tables.map((table) => table.name).sort()).toEqual(
-      Object.keys(SCHEMA_V1).sort(),
+      Object.keys(SCHEMA_V2).sort(),
     )
     const snapshot = await repository.readSnapshot()
     expect(snapshot.identity).toEqual(identity)
@@ -306,9 +311,12 @@ describe('índices y snapshots', () => {
 
 describe('errores recuperables', () => {
   test('una conexión que bloquea la apertura se informa y permite reintentar', async () => {
-    const request = indexedDB.open('blocked', 1)
-    request.onupgradeneeded = () =>
-      request.result.createObjectStore('metadata', { keyPath: 'key' })
+    const versionOne = new Dexie('blocked', { indexedDB, IDBKeyRange })
+    databases.push(versionOne)
+    versionOne.version(1).stores(SCHEMA_V1)
+    await versionOne.open()
+    versionOne.close()
+    const request = indexedDB.open('blocked', 10)
     const legacy = await new Promise<IDBDatabase>((resolve, reject) => {
       request.onsuccess = () => resolve(request.result)
       request.onerror = () =>
@@ -372,7 +380,9 @@ describe('errores recuperables', () => {
     original.repository.close()
     const newer = new Dexie('newer', { indexedDB, IDBKeyRange })
     databases.push(newer)
-    newer.version(2).stores({ ...SCHEMA_V1, futureData: 'id' })
+    newer
+      .version(DATABASE_VERSION + 1)
+      .stores({ ...SCHEMA_V2, futureData: 'id' })
     await newer.open()
     newer.close()
     const old = makeStore('newer')
@@ -383,7 +393,7 @@ describe('errores recuperables', () => {
     expect(await newer.table('metadata').get(IDENTITY_KEY)).toMatchObject(
       identity,
     )
-    expect(newer.backendDB().version).toBe(20)
+    expect(newer.backendDB().version).toBe((DATABASE_VERSION + 1) * 10)
     expect(newer.tables.some((table) => table.name === 'futureData')).toBe(true)
   })
 

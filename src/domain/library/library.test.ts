@@ -427,6 +427,15 @@ describe('cambios puros de biblioteca', () => {
     ] as const
     for (const from of statuses) {
       const input = makeLibrary()
+      input.ownedItems = [
+        {
+          id: '00000000-0000-4000-8000-000000000900',
+          userAlbumId: libraryIds.entry,
+          medium: 'physical',
+          format: 'cd',
+          createdAt: times.updated,
+        },
+      ]
       input.userAlbums[0] = {
         ...userAlbumSchema.parse(input.userAlbums[0]),
         listeningStatus: from,
@@ -445,7 +454,7 @@ describe('cambios puros de biblioteca', () => {
         expect(result.userAlbums[1]).toEqual(input.userAlbums[1])
         expect(result.albumRatings).toEqual(input.albumRatings)
         expect(result.trackRatings).toEqual(input.trackRatings)
-        expect(result).not.toHaveProperty('ownedItems')
+        expect(result.ownedItems).toEqual(input.ownedItems ?? [])
       }
     }
   })
