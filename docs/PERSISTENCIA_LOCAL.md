@@ -1,6 +1,6 @@
 # Persistencia local — esquema inicial
 
-DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. La bienvenida todavía no abre la base ni carga una colección.
+DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
 ## Apertura e identidad
 

@@ -2,7 +2,7 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-La Fase 0 está completada y la Fase 1 incorpora dominio, persistencia local y casos de uso transaccionales. Incluye altas de álbumes, ediciones y pistas y calificaciones independientes, con identidad persistente y reglas probadas. El MVP previsto será local, con registro manual, ediciones y ejemplares diferenciados, respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
+Las Fases 0 y 1 están completadas: base ejecutable, dominio, persistencia local y casos de uso transaccionales. La Fase 2 comienza con consulta y búsqueda de biblioteca. El MVP previsto será local, con registro manual, ediciones y ejemplares diferenciados, respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
 
 ## Desarrollo local
 
@@ -24,7 +24,7 @@ npm run preview
 
 `build` comprueba los tipos de la aplicación y de la configuración y genera los archivos estáticos en `dist/`. `preview` permite revisar esa compilación localmente. Los artefactos generados y las dependencias no se versionan.
 
-Por ahora hay una pantalla de bienvenida responsive con tema oscuro, tokens semánticos y navegación al contenido por teclado, sin funciones de biblioteca. El núcleo local ya dispone de almacenamiento y casos de uso; su conexión con la interfaz comienza en Fase 2. Los respaldos y la PWA pertenecen a Fase 4.
+La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Incluye estados de carga, vacío, sin resultados y errores con reintento. El formulario manual y la ficha corresponden a las siguientes tareas de Fase 2. Los respaldos y la PWA pertenecen a Fase 4.
 
 ## Verificaciones
 
@@ -42,7 +42,7 @@ Este comando comprueba formato, lint, tipos, pruebas y build, y se detiene ante 
 | `npm run test`         | Pruebas Vitest en una sola ejecución                      |
 | `npm run build`        | Tipos y compilación de producción                         |
 
-`npm run format` aplica el formato y `npm run test:watch` mantiene las pruebas activas durante el desarrollo. Las pruebas usan Testing Library y jsdom, con limpieza del DOM después de cada caso. La primera prueba comprueba el montaje de la bienvenida en el contenido principal.
+`npm run format` aplica el formato y `npm run test:watch` mantiene las pruebas activas durante el desarrollo. Las pruebas usan Testing Library y jsdom para la interfaz y fake-indexeddb para persistencia, con datos ficticios y limpieza después de cada caso.
 
 TypeScript se fija en 6.0.3 para respetar el [rango compatible de typescript-eslint](https://typescript-eslint.io/users/dependency-versions/). Se mantienen todas las opciones estrictas.
 
@@ -61,4 +61,5 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Identidad y persistencia local](docs/PERSISTENCIA_LOCAL.md)
 - [Casos de uso y transacciones](docs/CASOS_DE_USO.md)
 - [Validación de integridad y persistencia](docs/VALIDACION_PERSISTENCIA.md)
+- [Consulta y búsqueda de biblioteca](docs/CONSULTA_BIBLIOTECA.md)
 - Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).

@@ -1,6 +1,6 @@
 # Casos de uso del núcleo local
 
-DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/application/`. La aplicación recibe un repositorio transaccional y proveedores síncronos de UUID/reloj; no importa React ni Dexie. La bienvenida todavía no utiliza estos casos de uso.
+DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/application/`. La aplicación recibe un repositorio transaccional y proveedores síncronos de UUID/reloj; no importa React ni Dexie. La interfaz actual consulta snapshots; los formularios de los siguientes hitos usarán los casos de escritura.
 
 ## Operaciones
 
