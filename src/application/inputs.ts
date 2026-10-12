@@ -8,7 +8,26 @@ import {
   releaseTrackSchema,
   trackSchema,
 } from '../domain/catalog/schemas'
-import { entityIdSchema } from '../domain/shared/scalars'
+import { entityIdSchema, utcTimestampSchema } from '../domain/shared/scalars'
+import {
+  listeningStatusSchema,
+  userAlbumSchema,
+} from '../domain/library/schemas'
+
+export const personalExperienceInputSchema = z.strictObject({
+  listeningStatus: listeningStatusSchema,
+  personalNotes: z
+    .string()
+    .transform((value) => (value.trim() ? value : undefined))
+    .optional(),
+  expected: z
+    .strictObject({
+      listeningStatus: listeningStatusSchema,
+      personalNotes: userAlbumSchema.shape.personalNotes,
+      updatedAt: utcTimestampSchema,
+    })
+    .optional(),
+})
 
 const credit = {
   role: artistRoleSchema.default('primary'),

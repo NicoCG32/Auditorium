@@ -20,6 +20,8 @@ La biblioteca vacía ofrece «Añadir tu primer álbum», conectado al [registro
 
 LIB-02 incorpora el formulario manual; LIB-03 amplía la [ficha y valoración](FICHA_ALBUM.md), abierta desde el título de una tarjeta o al usar un registro existente. Al registrar un álbum, la biblioteca se actualiza automáticamente y se limpian los criterios para mostrar la entrada nueva. Cambiar una nota actualiza los resultados conservando los filtros. Los filtros de propiedad/formato llegarán cuando existan ejemplares.
 
+LIB-04 permite editar [escucha y notas personales](EXPERIENCIA_PERSONAL.md) desde esa misma ficha. El guardado actualiza la biblioteca conservando sus filtros; si la entrada deja de coincidir, volver enfoca la búsqueda. Los comentarios no se usan para buscar ni para calcular valoraciones.
+
 Las preferencias de búsqueda y vista duran mientras la pantalla permanezca montada. No hay suscripción automática a cambios entre pestañas; actualizar o recargar lee el estado vigente. La apertura puede crear la identidad de una base nueva, pero las consultas no escriben registros musicales.
 
 ## Accesibilidad y verificación

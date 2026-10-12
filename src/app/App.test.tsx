@@ -93,6 +93,327 @@ async function openRating(repository: IndexedDbRepository) {
   return screen.getByRole('textbox', { name: 'Nota del álbum' })
 }
 
+test('lectura fallida tras conflicto conserva el borrador y permite otro intento', async () => {
+  const repository = await populated()
+  await openRating(repository)
+  fireEvent.change(screen.getByRole('textbox', { name: 'Notas personales' }), {
+    target: { value: 'Borrador ficticio sin perder' },
+  })
+  await new MusicLibrary(connect()).updatePersonalExperience(libraryIds.entry, {
+    listeningStatus: 'completed',
+    personalNotes: 'Texto actualizado ficticio',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  await screen.findByRole('alert')
+  vi.spyOn(repository, 'readSnapshot').mockRejectedValueOnce(
+    new LocalStorageError('unexpected', 'Fallo de lectura ficticio'),
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Cargar datos guardados' }),
+  )
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'No se pudieron cargar',
+  )
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Borrador ficticio sin perder',
+  )
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Cargar datos guardados' }),
+    ).toBeEnabled(),
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Cargar datos guardados' }),
+  )
+  await screen.findByText('Datos guardados cargados. Puedes volver a editar.')
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Texto actualizado ficticio',
+  )
+})
+
+test('escucha y notas se guardan juntas y persisten sin cambiar ratings', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot()
+  await openRating(repository)
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    '  Comentario ficticio.\nSegunda línea.  ',
+  )
+  fireEvent.change(
+    screen.getByRole('combobox', { name: 'Estado de escucha' }),
+    { target: { value: 'completed' } },
+  )
+  fireEvent.change(screen.getByRole('textbox', { name: 'Notas personales' }), {
+    target: { value: '  Recuerdo ficticio.\nOtra línea.  ' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  await screen.findByText('Escucha y notas guardadas.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  await waitFor(() =>
+    expect(
+      screen.getByRole('combobox', { name: 'Estado de escucha' }),
+    ).toHaveFocus(),
+  )
+  const after = await repository.readSnapshot()
+  expect(after.catalog).toEqual(before.catalog)
+  expect(after.library.albumRatings).toEqual(before.library.albumRatings)
+  expect(after.library.trackRatings).toEqual(before.library.trackRatings)
+  expect(
+    after.library.userAlbums.find((entry) => entry.id === libraryIds.entry),
+  ).toMatchObject({
+    listeningStatus: 'completed',
+    personalNotes: '  Recuerdo ficticio.\nOtra línea.  ',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  const card = screen.getByRole('button', { name: 'Eclipse' }).closest('li')
+  if (!card) throw new Error('Falta tarjeta ficticia.')
+  expect(within(card).getByText('Escuchado')).toBeVisible()
+  repository.close()
+  expect(await connect().readSnapshot()).toEqual(after)
+})
+
+test('limpiar notas modifica solo el borrador hasta guardar y no borra la valoración', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot()
+  await openRating(repository)
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Limpiar notas del formulario' }),
+  )
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    '',
+  )
+  expect(await repository.readSnapshot()).toEqual(before)
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  await screen.findByText('Escucha y notas guardadas.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  const after = await repository.readSnapshot()
+  expect(
+    after.library.userAlbums.find((entry) => entry.id === libraryIds.entry),
+  ).not.toHaveProperty('personalNotes')
+  expect(after.library.albumRatings).toEqual(before.library.albumRatings)
+})
+
+test('error de escritura conserva escucha anterior y borrador; reintentar guarda ambas partes', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot(),
+    database = databases[0]
+  if (!database) throw new Error('Falta base ficticia.')
+  await openRating(repository)
+  fireEvent.change(
+    screen.getByRole('combobox', { name: 'Estado de escucha' }),
+    { target: { value: 'in_progress' } },
+  )
+  fireEvent.change(screen.getByRole('textbox', { name: 'Notas personales' }), {
+    target: { value: 'Borrador ficticio conservado' },
+  })
+  const failure = vi
+    .spyOn(database.userAlbums, 'bulkPut')
+    .mockRejectedValue(new DOMException('Quota ficticia', 'QuotaExceededError'))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('No hay espacio')
+  expect(
+    screen.getByRole('combobox', { name: 'Estado de escucha' }),
+  ).toHaveValue('in_progress')
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Borrador ficticio conservado',
+  )
+  expect(await repository.readSnapshot()).toEqual(before)
+  failure.mockRestore()
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  await screen.findByText('Escucha y notas guardadas.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  expect(
+    (await repository.readSnapshot()).library.userAlbums.find(
+      (entry) => entry.id === libraryIds.entry,
+    ),
+  ).toMatchObject({
+    listeningStatus: 'in_progress',
+    personalNotes: 'Borrador ficticio conservado',
+  })
+})
+
+test('lectura fallida tras commit bloquea el otro editor y reintenta solo lectura', async () => {
+  const repository = await populated()
+  await openRating(repository)
+  const save = vi.spyOn(MusicLibrary.prototype, 'updatePersonalExperience')
+  fireEvent.change(
+    screen.getByRole('combobox', { name: 'Estado de escucha' }),
+    { target: { value: 'completed' } },
+  )
+  vi.spyOn(repository, 'readSnapshot').mockRejectedValueOnce(
+    new LocalStorageError('unexpected', 'Fallo ficticio'),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'La experiencia se guardó',
+  )
+  expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeDisabled()
+  expect(
+    screen.getByRole('button', { name: 'Volver a biblioteca' }),
+  ).toBeDisabled()
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Reintentar lectura de experiencia' }),
+    ).toHaveFocus(),
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Reintentar lectura de experiencia' }),
+  )
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  expect(save).toHaveBeenCalledTimes(1)
+  expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeEnabled()
+  await waitFor(() =>
+    expect(
+      screen.getByRole('combobox', { name: 'Estado de escucha' }),
+    ).toHaveFocus(),
+  )
+})
+
+test('borrador anterior no sobrescribe otra pestaña; cargar datos lo reemplaza explícitamente', async () => {
+  const repository = await populated()
+  await openRating(repository)
+  fireEvent.change(screen.getByRole('textbox', { name: 'Notas personales' }), {
+    target: { value: 'Borrador local ficticio' },
+  })
+  await new MusicLibrary(connect()).updatePersonalExperience(libraryIds.entry, {
+    listeningStatus: 'completed',
+    personalNotes: 'Texto ficticio desde otra pestaña',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'Tu experiencia cambió',
+  )
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Borrador local ficticio',
+  )
+  expect(
+    screen.getByRole('button', { name: 'Guardar experiencia' }),
+  ).toBeDisabled()
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Cargar datos guardados' }),
+    ).toHaveFocus(),
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Cargar datos guardados' }),
+  )
+  await screen.findByText('Datos guardados cargados. Puedes volver a editar.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Guardar experiencia' }),
+    ).toBeEnabled(),
+  )
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Texto ficticio desde otra pestaña',
+  )
+  expect(
+    screen.getByRole('combobox', { name: 'Estado de escucha' }),
+  ).toHaveValue('completed')
+  fireEvent.change(screen.getByRole('textbox', { name: 'Notas personales' }), {
+    target: { value: 'Texto revisado ficticio' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  await screen.findByText('Escucha y notas guardadas.')
+  expect(
+    (await repository.readSnapshot()).library.userAlbums.find(
+      (entry) => entry.id === libraryIds.entry,
+    )?.personalNotes,
+  ).toBe('Texto revisado ficticio')
+})
+
+test('guardar rating conserva un borrador de experiencia y no renueva su referencia anterior', async () => {
+  const repository = await populated()
+  const rating = await openRating(repository)
+  fireEvent.change(screen.getByRole('textbox', { name: 'Notas personales' }), {
+    target: { value: 'Borrador ficticio protegido' },
+  })
+  await new MusicLibrary(connect()).updatePersonalExperience(libraryIds.entry, {
+    listeningStatus: 'completed',
+    personalNotes: 'Cambio ficticio de otra pestaña',
+  })
+  fireEvent.change(rating, { target: { value: '8' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  await waitFor(() => expect(screen.getByText('8 / 10')).toBeVisible())
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Guardar experiencia' }),
+    ).toBeEnabled(),
+  )
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Borrador ficticio protegido',
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'Tu experiencia cambió',
+  )
+  expect(
+    (await repository.readSnapshot()).library.userAlbums.find(
+      (entry) => entry.id === libraryIds.entry,
+    )?.personalNotes,
+  ).toBe('Cambio ficticio de otra pestaña')
+})
+
+test('volver con filtro de escucha conserva criterios y enfoca búsqueda si la tarjeta no coincide', async () => {
+  const repository = await populated()
+  render(<App repository={repository} />)
+  await screen.findByRole('button', { name: 'Eclipse' })
+  fireEvent.change(screen.getByLabelText('Escucha'), {
+    target: { value: 'queued' },
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Eclipse' }))
+  fireEvent.change(
+    screen.getByRole('combobox', { name: 'Estado de escucha' }),
+    { target: { value: 'completed' } },
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  await screen.findByText('Escucha y notas guardadas.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  expect(screen.getByRole('searchbox')).toHaveFocus()
+  expect(screen.getByLabelText('Escucha')).toHaveValue('queued')
+  expect(
+    screen.getByRole('heading', { name: 'No encontramos coincidencias' }),
+  ).toBeVisible()
+})
+
+test('doble envío guarda una vez e impide escritura simultánea desde valoración', async () => {
+  const repository = await populated()
+  const rating = await openRating(repository),
+    save = vi.spyOn(MusicLibrary.prototype, 'updatePersonalExperience'),
+    rate = vi.spyOn(MusicLibrary.prototype, 'rateAlbum')
+  const experience = screen
+      .getByRole('textbox', { name: 'Notas personales' })
+      .closest('form'),
+    ratingForm = rating.closest('form')
+  if (!experience || !ratingForm)
+    throw new Error('Faltan formularios ficticios.')
+  fireEvent.submit(experience)
+  fireEvent.submit(experience)
+  fireEvent.submit(ratingForm)
+  expect(save).toHaveBeenCalledTimes(1)
+  expect(rate).not.toHaveBeenCalled()
+  await screen.findByText('Escucha y notas guardadas.')
+})
+
 test('volver tras quitar una nota conserva los filtros y enfoca búsqueda si la tarjeta queda oculta', async () => {
   const repository = await populated()
   render(<App repository={repository} />)
@@ -387,9 +708,11 @@ test('registro activo sugerido abre su ficha sin duplicar ni alterar valoracione
   await screen.findByRole('heading', {
     name: 'Encontramos registros parecidos',
   })
-  expect(
-    screen.getByRole('heading', { name: 'Encontramos registros parecidos' }),
-  ).toHaveFocus()
+  await waitFor(() =>
+    expect(
+      screen.getByRole('heading', { name: 'Encontramos registros parecidos' }),
+    ).toHaveFocus(),
+  )
   fireEvent.click(screen.getByRole('button', { name: 'Abrir álbum existente' }))
   await screen.findByRole('button', { name: 'Volver a biblioteca' })
   expect(screen.getByRole('heading', { name: 'Eclipse' })).toHaveFocus()

@@ -109,9 +109,13 @@ export function LibraryPage({
     )
     refresh()
   }
-  async function synchronizeRating() {
+  async function synchronizeDetail() {
     const snapshot = await repository.readSnapshot()
     setState({ status: 'ready', albums: projectLibrary(snapshot), snapshot })
+    return snapshot
+  }
+  async function synchronizeRating() {
+    await synchronizeDetail()
   }
   const visible =
     state.status === 'ready' ? queryLibrary(state.albums, filters) : []
@@ -124,6 +128,10 @@ export function LibraryPage({
       ? state.snapshot.catalog.albums.find(
           (album) => album.id === selected.albumId,
         )
+      : undefined
+  const personalEntry =
+    state.status === 'ready' && selected
+      ? state.snapshot.library.userAlbums.find((row) => row.id === selected.id)
       : undefined
   return (
     <div ref={content}>
@@ -198,7 +206,7 @@ export function LibraryPage({
             setFormOpen(false)
           }}
         />
-      ) : selected && selectedAlbum ? (
+      ) : selected && selectedAlbum && personalEntry ? (
         <AlbumSummary
           key={selected.id}
           album={selectedAlbum}
@@ -207,6 +215,8 @@ export function LibraryPage({
           onRatingCommitted={synchronizeRating}
           busy={detailBusy}
           onBusyChange={setDetailBusy}
+          personalEntry={personalEntry}
+          onExperienceCommitted={synchronizeDetail}
           onBack={() => {
             focusEntry.current = selected.id
             setSelectedId(undefined)

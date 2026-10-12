@@ -10,6 +10,7 @@ interface Props {
   library: MusicLibrary
   onCommitted: () => Promise<void>
   onBusyChange: (busy: boolean) => void
+  blocked: boolean
 }
 export function AlbumRatingForm({
   entryId,
@@ -17,6 +18,7 @@ export function AlbumRatingForm({
   library,
   onCommitted,
   onBusyChange,
+  blocked,
 }: Props) {
   const [draft, setDraft] = useState(() =>
     score === undefined ? '' : formatScore(score),
@@ -54,7 +56,7 @@ export function AlbumRatingForm({
     }
   }
   async function change(next: number | undefined) {
-    if (locked.current || pending) return
+    if (locked.current || pending || blocked) return
     locked.current = true
     setBusy(true)
     onBusyChange(true)
@@ -93,7 +95,7 @@ export function AlbumRatingForm({
   }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (locked.current || pending) return
+    if (locked.current || pending || blocked) return
     const value = parseRating(draft)
     if (value === undefined) {
       setValidation('Escribe una nota de 1 a 10 en pasos de 0,5.')
@@ -115,7 +117,7 @@ export function AlbumRatingForm({
       </p>
       <form onSubmit={submit} noValidate autoComplete="off">
         <fieldset
-          disabled={busy || pending !== undefined}
+          disabled={busy || pending !== undefined || blocked}
           className="mt-5 min-w-0"
         >
           <label className="field-label" htmlFor="album-score">

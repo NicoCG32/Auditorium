@@ -63,6 +63,34 @@
 }
 
 @layer components {
+  .experience-panel {
+    margin-block-start: 2rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--border);
+  }
+  .experience-fields {
+    display: grid;
+    gap: 1.25rem;
+  }
+  .experience-fields select,
+  .experience-fields textarea {
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 2.75rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--muted);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 1rem;
+  }
+  .experience-fields textarea {
+    resize: vertical;
+  }
+  @media (min-width: 40rem) {
+    .experience-fields {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    }
+  }
   .rating-panel {
     margin-block-start: 2rem;
     padding-block-start: 1.5rem;

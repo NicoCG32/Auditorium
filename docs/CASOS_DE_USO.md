@@ -4,15 +4,16 @@ DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/appli
 
 ## Operaciones
 
-| Caso de uso                           | Resultado                                                                                         |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------- |
-| createAlbum                           | Crea álbum, créditos, artistas nuevos indicados y, por defecto, entrada personal en una operación |
-| registerAlbum                         | Devuelve coincidencias para revisión o crea álbum y relación personal tras la decisión explícita  |
-| addAlbumToLibrary                     | Crea una entrada activa o devuelve la existente sin alterar notas o fechas                        |
-| addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria        |
-| addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada             |
-| rateAlbum / rateTrack                 | Guarda la nota visible validada como unidades enteras, independientemente                         |
-| removeAlbumRating / removeTrackRating | Quita exclusivamente la nota seleccionada                                                         |
+| Caso de uso                           | Resultado                                                                                              |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| createAlbum                           | Crea álbum, créditos, artistas nuevos indicados y, por defecto, entrada personal en una operación      |
+| registerAlbum                         | Devuelve coincidencias para revisión o crea álbum y relación personal tras la decisión explícita       |
+| addAlbumToLibrary                     | Crea una entrada activa o devuelve la existente sin alterar notas o fechas                             |
+| addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria             |
+| addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada                  |
+| rateAlbum / rateTrack                 | Guarda la nota visible validada como unidades enteras, independientemente                              |
+| removeAlbumRating / removeTrackRating | Quita exclusivamente la nota seleccionada                                                              |
+| updatePersonalExperience              | Guarda escucha y comentario juntos; opcionalmente rechaza una referencia de experiencia desactualizada |
 
 Todos devuelven promesas que se resuelven después de completar la transacción. Las entradas inválidas se rechazan conservando el detalle de validación.
 
