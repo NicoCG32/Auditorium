@@ -33,4 +33,4 @@ Las pruebas recorren la interfaz y el repositorio con datos ficticios: original 
 
 La verificación en IndexedDB real usa una base aislada y comprueba guardado por teclado, posiciones repetidas, rollback, reintento, otra conexión, recarga, copia de lista y responsive. No se añade música de ejemplo a la biblioteca del producto.
 
-La interfaz de valoraciones de pistas corresponde a COL-02; ejemplares y deseos pertenecen a COL-03/04. No se eliminan álbumes, ediciones ni entidades pista. Respaldo y PWA pertenecen a Fase 4.
+La ficha permite [calificar pistas](CALIFICACIONES_PISTAS.md) por identidad compartida entre apariciones; las variantes tienen nota independiente. Ejemplares y deseos pertenecen a COL-03/04. No se eliminan álbumes, ediciones ni entidades pista. Respaldo y PWA pertenecen a Fase 4.

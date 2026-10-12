@@ -6,7 +6,7 @@ import type { MusicLibrary } from '../../application/music-library'
 import { AlbumCover } from './AlbumCover'
 import { AlbumRatingForm } from './AlbumRatingForm'
 import { AlbumExperienceForm } from './AlbumExperienceForm'
-import type { UserAlbum } from '../../domain/library/schemas'
+import type { UserAlbum, TrackRating } from '../../domain/library/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { AlbumTrackLists } from './AlbumTrackLists'
 
@@ -21,6 +21,7 @@ export function AlbumSummary({
   personalEntry,
   onExperienceCommitted,
   catalog,
+  trackRatings,
 }: {
   album: Album
   entry: LibraryAlbum
@@ -32,6 +33,7 @@ export function AlbumSummary({
   personalEntry: UserAlbum
   onExperienceCommitted: () => Promise<LocalSnapshot>
   catalog: Catalog
+  trackRatings: TrackRating[]
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -107,6 +109,8 @@ export function AlbumSummary({
       <AlbumTrackLists
         albumId={album.id}
         catalog={catalog}
+        entryId={personalEntry.id}
+        ratings={trackRatings}
         library={library}
         blocked={busy}
         onBusyChange={onBusyChange}
