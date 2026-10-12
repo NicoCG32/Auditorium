@@ -26,7 +26,7 @@ Artista, álbum, crédito y relación personal se guardan juntos. La interfaz bl
 
 Tras un alta, se relee la biblioteca automáticamente, se limpian búsqueda y filtros para hacer visible la entrada y se enfoca su título. La vista de lista/cuadrícula se conserva. Si esa lectura falla después de confirmar el guardado, se informa que el álbum se guardó y se permite reintentar únicamente la lectura.
 
-Los títulos de las tarjetas abren una ficha básica de lectura: artista, tipo, año, escucha, nota disponible y descripción. El enlace de portada se abre solo mediante acción del usuario; la representación decorativa sigue siendo local. Al volver a biblioteca se enfoca la tarjeta correspondiente. El editor de calificaciones y la ampliación de la ficha pertenecen a LIB-03.
+Los títulos de las tarjetas abren la [ficha del álbum](FICHA_ALBUM.md): artista, tipo, año, escucha, valoración y descripción. La portada se carga solo mediante acción del usuario; sin enlace o al fallar se conserva una representación local. Al volver a biblioteca se enfoca la tarjeta correspondiente o la búsqueda cuando los filtros la oculten. LIB-03 añade el editor de valoración del álbum.
 
 El formulario enfoca Artista al abrir; la validación enfoca un campo inválido y abre sus detalles si estaban plegados. Los errores se asocian mediante `aria-describedby`, manteniendo etiquetas estables. El aviso de coincidencias recibe foco para continuar por teclado. Cancelar vuelve al botón de alta sin escribir música. Las entradas del formulario no se conservan después de cancelarlo o recargar.
 

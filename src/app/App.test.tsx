@@ -25,6 +25,7 @@ import { LocalStorageError } from '../infrastructure/db/errors'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import { App } from './App'
 import { MusicLibrary } from '../application/music-library'
+import { ids } from '../domain/catalog/catalog.fixture'
 
 let indexedDB: IDBFactory
 let databases: AuditoriumDatabase[]
@@ -84,6 +85,230 @@ function fillAlbum(artist = 'Umbral ficticio', title = 'Eclipse nuevo') {
     target: { value: title },
   })
 }
+
+async function openRating(repository: IndexedDbRepository) {
+  render(<App repository={repository} />)
+  const button = await screen.findByRole('button', { name: 'Eclipse' })
+  fireEvent.click(button)
+  return screen.getByRole('textbox', { name: 'Nota del álbum' })
+}
+
+test('volver tras quitar una nota conserva los filtros y enfoca búsqueda si la tarjeta queda oculta', async () => {
+  const repository = await populated()
+  render(<App repository={repository} />)
+  await screen.findByRole('button', { name: 'Eclipse' })
+  fireEvent.change(screen.getByLabelText('Nota'), { target: { value: 'high' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Eclipse' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  await screen.findByText('Nota quitada.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  expect(screen.getByRole('searchbox')).toHaveFocus()
+  expect(screen.getByLabelText('Nota')).toHaveValue('high')
+  expect(
+    screen.queryByRole('button', { name: 'Eclipse' }),
+  ).not.toBeInTheDocument()
+})
+
+test('ficha muestra metadatos y recibe la portada guardada sin cargarla automáticamente', async () => {
+  const repository = await populated()
+  await repository.mutate((snapshot) => {
+    snapshot.catalog.albums = snapshot.catalog.albums.map((album) =>
+      album.id === ids.album
+        ? {
+            ...album,
+            description: 'Descripción ficticia disponible.',
+            coverUrl: 'https://example.invalid/portada.svg',
+          }
+        : album,
+    )
+    return { snapshot, result: undefined }
+  })
+  await openRating(repository)
+  expect(screen.getByText('1998')).toBeVisible()
+  expect(screen.getByText('Descripción ficticia disponible.')).toBeVisible()
+  expect(
+    screen.getByRole('link', { name: 'Abrir enlace de portada' }),
+  ).toHaveAttribute('href', 'https://example.invalid/portada.svg')
+  expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Mostrar portada' }))
+  expect(
+    screen.getByRole('img', { name: 'Portada de Eclipse' }),
+  ).toHaveAttribute('src', 'https://example.invalid/portada.svg')
+})
+
+test('cambiar de álbum descarta el borrador y carga su propia nota', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot()
+  const input = await openRating(repository)
+  fireEvent.change(input, { target: { value: '1,5' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Otra órbita' }))
+  expect(screen.getByRole('textbox', { name: 'Nota del álbum' })).toHaveValue(
+    '8',
+  )
+  expect(await repository.readSnapshot()).toEqual(before)
+})
+
+test('guardar nota decimal actualiza ficha y tarjeta; reabrir conserva el resultado', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot()
+  const input = await openRating(repository)
+  fireEvent.change(input, { target: { value: '8,5' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  await waitFor(() => expect(screen.getByText('8,5 / 10')).toBeVisible())
+  await waitFor(() => expect(input).toHaveFocus())
+  const after = await repository.readSnapshot()
+  expect(after.catalog).toEqual(before.catalog)
+  expect(after.library.trackRatings).toEqual(before.library.trackRatings)
+  expect(after.library.userAlbums).toEqual(before.library.userAlbums)
+  expect(
+    after.library.albumRatings.find(
+      (row) => row.userAlbumId === libraryIds.entry,
+    )?.scoreUnits,
+  ).toBe(17)
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  expect(screen.getByText('8,5')).toBeVisible()
+  repository.close()
+  expect(await connect().readSnapshot()).toEqual(after)
+})
+
+test('quitar nota deja ausencia real y conserva valoraciones de pistas y otro álbum', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot()
+  const input = await openRating(repository)
+  fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  await screen.findByText('Nota quitada.')
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  expect(input).toHaveValue('')
+  const after = await repository.readSnapshot()
+  expect(after.library.albumRatings).toEqual(
+    before.library.albumRatings.filter(
+      (row) => row.userAlbumId !== libraryIds.entry,
+    ),
+  )
+  expect(after.library.trackRatings).toEqual(before.library.trackRatings)
+  expect(after.library.userAlbums).toEqual(before.library.userAlbums)
+  expect(screen.getByRole('button', { name: 'Quitar nota' })).toBeDisabled()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  const card = screen.getByRole('button', { name: 'Eclipse' }).closest('li')
+  if (!card) throw new Error('Falta tarjeta ficticia.')
+  expect(within(card).getByText('Sin nota')).toBeVisible()
+})
+
+test.each(['0', '9,3', '10,5', ''])(
+  'la nota inválida %s enfoca el error sin escribir',
+  async (value) => {
+    const repository = await populated(),
+      before = await repository.readSnapshot()
+    const input = await openRating(repository)
+    fireEvent.change(input, { target: { value } })
+    fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'de 1 a 10 en pasos de 0,5',
+    )
+    expect(input).toHaveAttribute('aria-invalid', 'true')
+    expect(input).toHaveFocus()
+    expect(screen.getByText('9,5 / 10')).toBeVisible()
+    expect(await repository.readSnapshot()).toEqual(before)
+  },
+)
+
+test('quota al reemplazar una nota conserva valor previo y borrador para reintentar', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot(),
+    database = databases[0]
+  if (!database) throw new Error('Falta base ficticia.')
+  const input = await openRating(repository)
+  fireEvent.change(input, { target: { value: '10' } })
+  const failure = vi
+    .spyOn(database.albumRatings, 'bulkPut')
+    .mockRejectedValue(new DOMException('Quota ficticia', 'QuotaExceededError'))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('No hay espacio')
+  expect(input).toHaveValue('10')
+  await waitFor(() => expect(input).toHaveFocus())
+  expect(screen.getByText('9,5 / 10')).toBeVisible()
+  expect(await repository.readSnapshot()).toEqual(before)
+  failure.mockRestore()
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  await waitFor(() => expect(screen.getByText('10 / 10')).toBeVisible())
+})
+
+test('fallo de remoción restaura la fila anterior y permite reintentar', async () => {
+  const repository = await populated(),
+    before = await repository.readSnapshot(),
+    database = databases[0]
+  if (!database) throw new Error('Falta base ficticia.')
+  await openRating(repository)
+  const failure = vi
+    .spyOn(database.albumRatings, 'bulkDelete')
+    .mockRejectedValue(new DOMException('Abort ficticio', 'AbortError'))
+  fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'nota anterior se conserva',
+  )
+  expect(await repository.readSnapshot()).toEqual(before)
+  failure.mockRestore()
+  fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  await screen.findByText('Nota quitada.')
+})
+
+test('fallo de lectura tras commit informa nota guardada y reintenta solo la lectura', async () => {
+  const repository = await populated()
+  const input = await openRating(repository)
+  fireEvent.change(input, { target: { value: '7.5' } })
+  const save = vi.spyOn(MusicLibrary.prototype, 'rateAlbum')
+  vi.spyOn(repository, 'readSnapshot').mockRejectedValueOnce(
+    new LocalStorageError('unexpected', 'Fallo ficticio'),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'El cambio se guardó',
+  )
+  expect(screen.getByText('7,5 / 10')).toBeVisible()
+  expect(
+    screen.getByRole('button', { name: 'Volver a biblioteca' }),
+  ).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeDisabled()
+  expect(
+    screen.getByRole('button', { name: 'Reintentar lectura' }),
+  ).toHaveFocus()
+  fireEvent.click(screen.getByRole('button', { name: 'Reintentar lectura' }))
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Volver a biblioteca' }),
+    ).toBeEnabled(),
+  )
+  expect(save).toHaveBeenCalledTimes(1)
+  expect(input).toHaveFocus()
+  expect(
+    (await repository.readSnapshot()).library.albumRatings.find(
+      (row) => row.userAlbumId === libraryIds.entry,
+    )?.scoreUnits,
+  ).toBe(15)
+})
+
+test('dos envíos de nota seguidos solo ejecutan una escritura', async () => {
+  const repository = await populated()
+  const input = await openRating(repository),
+    save = vi.spyOn(MusicLibrary.prototype, 'rateAlbum')
+  fireEvent.change(input, { target: { value: '10' } })
+  const form = input.closest('form')
+  if (!form) throw new Error('Falta formulario ficticio.')
+  fireEvent.submit(form)
+  fireEvent.submit(form)
+  expect(save).toHaveBeenCalledTimes(1)
+  await waitFor(() => expect(screen.getByText('10 / 10')).toBeVisible())
+})
 
 test('registro mínimo aparece sin recarga y permite abrir su ficha básica', async () => {
   const repository = connect()

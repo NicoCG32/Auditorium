@@ -48,6 +48,7 @@ export function LibraryPage({
   const [formOpen, setFormOpen] = useState(false)
   const [selectedId, setSelectedId] = useState<string>()
   const [notice, setNotice] = useState('')
+  const [detailBusy, setDetailBusy] = useState(false)
   const addButton = useRef<HTMLButtonElement>(null)
   const focusAdd = useRef(false)
   const focusEntry = useRef<string | undefined>(undefined)
@@ -82,10 +83,14 @@ export function LibraryPage({
       const target = content.current?.querySelector<HTMLButtonElement>(
         `[data-entry-id="${focusEntry.current}"] button`,
       )
-      if (target) {
-        target.focus()
-        focusEntry.current = undefined
-      }
+      const nextFocus =
+        target ??
+        content.current?.querySelector<HTMLInputElement>(
+          'input[type="search"]',
+        ) ??
+        addButton.current
+      nextFocus?.focus()
+      focusEntry.current = undefined
     }
   }, [state, selectedId, formOpen])
   function refresh() {
@@ -103,6 +108,10 @@ export function LibraryPage({
         : 'Álbum guardado en tu biblioteca.',
     )
     refresh()
+  }
+  async function synchronizeRating() {
+    const snapshot = await repository.readSnapshot()
+    setState({ status: 'ready', albums: projectLibrary(snapshot), snapshot })
   }
   const visible =
     state.status === 'ready' ? queryLibrary(state.albums, filters) : []
@@ -135,7 +144,7 @@ export function LibraryPage({
             ref={addButton}
             type="button"
             className="primary-button"
-            disabled={state.status !== 'ready' || formOpen}
+            disabled={state.status !== 'ready' || formOpen || detailBusy}
             onClick={() => {
               setSelectedId(undefined)
               setNotice('')
@@ -148,7 +157,7 @@ export function LibraryPage({
             type="button"
             className="action-button"
             onClick={refresh}
-            disabled={state.status === 'loading' || formOpen}
+            disabled={state.status === 'loading' || formOpen || detailBusy}
           >
             Actualizar biblioteca
           </button>
@@ -191,8 +200,13 @@ export function LibraryPage({
         />
       ) : selected && selectedAlbum ? (
         <AlbumSummary
+          key={selected.id}
           album={selectedAlbum}
           entry={selected}
+          library={library}
+          onRatingCommitted={synchronizeRating}
+          busy={detailBusy}
+          onBusyChange={setDetailBusy}
           onBack={() => {
             focusEntry.current = selected.id
             setSelectedId(undefined)

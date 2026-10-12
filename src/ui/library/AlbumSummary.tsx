@@ -1,16 +1,27 @@
 import { useEffect, useRef } from 'react'
 import type { Album } from '../../domain/catalog/schemas'
 import type { LibraryAlbum } from '../../application/library-query'
-import { formatScore, listeningLabels, releaseTypeLabels } from './labels'
+import { listeningLabels, releaseTypeLabels } from './labels'
+import type { MusicLibrary } from '../../application/music-library'
+import { AlbumCover } from './AlbumCover'
+import { AlbumRatingForm } from './AlbumRatingForm'
 
 export function AlbumSummary({
   album,
   entry,
   onBack,
+  library,
+  onRatingCommitted,
+  busy,
+  onBusyChange,
 }: {
   album: Album
   entry: LibraryAlbum
   onBack: () => void
+  library: MusicLibrary
+  onRatingCommitted: () => Promise<void>
+  busy: boolean
+  onBusyChange: (busy: boolean) => void
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -18,16 +29,20 @@ export function AlbumSummary({
   }, [entry.id])
   return (
     <section className="album-summary" aria-labelledby="album-summary-title">
-      <button type="button" className="text-button mb-6" onClick={onBack}>
+      <button
+        type="button"
+        className="text-button mb-6"
+        disabled={busy}
+        onClick={onBack}
+      >
         Volver a biblioteca
       </button>
       <div className="album-summary-grid">
-        <div className="album-art" aria-hidden="true">
-          <div className="album-disc">
-            <span className="album-disc-center" />
-          </div>
-          <span className="album-initial">{Array.from(album.title)[0]}</span>
-        </div>
+        <AlbumCover
+          key={album.coverUrl ?? album.id}
+          title={album.title}
+          {...(album.coverUrl ? { url: album.coverUrl } : {})}
+        />
         <div className="min-w-0">
           <p className="mb-4 text-xs tracking-widest text-accent-text uppercase">
             En tu biblioteca
@@ -56,14 +71,6 @@ export function AlbumSummary({
               <dt className="text-muted">Escucha</dt>
               <dd>{listeningLabels[entry.listeningStatus]}</dd>
             </div>
-            <div>
-              <dt className="text-muted">Nota</dt>
-              <dd>
-                {entry.score === undefined
-                  ? 'Sin nota'
-                  : `${formatScore(entry.score)} / 10`}
-              </dd>
-            </div>
           </dl>
           {album.description ? (
             <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed wrap-anywhere">
@@ -80,6 +87,14 @@ export function AlbumSummary({
               Abrir enlace de portada
             </a>
           ) : null}
+          <AlbumRatingForm
+            key={entry.id}
+            entryId={entry.id}
+            score={entry.score}
+            library={library}
+            onCommitted={onRatingCommitted}
+            onBusyChange={onBusyChange}
+          />
         </div>
       </div>
     </section>
