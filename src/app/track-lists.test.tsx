@@ -19,7 +19,7 @@ import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import { LocalStorageError } from '../infrastructure/db/errors'
 import { MusicLibrary } from '../application/music-library'
-import { trackListToken } from '../application/track-lists'
+import { trackListRows, trackListToken } from '../application/track-lists'
 import { App } from './App'
 
 let indexedDB: IDBFactory, databases: AuditoriumDatabase[]
@@ -144,6 +144,12 @@ test('edición confirmada con lectura fallida se recupera sin crear una segunda 
 test('crear edición copia original y permite metadatos incompletos sin duplicar álbum', async () => {
   const repository = await open(),
     before = await repository.readSnapshot()
+  // IDs de aparición en orden inverso: el array físico no define la lista.
+  vi.spyOn(globalThis.crypto, 'randomUUID')
+    .mockReturnValueOnce('00000000-0000-4000-8000-000000000900')
+    .mockReturnValueOnce('00000000-0000-4000-8000-000000000903')
+    .mockReturnValueOnce('00000000-0000-4000-8000-000000000902')
+    .mockReturnValueOnce('00000000-0000-4000-8000-000000000901')
   fireEvent.click(screen.getByRole('button', { name: 'Nueva edición' }))
   change('Nombre de edición', 'Deluxe ficticia')
   change('Formato de edición', 'cd')
@@ -153,13 +159,17 @@ test('crear edición copia original y permite metadatos incompletos sin duplicar
     release = after.catalog.releases.at(-1)!
   expect(release).not.toHaveProperty('releaseYear')
   expect(
-    after.catalog.releaseTracks
-      .filter((row) => row.releaseId === release.id)
-      .map((row) => row.trackId),
+    trackListRows(after.catalog, ids.album, release.id).map((row) => ({
+      trackId: row.trackId,
+      discNumber: row.discNumber,
+      trackNumber: row.trackNumber,
+    })),
   ).toEqual(
-    before.catalog.coreTracks
-      .filter((row) => row.albumId === ids.album)
-      .map((row) => row.trackId),
+    trackListRows(before.catalog, ids.album).map((row) => ({
+      trackId: row.trackId,
+      discNumber: row.discNumber,
+      trackNumber: row.trackNumber,
+    })),
   )
   expect(after.catalog.albums).toEqual(before.catalog.albums)
   expect(after.library).toEqual(before.library)
