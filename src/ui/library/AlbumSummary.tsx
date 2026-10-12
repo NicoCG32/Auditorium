@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import type { Album } from '../../domain/catalog/schemas'
+import type { Album, Catalog } from '../../domain/catalog/schemas'
 import type { LibraryAlbum } from '../../application/library-query'
 import { releaseTypeLabels } from './labels'
 import type { MusicLibrary } from '../../application/music-library'
@@ -8,6 +8,7 @@ import { AlbumRatingForm } from './AlbumRatingForm'
 import { AlbumExperienceForm } from './AlbumExperienceForm'
 import type { UserAlbum } from '../../domain/library/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
+import { AlbumTrackLists } from './AlbumTrackLists'
 
 export function AlbumSummary({
   album,
@@ -19,6 +20,7 @@ export function AlbumSummary({
   onBusyChange,
   personalEntry,
   onExperienceCommitted,
+  catalog,
 }: {
   album: Album
   entry: LibraryAlbum
@@ -29,6 +31,7 @@ export function AlbumSummary({
   onBusyChange: (busy: boolean) => void
   personalEntry: UserAlbum
   onExperienceCommitted: () => Promise<LocalSnapshot>
+  catalog: Catalog
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -101,6 +104,14 @@ export function AlbumSummary({
           />
         </div>
       </div>
+      <AlbumTrackLists
+        albumId={album.id}
+        catalog={catalog}
+        library={library}
+        blocked={busy}
+        onBusyChange={onBusyChange}
+        onCommitted={onExperienceCommitted}
+      />
       <AlbumExperienceForm
         key={personalEntry.id}
         entry={personalEntry}

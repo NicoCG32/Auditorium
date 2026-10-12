@@ -63,6 +63,46 @@
 }
 
 @layer components {
+  .track-lists-panel {
+    margin-block-start: 2rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--border);
+  }
+  .track-lists-panel select,
+  .track-lists-panel input:not([type='checkbox']) {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 2.75rem;
+    margin-block-start: 0.5rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--muted);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 1rem;
+  }
+  .track-fields {
+    display: grid;
+    gap: 1rem;
+    min-inline-size: 0;
+  }
+  .track-draft {
+    min-inline-size: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+  }
+  .track-list-row {
+    display: grid;
+    grid-template-columns: 3rem minmax(0, 1fr);
+    gap: 0.75rem;
+    padding-block: 0.75rem;
+    border-block-end: 1px solid var(--border);
+  }
+  @media (min-width: 40rem) {
+    .track-fields {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
   .experience-panel {
     margin-block-start: 2rem;
     padding-block-start: 1.5rem;

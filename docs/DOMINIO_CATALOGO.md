@@ -36,7 +36,7 @@ Los schemas de `schemas.ts` comprueban una entidad o una estructura: campos, for
 | wrong_album            | Lista o variante apunta a una pista de otro álbum                            |
 | cyclic_variant         | Autociclo o ciclo indirecto entre variantes                                  |
 
-Las comprobaciones de variantes son iterativas, sin depender de la profundidad de la pila de llamadas. La validación no crea entidades ni decide fusiones. Los casos de uso y las transacciones posteriores deberán aplicar estas reglas antes de guardar cambios.
+Las comprobaciones de variantes son iterativas, sin depender de la profundidad de la pila de llamadas. La validación no crea entidades ni decide fusiones. Los casos de uso y el repositorio transaccional aplican estas reglas antes de guardar cambios.
 
 ## Convenciones
 
@@ -50,6 +50,6 @@ Las comprobaciones de variantes son iterativas, sin depender de la profundidad d
 - `catalogScope` es `personal` en el MVP; compartir requiere una evolución explícita del contrato.
 - Objetos estrictos: campos desconocidos son errores. Propiedad, ratings y escucha no se incorporan al catálogo.
 
-Los fixtures son ficticios y se usan únicamente en pruebas. Los modelos todavía no se conectan a la bienvenida ni cargan datos por defecto.
+Los fixtures son ficticios y se usan únicamente en pruebas. La ficha consulta el catálogo guardado y permite editar [listas originales y ediciones](LISTAS_EDICIONES.md). No se cargan datos de ejemplo por defecto.
 
 Referencias: [ADR-002](adr/002-album-edicion-pista.md) y [validación con Zod](https://zod.dev/api).

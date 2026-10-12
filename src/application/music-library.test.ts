@@ -8,6 +8,7 @@ import { libraryIds, times } from '../domain/library/library.fixture'
 import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import { MusicLibrary, MusicUseCaseError } from './music-library'
+import { trackListToken, TrackListConflictError } from './track-lists'
 
 let indexedDB: IDBFactory
 let databases: AuditoriumDatabase[]
@@ -47,6 +48,279 @@ function setup() {
 }
 
 const albumInput = { title: 'Eclipse', artists: [{ name: 'Umbral Eléctrico' }] }
+
+describe('listas originales y ediciones', () => {
+  test('lista original sin edición, copia compartida, bonus y variante persisten sin alterar datos personales', async () => {
+    const { service, repository } = setup()
+    const created = await service.createAlbum(albumInput)
+    const before = await repository.readSnapshot()
+    await service.saveTrackList({
+      albumId: created.album.id,
+      expected: trackListToken(before.catalog, created.album.id),
+      rows: [
+        { track: { title: 'Overture' }, discNumber: 1, trackNumber: 1 },
+        { track: { title: 'Eclipse' }, discNumber: 1, trackNumber: 2 },
+      ],
+    })
+    const original = await repository.readSnapshot()
+    const track = original.catalog.tracks[0]!
+    const release = await service.addRelease({
+      albumId: created.album.id,
+      format: 'cd',
+      editionLabel: 'Deluxe',
+    })
+    const copied = await repository.readSnapshot()
+    const appearances = copied.catalog.releaseTracks
+    expect(appearances.map((row) => row.trackId)).toEqual(
+      original.catalog.coreTracks.map((row) => row.trackId),
+    )
+    await service.saveTrackList({
+      albumId: created.album.id,
+      releaseId: release.id,
+      expected: trackListToken(copied.catalog, created.album.id, release.id),
+      rows: [
+        ...appearances.map((row, index) => ({
+          trackId: row.trackId,
+          occurrenceId: row.id,
+          discNumber: 1,
+          trackNumber: 2 - index,
+        })),
+        {
+          track: {
+            title: 'Eclipse',
+            versionLabel: 'Demo',
+            variantOfTrackId: track.id,
+          },
+          discNumber: 2,
+          trackNumber: 1,
+          contentRole: 'alternate',
+          displayTitleOverride: 'Ensayo ficticio',
+          durationMs: 123456,
+        },
+        {
+          track: { title: 'Umbral extra' },
+          discNumber: 2,
+          trackNumber: 2,
+          contentRole: 'bonus',
+        },
+      ],
+    })
+    const after = await repository.readSnapshot()
+    expect(after.catalog.coreTracks).toEqual(original.catalog.coreTracks)
+    expect(after.catalog.tracks.slice(0, 2)).toEqual(original.catalog.tracks)
+    expect(
+      after.catalog.releaseTracks.slice(0, 2).map((row) => row.id),
+    ).toEqual(appearances.map((row) => row.id))
+    expect(after.catalog.tracks[2]).toMatchObject({
+      variantOfTrackId: track.id,
+      versionLabel: 'Demo',
+    })
+    expect(after.library).toEqual(before.library)
+    repository.close()
+    expect(await setup().repository.readSnapshot()).toEqual(after)
+  })
+  test('editar original no modifica ninguna edición; quitar aparición conserva pista y rating', async () => {
+    const { service, repository } = setup()
+    const created = await originalAlbum(service)
+    await service.rateTrack(created.userAlbum!.id, created.first.track.id, 8)
+    const before = await repository.readSnapshot()
+    await service.saveTrackList({
+      albumId: created.album.id,
+      expected: trackListToken(before.catalog, created.album.id),
+      rows: [],
+    })
+    const after = await repository.readSnapshot()
+    expect(after.catalog.coreTracks).toEqual([])
+    expect(after.catalog.releaseTracks).toEqual(before.catalog.releaseTracks)
+    expect(after.catalog.tracks).toEqual(before.catalog.tracks)
+    expect(after.library).toEqual(before.library)
+  })
+  test.each(
+    [
+      [
+        { track: { title: 'Uno' }, discNumber: 1, trackNumber: 1 },
+        { track: { title: 'Dos' }, discNumber: 1, trackNumber: 1 },
+      ],
+      [{ track: { title: 'Inválida' }, discNumber: 0, trackNumber: 1 }],
+      [{ track: { title: 'Inválida' }, discNumber: 1, trackNumber: 1.5 }],
+      [{ trackId: ids.missing, discNumber: 1, trackNumber: 1 }],
+      [
+        {
+          track: { title: 'Variante', variantOfTrackId: ids.missing },
+          discNumber: 1,
+          trackNumber: 1,
+        },
+      ],
+    ].map((rows) => ({ rows })),
+  )('lista inválida %# no escribe parcialmente', async ({ rows }) => {
+    const { service, repository } = setup()
+    const created = await originalAlbum(service)
+    const before = await repository.readSnapshot()
+    await expect(
+      service.saveTrackList({
+        albumId: created.album.id,
+        releaseId: created.release.id,
+        expected: trackListToken(
+          before.catalog,
+          created.album.id,
+          created.release.id,
+        ),
+        rows,
+      }),
+    ).rejects.toBeInstanceOf(Error)
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+  test('rechaza pista, variante, edición y aparición de otro álbum', async () => {
+    const { service, repository } = setup()
+    const first = await originalAlbum(service),
+      other = await originalAlbum(service)
+    const before = await repository.readSnapshot()
+    for (const fields of [
+      { trackId: other.first.track.id },
+      { track: { title: 'Demo', variantOfTrackId: other.first.track.id } },
+      {
+        trackId: first.first.track.id,
+        occurrenceId: other.first.releaseTrack.id,
+      },
+    ]) {
+      await expect(
+        service.saveTrackList({
+          albumId: first.album.id,
+          releaseId: first.release.id,
+          expected: trackListToken(
+            before.catalog,
+            first.album.id,
+            first.release.id,
+          ),
+          rows: [{ ...fields, discNumber: 1, trackNumber: 1 }],
+        }),
+      ).rejects.toBeInstanceOf(Error)
+    }
+    await expect(
+      service.saveTrackList({
+        albumId: first.album.id,
+        releaseId: other.release.id,
+        expected: trackListToken(
+          before.catalog,
+          first.album.id,
+          other.release.id,
+        ),
+        rows: [],
+      }),
+    ).rejects.toBeInstanceOf(Error)
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+  test('transacción fallida al reemplazar posiciones revierte lista y pistas nuevas', async () => {
+    const { service, repository, database } = setup()
+    const created = await originalAlbum(service)
+    const before = await repository.readSnapshot()
+    const failure = vi
+      .spyOn(database.releaseTracks, 'bulkPut')
+      .mockRejectedValue(
+        new DOMException('Quota ficticia', 'QuotaExceededError'),
+      )
+    const request = {
+      albumId: created.album.id,
+      releaseId: created.release.id,
+      expected: trackListToken(
+        before.catalog,
+        created.album.id,
+        created.release.id,
+      ),
+      rows: [
+        {
+          track: { title: 'Bonus ficticio' },
+          discNumber: 1,
+          trackNumber: 1,
+          contentRole: 'bonus',
+        },
+      ],
+    }
+    await expect(service.saveTrackList(request)).rejects.toMatchObject({
+      code: 'quota_exceeded',
+    })
+    expect(await repository.readSnapshot()).toEqual(before)
+    failure.mockRestore()
+    await service.saveTrackList(request)
+    expect(
+      (await repository.readSnapshot()).catalog.releaseTracks,
+    ).toHaveLength(1)
+  })
+  test('otra conexión invalida el borrador de la misma lista, sin bloquear listas independientes', async () => {
+    const first = setup()
+    const created = await originalAlbum(first.service)
+    const before = await first.repository.readSnapshot()
+    const second = setup()
+    await second.service.saveTrackList({
+      albumId: created.album.id,
+      expected: trackListToken(before.catalog, created.album.id),
+      rows: [],
+    })
+    await first.service.saveTrackList({
+      albumId: created.album.id,
+      releaseId: created.release.id,
+      expected: trackListToken(
+        before.catalog,
+        created.album.id,
+        created.release.id,
+      ),
+      rows: [],
+    })
+    const current = await first.repository.readSnapshot()
+    await expect(
+      first.service.saveTrackList({
+        albumId: created.album.id,
+        expected: trackListToken(before.catalog, created.album.id),
+        rows: [
+          {
+            track: { title: 'Borrador anterior' },
+            discNumber: 1,
+            trackNumber: 1,
+          },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(TrackListConflictError)
+    expect(await first.repository.readSnapshot()).toEqual(current)
+  })
+  test('rechaza IDs repetidos de aparición y atributos de edición en lista original', async () => {
+    const { service, repository } = setup()
+    const created = await originalAlbum(service)
+    const before = await repository.readSnapshot()
+    const row = {
+      trackId: created.first.track.id,
+      occurrenceId: created.first.releaseTrack.id,
+      discNumber: 1,
+      trackNumber: 1,
+    }
+    await expect(
+      service.saveTrackList({
+        albumId: created.album.id,
+        releaseId: created.release.id,
+        expected: trackListToken(
+          before.catalog,
+          created.album.id,
+          created.release.id,
+        ),
+        rows: [row, { ...row, trackNumber: 2 }],
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    await expect(
+      service.saveTrackList({
+        albumId: created.album.id,
+        expected: trackListToken(before.catalog, created.album.id),
+        rows: [
+          {
+            trackId: created.first.track.id,
+            discNumber: 1,
+            trackNumber: 1,
+            contentRole: 'bonus',
+          },
+        ],
+      }),
+    ).rejects.toBeInstanceOf(Error)
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+})
 
 describe('guardar escucha y notas personales', () => {
   test('guarda texto literal y estado juntos, conserva catálogo/notas y persiste al reabrir', async () => {

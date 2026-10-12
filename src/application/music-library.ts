@@ -35,6 +35,7 @@ import {
   type CreateAlbumInput,
 } from './inputs'
 import { albumCandidates, type AlbumCandidate } from './album-candidates'
+import { saveTrackList, saveTrackListInputSchema } from './track-lists'
 
 export class MusicUseCaseError extends Error {
   readonly code: 'missing_reference' | 'wrong_album' | 'outdated_experience'
@@ -293,6 +294,14 @@ export class MusicLibrary {
         result.coreTrack = coreTrack
       }
       return { snapshot, result }
+    })
+  }
+
+  async saveTrackList(input: unknown): Promise<void> {
+    const request = saveTrackListInputSchema.parse(input)
+    await this.repository.mutate((snapshot) => {
+      snapshot.catalog = saveTrackList(snapshot.catalog, request, this.createId)
+      return { snapshot, result: undefined }
     })
   }
 
