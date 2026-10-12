@@ -86,6 +86,13 @@ export const libraryChangeSchema = z.discriminatedUnion('type', [
     listeningStatus: listeningStatusSchema,
     updatedAt: utcTimestampSchema,
   }),
+  z.strictObject({
+    type: z.literal('set_personal_experience'),
+    ...target,
+    listeningStatus: listeningStatusSchema,
+    personalNotes: userAlbumSchema.shape.personalNotes,
+    updatedAt: utcTimestampSchema,
+  }),
 ])
 
 export type UserAlbum = z.output<typeof userAlbumSchema>

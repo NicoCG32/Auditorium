@@ -31,13 +31,17 @@ import {
   addTrackInputSchema,
   createAlbumInputSchema,
   manualAlbumInputSchema,
+  personalExperienceInputSchema,
   type CreateAlbumInput,
 } from './inputs'
 import { albumCandidates, type AlbumCandidate } from './album-candidates'
 
 export class MusicUseCaseError extends Error {
-  readonly code: 'missing_reference' | 'wrong_album'
-  constructor(code: 'missing_reference' | 'wrong_album', message: string) {
+  readonly code: 'missing_reference' | 'wrong_album' | 'outdated_experience'
+  constructor(
+    code: 'missing_reference' | 'wrong_album' | 'outdated_experience',
+    message: string,
+  ) {
     super(message)
     this.name = 'MusicUseCaseError'
     this.code = code
@@ -300,6 +304,53 @@ export class MusicLibrary {
         change,
       )
       return { snapshot, result: undefined }
+    })
+  }
+
+  async updatePersonalExperience(
+    userAlbumId: unknown,
+    input: unknown,
+  ): Promise<UserAlbum> {
+    const id = entityIdSchema.parse(userAlbumId)
+    const request = personalExperienceInputSchema.parse(input)
+    const updatedAt = this.now().toISOString()
+    return this.repository.mutate((snapshot) => {
+      const current = snapshot.library.userAlbums.find(
+        (entry) => entry.id === id,
+      )
+      if (
+        current &&
+        request.expected &&
+        (current.updatedAt !== request.expected.updatedAt ||
+          current.listeningStatus !== request.expected.listeningStatus ||
+          current.personalNotes !== request.expected.personalNotes)
+      )
+        throw new MusicUseCaseError(
+          'outdated_experience',
+          'La experiencia cambió después de leerla.',
+        )
+      snapshot.library = applyLibraryChange(
+        { catalog: snapshot.catalog, localUserId: snapshot.identity.userId },
+        snapshot.library,
+        {
+          type: 'set_personal_experience',
+          userAlbumId: id,
+          listeningStatus: request.listeningStatus,
+          updatedAt,
+          ...(request.personalNotes === undefined
+            ? {}
+            : { personalNotes: request.personalNotes }),
+        },
+      )
+      const updated = snapshot.library.userAlbums.find(
+        (entry) => entry.id === id,
+      )
+      if (!updated)
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'No existe la entrada personal.',
+        )
+      return { snapshot, result: updated }
     })
   }
 

@@ -100,6 +100,20 @@ export function applyLibraryChange(
   }
 
   switch (change.type) {
+    case 'set_personal_experience':
+      library.userAlbums = library.userAlbums.map((row) => {
+        if (row.id !== entry.id) return row
+        const updated = {
+          ...row,
+          listeningStatus: change.listeningStatus,
+          updatedAt: change.updatedAt,
+        }
+        delete updated.personalNotes
+        if (change.personalNotes !== undefined)
+          updated.personalNotes = change.personalNotes
+        return updated
+      })
+      break
     case 'set_listening_status':
       library.userAlbums = library.userAlbums.map((row) =>
         row.id === entry.id

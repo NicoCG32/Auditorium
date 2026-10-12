@@ -1,10 +1,13 @@
 import { useEffect, useRef } from 'react'
 import type { Album } from '../../domain/catalog/schemas'
 import type { LibraryAlbum } from '../../application/library-query'
-import { listeningLabels, releaseTypeLabels } from './labels'
+import { releaseTypeLabels } from './labels'
 import type { MusicLibrary } from '../../application/music-library'
 import { AlbumCover } from './AlbumCover'
 import { AlbumRatingForm } from './AlbumRatingForm'
+import { AlbumExperienceForm } from './AlbumExperienceForm'
+import type { UserAlbum } from '../../domain/library/schemas'
+import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 
 export function AlbumSummary({
   album,
@@ -14,6 +17,8 @@ export function AlbumSummary({
   onRatingCommitted,
   busy,
   onBusyChange,
+  personalEntry,
+  onExperienceCommitted,
 }: {
   album: Album
   entry: LibraryAlbum
@@ -22,6 +27,8 @@ export function AlbumSummary({
   onRatingCommitted: () => Promise<void>
   busy: boolean
   onBusyChange: (busy: boolean) => void
+  personalEntry: UserAlbum
+  onExperienceCommitted: () => Promise<LocalSnapshot>
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -67,10 +74,6 @@ export function AlbumSummary({
               <dt className="text-muted">Año original</dt>
               <dd>{album.originalYear ?? 'Sin registrar'}</dd>
             </div>
-            <div>
-              <dt className="text-muted">Escucha</dt>
-              <dd>{listeningLabels[entry.listeningStatus]}</dd>
-            </div>
           </dl>
           {album.description ? (
             <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed wrap-anywhere">
@@ -94,9 +97,18 @@ export function AlbumSummary({
             library={library}
             onCommitted={onRatingCommitted}
             onBusyChange={onBusyChange}
+            blocked={busy}
           />
         </div>
       </div>
+      <AlbumExperienceForm
+        key={personalEntry.id}
+        entry={personalEntry}
+        library={library}
+        blocked={busy}
+        onCommitted={onExperienceCommitted}
+        onBusyChange={onBusyChange}
+      />
     </section>
   )
 }

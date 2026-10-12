@@ -48,6 +48,121 @@ function setup() {
 
 const albumInput = { title: 'Eclipse', artists: [{ name: 'Umbral Eléctrico' }] }
 
+describe('guardar escucha y notas personales', () => {
+  test('guarda texto literal y estado juntos, conserva catálogo/notas y persiste al reabrir', async () => {
+    const { service, repository } = setup()
+    const album = await originalAlbum(service)
+    if (!album.userAlbum) throw new Error('Falta entrada ficticia.')
+    await service.rateAlbum(album.userAlbum.id, 9.5)
+    await service.rateTrack(album.userAlbum.id, album.first.track.id, 8)
+    const before = await repository.readSnapshot()
+    const updated = await service.updatePersonalExperience(album.userAlbum.id, {
+      listeningStatus: 'completed',
+      personalNotes: '  Recuerdo ficticio.\nSegunda línea.  ',
+    })
+    expect(updated).toMatchObject({
+      listeningStatus: 'completed',
+      personalNotes: '  Recuerdo ficticio.\nSegunda línea.  ',
+    })
+    const after = await repository.readSnapshot()
+    expect(after.catalog).toEqual(before.catalog)
+    expect(after.library.albumRatings).toEqual(before.library.albumRatings)
+    expect(after.library.trackRatings).toEqual(before.library.trackRatings)
+    repository.close()
+    expect(await setup().repository.readSnapshot()).toEqual(after)
+  })
+  test.each(['', ' \n\t '])(
+    'nota vacía %s se omite sin alterar ratings',
+    async (personalNotes) => {
+      const { service, repository } = setup()
+      const created = await service.createAlbum(albumInput)
+      if (!created.userAlbum) throw new Error('Falta entrada ficticia.')
+      await service.updatePersonalExperience(created.userAlbum.id, {
+        listeningStatus: 'queued',
+        personalNotes: 'Comentario ficticio',
+      })
+      await service.updatePersonalExperience(created.userAlbum.id, {
+        listeningStatus: 'queued',
+        personalNotes,
+      })
+      expect(
+        (await repository.readSnapshot()).library.userAlbums[0],
+      ).not.toHaveProperty('personalNotes')
+    },
+  )
+  test('rechaza estado inválido y campos de propiedad antes de escribir', async () => {
+    const { service, repository } = setup()
+    const created = await service.createAlbum(albumInput)
+    if (!created.userAlbum) throw new Error('Falta entrada ficticia.')
+    const before = await repository.readSnapshot()
+    await expect(
+      service.updatePersonalExperience(created.userAlbum.id, {
+        listeningStatus: 'owned',
+        personalNotes: 'Ficticio',
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    await expect(
+      service.updatePersonalExperience(created.userAlbum.id, {
+        listeningStatus: 'completed',
+        owned: true,
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    await expect(
+      service.updatePersonalExperience(ids.missing, {
+        listeningStatus: 'completed',
+      }),
+    ).rejects.toMatchObject({ rule: 'missing_reference' })
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+  test('un fallo al guardar revierte ambas partes y la nota anterior', async () => {
+    const { service, repository, database } = setup()
+    const created = await service.createAlbum(albumInput)
+    if (!created.userAlbum) throw new Error('Falta entrada ficticia.')
+    await service.updatePersonalExperience(created.userAlbum.id, {
+      listeningStatus: 'queued',
+      personalNotes: 'Comentario anterior ficticio',
+    })
+    const before = await repository.readSnapshot()
+    const failure = vi
+      .spyOn(database.userAlbums, 'bulkPut')
+      .mockRejectedValue(
+        new DOMException('Quota ficticia', 'QuotaExceededError'),
+      )
+    await expect(
+      service.updatePersonalExperience(created.userAlbum.id, {
+        listeningStatus: 'completed',
+        personalNotes: 'No debe quedar',
+      }),
+    ).rejects.toMatchObject({ code: 'quota_exceeded' })
+    failure.mockRestore()
+    repository.close()
+    expect(await setup().repository.readSnapshot()).toEqual(before)
+  })
+  test('otra conexión no puede perder notas con el mismo timestamp usando un borrador anterior', async () => {
+    const first = setup(),
+      second = setup()
+    const created = await first.service.createAlbum(albumInput)
+    if (!created.userAlbum) throw new Error('Falta entrada ficticia.')
+    const expected = {
+      listeningStatus: created.userAlbum.listeningStatus,
+      updatedAt: created.userAlbum.updatedAt,
+    }
+    await first.service.updatePersonalExperience(created.userAlbum.id, {
+      listeningStatus: 'completed',
+      personalNotes: 'Actualización desde otra conexión',
+    })
+    const before = await first.repository.readSnapshot()
+    await expect(
+      second.service.updatePersonalExperience(created.userAlbum.id, {
+        listeningStatus: 'queued',
+        personalNotes: 'Borrador anterior',
+        expected,
+      }),
+    ).rejects.toMatchObject({ code: 'outdated_experience' })
+    expect(await second.repository.readSnapshot()).toEqual(before)
+  })
+})
+
 describe('registro manual con revisión de coincidencias', () => {
   test('artista y título crean una entrada con tipo álbum y sin metadatos inventados', async () => {
     const { service, repository } = setup()

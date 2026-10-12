@@ -27,6 +27,7 @@ El carmesí profundo se reserva para fondos y decoración. El gris secundario se
 - Sin animaciones continuas; las transiciones se desactivan con `prefers-reduced-motion`.
 - Decoración de vinilo en CSS, marcada como decorativa para lectores de pantalla. La ficha permite mostrar una URL de portada guardada por acción explícita; no se distribuyen carátulas ajenas.
 - Controles de búsqueda, escucha, nota, orden y vista operativos sobre la biblioteca guardada. Registro manual con validación, revisión de duplicados y ficha con metadatos y valoración. Errores de escritura y lectura con reintento y foco accesible.
+- Editor separado de experiencia personal, con estado de escucha y comentario multilínea. Una operación de detalle bloquea los otros editores hasta guardar y actualizar la ficha; los conflictos conservan el borrador para su revisión.
 - Estados separados de carga, vacío, sin coincidencias y error con reintento. Ver [consulta de biblioteca](CONSULTA_BIBLIOTECA.md).
 
 El tema oscuro es el único implementado actualmente. Las variables permiten incorporar otros temas más adelante; no se implementa todavía selector de tema ni persistencia de preferencias.

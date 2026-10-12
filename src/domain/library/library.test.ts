@@ -16,7 +16,87 @@ import {
   userAlbumSchema,
   type LibraryInput,
   type LibraryChange,
+  listeningStatusSchema,
 } from './schemas'
+
+describe('experiencia personal independiente', () => {
+  test.each(
+    listeningStatusSchema.options.flatMap((from) =>
+      listeningStatusSchema.options.map((to) => [from, to] as const),
+    ),
+  )('transición directa %s a %s conserva calificaciones', (from, to) => {
+    const original = makeLibrary()
+    original.userAlbums = original.userAlbums.map((entry) =>
+      entry.id === libraryIds.entry
+        ? { ...entry, listeningStatus: from }
+        : entry,
+    )
+    const before = structuredClone(original)
+    const result = applyLibraryChange(makeContext(), original, {
+      type: 'set_personal_experience',
+      userAlbumId: libraryIds.entry,
+      listeningStatus: to,
+      personalNotes: '  Impresión ficticia.\nSegunda línea.  ',
+      updatedAt: times.later,
+    })
+    expect(
+      result.userAlbums.find((entry) => entry.id === libraryIds.entry),
+    ).toMatchObject({
+      listeningStatus: to,
+      personalNotes: '  Impresión ficticia.\nSegunda línea.  ',
+      updatedAt: times.later,
+    })
+    expect(result.albumRatings).toEqual(before.albumRatings)
+    expect(result.trackRatings).toEqual(before.trackRatings)
+    expect(
+      result.userAlbums.find((entry) => entry.id === libraryIds.otherEntry),
+    ).toEqual(
+      before.userAlbums.find((entry) => entry.id === libraryIds.otherEntry),
+    )
+    expect(original).toEqual(before)
+  })
+  test('omitir notas elimina exclusivamente el comentario personal', () => {
+    const original = makeLibrary()
+    const result = applyLibraryChange(makeContext(), original, {
+      type: 'set_personal_experience',
+      userAlbumId: libraryIds.entry,
+      listeningStatus: 'queued',
+      updatedAt: times.later,
+    })
+    expect(
+      result.userAlbums.find((entry) => entry.id === libraryIds.entry),
+    ).not.toHaveProperty('personalNotes')
+    expect(result.albumRatings).toEqual(original.albumRatings)
+    expect(result.trackRatings).toEqual(original.trackRatings)
+  })
+  test('rechaza escritura desactualizada o entrada inactiva sin modificar la biblioteca', () => {
+    const original = makeLibrary(),
+      before = structuredClone(original)
+    expect(() =>
+      applyLibraryChange(makeContext(), original, {
+        type: 'set_personal_experience',
+        userAlbumId: libraryIds.entry,
+        listeningStatus: 'completed',
+        updatedAt: times.earlier,
+      }),
+    ).toThrow(LibraryChangeError)
+    const historical = structuredClone(original)
+    historical.userAlbums = historical.userAlbums.map((entry) =>
+      entry.id === libraryIds.entry
+        ? { ...entry, deletedAt: times.updated }
+        : entry,
+    )
+    expect(() =>
+      applyLibraryChange(makeContext(), historical, {
+        type: 'set_personal_experience',
+        userAlbumId: libraryIds.entry,
+        listeningStatus: 'completed',
+        updatedAt: times.later,
+      }),
+    ).toThrow(LibraryChangeError)
+    expect(original).toEqual(before)
+  })
+})
 
 function expectRule(input: LibraryInput, rule: LibraryRule) {
   const result = createLibrarySchema(makeContext()).safeParse(input)

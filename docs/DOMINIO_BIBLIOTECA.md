@@ -34,13 +34,14 @@ Por ejemplo, 9,5 se representa como 19; 9,3 es inválido. Quitar una calificaci�
 
 `applyLibraryChange(context, library, change)` valida el estado inicial y el cambio, crea una copia y devuelve un snapshot nuevamente validado. No modifica el argumento, el catálogo ni una base de datos.
 
-| Tipo de cambio       | Resultado                                 |
-| -------------------- | ----------------------------------------- |
-| set_album_rating     | Crea o reemplaza solo la nota del álbum   |
-| set_track_rating     | Crea o reemplaza solo la nota de la pista |
-| remove_album_rating  | Quita solo la nota del álbum              |
-| remove_track_rating  | Quita solo la nota de la pista            |
-| set_listening_status | Cambia escucha y fecha de esa entrada     |
+| Tipo de cambio          | Resultado                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------ |
+| set_album_rating        | Crea o reemplaza solo la nota del álbum                                              |
+| set_track_rating        | Crea o reemplaza solo la nota de la pista                                            |
+| remove_album_rating     | Quita solo la nota del álbum                                                         |
+| remove_track_rating     | Quita solo la nota de la pista                                                       |
+| set_listening_status    | Cambia escucha y fecha de esa entrada                                                |
+| set_personal_experience | Cambia escucha, comentario y fecha juntos; comentario omitido elimina solo ese campo |
 
 Una entrada ausente o dada de baja no admite cambios. Las operaciones sobre pistas comprueban pertenencia incluso si se intenta quitar una nota ausente. Quitar una nota ya ausente es idempotente sobre un destino válido.
 
@@ -50,10 +51,10 @@ Los estados `untracked`, `queued`, `in_progress` y `completed` admiten todas las
 
 - Fechas UTC con milisegundos, formato `YYYY-MM-DDTHH:mm:ss.sssZ`, recibidas explícitamente del llamador. Se comprueba validez real de fecha y orden temporal.
 - `updatedAt` de entrada no precede a `addedAt`; una baja debe estar entre ambas fechas. Una nota no puede preceder al alta de la entrada.
-- Un cambio fechado no sobrescribe una actualización posterior del mismo destino. La gestión de concurrencia persistente y sincronización se implementará en sus hitos.
+- Un cambio fechado no sobrescribe una actualización posterior del mismo destino. Las transacciones serializan cambios locales y el editor de experiencia puede comprobar su referencia anterior mediante `expected`; la sincronización remota pertenece a sus siguientes hitos.
 - UUID y referencias se normalizan a minúsculas mediante el scalar compartido con catálogo.
 - Las notas personales preservan espacios y saltos de línea; una nota formada solo por blancos debe omitirse. Los opcionales ausentes se omiten, sin null.
 - Objetos estrictos rechazan campos de otros modelos.
 - Errores de schema: issues Zod con ruta y, para relaciones, `params.rule`. Cambios sobre destino ausente, inactivo, pista ajena o actualización antigua: `LibraryChangeError` con `rule`.
 
-Estas funciones expresan reglas del dominio. Los casos de uso posteriores deberán aplicarlas dentro de las transacciones correspondientes y tratar los errores de almacenamiento. Las pruebas usan únicamente datos ficticios; la bienvenida sigue sin cargar una colección.
+Estas funciones expresan reglas del dominio y `MusicLibrary` las aplica dentro de transacciones, preservando sus errores y los del almacenamiento. La interfaz consulta y modifica la biblioteca local según sus casos de uso. Las pruebas usan únicamente datos ficticios.
