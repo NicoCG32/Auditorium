@@ -1,0 +1,18 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 480 480"
+  role="img"
+  aria-labelledby="title"
+>
+  <title id="title">Portada ficticia para pruebas</title>
+  <rect width="480" height="480" fill="#1b1b20" />
+  <circle cx="310" cy="170" r="100" fill="#8e1522" />
+  <path d="M0 370 190 130 480 480H0Z" fill="#0c0c0e" />
+  <path d="M0 410 190 230 370 480H0Z" fill="#38383f" />
+  <path
+    d="M36 36H180M36 36V180M444 300V444H300"
+    fill="none"
+    stroke="#c8beb0"
+    stroke-width="6"
+  />
+</svg>

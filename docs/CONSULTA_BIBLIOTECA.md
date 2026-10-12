@@ -18,7 +18,7 @@ La lectura comienza al montar la aplicación. «Actualizar biblioteca» vuelve a
 
 La biblioteca vacía ofrece «Añadir tu primer álbum», conectado al [registro manual](REGISTRO_MANUAL.md). La búsqueda sin resultados ofrece «Mostrar todos los álbumes», que limpia sus criterios. Los errores presentan un mensaje comprensible y una acción para reintentar, sin exponer excepciones ni datos personales.
 
-LIB-02 incorpora el formulario manual y una ficha básica de lectura, que se abre desde el título de una tarjeta o al usar un registro existente. Al guardar, la biblioteca se actualiza automáticamente y se limpian los criterios para mostrar la entrada nueva. La edición de calificaciones y ampliación de ficha corresponden a LIB-03. Los filtros de propiedad/formato llegarán cuando existan ejemplares.
+LIB-02 incorpora el formulario manual; LIB-03 amplía la [ficha y valoración](FICHA_ALBUM.md), abierta desde el título de una tarjeta o al usar un registro existente. Al registrar un álbum, la biblioteca se actualiza automáticamente y se limpian los criterios para mostrar la entrada nueva. Cambiar una nota actualiza los resultados conservando los filtros. Los filtros de propiedad/formato llegarán cuando existan ejemplares.
 
 Las preferencias de búsqueda y vista duran mientras la pantalla permanezca montada. No hay suscripción automática a cambios entre pestañas; actualizar o recargar lee el estado vigente. La apertura puede crear la identidad de una base nueva, pero las consultas no escriben registros musicales.
 

@@ -55,6 +55,6 @@ Las pruebas de integración usan IndexedDB simulado y datos ficticios para el fl
 
 El adaptador prioriza integridad leyendo y validando un snapshot completo; persiste únicamente las diferencias. Consultas y scopes más acotados podrán incorporarse si las mediciones de colecciones grandes lo requieren, manteniendo las reglas y sus pruebas.
 
-El esquema permanece en v1 porque las tablas no cambian. Consulta y registro manual ya usan el núcleo local; los editores de calificaciones, ejemplares y deseos pertenecen a sus próximos hitos. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
+El esquema permanece en v1 porque las tablas no cambian. Consulta, registro manual y valoración del álbum ya usan el núcleo local; calificaciones de pistas, ejemplares y deseos pertenecen a sus próximos hitos. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
 
 Referencia: [transacciones de Dexie](<https://dexie.org/docs/Dexie/Dexie.transaction()>).
