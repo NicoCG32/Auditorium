@@ -89,6 +89,7 @@ export const libraryChangeSchema = z.discriminatedUnion('type', [
 ])
 
 export type UserAlbum = z.output<typeof userAlbumSchema>
+export type ListeningStatus = z.output<typeof listeningStatusSchema>
 export type AlbumRating = z.output<typeof albumRatingSchema>
 export type TrackRating = z.output<typeof trackRatingSchema>
 export type Library = z.output<typeof libraryDataSchema>

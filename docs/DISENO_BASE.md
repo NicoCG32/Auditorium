@@ -21,12 +21,13 @@ El carmesí profundo se reserva para fondos y decoración. El gris secundario se
 
 ## Interacción y adaptación
 
-- Diseño de una columna en móvil y dos en escritorio, sin anchos fijos de contenido.
+- Biblioteca con cuadrícula adaptable de una a cuatro columnas y vista de lista, sin anchos fijos de contenido.
 - Enlace «Ir al contenido» visible al recibir foco; destino principal identificable.
 - Foco visible de tres píxeles y enlaces con área de al menos 44 píxeles de alto.
 - Sin animaciones continuas; las transiciones se desactivan con `prefers-reduced-motion`.
-- Decoración de vinilo en CSS, marcada como decorativa para lectores de pantalla, sin portadas ajenas.
-- No mostrar controles de funciones pendientes. La bienvenida comunica que la biblioteca está en preparación.
+- Decoración de vinilo en CSS, marcada como decorativa para lectores de pantalla, sin portadas ajenas ni cargas remotas.
+- Controles de búsqueda, escucha, nota, orden y vista operativos sobre la biblioteca guardada. Registro manual y ficha pertenecen a sus siguientes hitos.
+- Estados separados de carga, vacío, sin coincidencias y error con reintento. Ver [consulta de biblioteca](CONSULTA_BIBLIOTECA.md).
 
 El tema oscuro es el único implementado actualmente. Las variables permiten incorporar otros temas más adelante; no se implementa todavía selector de tema ni persistencia de preferencias.
 
