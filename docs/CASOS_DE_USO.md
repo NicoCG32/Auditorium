@@ -4,16 +4,17 @@ DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/appli
 
 ## Operaciones
 
-| Caso de uso                           | Resultado                                                                                              |
-| ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| createAlbum                           | Crea álbum, créditos, artistas nuevos indicados y, por defecto, entrada personal en una operación      |
-| registerAlbum                         | Devuelve coincidencias para revisión o crea álbum y relación personal tras la decisión explícita       |
-| addAlbumToLibrary                     | Crea una entrada activa o devuelve la existente sin alterar notas o fechas                             |
-| addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria             |
-| addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada                  |
-| rateAlbum / rateTrack                 | Guarda la nota visible validada como unidades enteras, independientemente                              |
-| removeAlbumRating / removeTrackRating | Quita exclusivamente la nota seleccionada                                                              |
-| updatePersonalExperience              | Guarda escucha y comentario juntos; opcionalmente rechaza una referencia de experiencia desactualizada |
+| Caso de uso                           | Resultado                                                                                               |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| createAlbum                           | Crea álbum, créditos, artistas nuevos indicados y, por defecto, entrada personal en una operación       |
+| registerAlbum                         | Devuelve coincidencias para revisión o crea álbum y relación personal tras la decisión explícita        |
+| addAlbumToLibrary                     | Crea una entrada activa o devuelve la existente sin alterar notas o fechas                              |
+| addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria              |
+| addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada                   |
+| saveTrackList                         | Guarda la lista original o la de una edición como lote validado, con referencia inicial de concurrencia |
+| rateAlbum / rateTrack                 | Guarda la nota visible validada como unidades enteras, independientemente                               |
+| removeAlbumRating / removeTrackRating | Quita exclusivamente la nota seleccionada                                                               |
+| updatePersonalExperience              | Guarda escucha y comentario juntos; opcionalmente rechaza una referencia de experiencia desactualizada  |
 
 Todos devuelven promesas que se resuelven después de completar la transacción. Las entradas inválidas se rechazan conservando el detalle de validación.
 
@@ -28,6 +29,8 @@ Todos devuelven promesas que se resuelven después de completar la transacción.
 `addTrackToRelease` recibe una edición, disco y posición. Para reutilizar indica `trackId`; para crear indica `track` con título y metadatos opcionales de variante. Ambas opciones son excluyentes. Una pista debe pertenecer al álbum de la edición. `corePosition`, si se especifica, añade también una aparición a la lista original; añadir un bonus a una reedición no modifica esa lista automáticamente.
 
 Los consumidores deben ordenar las listas por disco/posición; el orden de los arrays del snapshot no sustituye sus campos de orden.
+
+`saveTrackList` reemplaza las apariciones de una única lista, conservando pistas y datos personales. Valida referencias y posiciones finales y rechaza una lista desactualizada dentro de la transacción. Permite guardar intercambios de posición sin estados intermedios visibles. Ver [listas originales y ediciones](LISTAS_EDICIONES.md).
 
 ## Transacción e integridad
 
