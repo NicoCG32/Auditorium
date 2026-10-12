@@ -4,7 +4,7 @@ DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contr
 
 ## Apertura e identidad
 
-`IndexedDbRepository` implementa `LocalRepository`, contrato del dominio con `open`, `readSnapshot` y `close`. El dominio no importa Dexie ni depende de IndexedDB.
+`IndexedDbRepository` implementa `TransactionalLocalRepository`, que extiende el contrato del dominio `LocalRepository` con `mutate`, además de `open`, `readSnapshot` y `close`. El dominio no importa Dexie ni depende de IndexedDB.
 
 `open()` comprueba la versión y estructura nativas antes de permitir la apertura con Dexie. Un esquema más reciente o incompatible genera un error. La primera creación de tablas corresponde a la versión declarada, sin reparaciones automáticas de una base existente.
 
@@ -30,13 +30,13 @@ Nombre predeterminado: `auditorium`. Versión lógica: 1. Se materializan única
 | albumRatings  | entrada personal como clave primaria                                    |
 | trackRatings  | entrada personal/pista como clave primaria; pista                       |
 
-IndexedDB no ofrece claves foráneas. Los validadores de dominio comprueban las referencias; las escrituras posteriores deberán hacerlo dentro de transacciones. Los índices únicos complementan esas reglas.
+IndexedDB no ofrece claves foráneas. Los validadores de dominio comprueban las referencias antes de escribir dentro de la transacción. Los índices únicos complementan esas reglas.
 
 ### Unicidad activa
 
 El registro almacenado de UserAlbum incluye `activeAlbumKey`, derivado de usuario y álbum cuando está activo. Una entrada dada de baja guarda null, que no participa en ese índice. Así pueden coexistir históricos y una sola entrada activa.
 
-`toStoredUserAlbum` valida y calcula el índice; `fromStoredUserAlbum` comprueba su coherencia y lo separa del modelo de dominio. El campo técnico no se incorpora a la biblioteca ni a sus calificaciones. Las escrituras de biblioteca deberán usar este mapper, junto con la validación de dominio.
+`toStoredUserAlbum` valida y calcula el índice; `fromStoredUserAlbum` comprueba su coherencia y lo separa del modelo de dominio. El campo técnico no se incorpora a la biblioteca ni a sus calificaciones. Las escrituras de biblioteca usan este mapper, junto con la validación de dominio.
 
 ## Snapshot y errores
 
@@ -53,6 +53,8 @@ No borrar, vaciar o recrear automáticamente la base ante un fallo. No registrar
 La definición `SCHEMA_V1` queda como historial inmutable. Los futuros cambios requerirán otra versión y, cuando afecten datos, migraciones explícitas y probadas. Esta es la primera versión publicada del esquema; no se inventan migraciones entre versiones que todavía no existen.
 
 Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reapertura, seis conexiones simultáneas, snapshots, claves únicas, rollback, bloqueos, cuotas y datos/esquemas inválidos. También se verificó IndexedDB real en dos pestañas, con ocho conexiones simultáneas y reapertura tras recargar. Las páginas auxiliares de esa comprobación no forman parte del producto.
+
+La [matriz de aceptación de Fase 1](VALIDACION_PERSISTENCIA.md) detalla rechazos y rollback comprobados tras reabrir, aislamiento de lecturas, escrituras concurrentes y conservación de datos y esquemas incompatibles.
 
 Las funciones de PWA, respaldo JSON y recuperación de bibliotecas pertenecen a Fase 4. IndexedDB puede ser eliminado por el navegador; la implementación de almacenamiento no sustituye esos hitos.
 

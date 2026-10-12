@@ -67,7 +67,10 @@ export function checkNativeSchema(
               )
             }
             const indices = table.schema.indexes
-            if (store.indexNames.length !== indices.length) {
+            if (
+              JSON.stringify(Array.from(store.indexNames).sort()) !==
+              JSON.stringify(indices.map((spec) => spec.name).sort())
+            ) {
               throw new LocalStorageError(
                 'corrupt_data',
                 'Los índices locales no coinciden con el esquema declarado.',
