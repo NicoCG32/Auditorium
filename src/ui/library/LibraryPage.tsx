@@ -217,6 +217,7 @@ export function LibraryPage({
           onBusyChange={setDetailBusy}
           personalEntry={personalEntry}
           catalog={state.snapshot.catalog}
+          trackRatings={state.snapshot.library.trackRatings}
           onExperienceCommitted={synchronizeDetail}
           onBack={() => {
             focusEntry.current = selected.id

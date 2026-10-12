@@ -19,6 +19,10 @@ import {
   type TrackDraft,
 } from './track-list-drafts'
 import { TrackListEditor } from './TrackListEditor'
+import { TrackRatingForm } from './TrackRatingForm'
+import type { TrackRating } from '../../domain/library/schemas'
+import { unitsToScore } from '../../domain/library/scores'
+import { formatScore } from './labels'
 
 const formatLabels: Record<string, string> = {
   vinyl: 'Vinilo',
@@ -34,6 +38,8 @@ export function AlbumTrackLists({
   blocked,
   onBusyChange,
   onCommitted,
+  entryId,
+  ratings,
 }: {
   albumId: string
   catalog: Catalog
@@ -41,7 +47,15 @@ export function AlbumTrackLists({
   blocked: boolean
   onBusyChange: (busy: boolean) => void
   onCommitted: () => Promise<LocalSnapshot>
+  entryId: string
+  ratings: TrackRating[]
 }) {
+  const [ratedTrackId, setRatedTrackId] = useState<string>()
+  const [confirmedRating, setConfirmedRating] = useState<{
+    trackId: string
+    score: number | undefined
+  }>()
+  const panel = useRef<HTMLElement>(null)
   const [target, setTarget] = useState('core')
   const [mode, setMode] = useState<'view' | 'edit' | 'create'>('view')
   const [rows, setRows] = useState<TrackDraft[]>([])
@@ -74,12 +88,24 @@ export function AlbumTrackLists({
     (release) => release.albumId === albumId,
   )
   const tracks = catalog.tracks.filter((track) => track.albumId === albumId)
+  const scores = new Map(
+    ratings
+      .filter((rating) => rating.userAlbumId === entryId)
+      .map((rating) => [rating.trackId, unitsToScore(rating.scoreUnits)]),
+  )
+  const ratedTrack = tracks.find((track) => track.id === ratedTrackId)
+  if (confirmedRating) {
+    if (confirmedRating.score === undefined)
+      scores.delete(confirmedRating.trackId)
+    else scores.set(confirmedRating.trackId, confirmedRating.score)
+  }
   const saved = trackListRows(catalog, albumId, releaseId)
   const selected = releases.find((release) => release.id === releaseId)
   const title = selected
     ? `${selected.editionLabel ?? 'Edición sin nombre'} · ${formatLabels[selected.format]}`
     : 'Lista original'
   function beginEdit() {
+    setRatedTrackId(undefined)
     setRows(
       saved.map((row) => ({
         ...emptyTrackDraft(row.trackNumber),
@@ -212,7 +238,11 @@ export function AlbumTrackLists({
     lock.current = false
   }
   return (
-    <section className="track-lists-panel" aria-labelledby="track-lists-title">
+    <section
+      ref={panel}
+      className="track-lists-panel"
+      aria-labelledby="track-lists-title"
+    >
       <h3 id="track-lists-title" className="text-xl font-semibold">
         Pistas y ediciones
       </h3>
@@ -229,6 +259,7 @@ export function AlbumTrackLists({
             disabled={blocked || mode !== 'view'}
             onChange={(event) => {
               setTarget(event.target.value)
+              setRatedTrackId(undefined)
               setNotice('')
               setError('')
             }}
@@ -249,6 +280,7 @@ export function AlbumTrackLists({
           disabled={blocked || mode !== 'view'}
           onClick={() => {
             setEditionName('')
+            setRatedTrackId(undefined)
             setYear('')
             setFormat('cd')
             setCopy(true)
@@ -314,6 +346,25 @@ export function AlbumTrackLists({
                             : ''}
                         </p>
                       ) : null}
+                      <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
+                        <span>
+                          Nota:{' '}
+                          <strong className="text-accent-text">
+                            {scores.has(row.trackId)
+                              ? `${formatScore(scores.get(row.trackId)!)} / 10`
+                              : 'Sin nota'}
+                          </strong>
+                        </span>
+                        <button
+                          type="button"
+                          className="text-button"
+                          data-track-rating-id={row.trackId}
+                          disabled={blocked}
+                          onClick={() => setRatedTrackId(row.trackId)}
+                        >
+                          Valorar pista {track?.title}
+                        </button>
+                      </div>
                     </div>
                   </li>
                 )
@@ -332,6 +383,34 @@ export function AlbumTrackLists({
           >
             {releaseId ? 'Editar lista de edición' : 'Editar lista original'}
           </button>
+          {ratedTrack ? (
+            <TrackRatingForm
+              key={ratedTrack.id}
+              entryId={entryId}
+              trackId={ratedTrack.id}
+              title={ratedTrack.title}
+              score={scores.get(ratedTrack.id)}
+              library={library}
+              onConfirmed={(score) =>
+                setConfirmedRating({ trackId: ratedTrack.id, score })
+              }
+              onCommitted={async () => {
+                const snapshot = await onCommitted()
+                setConfirmedRating(undefined)
+                return snapshot
+              }}
+              onBusyChange={onBusyChange}
+              blocked={blocked}
+              onClose={() => {
+                setRatedTrackId(undefined)
+                panel.current
+                  ?.querySelector<HTMLButtonElement>(
+                    `[data-track-rating-id="${ratedTrack.id}"]`,
+                  )
+                  ?.focus()
+              }}
+            />
+          ) : null}
         </>
       ) : (
         <>

@@ -2,7 +2,7 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-Las Fases 0, 1 y 2 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La Fase 3 incorpora listas originales y ediciones; valoraciones de pistas, ejemplares y deseos continúan en sus siguientes tareas. El MVP previsto será local, con respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
+Las Fases 0, 1 y 2 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La Fase 3 incorpora listas originales, ediciones y calificaciones de pistas; ejemplares y deseos continúan en sus siguientes tareas. El MVP previsto será local, con respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
 
 ## Desarrollo local
 
@@ -24,7 +24,7 @@ npm run preview
 
 `build` comprueba los tipos de la aplicación y de la configuración y genera los archivos estáticos en `dist/`. `preview` permite revisar esa compilación localmente. Los artefactos generados y las dependencias no se versionan.
 
-La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes, revisar coincidencias, consultar su ficha, valorar y editar escucha y comentarios de forma independiente. La ficha reúne la lista original y las ediciones con orden propio, pistas compartidas, bonus y variantes. Incluye portada opcional, protección de borradores y errores con reintento. Ejemplares y deseos siguen en Fase 3; respaldos y PWA en Fase 4.
+La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes, revisar coincidencias, consultar su ficha, valorar y editar escucha y comentarios de forma independiente. La ficha reúne la lista original y las ediciones con orden propio, pistas compartidas, bonus y variantes. Las notas de pistas se comparten entre sus apariciones; una variante tiene nota propia y la del álbum no se recalcula. Incluye portada opcional, protección de borradores y errores con reintento. Ejemplares y deseos siguen en Fase 3; respaldos y PWA en Fase 4.
 
 ## Verificaciones
 
@@ -66,4 +66,5 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Ficha y valoración del álbum](docs/FICHA_ALBUM.md)
 - [Escucha y notas personales](docs/EXPERIENCIA_PERSONAL.md)
 - [Listas originales y ediciones](docs/LISTAS_EDICIONES.md)
+- [Calificaciones de pistas](docs/CALIFICACIONES_PISTAS.md)
 - Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).
