@@ -36,6 +36,8 @@ import {
 } from './inputs'
 import { albumCandidates, type AlbumCandidate } from './album-candidates'
 import { saveTrackList, saveTrackListInputSchema } from './track-lists'
+import { addOwnedItemInputSchema } from './inputs'
+import { ownedItemSchema, type OwnedItem } from '../domain/library/owned-items'
 
 export class MusicUseCaseError extends Error {
   readonly code: 'missing_reference' | 'wrong_album' | 'outdated_experience'
@@ -369,6 +371,31 @@ export class MusicLibrary {
       userAlbumId: entityIdSchema.parse(userAlbumId),
       scoreUnits: scoreToUnits(score),
       updatedAt: this.now().toISOString(),
+    })
+  }
+
+  async addOwnedItem(userAlbumId: unknown, input: unknown): Promise<OwnedItem> {
+    const entryId = entityIdSchema.parse(userAlbumId)
+    const request = addOwnedItemInputSchema.parse(input)
+    const item = ownedItemSchema.parse({
+      ...request,
+      userAlbumId: entryId,
+      id: this.createId(),
+      createdAt: this.now().toISOString(),
+    })
+    if (item.notes === undefined) delete item.notes
+    await this.changeLibrary({ type: 'add_owned_item', ...item })
+    return item
+  }
+
+  async removeOwnedItem(
+    userAlbumId: unknown,
+    ownedItemId: unknown,
+  ): Promise<void> {
+    await this.changeLibrary({
+      type: 'remove_owned_item',
+      userAlbumId: entityIdSchema.parse(userAlbumId),
+      ownedItemId: entityIdSchema.parse(ownedItemId),
     })
   }
   async rateTrack(

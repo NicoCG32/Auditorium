@@ -34,6 +34,6 @@ Las pruebas con datos ficticios recorren las 16 combinaciones de estados, preser
 
 La comprobación manual usa IndexedDB real en una base aislada: transiciones, texto multilínea conservado tras recarga, cuota inyectada después de retirar la fila previa, reintento, modificación desde otra conexión, borrador protegido, limpieza y error de lectura después de guardar. Catálogo y calificaciones se comparan con la referencia inicial. El editor se comprueba a 320 píxeles y mediante teclado.
 
-El esquema sigue en v1: los campos ya existían y no requieren migración ni dependencias nuevas. LIB-04 es la última tarea de Fase 2; el milestone puede cerrarse tras revisar e integrar su PR y comprobar que no queden issues abiertas. El MVP completo continúa hasta Fase 4, según el [plan](PLAN_DESARROLLO.md).
+Estos campos no requieren transformación ni dependencias nuevas. COL-03 incorpora [ejemplares y migración v2](EJEMPLARES.md), conservando las entradas personales existentes. LIB-04 es la última tarea de Fase 2; el milestone puede cerrarse tras revisar e integrar su PR y comprobar que no queden issues abiertas. El MVP completo continúa hasta Fase 4, según el [plan](PLAN_DESARROLLO.md).
 
 Referencias: [dominio de biblioteca](DOMINIO_BIBLIOTECA.md), [casos de uso](CASOS_DE_USO.md) y [ficha del álbum](FICHA_ALBUM.md).

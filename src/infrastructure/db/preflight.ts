@@ -44,9 +44,18 @@ export function checkNativeSchema(
             'La base local usa un esquema más reciente que esta aplicación.',
           )
         }
-        if (native.version === DATABASE_VERSION * 10) {
+        if (native.version !== 10 && native.version !== DATABASE_VERSION * 10)
+          throw new LocalStorageError(
+            'version_mismatch',
+            'La versión de la base no tiene una migración compatible.',
+          )
+        {
+          const tables =
+            native.version === 10
+              ? database.tables.filter((table) => table.name !== 'ownedItems')
+              : database.tables
           const names = Array.from(native.objectStoreNames).sort()
-          const expected = database.tables.map((table) => table.name).sort()
+          const expected = tables.map((table) => table.name).sort()
           if (JSON.stringify(names) !== JSON.stringify(expected)) {
             throw new LocalStorageError(
               'corrupt_data',
@@ -54,7 +63,7 @@ export function checkNativeSchema(
             )
           }
           const transaction = native.transaction(names, 'readonly')
-          for (const table of database.tables) {
+          for (const table of tables) {
             const store = transaction.objectStore(table.name)
             if (
               JSON.stringify(store.keyPath) !==

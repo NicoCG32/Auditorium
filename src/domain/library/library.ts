@@ -3,6 +3,7 @@ import type { Catalog } from '../catalog/schemas'
 import { entityIdSchema } from '../shared/scalars'
 import { getLibraryIssues, type LibraryRule } from './integrity'
 import { libraryChangeSchema, libraryDataSchema, type Library } from './schemas'
+import { ownedItemSchema } from './owned-items'
 
 export interface LibraryContext {
   catalog: Catalog
@@ -100,6 +101,36 @@ export function applyLibraryChange(
   }
 
   switch (change.type) {
+    case 'add_owned_item': {
+      const item = ownedItemSchema.parse(
+        Object.fromEntries(
+          Object.entries(change).filter(
+            ([key, value]) => key !== 'type' && value !== undefined,
+          ),
+        ),
+      )
+      library.ownedItems = [...library.ownedItems, item]
+      break
+    }
+    case 'remove_owned_item': {
+      const item = library.ownedItems.find(
+        (row) => row.id === change.ownedItemId,
+      )
+      if (!item)
+        throw new LibraryChangeError(
+          'missing_reference',
+          'No existe el ejemplar seleccionado.',
+        )
+      if (item.userAlbumId !== entry.id)
+        throw new LibraryChangeError(
+          'wrong_album',
+          'El ejemplar no pertenece a esta entrada.',
+        )
+      library.ownedItems = library.ownedItems.filter(
+        (row) => row.id !== item.id,
+      )
+      break
+    }
     case 'set_personal_experience':
       library.userAlbums = library.userAlbums.map((row) => {
         if (row.id !== entry.id) return row

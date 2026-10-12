@@ -49,6 +49,151 @@ function setup() {
 
 const albumInput = { title: 'Eclipse', artists: [{ name: 'Umbral Eléctrico' }] }
 
+describe('ejemplares físicos y compras digitales', () => {
+  test('dos copias iguales persisten con IDs propios y remoción conserva catálogo/experiencia/ratings', async () => {
+    const { service, repository } = setup(),
+      created = await originalAlbum(service)
+    const before = await repository.readSnapshot()
+    const input = {
+      medium: 'physical',
+      format: 'cd',
+      releaseId: created.release.id,
+      notes: '  Copia ficticia.\nSegunda línea.  ',
+      acquiredAt: '1998-01-01',
+    }
+    const first = await service.addOwnedItem(created.userAlbum!.id, input)
+    const second = await service.addOwnedItem(created.userAlbum!.id, input)
+    expect(first.id).not.toBe(second.id)
+    expect(second.notes).toBe(input.notes)
+    repository.close()
+    const reopened = setup()
+    expect(
+      (await reopened.repository.readSnapshot()).library.ownedItems,
+    ).toHaveLength(2)
+    await reopened.service.removeOwnedItem(created.userAlbum!.id, first.id)
+    const after = await reopened.repository.readSnapshot()
+    expect(after.library.ownedItems).toEqual([second])
+    expect(after.catalog).toEqual(before.catalog)
+    expect(after.library.userAlbums).toEqual(before.library.userAlbums)
+    expect(after.library.albumRatings).toEqual(before.library.albumRatings)
+    expect(after.library.trackRatings).toEqual(before.library.trackRatings)
+  })
+  test('compra digital exige edición digital; no transforma streaming en propiedad', async () => {
+    const { service, repository } = setup(),
+      created = await originalAlbum(service)
+    const digital = await service.addRelease({
+      albumId: created.album.id,
+      format: 'digital',
+    })
+    const before = await repository.readSnapshot()
+    await expect(
+      service.addOwnedItem(created.userAlbum!.id, {
+        medium: 'purchased_digital',
+        format: 'digital_download',
+        releaseId: created.release.id,
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    await expect(
+      service.addOwnedItem(created.userAlbum!.id, {
+        medium: 'streaming',
+        format: 'digital_download',
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    expect(await repository.readSnapshot()).toEqual(before)
+    const item = await service.addOwnedItem(created.userAlbum!.id, {
+      medium: 'purchased_digital',
+      format: 'digital_download',
+      releaseId: digital.id,
+    })
+    expect(item).not.toHaveProperty('mediaCondition')
+    expect((await repository.readSnapshot()).library.userAlbums).toEqual(
+      before.library.userAlbums,
+    )
+  })
+  test('referencia de otro álbum y campos ajenos se rechazan', async () => {
+    const { service, repository } = setup(),
+      first = await originalAlbum(service),
+      other = await originalAlbum(service)
+    const before = await repository.readSnapshot()
+    await expect(
+      service.addOwnedItem(first.userAlbum!.id, {
+        medium: 'physical',
+        format: 'cd',
+        releaseId: other.release.id,
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    await expect(
+      service.addOwnedItem(first.userAlbum!.id, {
+        medium: 'physical',
+        format: 'cd',
+        listeningStatus: 'completed',
+      }),
+    ).rejects.toBeInstanceOf(ZodError)
+    expect(await repository.readSnapshot()).toEqual(before)
+  })
+  test('alta fallida y remoción fallida revierten y permiten reintentar', async () => {
+    const { service, repository, database } = setup(),
+      created = await originalAlbum(service)
+    const input = { medium: 'physical', format: 'cd' }
+    const before = await repository.readSnapshot()
+    const write = vi
+      .spyOn(database.ownedItems, 'bulkPut')
+      .mockRejectedValue(
+        new DOMException('Quota ficticia', 'QuotaExceededError'),
+      )
+    await expect(
+      service.addOwnedItem(created.userAlbum!.id, input),
+    ).rejects.toMatchObject({ code: 'quota_exceeded' })
+    expect(await repository.readSnapshot()).toEqual(before)
+    write.mockRestore()
+    const item = await service.addOwnedItem(created.userAlbum!.id, input),
+      saved = await repository.readSnapshot()
+    const remove = vi
+      .spyOn(database.ownedItems, 'bulkDelete')
+      .mockRejectedValue(new DOMException('Aborto ficticio', 'AbortError'))
+    await expect(
+      service.removeOwnedItem(created.userAlbum!.id, item.id),
+    ).rejects.toMatchObject({ code: 'aborted' })
+    expect(await repository.readSnapshot()).toEqual(saved)
+    remove.mockRestore()
+    await service.removeOwnedItem(created.userAlbum!.id, item.id)
+    expect((await repository.readSnapshot()).library.ownedItems).toEqual([])
+  })
+  test('dos conexiones registran copias iguales sin deduplicar ni perder una', async () => {
+    const first = setup(),
+      created = await originalAlbum(first.service),
+      second = setup()
+    const idsCreated = await Promise.all([
+      first.service.addOwnedItem(created.userAlbum!.id, {
+        medium: 'physical',
+        format: 'cd',
+      }),
+      second.service.addOwnedItem(created.userAlbum!.id, {
+        medium: 'physical',
+        format: 'cd',
+      }),
+    ])
+    expect(new Set(idsCreated.map((item) => item.id)).size).toBe(2)
+    expect(
+      (await first.repository.readSnapshot()).library.ownedItems,
+    ).toHaveLength(2)
+  })
+  test('nota en blanco y edición ausente se omiten', async () => {
+    const { service, repository } = setup(),
+      created = await service.createAlbum(albumInput)
+    const item = await service.addOwnedItem(created.userAlbum!.id, {
+      medium: 'physical',
+      format: 'other',
+      notes: ' \n ',
+    })
+    expect(item).not.toHaveProperty('notes')
+    expect(item).not.toHaveProperty('releaseId')
+    expect(
+      (await repository.readSnapshot()).library.ownedItems[0],
+    ).not.toHaveProperty('notes')
+  })
+})
+
 describe('listas originales y ediciones', () => {
   test('lista original sin edición, copia compartida, bonus y variante persisten sin alterar datos personales', async () => {
     const { service, repository } = setup()

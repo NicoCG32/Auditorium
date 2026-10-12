@@ -9,6 +9,8 @@ import { AlbumExperienceForm } from './AlbumExperienceForm'
 import type { UserAlbum, TrackRating } from '../../domain/library/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { AlbumTrackLists } from './AlbumTrackLists'
+import { OwnedItemsPanel } from './OwnedItemsPanel'
+import type { OwnedItem } from '../../domain/library/owned-items'
 
 export function AlbumSummary({
   album,
@@ -22,6 +24,7 @@ export function AlbumSummary({
   onExperienceCommitted,
   catalog,
   trackRatings,
+  ownedItems,
 }: {
   album: Album
   entry: LibraryAlbum
@@ -34,6 +37,7 @@ export function AlbumSummary({
   onExperienceCommitted: () => Promise<LocalSnapshot>
   catalog: Catalog
   trackRatings: TrackRating[]
+  ownedItems: OwnedItem[]
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -123,6 +127,17 @@ export function AlbumSummary({
         blocked={busy}
         onCommitted={onExperienceCommitted}
         onBusyChange={onBusyChange}
+      />
+      <OwnedItemsPanel
+        entryId={personalEntry.id}
+        items={ownedItems}
+        releases={catalog.releases.filter(
+          (release) => release.albumId === album.id,
+        )}
+        library={library}
+        blocked={busy}
+        onBusyChange={onBusyChange}
+        onCommitted={onExperienceCommitted}
       />
     </section>
   )

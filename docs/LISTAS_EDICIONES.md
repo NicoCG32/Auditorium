@@ -18,7 +18,7 @@ Las ediciones permiten contenido estándar, bonus, alternativo u otro, título d
 
 `trackListToken` genera la referencia inicial a partir de las apariciones ordenadas y los datos de las pistas referenciadas. La interfaz la captura al abrir el borrador y no la renueva al refrescar una valoración. La referencia se compara dentro de la transacción con la lista vigente; un cambio en otra lista independiente no invalida el borrador. Un conflicto lanza `TrackListConflictError` antes de escribir. El token es una comprobación local de concurrencia, sin autenticación ni protocolo de sincronización.
 
-La lista final se valida completa antes de persistir: posiciones, IDs únicos, referencias al álbum correcto, variantes existentes y ausencia de ciclos. Los IDs nuevos se generan localmente; los registros existentes y las tablas personales se conservan. El adaptador escribe diferencias por clave y confirma o revierte todo el lote. No cambia la identidad local ni el esquema v1.
+La lista final se valida completa antes de persistir: posiciones, IDs únicos, referencias al álbum correcto, variantes existentes y ausencia de ciclos. Los IDs nuevos se generan localmente; los registros existentes y las tablas personales se conservan. El adaptador escribe diferencias por clave y confirma o revierte todo el lote. No cambia la identidad local. La colección de ejemplares incorpora la [migración v2](EJEMPLARES.md), manteniendo las tablas musicales.
 
 ## Fallos y recuperación
 
@@ -33,4 +33,4 @@ Las pruebas recorren la interfaz y el repositorio con datos ficticios: original 
 
 La verificación en IndexedDB real usa una base aislada y comprueba guardado por teclado, posiciones repetidas, rollback, reintento, otra conexión, recarga, copia de lista y responsive. No se añade música de ejemplo a la biblioteca del producto.
 
-La ficha permite [calificar pistas](CALIFICACIONES_PISTAS.md) por identidad compartida entre apariciones; las variantes tienen nota independiente. Ejemplares y deseos pertenecen a COL-03/04. No se eliminan álbumes, ediciones ni entidades pista. Respaldo y PWA pertenecen a Fase 4.
+La ficha permite [calificar pistas](CALIFICACIONES_PISTAS.md) por identidad compartida entre apariciones; las variantes tienen nota independiente. Los [ejemplares](EJEMPLARES.md) se registran independientemente; deseos pertenecen a COL-04. No se eliminan álbumes, ediciones ni entidades pista. Respaldo y PWA pertenecen a Fase 4.

@@ -22,7 +22,7 @@ El snapshot requiere `userAlbums`, `albumRatings` y `trackRatings`, aunque las l
 - Una sola calificación por entrada/álbum y otra por entrada/pista. La pista debe existir y pertenecer al álbum correcto.
 - Una pista compartida entre ediciones tiene la misma calificación; una variante identificada como otra pista admite nota propia. La edición no forma parte de la clave de calificación.
 - Sin nota significa ausencia de registro. No guardar cero, null ni una media de canciones como nota del álbum.
-- Cambiar escucha conserva notas y calificaciones. Propiedad y ejemplares se modelarán por separado; escuchar no crea propiedad.
+- Cambiar escucha conserva notas, calificaciones y ejemplares. La [colección](EJEMPLARES.md) usa registros independientes por copia; escuchar no crea propiedad.
 
 ## Escala
 

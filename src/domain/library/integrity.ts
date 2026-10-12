@@ -1,5 +1,6 @@
 import type { Catalog } from '../catalog/schemas'
 import type { Library } from './schemas'
+import { ownedItemMatchesRelease } from './owned-items'
 
 export type LibraryRule =
   | 'duplicate_id'
@@ -11,6 +12,8 @@ export type LibraryRule =
   | 'rating_before_entry'
   | 'inactive_entry'
   | 'outdated_change'
+  | 'incompatible_release'
+  | 'item_before_entry'
 
 export interface LibraryIssue {
   rule: LibraryRule
@@ -130,6 +133,52 @@ export function getLibraryIssues(
       )
     }
     ratedTracks.add(key)
+  })
+  const releases = new Map(
+    catalog.releases.map((release) => [release.id, release]),
+  )
+  const ownedIds = new Set<string>()
+  library.ownedItems.forEach((item, index) => {
+    const path = ['ownedItems', index]
+    if (ownedIds.has(item.id))
+      report('duplicate_id', [...path, 'id'], 'Ejemplar duplicado por ID.')
+    ownedIds.add(item.id)
+    const entry = entries.get(item.userAlbumId)
+    if (!entry)
+      report(
+        'missing_reference',
+        [...path, 'userAlbumId'],
+        'No existe la entrada del ejemplar.',
+      )
+    else if (item.createdAt < entry.addedAt)
+      report(
+        'item_before_entry',
+        [...path, 'createdAt'],
+        'El registro del ejemplar no puede preceder al alta en biblioteca.',
+      )
+    if (item.releaseId) {
+      const release = releases.get(item.releaseId)
+      if (!release)
+        report(
+          'missing_reference',
+          [...path, 'releaseId'],
+          'No existe la edición del ejemplar.',
+        )
+      else {
+        if (entry && release.albumId !== entry.albumId)
+          report(
+            'wrong_album',
+            [...path, 'releaseId'],
+            'La edición pertenece a otro álbum.',
+          )
+        if (!ownedItemMatchesRelease(item, release))
+          report(
+            'incompatible_release',
+            [...path, 'releaseId'],
+            'La edición no es compatible con el medio y formato poseído.',
+          )
+      }
+    }
   })
   return issues
 }

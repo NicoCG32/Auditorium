@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { ownedItemDataSchema } from '../domain/library/owned-items'
 import {
   albumArtistSchema,
   albumSchema,
@@ -13,6 +14,15 @@ import {
   listeningStatusSchema,
   userAlbumSchema,
 } from '../domain/library/schemas'
+
+export const addOwnedItemInputSchema = ownedItemDataSchema
+  .omit({ id: true, userAlbumId: true, createdAt: true })
+  .extend({
+    notes: z
+      .string()
+      .transform((value) => (value.trim() ? value : undefined))
+      .optional(),
+  })
 
 export const personalExperienceInputSchema = z.strictObject({
   listeningStatus: listeningStatusSchema,
