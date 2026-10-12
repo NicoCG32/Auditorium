@@ -16,9 +16,9 @@ Los créditos se presentan en su orden explícito. La búsqueda, los filtros y l
 
 La lectura comienza al montar la aplicación. «Actualizar biblioteca» vuelve a consultar los cambios guardados y conserva los criterios de búsqueda. Las respuestas de cargas anteriores se descartan al cancelar su efecto; la conexión se mantiene durante la vida de la aplicación y se cierra al reemplazar el módulo durante desarrollo.
 
-La biblioteca vacía explica dónde aparecerán los álbumes y permite consultar cambios guardados. La búsqueda sin resultados ofrece «Mostrar todos los álbumes», que limpia sus criterios. Los errores presentan un mensaje comprensible y una acción para reintentar, sin exponer excepciones ni datos personales.
+La biblioteca vacía ofrece «Añadir tu primer álbum», conectado al [registro manual](REGISTRO_MANUAL.md). La búsqueda sin resultados ofrece «Mostrar todos los álbumes», que limpia sus criterios. Los errores presentan un mensaje comprensible y una acción para reintentar, sin exponer excepciones ni datos personales.
 
-Esta entrega es de consulta. El formulario manual y la acción de agregar el primer álbum corresponden a LIB-02; la ficha y edición a LIB-03. Los filtros de propiedad/formato llegarán cuando existan ejemplares. No se muestran controles de esas funciones mientras estén pendientes.
+LIB-02 incorpora el formulario manual y una ficha básica de lectura, que se abre desde el título de una tarjeta o al usar un registro existente. Al guardar, la biblioteca se actualiza automáticamente y se limpian los criterios para mostrar la entrada nueva. La edición de calificaciones y ampliación de ficha corresponden a LIB-03. Los filtros de propiedad/formato llegarán cuando existan ejemplares.
 
 Las preferencias de búsqueda y vista duran mientras la pantalla permanezca montada. No hay suscripción automática a cambios entre pestañas; actualizar o recargar lee el estado vigente. La apertura puede crear la identidad de una base nueva, pero las consultas no escriben registros musicales.
 

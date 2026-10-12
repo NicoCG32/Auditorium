@@ -30,7 +30,10 @@ import {
   addReleaseInputSchema,
   addTrackInputSchema,
   createAlbumInputSchema,
+  manualAlbumInputSchema,
+  type CreateAlbumInput,
 } from './inputs'
+import { albumCandidates, type AlbumCandidate } from './album-candidates'
 
 export class MusicUseCaseError extends Error {
   readonly code: 'missing_reference' | 'wrong_album'
@@ -52,6 +55,9 @@ export interface AddTrackResult {
   releaseTrack: ReleaseTrack
   coreTrack?: CoreTrack
 }
+export type RegisterAlbumResult =
+  | { status: 'review'; candidates: AlbumCandidate[] }
+  | { status: 'created'; album: Album; userAlbum: UserAlbum }
 
 export class MusicLibrary {
   private readonly repository: TransactionalLocalRepository
@@ -94,58 +100,96 @@ export class MusicLibrary {
 
   async createAlbum(input: unknown): Promise<CreateAlbumResult> {
     const request = createAlbumInputSchema.parse(input)
-    return this.repository.mutate((snapshot) => {
-      const artists = request.artists.map((credit) => {
-        if ('artistId' in credit) {
-          const existing = snapshot.catalog.artists.find(
-            (artist) => artist.id === credit.artistId,
-          )
-          if (!existing)
-            throw new MusicUseCaseError(
-              'missing_reference',
-              'No existe el artista seleccionado.',
-            )
-          return existing
-        }
-        const artist = artistSchema.parse({
-          id: this.createId(),
-          name: credit.name,
-          sortName: credit.sortName,
-          createdBy: snapshot.identity.userId,
-        })
-        snapshot.catalog.artists.push(artist)
-        return artist
-      })
-      const {
-        artists: requestedArtists,
-        addToLibrary,
-        ...albumFields
-      } = request
-      const album = albumSchema.parse({
-        ...albumFields,
-        id: this.createId(),
-        createdBy: snapshot.identity.userId,
-      })
-      snapshot.catalog.albums.push(album)
-      const credits = requestedArtists.map((credit, index) => {
-        const artist = artists[index]
-        if (!artist)
+    return this.repository.mutate((snapshot) => ({
+      snapshot,
+      result: this.createAlbumInside(snapshot, request),
+    }))
+  }
+
+  private createAlbumInside(
+    snapshot: LocalSnapshot,
+    request: CreateAlbumInput,
+  ): CreateAlbumResult {
+    const artists = request.artists.map((credit) => {
+      if ('artistId' in credit) {
+        const existing = snapshot.catalog.artists.find(
+          (artist) => artist.id === credit.artistId,
+        )
+        if (!existing)
           throw new MusicUseCaseError(
             'missing_reference',
-            'Falta un artista para el crédito.',
+            'No existe el artista seleccionado.',
           )
-        return albumArtistSchema.parse({
-          albumId: album.id,
-          artistId: artist.id,
-          role: credit.role,
-          position: index + 1,
-          creditedAs: credit.creditedAs,
-        })
+        return existing
+      }
+      const artist = artistSchema.parse({
+        id: this.createId(),
+        name: credit.name,
+        sortName: credit.sortName,
+        createdBy: snapshot.identity.userId,
       })
-      snapshot.catalog.albumArtists.push(...credits)
-      const result: CreateAlbumResult = { album, artists, credits }
-      if (addToLibrary) result.userAlbum = this.addEntry(snapshot, album.id)
-      return { snapshot, result }
+      snapshot.catalog.artists.push(artist)
+      return artist
+    })
+    const { artists: requestedArtists, addToLibrary, ...albumFields } = request
+    const album = albumSchema.parse({
+      ...albumFields,
+      id: this.createId(),
+      createdBy: snapshot.identity.userId,
+    })
+    snapshot.catalog.albums.push(album)
+    const credits = requestedArtists.map((credit, index) => {
+      const artist = artists[index]
+      if (!artist)
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'Falta un artista para el crédito.',
+        )
+      return albumArtistSchema.parse({
+        albumId: album.id,
+        artistId: artist.id,
+        role: credit.role,
+        position: index + 1,
+        creditedAs: credit.creditedAs,
+      })
+    })
+    snapshot.catalog.albumArtists.push(...credits)
+    const result: CreateAlbumResult = { album, artists, credits }
+    if (addToLibrary) result.userAlbum = this.addEntry(snapshot, album.id)
+    return result
+  }
+
+  async registerAlbum(
+    input: unknown,
+    acknowledgedCandidates: string[] = [],
+  ): Promise<RegisterAlbumResult> {
+    const request: CreateAlbumInput = {
+      ...manualAlbumInputSchema.parse(input),
+      addToLibrary: true,
+    }
+    const acknowledged = new Set(
+      acknowledgedCandidates.map((id) => entityIdSchema.parse(id)),
+    )
+    return this.repository.mutate<RegisterAlbumResult>((snapshot) => {
+      const candidates = albumCandidates(snapshot, request)
+      if (
+        candidates.some((candidate) => !acknowledged.has(candidate.album.id))
+      ) {
+        return { snapshot, result: { status: 'review', candidates } }
+      }
+      const created = this.createAlbumInside(snapshot, request)
+      if (!created.userAlbum)
+        throw new Error(
+          'El registro manual requiere una entrada de biblioteca.',
+        )
+      return {
+        snapshot,
+        result: {
+          status: 'created',
+          album: created.album,
+          userAlbum: created.userAlbum,
+        },
+      }
     })
   }
 
