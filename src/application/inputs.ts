@@ -1,5 +1,7 @@
 import { z } from 'zod'
 import { ownedItemDataSchema } from '../domain/library/owned-items'
+import { wishTargetSchema } from '../domain/library/purchase-wishes'
+
 import {
   albumArtistSchema,
   albumSchema,
@@ -14,6 +16,18 @@ import {
   listeningStatusSchema,
   userAlbumSchema,
 } from '../domain/library/schemas'
+
+export const purchaseWishInputSchema = wishTargetSchema
+  .extend({
+    notes: z
+      .string()
+      .transform((value) => (value.trim() ? value : undefined))
+      .optional(),
+  })
+  .refine((wish) => Boolean(wish.targetReleaseId || wish.targetFormat), {
+    path: ['targetFormat'],
+    message: 'Selecciona formato o edición.',
+  })
 
 export const addOwnedItemInputSchema = ownedItemDataSchema
   .omit({ id: true, userAlbumId: true, createdAt: true })

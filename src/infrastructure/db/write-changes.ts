@@ -38,6 +38,12 @@ export async function writeSnapshotChanges(
 ): Promise<void> {
   await Promise.all([
     syncTable(
+      database.purchaseWishes,
+      before.library.purchaseWishes,
+      after.library.purchaseWishes,
+      (row) => row.id,
+    ),
+    syncTable(
       database.ownedItems,
       before.library.ownedItems,
       after.library.ownedItems,

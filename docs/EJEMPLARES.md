@@ -16,13 +16,13 @@ Confirmar retira únicamente el ejemplar seleccionado y sus notas de copia. Cons
 
 `MusicLibrary.addOwnedItem(userAlbumId, input)` valida la entrada estricta, genera UUID/fecha y aplica `add_owned_item` en una transacción. `removeOwnedItem(userAlbumId, ownedItemId)` aplica `remove_owned_item`, exigiendo que el ejemplar corresponda a esa entrada activa. Validan propietario, referencias, compatibilidad y biblioteca antes de escribir. Copias iguales no se deduplican; IDs repetidos o referencias inválidas se rechazan.
 
-Solo se escribe en `ownedItems`. No se actualiza la fecha ni la escucha de `UserAlbum`. Deseos se incorporan como registros independientes en COL-04. Un fallo de escritura conserva el borrador y los registros previos; una eliminación fallida conserva la confirmación para reintentar.
+Solo se escribe en `ownedItems`. No se actualiza la fecha ni la escucha de `UserAlbum`. Los [deseos](DESEOS_COMPRA.md) son registros independientes: registrar una compra ofrece cumplir coincidencias mediante acción explícita; retirar una copia no cambia sus estados. Un fallo de escritura conserva el borrador y los registros previos; una eliminación fallida conserva la confirmación para reintentar.
 
 Después del commit, la lista muestra la copia añadida o retira la eliminada mientras relee el snapshot. Si esa lectura falla, anuncia el resultado confirmado y ofrece «Reintentar lectura de colección»: solo lee, sin registrar otra copia ni repetir una eliminación. Otras escrituras y la navegación esperan a recuperar la lectura coherente.
 
-## Esquema v2
+## Esquema histórico v2
 
-La tabla `ownedItems` usa UUID como clave e índices de entrada personal, edición, medio, formato y fecha de registro. El dominio normaliza entradas previas sin esta colección a una lista vacía; el repositorio v2 siempre lee la tabla y valida sus filas.
+La tabla `ownedItems` usa UUID como clave e índices de entrada personal, edición, medio, formato y fecha de registro. El dominio normaliza entradas previas sin esta colección a una lista vacía; el repositorio actual siempre lee la tabla y valida sus filas. v3 conserva su definición y añade los deseos.
 
 `SCHEMA_V1` conserva su definición histórica y `SCHEMA_V2` añade exclusivamente esa tabla. Antes de abrir se verifican estructura, claves e índices existentes. Una v1 compatible se actualiza a v2 con la tabla nueva vacía, conservando identidad y filas. Estructuras incompletas, versiones intermedias desconocidas o futuras se rechazan sin reconstruir ni degradar la base. Un bloqueo por otra conexión se informa y admite reintento al cerrarla.
 

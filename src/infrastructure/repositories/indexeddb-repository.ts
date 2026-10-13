@@ -182,6 +182,7 @@ export class IndexedDbRepository implements TransactionalLocalRepository {
         albumRatings,
         trackRatings,
         ownedItems,
+        purchaseWishes,
       ] = await Promise.all([
         this.database.metadata.get(IDENTITY_KEY),
         this.database.artists.toArray(),
@@ -195,6 +196,7 @@ export class IndexedDbRepository implements TransactionalLocalRepository {
         this.database.albumRatings.toArray(),
         this.database.trackRatings.toArray(),
         this.database.ownedItems.toArray(),
+        this.database.purchaseWishes.toArray(),
       ])
       if (record === undefined)
         throw new LocalStorageError(
@@ -223,6 +225,7 @@ export class IndexedDbRepository implements TransactionalLocalRepository {
         albumRatings,
         trackRatings,
         ownedItems,
+        purchaseWishes,
       })
       return { identity, catalog, library }
     } catch (error) {

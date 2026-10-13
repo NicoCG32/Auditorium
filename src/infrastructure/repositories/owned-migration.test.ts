@@ -2,7 +2,12 @@
 import Dexie from 'dexie'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { beforeEach, afterEach, expect, test } from 'vitest'
-import { AuditoriumDatabase, SCHEMA_V1, SCHEMA_V2 } from '../db/database'
+import {
+  AuditoriumDatabase,
+  DATABASE_VERSION,
+  SCHEMA_V1,
+  SCHEMA_V2,
+} from '../db/database'
 import { IDENTITY_KEY, toStoredUserAlbum } from '../db/records'
 import { IndexedDbRepository } from './indexeddb-repository'
 import {
@@ -74,13 +79,13 @@ test.each([false, true])(
     old.close()
     const next = current(),
       snapshot = await next.repository.readSnapshot()
-    expect(next.database.backendDB().version).toBe(20)
+    expect(next.database.backendDB().version).toBe(DATABASE_VERSION * 10)
     expect(snapshot.identity.userId).toBe(libraryIds.user)
     expect(snapshot.library.ownedItems).toEqual([])
     expect(await rows(next.database, names)).toEqual(before)
   },
 )
-test('apertura concurrente desde v1 conserva la misma identidad y esquema v2', async () => {
+test('apertura concurrente desde v1 conserva la misma identidad y esquema actual', async () => {
   const old = await legacy()
   old.close()
   const first = current(),
@@ -91,7 +96,7 @@ test('apertura concurrente desde v1 conserva la misma identidad y esquema v2', a
   ])
   expect(snapshots[0]).toEqual(snapshots[1])
   expect(snapshots[0].identity.userId).toBe(libraryIds.user)
-  expect(first.database.backendDB().version).toBe(20)
+  expect(first.database.backendDB().version).toBe(DATABASE_VERSION * 10)
 })
 test('v1 incompleta se rechaza sin subir versión ni reparar tablas', async () => {
   const { trackRatings: omitted, ...schema } = SCHEMA_V1

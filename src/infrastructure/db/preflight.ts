@@ -1,4 +1,10 @@
-import { AuditoriumDatabase, DATABASE_VERSION } from './database'
+import {
+  AuditoriumDatabase,
+  DATABASE_VERSION,
+  SCHEMA_V1,
+  SCHEMA_V2,
+  SCHEMA_V3,
+} from './database'
 import { LocalStorageError } from './errors'
 
 export function checkNativeSchema(
@@ -44,16 +50,20 @@ export function checkNativeSchema(
             'La base local usa un esquema más reciente que esta aplicación.',
           )
         }
-        if (native.version !== 10 && native.version !== DATABASE_VERSION * 10)
+        const schemas: Record<number, Record<string, string>> = {
+          10: SCHEMA_V1,
+          20: SCHEMA_V2,
+          30: SCHEMA_V3,
+        }
+        const schema = schemas[native.version]
+        if (!schema)
           throw new LocalStorageError(
             'version_mismatch',
             'La versión de la base no tiene una migración compatible.',
           )
         {
-          const tables =
-            native.version === 10
-              ? database.tables.filter((table) => table.name !== 'ownedItems')
-              : database.tables
+          // Todas las migraciones actuales son aditivas: los índices históricos permanecen iguales.
+          const tables = database.tables.filter((table) => table.name in schema)
           const names = Array.from(native.objectStoreNames).sort()
           const expected = tables.map((table) => table.name).sort()
           if (JSON.stringify(names) !== JSON.stringify(expected)) {

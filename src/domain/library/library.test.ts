@@ -436,6 +436,16 @@ describe('cambios puros de biblioteca', () => {
           createdAt: times.updated,
         },
       ]
+      input.purchaseWishes = [
+        {
+          id: '00000000-0000-4000-8000-000000000901',
+          userAlbumId: libraryIds.entry,
+          targetFormat: 'vinyl',
+          status: 'active',
+          notes: 'Deseo ficticio independiente de escucha.',
+          createdAt: times.updated,
+        },
+      ]
       input.userAlbums[0] = {
         ...userAlbumSchema.parse(input.userAlbums[0]),
         listeningStatus: from,
@@ -455,6 +465,7 @@ describe('cambios puros de biblioteca', () => {
         expect(result.albumRatings).toEqual(input.albumRatings)
         expect(result.trackRatings).toEqual(input.trackRatings)
         expect(result.ownedItems).toEqual(input.ownedItems ?? [])
+        expect(result.purchaseWishes).toEqual(input.purchaseWishes)
       }
     }
   })

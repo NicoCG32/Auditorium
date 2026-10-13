@@ -1,4 +1,4 @@
-# Persistencia local — esquemas v1 y v2
+# Persistencia local — esquemas v1, v2 y v3
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
@@ -12,9 +12,9 @@ La identidad es un UUID aleatorio y una fecha UTC de creación, almacenados bajo
 
 Si falta la identidad pero la base contiene datos, la operación falla. No se infiere un propietario ni se crea uno de reemplazo. Una identidad inválida también genera un error conservando los registros originales.
 
-## Esquema actual v2
+## Esquema actual v3
 
-Nombre predeterminado: `auditorium`. Versión lógica actual: 2. La definición v1 se conserva como historial; v2 añade la colección de ejemplares. Se materializan únicamente las entidades implementadas, además de metadata.
+Nombre predeterminado: `auditorium`. Versión lógica actual: 3. Las definiciones v1 y v2 se conservan como historial; v2 añade ejemplares y v3 deseos de compra. Se materializan únicamente las entidades implementadas, además de metadata.
 
 | Tabla         | Clave e índices principales                                             |
 | ------------- | ----------------------------------------------------------------------- |
@@ -30,6 +30,8 @@ Nombre predeterminado: `auditorium`. Versión lógica actual: 2. La definición 
 | albumRatings  | entrada personal como clave primaria                                    |
 | trackRatings  | entrada personal/pista como clave primaria; pista                       |
 | ownedItems    | id; entrada personal, edición, medio, formato y fecha de registro       |
+
+La tabla `purchaseWishes` usa clave `id` e índices `userAlbumId`, `targetReleaseId`, `targetFormat`, `status` y `createdAt`.
 
 IndexedDB no ofrece claves foráneas. Los validadores de dominio comprueban las referencias antes de escribir dentro de la transacción. Los índices únicos complementan esas reglas.
 
@@ -51,7 +53,7 @@ No borrar, vaciar o recrear automáticamente la base ante un fallo. No registrar
 
 ## Evolución y verificación
 
-`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
+`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). `SCHEMA_V3` añade únicamente `purchaseWishes`. v1/v2 compatibles migran a v3 conservando todas sus filas, ejemplares e identidad; se comprueban las tres versiones sin reparar bases incompletas. Ver [deseos y migración v3](DESEOS_COMPRA.md). Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
 
 Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reapertura, seis conexiones simultáneas, snapshots, claves únicas, rollback, bloqueos, cuotas y datos/esquemas inválidos. También se verificó IndexedDB real en dos pestañas, con ocho conexiones simultáneas y reapertura tras recargar. Las páginas auxiliares de esa comprobación no forman parte del producto.
 

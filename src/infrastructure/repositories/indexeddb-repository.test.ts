@@ -13,7 +13,7 @@ import {
   AuditoriumDatabase,
   DATABASE_VERSION,
   SCHEMA_V1,
-  SCHEMA_V2,
+  SCHEMA_V3,
 } from '../db/database'
 import { asLocalStorageError, LocalStorageError } from '../db/errors'
 import {
@@ -79,7 +79,7 @@ describe('identidad persistente', () => {
     })
     expect(database.verno).toBe(DATABASE_VERSION)
     expect(database.tables.map((table) => table.name).sort()).toEqual(
-      Object.keys(SCHEMA_V2).sort(),
+      Object.keys(SCHEMA_V3).sort(),
     )
     const snapshot = await repository.readSnapshot()
     expect(snapshot.identity).toEqual(identity)
@@ -382,7 +382,7 @@ describe('errores recuperables', () => {
     databases.push(newer)
     newer
       .version(DATABASE_VERSION + 1)
-      .stores({ ...SCHEMA_V2, futureData: 'id' })
+      .stores({ ...SCHEMA_V3, futureData: 'id' })
     await newer.open()
     newer.close()
     const old = makeStore('newer')

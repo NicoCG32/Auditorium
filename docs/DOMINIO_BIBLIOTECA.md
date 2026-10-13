@@ -22,7 +22,7 @@ El snapshot requiere `userAlbums`, `albumRatings` y `trackRatings`, aunque las l
 - Una sola calificación por entrada/álbum y otra por entrada/pista. La pista debe existir y pertenecer al álbum correcto.
 - Una pista compartida entre ediciones tiene la misma calificación; una variante identificada como otra pista admite nota propia. La edición no forma parte de la clave de calificación.
 - Sin nota significa ausencia de registro. No guardar cero, null ni una media de canciones como nota del álbum.
-- Cambiar escucha conserva notas, calificaciones y ejemplares. La [colección](EJEMPLARES.md) usa registros independientes por copia; escuchar no crea propiedad.
+- Cambiar escucha conserva notas, calificaciones, ejemplares y deseos. La [colección](EJEMPLARES.md) usa registros independientes por copia; escuchar no crea propiedad.
 
 ## Escala
 
@@ -58,3 +58,7 @@ Los estados `untracked`, `queued`, `in_progress` y `completed` admiten todas las
 - Errores de schema: issues Zod con ruta y, para relaciones, `params.rule`. Cambios sobre destino ausente, inactivo, pista ajena o actualización antigua: `LibraryChangeError` con `rule`.
 
 Estas funciones expresan reglas del dominio y `MusicLibrary` las aplica dentro de transacciones, preservando sus errores y los del almacenamiento. La interfaz consulta y modifica la biblioteca local según sus casos de uso. Las pruebas usan únicamente datos ficticios.
+
+## Deseos de compra
+
+`purchaseWishes` contiene objetivos por formato o edición, estado activo/cumplido/cancelado, notas opcionales y fecha UTC. Se exige al menos un objetivo válido del álbum, compatibilidad si se indican ambos e IDs únicos. `add_purchase_wish`, `update_purchase_wish` y `set_wish_status` conservan las otras colecciones. La edición comprueba la referencia leída; cumplir comprueba estado activo y un ejemplar coincidente vigente. Ver [contrato y migración v3](DESEOS_COMPRA.md).
