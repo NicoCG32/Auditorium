@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 import { IndexedDbRepository } from './infrastructure/repositories/indexeddb-repository'
 import './styles/base.css'
+import { createOfflineController } from './infrastructure/browser/offline-controller'
 
 const rootElement = document.getElementById('root')
 
@@ -11,10 +12,16 @@ if (!rootElement) {
 }
 
 const repository = new IndexedDbRepository()
-if (import.meta.hot) import.meta.hot.dispose(() => repository.close())
+const offline = createOfflineController()
+offline.start()
+if (import.meta.hot)
+  import.meta.hot.dispose(() => {
+    repository.close()
+    offline.stop()
+  })
 
 createRoot(rootElement).render(
   <StrictMode>
-    <App repository={repository} />
+    <App repository={repository} offline={offline} />
   </StrictMode>,
 )

@@ -63,6 +63,22 @@
 }
 
 @layer components {
+  .offline-panel {
+    min-inline-size: 0;
+    margin-block-end: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.875rem;
+    overflow-wrap: anywhere;
+  }
+  .offline-panel summary {
+    cursor: pointer;
+    margin-block-start: 0.75rem;
+    min-block-size: 2.75rem;
+    align-content: center;
+    color: var(--foreground);
+  }
   .owned-panel {
     margin-block-start: 2rem;
     padding-block-start: 1.5rem;
