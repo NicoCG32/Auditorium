@@ -17,7 +17,7 @@ import {
   times,
 } from '../domain/library/library.fixture'
 import type {
-  TransactionalLocalRepository,
+  BackupLocalRepository,
   LocalSnapshot,
 } from '../domain/repositories/local-repository'
 import { AuditoriumDatabase } from '../infrastructure/db/database'
@@ -922,11 +922,12 @@ test('una respuesta tardía del repositorio anterior no reemplaza la vista actua
   const promise = new Promise<LocalSnapshot>((accept) => {
     resolve = accept
   })
-  const slow: TransactionalLocalRepository = {
+  const slow: BackupLocalRepository = {
     open: vi.fn(),
     readSnapshot: () => promise,
     close: vi.fn(),
     mutate: vi.fn(),
+    restoreEmpty: vi.fn(),
   }
   const { rerender } = render(<App repository={slow} />)
   const current = connect()

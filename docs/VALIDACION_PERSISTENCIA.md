@@ -27,6 +27,6 @@ La inspección usa los [nombres de índices nativos de IndexedDB](https://develo
 
 ## Límites de esta aceptación
 
-Conservar filas dañadas y presentar un error deja disponible la información para una recuperación explícita. Todavía no hay una interfaz que repare datos, restaure respaldos ni administre migraciones. Esas funciones pertenecen a Fase 4. Tampoco se ha medido el rendimiento con colecciones grandes ni se promete conservación si el navegador elimina IndexedDB.
+Conservar filas dañadas y presentar un error deja disponible la información para una recuperación explícita. Los [respaldos JSON](RESPALDOS_JSON.md) permiten restauración validada y atómica en una biblioteca vacía. No se reparan datos corruptos ni se sustituyen bibliotecas existentes automáticamente; la validación ampliada de migraciones continúa en su tarea de Fase 4. Tampoco se ha medido el rendimiento con colecciones grandes ni se promete conservación si el navegador elimina IndexedDB.
 
 El milestone puede cerrarse cuando la PR de DATA-03 esté revisada e integrada y no queden issues abiertas de Fase 1, siguiendo la [definición de terminado](PLAN_DESARROLLO.md#definición-de-terminado).
