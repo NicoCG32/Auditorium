@@ -29,9 +29,9 @@ export function TrackRatingForm({
       kind="track"
       title={`Tu valoración de ${title}`}
       score={score}
-      onChangeScore={async (next) => {
+      onChangeScore={async (next, expected) => {
         if (next === undefined)
-          await library.removeTrackRating(entryId, trackId)
+          await library.removeTrackRating(entryId, trackId, expected)
         else await library.rateTrack(entryId, trackId, next)
         onConfirmed(next)
       }}

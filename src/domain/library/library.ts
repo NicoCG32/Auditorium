@@ -5,6 +5,7 @@ import { getLibraryIssues, type LibraryRule } from './integrity'
 import { libraryChangeSchema, libraryDataSchema, type Library } from './schemas'
 import { ownedItemSchema } from './owned-items'
 import { purchaseWishSchema, wishMatchesOwnedItem } from './purchase-wishes'
+import { personalEntryToken } from './personal-entry'
 
 export interface LibraryContext {
   catalog: Catalog
@@ -63,7 +64,10 @@ export function applyLibraryChange(
       'missing_reference',
       'No existe la entrada personal.',
     )
-  if (entry.deletedAt !== undefined) {
+  if (
+    entry.deletedAt !== undefined &&
+    change.type !== 'restore_personal_album'
+  ) {
     throw new LibraryChangeError(
       'inactive_entry',
       'No se puede modificar una entrada dada de baja.',
@@ -101,7 +105,63 @@ export function applyLibraryChange(
     }
   }
 
+  if (
+    (change.type === 'remove_album_rating' ||
+      change.type === 'remove_track_rating') &&
+    change.expectedScoreUnits !== undefined
+  ) {
+    const previous =
+      change.type === 'remove_album_rating'
+        ? library.albumRatings.find((row) => row.userAlbumId === entry.id)
+        : library.trackRatings.find(
+            (row) =>
+              row.userAlbumId === entry.id && row.trackId === change.trackId,
+          )
+    if (previous?.scoreUnits !== change.expectedScoreUnits)
+      throw new LibraryChangeError(
+        'outdated_change',
+        'La nota cambió después de la confirmación. Revisa la nota antes de quitarla.',
+      )
+  }
+
   switch (change.type) {
+    case 'remove_personal_album':
+    case 'restore_personal_album': {
+      if (personalEntryToken(library, entry.id) !== change.expectedToken)
+        throw new LibraryChangeError(
+          'outdated_change',
+          'Los datos personales cambiaron después de leerlos. Revisa las consecuencias antes de confirmar otra vez.',
+        )
+      if (change.type === 'restore_personal_album') {
+        if (entry.deletedAt === undefined)
+          throw new LibraryChangeError(
+            'outdated_change',
+            'La entrada ya está activa.',
+          )
+        if (
+          library.userAlbums.some(
+            (row) =>
+              row.id !== entry.id &&
+              row.userId === entry.userId &&
+              row.albumId === entry.albumId &&
+              row.deletedAt === undefined,
+          )
+        )
+          throw new LibraryChangeError(
+            'duplicate_active_album',
+            'Ya existe otra entrada activa de este álbum. Se conservan ambas sin fusionarlas.',
+          )
+      }
+      library.userAlbums = library.userAlbums.map((row) => {
+        if (row.id !== entry.id) return row
+        const next = { ...row, updatedAt: change.updatedAt }
+        if (change.type === 'remove_personal_album')
+          next.deletedAt = change.updatedAt
+        else delete next.deletedAt
+        return next
+      })
+      break
+    }
     case 'add_purchase_wish': {
       const wish = purchaseWishSchema.parse(
         Object.fromEntries(

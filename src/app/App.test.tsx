@@ -421,6 +421,7 @@ test('volver tras quitar una nota conserva los filtros y enfoca búsqueda si la 
   fireEvent.change(screen.getByLabelText('Nota'), { target: { value: 'high' } })
   fireEvent.click(screen.getByRole('button', { name: 'Eclipse' }))
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar quitar nota' }))
   await screen.findByText('Nota quitada.')
   await waitFor(() =>
     expect(
@@ -503,6 +504,7 @@ test('quitar nota deja ausencia real y conserva valoraciones de pistas y otro á
     before = await repository.readSnapshot()
   const input = await openRating(repository)
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar quitar nota' }))
   await screen.findByText('Nota quitada.')
   await waitFor(() =>
     expect(
@@ -574,12 +576,14 @@ test('fallo de remoción restaura la fila anterior y permite reintentar', async 
     .spyOn(database.albumRatings, 'bulkDelete')
     .mockRejectedValue(new DOMException('Abort ficticio', 'AbortError'))
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar quitar nota' }))
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'nota anterior se conserva',
   )
   expect(await repository.readSnapshot()).toEqual(before)
   failure.mockRestore()
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar quitar nota' }))
   await screen.findByText('Nota quitada.')
 })
 

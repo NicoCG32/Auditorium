@@ -78,6 +78,18 @@ const rating = {
 }
 export const libraryChangeSchema = z.discriminatedUnion('type', [
   z.strictObject({
+    type: z.literal('remove_personal_album'),
+    ...target,
+    expectedToken: z.string(),
+    updatedAt: utcTimestampSchema,
+  }),
+  z.strictObject({
+    type: z.literal('restore_personal_album'),
+    ...target,
+    expectedToken: z.string(),
+    updatedAt: utcTimestampSchema,
+  }),
+  z.strictObject({
     type: z.literal('add_purchase_wish'),
     ...purchaseWishDataSchema.shape,
   }),
@@ -111,11 +123,16 @@ export const libraryChangeSchema = z.discriminatedUnion('type', [
     ...rating,
     trackId: id,
   }),
-  z.strictObject({ type: z.literal('remove_album_rating'), ...target }),
+  z.strictObject({
+    type: z.literal('remove_album_rating'),
+    ...target,
+    expectedScoreUnits: scoreUnitsSchema.optional(),
+  }),
   z.strictObject({
     type: z.literal('remove_track_rating'),
     ...target,
     trackId: id,
+    expectedScoreUnits: scoreUnitsSchema.optional(),
   }),
   z.strictObject({
     type: z.literal('set_listening_status'),

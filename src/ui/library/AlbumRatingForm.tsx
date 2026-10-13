@@ -21,9 +21,9 @@ export function AlbumRatingForm({
       kind="album"
       title="Tu valoración del álbum"
       score={score}
-      onChangeScore={(next) =>
+      onChangeScore={(next, expected) =>
         next === undefined
-          ? library.removeAlbumRating(entryId)
+          ? library.removeAlbumRating(entryId, expected)
           : library.rateAlbum(entryId, next)
       }
       onCommitted={onCommitted}

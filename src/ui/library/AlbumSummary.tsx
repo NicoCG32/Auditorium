@@ -6,13 +6,18 @@ import type { MusicLibrary } from '../../application/music-library'
 import { AlbumCover } from './AlbumCover'
 import { AlbumRatingForm } from './AlbumRatingForm'
 import { AlbumExperienceForm } from './AlbumExperienceForm'
-import type { UserAlbum, TrackRating } from '../../domain/library/schemas'
+import type {
+  UserAlbum,
+  TrackRating,
+  Library,
+} from '../../domain/library/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { AlbumTrackLists } from './AlbumTrackLists'
 import { OwnedItemsPanel } from './OwnedItemsPanel'
 import type { OwnedItem } from '../../domain/library/owned-items'
 import type { PurchaseWish } from '../../domain/library/purchase-wishes'
 import { PurchaseWishesPanel } from './PurchaseWishesPanel'
+import { RemoveAlbumPanel } from './RemoveAlbumPanel'
 
 export function AlbumSummary({
   album,
@@ -28,6 +33,8 @@ export function AlbumSummary({
   trackRatings,
   ownedItems,
   purchaseWishes,
+  personalLibrary,
+  onRemoved,
 }: {
   album: Album
   entry: LibraryAlbum
@@ -42,6 +49,8 @@ export function AlbumSummary({
   trackRatings: TrackRating[]
   ownedItems: OwnedItem[]
   purchaseWishes: PurchaseWish[]
+  personalLibrary: Library
+  onRemoved: () => void
 }) {
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
@@ -154,6 +163,16 @@ export function AlbumSummary({
         blocked={busy}
         onBusyChange={onBusyChange}
         onCommitted={onExperienceCommitted}
+      />
+      <RemoveAlbumPanel
+        entryId={personalEntry.id}
+        title={album.title}
+        data={personalLibrary}
+        library={library}
+        blocked={busy}
+        onBusyChange={onBusyChange}
+        onCommitted={onExperienceCommitted}
+        onRemoved={onRemoved}
       />
     </section>
   )

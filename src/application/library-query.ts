@@ -36,6 +36,17 @@ function normalized(text: string) {
 }
 
 export function projectLibrary(snapshot: LocalSnapshot): LibraryAlbum[] {
+  return projectEntries(snapshot, false)
+}
+
+export function projectRemovedAlbums(snapshot: LocalSnapshot): LibraryAlbum[] {
+  return projectEntries(snapshot, true)
+}
+
+function projectEntries(
+  snapshot: LocalSnapshot,
+  removed: boolean,
+): LibraryAlbum[] {
   const albums = new Map(
     snapshot.catalog.albums.map((album) => [album.id, album]),
   )
@@ -52,7 +63,7 @@ export function projectLibrary(snapshot: LocalSnapshot): LibraryAlbum[] {
     credits.set(credit.albumId, rows)
   }
   return snapshot.library.userAlbums
-    .filter((entry) => entry.deletedAt === undefined)
+    .filter((entry) => (entry.deletedAt !== undefined) === removed)
     .map((entry) => {
       const album = albums.get(entry.albumId)
       if (!album)
