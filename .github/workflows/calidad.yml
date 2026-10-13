@@ -33,3 +33,7 @@ jobs:
         run: npm ci
       - name: Ejecutar verificaciones
         run: npm run check
+      - name: Preparar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verificar PWA sin conexión
+        run: npm run test:e2e

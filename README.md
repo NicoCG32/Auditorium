@@ -2,7 +2,7 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-Las Fases 0, 1, 2 y 3 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. La Fase 4 incorpora retirada reversible, confirmaciones y respaldos JSON con restauración en biblioteca vacía. PWA y la validación completa offline continúan en los siguientes hitos. El MVP previsto será local, con respaldo JSON y funcionamiento offline tras la primera carga. Las cuentas y la sincronización son etapas posteriores.
+Las Fases 0, 1, 2 y 3 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. La Fase 4 incorpora retirada reversible, confirmaciones, respaldos JSON con restauración en biblioteca vacía y PWA para reabrir y gestionar la biblioteca sin conexión tras prepararse. Quedan la validación adicional de migraciones/recuperación y la entrega completa del MVP. Las cuentas y la sincronización son etapas posteriores.
 
 ## Desarrollo local
 
@@ -22,9 +22,11 @@ npm run build
 npm run preview
 ```
 
-`build` comprueba los tipos de la aplicación y de la configuración y genera los archivos estáticos en `dist/`. `preview` permite revisar esa compilación localmente. Los artefactos generados y las dependencias no se versionan.
+`build` comprueba los tipos de la aplicación, configuración y pruebas E2E, y genera los archivos estáticos y la PWA en `dist/`. `preview` permite revisar esa compilación localmente. El service worker se desactiva en desarrollo; usa el origen de preview para probar offline. Los artefactos generados y las dependencias no se versionan.
 
-La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes, revisar coincidencias, consultar su ficha, valorar y editar escucha y comentarios de forma independiente. La ficha reúne la lista original y las ediciones con orden propio, pistas compartidas, bonus y variantes. Las notas de pistas se comparten entre sus apariciones; una variante tiene nota propia y la del álbum no se recalcula. Incluye portada opcional, protección de borradores y errores con reintento. La colección registra copias independientes y compras digitales, con eliminación confirmada. Los deseos apuntan a un formato o edición y una compra coincidente ofrece cumplirlos mediante una acción explícita. Permite retirar álbumes sin perder datos y restaurar la misma entrada desde «Álbumes retirados». Quitar valoraciones y ejemplares requiere confirmar sus consecuencias. «Respaldos» descarga la biblioteca completa y restaura datos e identidad desde un JSON validado, únicamente en un destino vacío. PWA sigue en Fase 4.
+La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes, revisar coincidencias, consultar su ficha, valorar y editar escucha y comentarios de forma independiente. La ficha reúne la lista original y las ediciones con orden propio, pistas compartidas, bonus y variantes. Las notas de pistas se comparten entre sus apariciones; una variante tiene nota propia y la del álbum no se recalcula. Incluye portada opcional, protección de borradores y errores con reintento. La colección registra copias independientes y compras digitales, con eliminación confirmada. Los deseos apuntan a un formato o edición y una compra coincidente ofrece cumplirlos mediante una acción explícita. Permite retirar álbumes sin perder datos y restaurar la misma entrada desde «Álbumes retirados». Quitar valoraciones y ejemplares requiere confirmar sus consecuencias. «Respaldos» descarga la biblioteca completa y restaura datos e identidad desde un JSON validado, únicamente en un destino vacío.
+
+«Aplicación y almacenamiento» informa cuándo se puede reabrir sin conexión, ofrece instalación donde se admita y permite solicitar protección del almacenamiento. Una nueva versión espera al cierre de todas las ventanas, conservando la biblioteca y los borradores de ventanas abiertas. Las portadas y enlaces externos requieren red. El navegador puede eliminar datos locales; guarda respaldos fuera del dispositivo. Consulta los [alcances y límites de la PWA](docs/PWA_OFFLINE.md).
 
 ## Verificaciones
 
@@ -46,7 +48,9 @@ Este comando comprueba formato, lint, tipos, pruebas y build, y se detiene ante 
 
 TypeScript se fija en 6.0.3 para respetar el [rango compatible de typescript-eslint](https://typescript-eslint.io/users/dependency-versions/). Se mantienen todas las opciones estrictas.
 
-GitHub Actions ejecuta `npm ci` y `npm run check` en las PR y en cambios de `main`, con Node 24 y npm 12.2.0, usando un runner Linux estándar. El flujo no despliega la aplicación.
+Para comprobar offline y actualizaciones en Chromium aislado, ejecuta `npx playwright install chromium` una vez y después `npm run test:e2e`. El servidor de prueba ocupa `127.0.0.1:4178`; compila dos versiones de producción y usa exclusivamente datos ficticios. No modifica la biblioteca del navegador habitual.
+
+GitHub Actions ejecuta `npm ci`, `npm run check`, prepara Chromium y ejecuta `npm run test:e2e` en las PR y en cambios de `main`, con Node 24 y npm 12.2.0, usando un runner Linux estándar. El flujo no despliega la aplicación.
 
 La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los proyectos TypeScript de la aplicación y de Node.
 
@@ -71,6 +75,8 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Deseos de compra y migración v3](docs/DESEOS_COMPRA.md)
 - [Retirada y eliminaciones personales](docs/ELIMINACIONES_PERSONALES.md)
 - [Respaldos JSON y restauración](docs/RESPALDOS_JSON.md)
+- [Instalación, uso offline y almacenamiento](docs/PWA_OFFLINE.md)
+- [Decisión de actualización PWA](docs/adr/006-actualizaciones-pwa.md)
 - [Decisión de identidad en respaldo](docs/adr/005-identidad-respaldo.md)
 - [Decisión de retirada reversible](docs/adr/004-retirada-personal.md)
 - Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).

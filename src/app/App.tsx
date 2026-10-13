@@ -1,7 +1,15 @@
 import type { BackupLocalRepository } from '../domain/repositories/local-repository'
 import { LibraryPage } from '../ui/library/LibraryPage'
+import { OfflinePanel } from '../ui/offline/OfflinePanel'
+import type { OfflineController } from '../infrastructure/browser/offline-controller'
 
-export function App({ repository }: { repository: BackupLocalRepository }) {
+export function App({
+  repository,
+  offline,
+}: {
+  repository: BackupLocalRepository
+  offline?: OfflineController
+}) {
   return (
     <div className="flex min-h-svh flex-col bg-background text-foreground">
       <a className="skip-link" href="#contenido">
@@ -26,6 +34,7 @@ export function App({ repository }: { repository: BackupLocalRepository }) {
         <LibraryPage repository={repository} />
       </main>
       <footer className="mx-auto w-full max-w-7xl px-6 pb-7 sm:px-10 lg:px-16">
+        {offline && <OfflinePanel controller={offline} />}
         <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5 text-xs text-muted">
           <p>Tu música. Tu criterio. Tu colección.</p>
           <p>Guardada en este navegador.</p>

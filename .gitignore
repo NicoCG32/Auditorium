@@ -13,3 +13,6 @@ Thumbs.db
 .vscode/
 .idea/
 auditorium-*.json
+test-results/
+playwright-report/
+.pwa-test-builds/
