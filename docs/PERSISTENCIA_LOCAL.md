@@ -59,10 +59,14 @@ Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reap
 
 La [matriz de aceptación de Fase 1](VALIDACION_PERSISTENCIA.md) detalla rechazos y rollback comprobados tras reabrir, aislamiento de lecturas, escrituras concurrentes y conservación de datos y esquemas incompatibles.
 
-Las funciones de PWA, respaldo JSON y recuperación de bibliotecas pertenecen a Fase 4. IndexedDB puede ser eliminado por el navegador; la implementación de almacenamiento no sustituye esos hitos.
+Los [respaldos JSON](RESPALDOS_JSON.md) permiten restaurar bibliotecas vacías con adopción de identidad atómica. PWA y validación completa siguen en Fase 4. IndexedDB puede ser eliminado por el navegador; la implementación de almacenamiento no sustituye esos hitos.
 
 Referencias: [ADR-001](adr/001-mvp-local.md), [transacciones y errores en Dexie](https://dexie.org/docs/Tutorial/Best-Practices) e [índices compuestos](https://dexie.org/docs/Compound-Index).
 
 ## Retirada reversible
 
 La [baja personal](ELIMINACIONES_PERSONALES.md) conserva todas las filas dependientes y solo cambia `userAlbums`: fija `deletedAt`/`updatedAt` y deriva `activeAlbumKey=null`. Restaurar elimina el marcador, actualiza la fecha y deriva el índice activo, exigiendo que no exista otra entrada activa del mismo álbum. Se conservan IDs y fecha de alta; una referencia obsoleta se rechaza antes de escribir. No hay tablas nuevas ni migración: continúa el esquema v3. Ver [ADR-004](adr/004-retirada-personal.md).
+
+## Restauración vacía
+
+`BackupLocalRepository` extiende el repositorio transaccional con `restoreEmpty`. La validación de datos ocurre antes de abrir; la transacción comprueba todas las colecciones vacías, metadata única e identidad esperada. Identidad respaldada y escrituras musicales se confirman o revierten juntas. Las mutaciones ordinarias siguen preservando identidad; no hay cambios de tablas ni versión. Ver [ADR-005](adr/005-identidad-respaldo.md).

@@ -24,3 +24,10 @@ export interface TransactionalLocalRepository extends LocalRepository {
     change: (snapshot: LocalSnapshot) => SnapshotMutation<T>,
   ): Promise<T>
 }
+
+export interface BackupLocalRepository extends TransactionalLocalRepository {
+  restoreEmpty(
+    snapshot: LocalSnapshot,
+    expectedIdentity: LocalIdentity,
+  ): Promise<LocalSnapshot>
+}

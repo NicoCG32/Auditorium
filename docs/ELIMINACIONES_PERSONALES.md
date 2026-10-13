@@ -42,4 +42,4 @@ Retirar o restaurar una entrada personal nunca borra álbumes, artistas, edicion
 
 Los validadores de snapshots impiden retirar una edición referenciada por copias o deseos, aunque su entrada personal esté retirada; también comprueban las apariciones de pistas. Una operación futura de catálogo deberá resolver esas referencias explícitamente antes de permitir eliminación. La baja personal no libera referencias para un borrado silencioso.
 
-Las pruebas ficticias cubren retirada/restauración persistente, filas protegidas, unicidad, concurrencia, cuota/aborto, referencias históricas y errores de lectura/foco. Respaldo, restauración de archivos y PWA continúan en los siguientes hitos de [Fase 4](PLAN_DESARROLLO.md).
+Las pruebas ficticias cubren retirada/restauración persistente, filas protegidas, unicidad, concurrencia, cuota/aborto, referencias históricas y errores de lectura/foco. Los [respaldos](RESPALDOS_JSON.md) incluyen retirados y sus relaciones; restauran datos e identidad en un destino vacío. PWA continúa en los siguientes hitos de [Fase 4](PLAN_DESARROLLO.md).

@@ -18,6 +18,6 @@ Las eliminaciones individuales de ejemplares y ratings conservan su alcance: req
 
 El usuario puede recuperar el álbum sin perder datos ni cambiar sus IDs. Las entradas retiradas siguen ocupando espacio y conservan referencias a catálogo; no se incorpora purga permanente. Una alta nueva y una entrada retirada pueden coexistir, pero restaurar requiere que no haya otra activa. No se transfieren sus datos silenciosamente.
 
-Esta retirada no sustituye un respaldo. La exportación futura deberá incluir entradas retiradas y todas sus relaciones. La sincronización y su política de marcadores/conflictos se resolverán en su hito, sin añadir ahora un protocolo remoto.
+Esta retirada no sustituye un respaldo. Los [respaldos JSON](../RESPALDOS_JSON.md) incluyen entradas retiradas y todas sus relaciones. La sincronización y su política de marcadores/conflictos se resolverán en su hito, sin añadir ahora un protocolo remoto.
 
 Ver [contrato de eliminaciones](../ELIMINACIONES_PERSONALES.md) y [persistencia](../PERSISTENCIA_LOCAL.md).

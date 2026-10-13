@@ -8,7 +8,7 @@ import {
 import { MusicLibrary } from '../../application/music-library'
 import type {
   LocalSnapshot,
-  TransactionalLocalRepository,
+  BackupLocalRepository,
 } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { AlbumCard } from './AlbumCard'
@@ -16,6 +16,7 @@ import { AlbumForm } from './AlbumForm'
 import { AlbumSummary } from './AlbumSummary'
 import { LibraryControls } from './LibraryControls'
 import { RemovedAlbumsPanel } from './RemovedAlbumsPanel'
+import { BackupPanel } from './BackupPanel'
 
 type LoadState =
   | { status: 'loading' }
@@ -40,7 +41,7 @@ function errorMessage(error: unknown) {
 export function LibraryPage({
   repository,
 }: {
-  repository: TransactionalLocalRepository
+  repository: BackupLocalRepository
 }) {
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [request, setRequest] = useState(0)
@@ -51,6 +52,9 @@ export function LibraryPage({
   const [notice, setNotice] = useState('')
   const [detailBusy, setDetailBusy] = useState(false)
   const [removedOpen, setRemovedOpen] = useState(false)
+  const [backupOpen, setBackupOpen] = useState(false)
+  const backupButton = useRef<HTMLButtonElement>(null)
+  const focusBackup = useRef(false)
   const removedButton = useRef<HTMLButtonElement>(null)
   const focusRemoved = useRef(false)
   const addButton = useRef<HTMLButtonElement>(null)
@@ -74,6 +78,10 @@ export function LibraryPage({
     }
   }, [repository, request])
   useEffect(() => {
+    if (!backupOpen && focusBackup.current) {
+      backupButton.current?.focus()
+      focusBackup.current = false
+    }
     if (!removedOpen && focusRemoved.current) {
       removedButton.current?.focus()
       focusRemoved.current = false
@@ -100,12 +108,13 @@ export function LibraryPage({
       nextFocus?.focus()
       focusEntry.current = undefined
     }
-  }, [state, selectedId, formOpen, removedOpen])
+  }, [state, selectedId, formOpen, removedOpen, backupOpen])
   function refresh() {
     setState({ status: 'loading' })
     setRequest((previous) => previous + 1)
   }
   function complete(entryId: string, openExisting: boolean) {
+    setBackupOpen(false)
     setRemovedOpen(false)
     setFormOpen(false)
     setFilters(defaultLibraryFilters)
@@ -165,6 +174,7 @@ export function LibraryPage({
             onClick={() => {
               setSelectedId(undefined)
               setRemovedOpen(false)
+              setBackupOpen(false)
               setNotice('')
               setFormOpen(true)
             }}
@@ -187,6 +197,7 @@ export function LibraryPage({
             onClick={() => {
               setSelectedId(undefined)
               setRemovedOpen(true)
+              setBackupOpen(false)
               setNotice('')
             }}
           >
@@ -197,6 +208,20 @@ export function LibraryPage({
                 ).length
               : 0}
             )
+          </button>
+          <button
+            ref={backupButton}
+            type="button"
+            className="action-button"
+            disabled={state.status !== 'ready' || formOpen || detailBusy}
+            onClick={() => {
+              setSelectedId(undefined)
+              setRemovedOpen(false)
+              setBackupOpen(true)
+              setNotice('')
+            }}
+          >
+            Respaldos
           </button>
         </div>
       </div>
@@ -233,6 +258,25 @@ export function LibraryPage({
           onCancel={() => {
             focusAdd.current = true
             setFormOpen(false)
+          }}
+        />
+      ) : backupOpen ? (
+        <BackupPanel
+          repository={repository}
+          snapshot={state.snapshot}
+          blocked={detailBusy}
+          onBusyChange={setDetailBusy}
+          onCommitted={synchronizeDetail}
+          onRestored={() => {
+            setBackupOpen(false)
+            setFilters(defaultLibraryFilters)
+            setSelectedId(undefined)
+            focusAdd.current = true
+            setNotice('Biblioteca restaurada con sus datos e identidad local.')
+          }}
+          onBack={() => {
+            focusBackup.current = true
+            setBackupOpen(false)
           }}
         />
       ) : removedOpen ? (

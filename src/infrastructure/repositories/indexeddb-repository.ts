@@ -3,7 +3,7 @@ import { catalogSchema } from '../../domain/catalog/catalog'
 import { localIdentitySchema, type LocalIdentity } from '../../domain/identity'
 import { createLibrarySchema } from '../../domain/library/library'
 import type {
-  TransactionalLocalRepository,
+  BackupLocalRepository,
   SnapshotMutation,
   LocalSnapshot,
 } from '../../domain/repositories/local-repository'
@@ -11,6 +11,11 @@ import { AuditoriumDatabase, DATABASE_VERSION } from '../db/database'
 import { asLocalStorageError, LocalStorageError } from '../db/errors'
 import { checkNativeSchema } from '../db/preflight'
 import { writeSnapshotChanges } from '../db/write-changes'
+import {
+  BackupError,
+  isEmptySnapshot,
+  localSnapshotSchema,
+} from '../../domain/backup'
 import {
   fromStoredUserAlbum,
   IDENTITY_KEY,
@@ -23,7 +28,7 @@ export interface IndexedDbOptions {
   now?: () => Date
 }
 
-export class IndexedDbRepository implements TransactionalLocalRepository {
+export class IndexedDbRepository implements BackupLocalRepository {
   private readonly database: AuditoriumDatabase
   private readonly createId: () => string
   private readonly now: () => Date
@@ -298,6 +303,50 @@ export class IndexedDbRepository implements TransactionalLocalRepository {
       )
     } catch (error) {
       if (operationFailure) throw operationFailure
+      throw asLocalStorageError(error)
+    }
+  }
+
+  async restoreEmpty(
+    snapshotInput: LocalSnapshot,
+    expectedIdentityInput: LocalIdentity,
+  ): Promise<LocalSnapshot> {
+    // Validar antes de abrir o inicializar el destino.
+    const next = localSnapshotSchema.parse(snapshotInput)
+    const expected = localIdentitySchema.parse(expectedIdentityInput)
+    await this.openDatabase()
+    try {
+      return await this.database.transaction(
+        'rw',
+        this.database.tables,
+        async () => {
+          const before = await this.readInsideTransaction()
+          if (
+            !isEmptySnapshot(before) ||
+            (await this.database.metadata.count()) !== 1
+          )
+            throw new BackupError(
+              'not_empty',
+              'La biblioteca debe estar completamente vacía para restaurar.',
+            )
+          if (
+            before.identity.userId !== expected.userId ||
+            before.identity.createdAt !== expected.createdAt
+          )
+            throw new BackupError(
+              'destination_changed',
+              'La identidad del destino cambió después de leerla.',
+            )
+          await this.database.metadata.put({
+            key: IDENTITY_KEY,
+            ...next.identity,
+          })
+          await writeSnapshotChanges(this.database, before, next)
+          return next
+        },
+      )
+    } catch (error) {
+      if (error instanceof BackupError) throw error
       throw asLocalStorageError(error)
     }
   }
