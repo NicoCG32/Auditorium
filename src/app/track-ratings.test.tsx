@@ -127,6 +127,9 @@ test('variante tiene nota propia y quitarla elimina solo su registro', async () 
   expect(row('Eclipse')).toHaveTextContent('9 / 10')
   expect(row('Eclipse (Demo)')).toHaveTextContent('6,5 / 10')
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota de pista' }))
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Confirmar quitar nota de pista' }),
+  )
   await screen.findByText('Nota de pista quitada.')
   await finished()
   expect(row('Eclipse (Demo)')).toHaveTextContent('Sin nota')
@@ -232,11 +235,17 @@ test('remoción fallida conserva fila y permite reintentar', async () => {
     .spyOn(databases[0]!.trackRatings, 'bulkDelete')
     .mockRejectedValue(new DOMException('Aborto ficticio', 'AbortError'))
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota de pista' }))
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Confirmar quitar nota de pista' }),
+  )
   await screen.findByRole('alert')
   expect(await repository.readSnapshot()).toEqual(before)
   expect(row('Eclipse')).toHaveTextContent('9 / 10')
   failure.mockRestore()
   fireEvent.click(screen.getByRole('button', { name: 'Quitar nota de pista' }))
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Confirmar quitar nota de pista' }),
+  )
   await screen.findByText('Nota de pista quitada.')
   await finished()
   expect(row('Eclipse')).toHaveTextContent('Sin nota')
@@ -263,6 +272,10 @@ test.each(['guardar', 'quitar'])(
             : 'Quitar nota de pista',
       }),
     )
+    if (action === 'quitar')
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Confirmar quitar nota de pista' }),
+      )
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'El cambio se guardó',
     )

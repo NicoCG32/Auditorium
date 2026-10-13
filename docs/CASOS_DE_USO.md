@@ -66,3 +66,7 @@ El adaptador prioriza integridad leyendo y validando un snapshot completo; persi
 El esquema v2 añade [ejemplares](EJEMPLARES.md), con migración aditiva desde v1. `addOwnedItem` registra cada copia con ID propio; `removeOwnedItem` retira solo el ID elegido tras la confirmación de interfaz. Ambas operaciones conservan catálogo y otras colecciones personales. Consulta, registro manual, listas, experiencia y valoraciones de álbum y pistas usan el núcleo local. Ver [calificaciones de pistas](CALIFICACIONES_PISTAS.md) para identidad compartida, independencia y recuperación de errores en la interfaz. Los [deseos](DESEOS_COMPRA.md) se incorporan en v3 como registros independientes. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
 
 Referencia: [transacciones de Dexie](<https://dexie.org/docs/Dexie/Dexie.transaction()>).
+
+## Retirada y confirmaciones
+
+La [retirada personal](ELIMINACIONES_PERSONALES.md) marca la entrada y conserva notas, escucha, valoraciones, copias y deseos; «Álbumes retirados» permite restaurar el mismo ID sin fusionarlo con otra entrada activa. La baja verifica la referencia personal leída y solo actualiza `userAlbums` y su índice derivado, manteniendo esquema v3 y catálogo. Quitar valoraciones exige confirmar su valor y alcance; una nota distinta de la confirmada no se retira. Ver [ADR-004](adr/004-retirada-personal.md).

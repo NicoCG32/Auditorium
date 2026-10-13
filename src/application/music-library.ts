@@ -480,6 +480,30 @@ export class MusicLibrary {
       ownedItemId: entityIdSchema.parse(ownedItemId),
     })
   }
+
+  async removePersonalAlbum(
+    userAlbumId: unknown,
+    expectedToken: string,
+  ): Promise<void> {
+    await this.changeLibrary({
+      type: 'remove_personal_album',
+      userAlbumId: entityIdSchema.parse(userAlbumId),
+      expectedToken,
+      updatedAt: this.now().toISOString(),
+    })
+  }
+
+  async restorePersonalAlbum(
+    userAlbumId: unknown,
+    expectedToken: string,
+  ): Promise<void> {
+    await this.changeLibrary({
+      type: 'restore_personal_album',
+      userAlbumId: entityIdSchema.parse(userAlbumId),
+      expectedToken,
+      updatedAt: this.now().toISOString(),
+    })
+  }
   async rateTrack(
     userAlbumId: unknown,
     trackId: unknown,
@@ -493,20 +517,30 @@ export class MusicLibrary {
       updatedAt: this.now().toISOString(),
     })
   }
-  async removeAlbumRating(userAlbumId: unknown): Promise<void> {
+  async removeAlbumRating(
+    userAlbumId: unknown,
+    expectedScore?: unknown,
+  ): Promise<void> {
     return this.changeLibrary({
       type: 'remove_album_rating',
       userAlbumId: entityIdSchema.parse(userAlbumId),
+      ...(expectedScore === undefined
+        ? {}
+        : { expectedScoreUnits: scoreToUnits(expectedScore) }),
     })
   }
   async removeTrackRating(
     userAlbumId: unknown,
     trackId: unknown,
+    expectedScore?: unknown,
   ): Promise<void> {
     return this.changeLibrary({
       type: 'remove_track_rating',
       userAlbumId: entityIdSchema.parse(userAlbumId),
       trackId: entityIdSchema.parse(trackId),
+      ...(expectedScore === undefined
+        ? {}
+        : { expectedScoreUnits: scoreToUnits(expectedScore) }),
     })
   }
 }

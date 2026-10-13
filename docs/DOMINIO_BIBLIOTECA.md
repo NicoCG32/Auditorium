@@ -17,7 +17,7 @@ El snapshot requiere `userAlbums`, `albumRatings` y `trackRatings`, aunque las l
 ## Invariantes
 
 - Una sola entrada activa por usuario y álbum. Los IDs de entradas siempre son únicos.
-- Una entrada dada de baja puede coexistir con una nueva activa bajo otro ID. Se permite conservar sus datos históricos; la política de eliminación de interfaz se definirá en Fase 4.
+- Una entrada dada de baja puede coexistir con una nueva activa bajo otro ID. Se permite conservar sus datos históricos; la [retirada reversible](ELIMINACIONES_PERSONALES.md) conserva sus relaciones y permite restaurar la misma entrada.
 - Toda entrada pertenece a la identidad local del contexto y referencia un álbum existente.
 - Una sola calificación por entrada/álbum y otra por entrada/pista. La pista debe existir y pertenecer al álbum correcto.
 - Una pista compartida entre ediciones tiene la misma calificación; una variante identificada como otra pista admite nota propia. La edición no forma parte de la clave de calificación.
@@ -62,3 +62,7 @@ Estas funciones expresan reglas del dominio y `MusicLibrary` las aplica dentro d
 ## Deseos de compra
 
 `purchaseWishes` contiene objetivos por formato o edición, estado activo/cumplido/cancelado, notas opcionales y fecha UTC. Se exige al menos un objetivo válido del álbum, compatibilidad si se indican ambos e IDs únicos. `add_purchase_wish`, `update_purchase_wish` y `set_wish_status` conservan las otras colecciones. La edición comprueba la referencia leída; cumplir comprueba estado activo y un ejemplar coincidente vigente. Ver [contrato y migración v3](DESEOS_COMPRA.md).
+
+## Retirada y confirmaciones
+
+La [retirada personal](ELIMINACIONES_PERSONALES.md) marca la entrada y conserva notas, escucha, valoraciones, copias y deseos; «Álbumes retirados» permite restaurar el mismo ID sin fusionarlo con otra entrada activa. La baja verifica la referencia personal leída y solo actualiza `userAlbums` y su índice derivado, manteniendo esquema v3 y catálogo. Quitar valoraciones exige confirmar su valor y alcance; una nota distinta de la confirmada no se retira. Ver [ADR-004](adr/004-retirada-personal.md).

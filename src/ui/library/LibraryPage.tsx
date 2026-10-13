@@ -15,6 +15,7 @@ import { AlbumCard } from './AlbumCard'
 import { AlbumForm } from './AlbumForm'
 import { AlbumSummary } from './AlbumSummary'
 import { LibraryControls } from './LibraryControls'
+import { RemovedAlbumsPanel } from './RemovedAlbumsPanel'
 
 type LoadState =
   | { status: 'loading' }
@@ -49,6 +50,9 @@ export function LibraryPage({
   const [selectedId, setSelectedId] = useState<string>()
   const [notice, setNotice] = useState('')
   const [detailBusy, setDetailBusy] = useState(false)
+  const [removedOpen, setRemovedOpen] = useState(false)
+  const removedButton = useRef<HTMLButtonElement>(null)
+  const focusRemoved = useRef(false)
   const addButton = useRef<HTMLButtonElement>(null)
   const focusAdd = useRef(false)
   const focusEntry = useRef<string | undefined>(undefined)
@@ -70,6 +74,10 @@ export function LibraryPage({
     }
   }, [repository, request])
   useEffect(() => {
+    if (!removedOpen && focusRemoved.current) {
+      removedButton.current?.focus()
+      focusRemoved.current = false
+    }
     if (!formOpen && focusAdd.current) {
       addButton.current?.focus()
       focusAdd.current = false
@@ -92,12 +100,13 @@ export function LibraryPage({
       nextFocus?.focus()
       focusEntry.current = undefined
     }
-  }, [state, selectedId, formOpen])
+  }, [state, selectedId, formOpen, removedOpen])
   function refresh() {
     setState({ status: 'loading' })
     setRequest((previous) => previous + 1)
   }
   function complete(entryId: string, openExisting: boolean) {
+    setRemovedOpen(false)
     setFormOpen(false)
     setFilters(defaultLibraryFilters)
     setSelectedId(openExisting ? entryId : undefined)
@@ -155,6 +164,7 @@ export function LibraryPage({
             disabled={state.status !== 'ready' || formOpen || detailBusy}
             onClick={() => {
               setSelectedId(undefined)
+              setRemovedOpen(false)
               setNotice('')
               setFormOpen(true)
             }}
@@ -168,6 +178,25 @@ export function LibraryPage({
             disabled={state.status === 'loading' || formOpen || detailBusy}
           >
             Actualizar biblioteca
+          </button>
+          <button
+            ref={removedButton}
+            type="button"
+            className="action-button"
+            disabled={state.status !== 'ready' || formOpen || detailBusy}
+            onClick={() => {
+              setSelectedId(undefined)
+              setRemovedOpen(true)
+              setNotice('')
+            }}
+          >
+            Álbumes retirados (
+            {state.status === 'ready'
+              ? state.snapshot.library.userAlbums.filter(
+                  (row) => row.deletedAt !== undefined,
+                ).length
+              : 0}
+            )
           </button>
         </div>
       </div>
@@ -206,6 +235,27 @@ export function LibraryPage({
             setFormOpen(false)
           }}
         />
+      ) : removedOpen ? (
+        <RemovedAlbumsPanel
+          snapshot={state.snapshot}
+          library={library}
+          blocked={detailBusy}
+          onBusyChange={setDetailBusy}
+          onCommitted={synchronizeDetail}
+          onRestored={(entryId) => {
+            setRemovedOpen(false)
+            setSelectedId(entryId)
+            setNotice('Álbum restaurado con sus datos personales.')
+          }}
+          onOpenActive={(entryId) => {
+            setRemovedOpen(false)
+            setSelectedId(entryId)
+          }}
+          onBack={() => {
+            focusRemoved.current = true
+            setRemovedOpen(false)
+          }}
+        />
       ) : selected && selectedAlbum && personalEntry ? (
         <AlbumSummary
           key={selected.id}
@@ -220,6 +270,14 @@ export function LibraryPage({
           trackRatings={state.snapshot.library.trackRatings}
           ownedItems={state.snapshot.library.ownedItems}
           purchaseWishes={state.snapshot.library.purchaseWishes}
+          personalLibrary={state.snapshot.library}
+          onRemoved={() => {
+            focusEntry.current = selected.id
+            setSelectedId(undefined)
+            setNotice(
+              'Álbum retirado. Puedes restaurarlo desde «Álbumes retirados» con todos sus datos personales.',
+            )
+          }}
           onExperienceCommitted={synchronizeDetail}
           onBack={() => {
             focusEntry.current = selected.id

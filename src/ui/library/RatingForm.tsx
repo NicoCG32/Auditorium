@@ -2,12 +2,16 @@ import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { formatScore } from './labels'
 import { parseRating } from './parse-rating'
+import { LibraryChangeError } from '../../domain/library/library'
 
 interface Props {
   kind: 'album' | 'track'
   title: string
   score: number | undefined
-  onChangeScore: (score: number | undefined) => Promise<void>
+  onChangeScore: (
+    score: number | undefined,
+    expectedScore?: number,
+  ) => Promise<void>
   onCommitted: () => Promise<unknown>
   onClose?: () => void
   onBusyChange: (busy: boolean) => void
@@ -33,22 +37,32 @@ export function RatingForm({
   const [notice, setNotice] = useState('')
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState<{ score: number | undefined }>()
+  const [removing, setRemoving] = useState<{ score: number }>()
+  const keep = useRef<HTMLButtonElement>(null)
+  const remove = useRef<HTMLButtonElement>(null)
+  const focusRemove = useRef(false)
   const input = useRef<HTMLInputElement>(null)
   const retry = useRef<HTMLButtonElement>(null)
   const locked = useRef(false)
   const focusInput = useRef(false)
   const current = pending ? pending.score : score
   useEffect(() => {
+    if (removing) keep.current?.focus()
+  }, [removing])
+  useEffect(() => {
     if (kind === 'track') input.current?.focus()
   }, [kind])
   useEffect(() => {
     if (busy) return
     if (pending && failure) retry.current?.focus()
-    else if (!pending && focusInput.current) {
+    else if (!removing && focusRemove.current) {
+      remove.current?.focus()
+      focusRemove.current = false
+    } else if (!pending && !removing && focusInput.current) {
       input.current?.focus()
       focusInput.current = false
     }
-  }, [busy, pending, failure])
+  }, [busy, pending, failure, removing])
   async function synchronize() {
     try {
       await onCommitted()
@@ -63,7 +77,7 @@ export function RatingForm({
       // El cambio ya se confirmó; reintentar aquí nunca repite la escritura.
     }
   }
-  async function change(next: number | undefined) {
+  async function change(next: number | undefined, expectedScore?: number) {
     if (locked.current || pending || blocked) return
     locked.current = true
     setBusy(true)
@@ -72,12 +86,15 @@ export function RatingForm({
     setNotice('')
     setValidation('')
     try {
-      await onChangeScore(next)
+      await onChangeScore(next, expectedScore)
     } catch (error) {
       setFailure(
-        error instanceof LocalStorageError && error.code === 'quota_exceeded'
-          ? 'No hay espacio para guardar la nota. La nota anterior se conserva; libera espacio y vuelve a intentar.'
-          : 'No se pudo cambiar la nota. La nota anterior se conserva; vuelve a intentar.',
+        error instanceof LibraryChangeError && error.rule === 'outdated_change'
+          ? 'La nota cambió desde la confirmación. Actualiza la biblioteca y revisa la nota antes de quitarla; el valor vigente se conserva.'
+          : error instanceof LocalStorageError &&
+              error.code === 'quota_exceeded'
+            ? 'No hay espacio para guardar la nota. La nota anterior se conserva; libera espacio y vuelve a intentar.'
+            : 'No se pudo cambiar la nota. La nota anterior se conserva; vuelve a intentar.',
       )
       onBusyChange(false)
       setBusy(false)
@@ -86,6 +103,7 @@ export function RatingForm({
       return
     }
     setPending({ score: next })
+    setRemoving(undefined)
     setDraft(next === undefined ? '' : formatScore(next))
     setNotice(
       next === undefined
@@ -110,7 +128,7 @@ export function RatingForm({
   }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (locked.current || pending || blocked) return
+    if (locked.current || pending || blocked || removing) return
     const value = parseRating(draft)
     if (value === undefined) {
       setValidation('Escribe una nota de 1 a 10 en pasos de 0,5.')
@@ -135,7 +153,9 @@ export function RatingForm({
       </p>
       <form onSubmit={submit} noValidate autoComplete="off">
         <fieldset
-          disabled={busy || pending !== undefined || blocked}
+          disabled={
+            busy || pending !== undefined || blocked || Boolean(removing)
+          }
           className="mt-5 min-w-0"
         >
           <label className="field-label" htmlFor={`${kind}-score`}>
@@ -181,10 +201,14 @@ export function RatingForm({
             </button>
             <button
               type="button"
+              ref={remove}
               className="action-button"
               disabled={current === undefined}
               onClick={() => {
-                void change(undefined)
+                if (current !== undefined) {
+                  setFailure('')
+                  setRemoving({ score: current })
+                }
               }}
             >
               {isTrack ? 'Quitar nota de pista' : 'Quitar nota'}
@@ -197,6 +221,62 @@ export function RatingForm({
           </div>
         </fieldset>
       </form>
+      {removing ? (
+        <div
+          className="owned-confirm mt-4"
+          role="dialog"
+          aria-labelledby={`${prefix}-remove-title`}
+          aria-describedby={`${prefix}-remove-effects`}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && !busy && !blocked) {
+              event.preventDefault()
+              setRemoving(undefined)
+              setFailure('')
+              focusRemove.current = true
+            }
+          }}
+        >
+          <h4 id={`${prefix}-remove-title`} className="font-semibold">
+            {isTrack
+              ? 'Quitar la nota de esta pista'
+              : 'Quitar la nota del álbum'}
+          </h4>
+          <p id={`${prefix}-remove-effects`} className="mt-3 text-sm">
+            Se quitará la nota {formatScore(removing.score)} / 10.{' '}
+            {isTrack
+              ? 'Desaparecerá de todas las apariciones de esta pista; variantes y nota del álbum se conservan.'
+              : 'Las notas de pistas se conservan.'}{' '}
+            Escucha, notas personales, ejemplares, deseos y catálogo se
+            conservan. Puedes volver a valorar; la nota quitada no tiene
+            restauración automática.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-3">
+            <button
+              type="button"
+              ref={keep}
+              className="action-button"
+              disabled={busy || blocked}
+              onClick={() => {
+                setRemoving(undefined)
+                setFailure('')
+                focusRemove.current = true
+              }}
+            >
+              Conservar nota
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              disabled={busy || blocked}
+              onClick={() => void change(undefined, removing.score)}
+            >
+              {isTrack
+                ? 'Confirmar quitar nota de pista'
+                : 'Confirmar quitar nota'}
+            </button>
+          </div>
+        </div>
+      ) : null}
       {notice ? (
         <p role="status" className="mt-3 text-sm text-accent-text">
           {notice}

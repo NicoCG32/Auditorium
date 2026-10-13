@@ -12,7 +12,7 @@ No se buscan carátulas ni se añaden imágenes ajenas al producto. La figura SV
 
 La valoración del álbum es independiente de las pistas. Admite 1–10 en pasos de 0,5; el campo acepta coma o punto decimal y rechaza vacíos, cero, valores fuera del rango y otros pasos. `MusicLibrary.rateAlbum` valida de nuevo y guarda unidades enteras de 2 a 20 dentro de la transacción existente.
 
-«Quitar nota» llama a `removeAlbumRating` y elimina exclusivamente su registro. Una nota ausente se presenta como «Sin nota», sin usar cero; el botón de quitar queda deshabilitado cuando no hay nota guardada. Escucha, comentarios, catálogo y notas de pistas u otros álbumes se conservan.
+«Quitar nota» abre una confirmación que muestra el valor y sus consecuencias. Conservar o Escape cancelan sin escribir y devuelven el foco al botón. Confirmar llama a `removeAlbumRating` con el valor confirmado y retira exclusivamente su registro; si cambió, se conserva la nota vigente y se pide actualizar la biblioteca. Una nota ausente se presenta como «Sin nota», sin usar cero; el botón de quitar queda deshabilitado cuando no hay nota guardada. Escucha, comentarios, catálogo y notas de pistas u otros álbumes se conservan.
 
 Los cambios se anuncian después de confirmar la transacción. La ficha relee un snapshot validado y la biblioteca recibe la nota actualizada, incluidos sus filtros y ordenaciones. Durante la operación se bloquean envíos repetidos y navegación para conservar un resultado claro.
 
@@ -34,3 +34,5 @@ La comprobación manual usa una base independiente del producto y IndexedDB real
 LIB-04 añade el editor de [escucha y notas personales](EXPERIENCIA_PERSONAL.md), con guardado conjunto y protección de borradores ante otras conexiones. COL-01 reúne las [listas originales y ediciones](LISTAS_EDICIONES.md) con pistas compartidas, variantes y orden independiente. COL-02 permite [calificar pistas](CALIFICACIONES_PISTAS.md): la nota se comparte por identidad entre apariciones y cada variante tiene nota independiente. Todos los editores comparten el bloqueo de operaciones pendientes. COL-03 añade [ejemplares físicos y compras digitales](EJEMPLARES.md), con confirmación para eliminar cada copia y migración aditiva del esquema v1 a v2. No necesita dependencias nuevas. COL-04 añade [deseos por formato o edición](DESEOS_COMPRA.md), con cumplimiento explícito y migración aditiva a v3. Respaldo y PWA pertenecen a Fase 4.
 
 Referencias: [calificaciones del dominio](DOMINIO_BIBLIOTECA.md), [casos de uso](CASOS_DE_USO.md), [imágenes HTML](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/img) y [estado por identidad en React](https://react.dev/learn/preserving-and-resetting-state).
+
+La [retirada reversible](ELIMINACIONES_PERSONALES.md) permite quitar el álbum sin perder datos y restaurar la misma entrada desde «Álbumes retirados». La confirmación comprueba que sus datos personales no hayan cambiado.

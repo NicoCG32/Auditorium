@@ -6,7 +6,7 @@ La ficha muestra la nota de cada pista en la lista original y en las ediciones. 
 
 Se admiten notas de 1 a 10 en pasos de 0,5, con coma o punto decimal. Vacío, cero, valores fuera del rango y otros pasos son inválidos. «Guardar nota de pista» llama a `MusicLibrary.rateTrack(userAlbumId, trackId, score)`. Se guarda una sola nota por relación personal y pista, como unidades enteras de 2 a 20, dentro de la transacción existente.
 
-«Quitar nota de pista» llama a `removeTrackRating` y elimina exclusivamente ese registro; no guarda cero. Todas sus apariciones pasan a «Sin nota». La nota del álbum, otras pistas y variantes, escucha, comentarios, catálogo y otros álbumes permanecen independientes. No se calcula un promedio para reemplazar la valoración del álbum.
+«Quitar nota de pista» abre un diálogo con valor y consecuencias sobre todas las apariciones. Conservar o Escape cancelan sin escribir y devuelven el foco. Confirmar llama a `removeTrackRating` con el valor mostrado, que se comprueba en la transacción; una nota diferente se conserva y requiere actualizar la biblioteca. Solo se retira ese registro; no guarda cero. Todas sus apariciones pasan a «Sin nota». La nota del álbum, otras pistas y variantes, escucha, comentarios, catálogo y otros álbumes permanecen independientes. No se calcula un promedio para reemplazar la valoración del álbum.
 
 El editor se identifica por el ID de pista. Cambiar de pista o de lista descarta el borrador sin guardar y muestra los datos de la nueva selección. «Cerrar valoración de pista» descarta ese borrador y devuelve el foco a su botón. Actualizar otra valoración conserva el borrador de la pista abierta. Los borradores no sobreviven a una recarga.
 
@@ -23,3 +23,5 @@ Las escrituras de álbum, pista, listas y experiencia comparten la exclusión de
 Las pruebas de interfaz atraviesan el repositorio con IndexedDB simulado y fixtures ficticios: notas compartidas en original y ediciones, variante independiente, apariciones repetidas/título propio, quitar, validación, cuota/rollback, reapertura, lectura fallida tras guardar o quitar, exclusión de escrituras, identidad de borrador y foco. Las pruebas existentes de dominio y aplicación validan el par relación/pista y su independencia de la nota del álbum.
 
 La comprobación manual usa IndexedDB real en una base aislada del producto: guardado por teclado, varias ediciones, demo independiente, remoción, recarga, cuota y recuperación de lectura, móvil y foco. No se cargan datos de ejemplo en la biblioteca del producto. Las tablas y dependencias de calificaciones se conservan. [Ejemplares](EJEMPLARES.md) añade el esquema v2 sin modificar sus filas; [Deseos](DESEOS_COMPRA.md) añade el esquema v3 y conserva las otras colecciones.
+
+Retirar un álbum conserva también todas estas valoraciones y permite recuperar la misma entrada; ver [eliminaciones personales](ELIMINACIONES_PERSONALES.md).

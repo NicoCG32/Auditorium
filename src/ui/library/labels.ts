@@ -22,3 +22,7 @@ const scoreFormatter = new Intl.NumberFormat('es', { maximumFractionDigits: 1 })
 export function formatScore(score: number) {
   return scoreFormatter.format(score)
 }
+
+export function formatCount(count: number, singular: string, plural: string) {
+  return `${count} ${count === 1 ? singular : plural}`
+}

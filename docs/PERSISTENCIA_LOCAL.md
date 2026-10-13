@@ -62,3 +62,7 @@ La [matriz de aceptación de Fase 1](VALIDACION_PERSISTENCIA.md) detalla rechazo
 Las funciones de PWA, respaldo JSON y recuperación de bibliotecas pertenecen a Fase 4. IndexedDB puede ser eliminado por el navegador; la implementación de almacenamiento no sustituye esos hitos.
 
 Referencias: [ADR-001](adr/001-mvp-local.md), [transacciones y errores en Dexie](https://dexie.org/docs/Tutorial/Best-Practices) e [índices compuestos](https://dexie.org/docs/Compound-Index).
+
+## Retirada reversible
+
+La [baja personal](ELIMINACIONES_PERSONALES.md) conserva todas las filas dependientes y solo cambia `userAlbums`: fija `deletedAt`/`updatedAt` y deriva `activeAlbumKey=null`. Restaurar elimina el marcador, actualiza la fecha y deriva el índice activo, exigiendo que no exista otra entrada activa del mismo álbum. Se conservan IDs y fecha de alta; una referencia obsoleta se rechaza antes de escribir. No hay tablas nuevas ni migración: continúa el esquema v3. Ver [ADR-004](adr/004-retirada-personal.md).
