@@ -48,6 +48,16 @@ createServer((request, response) => {
 
 async function serve(request, response) {
   const url = new URL(request.url ?? '/', 'http://127.0.0.1:4178')
+  if (request.method === 'GET' && url.pathname === '/__test/storage') {
+    response.writeHead(200, {
+      'Content-Type': 'text/html',
+      'Cache-Control': 'no-store',
+    })
+    response.end(
+      '<!doctype html><html lang="es"><title>Prueba aislada de almacenamiento</title><body>Datos ficticios de prueba.</body></html>',
+    )
+    return
+  }
   if (request.method === 'POST' && url.pathname === '/__test/fail-assets') {
     failAssets = url.searchParams.get('value') === 'true'
     response.writeHead(204).end()
