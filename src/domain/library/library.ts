@@ -4,6 +4,7 @@ import { entityIdSchema } from '../shared/scalars'
 import { getLibraryIssues, type LibraryRule } from './integrity'
 import { libraryChangeSchema, libraryDataSchema, type Library } from './schemas'
 import { ownedItemSchema } from './owned-items'
+import { purchaseWishSchema, wishMatchesOwnedItem } from './purchase-wishes'
 
 export interface LibraryContext {
   catalog: Catalog
@@ -101,6 +102,86 @@ export function applyLibraryChange(
   }
 
   switch (change.type) {
+    case 'add_purchase_wish': {
+      const wish = purchaseWishSchema.parse(
+        Object.fromEntries(
+          Object.entries(change).filter(
+            ([key, value]) => key !== 'type' && value !== undefined,
+          ),
+        ),
+      )
+      if (wish.status !== 'active')
+        throw new LibraryChangeError(
+          'outdated_change',
+          'Un deseo nuevo debe estar activo.',
+        )
+      library.purchaseWishes = [...library.purchaseWishes, wish]
+      break
+    }
+    case 'update_purchase_wish':
+    case 'set_wish_status': {
+      const wish = library.purchaseWishes.find(
+        (row) => row.id === change.wishId,
+      )
+      if (!wish)
+        throw new LibraryChangeError(
+          'missing_reference',
+          'No existe el deseo seleccionado.',
+        )
+      if (wish.userAlbumId !== entry.id)
+        throw new LibraryChangeError(
+          'wrong_album',
+          'El deseo no pertenece a esta entrada.',
+        )
+      let updated = wish
+      if (change.type === 'update_purchase_wish') {
+        if (wish.status !== 'active')
+          throw new LibraryChangeError(
+            'outdated_change',
+            'Reactiva el deseo antes de editar su objetivo.',
+          )
+        if (JSON.stringify(wish) !== JSON.stringify(change.expected))
+          throw new LibraryChangeError(
+            'outdated_change',
+            'El deseo cambió después de leerlo.',
+          )
+        const base = {
+          id: wish.id,
+          userAlbumId: wish.userAlbumId,
+          status: wish.status,
+          createdAt: wish.createdAt,
+        }
+        updated = purchaseWishSchema.parse({
+          ...base,
+          ...(change.targetReleaseId
+            ? { targetReleaseId: change.targetReleaseId }
+            : {}),
+          ...(change.targetFormat ? { targetFormat: change.targetFormat } : {}),
+          ...(change.notes ? { notes: change.notes } : {}),
+        })
+      } else {
+        if (wish.status !== change.expectedStatus)
+          throw new LibraryChangeError(
+            'outdated_change',
+            'El estado del deseo cambió después de leerlo.',
+          )
+        if (change.status === 'fulfilled') {
+          const item = library.ownedItems.find(
+            (row) => row.id === change.ownedItemId,
+          )
+          if (!item || !wishMatchesOwnedItem(wish, item))
+            throw new LibraryChangeError(
+              'incompatible_release',
+              'Se requiere un ejemplar coincidente y un deseo activo para cumplirlo.',
+            )
+        }
+        updated = { ...wish, status: change.status }
+      }
+      library.purchaseWishes = library.purchaseWishes.map((row) =>
+        row.id === wish.id ? updated : row,
+      )
+      break
+    }
     case 'add_owned_item': {
       const item = ownedItemSchema.parse(
         Object.fromEntries(

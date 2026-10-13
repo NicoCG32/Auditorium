@@ -219,6 +219,7 @@ export function LibraryPage({
           catalog={state.snapshot.catalog}
           trackRatings={state.snapshot.library.trackRatings}
           ownedItems={state.snapshot.library.ownedItems}
+          purchaseWishes={state.snapshot.library.purchaseWishes}
           onExperienceCommitted={synchronizeDetail}
           onBack={() => {
             focusEntry.current = selected.id

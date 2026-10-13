@@ -38,6 +38,12 @@ import { albumCandidates, type AlbumCandidate } from './album-candidates'
 import { saveTrackList, saveTrackListInputSchema } from './track-lists'
 import { addOwnedItemInputSchema } from './inputs'
 import { ownedItemSchema, type OwnedItem } from '../domain/library/owned-items'
+import {
+  purchaseWishSchema,
+  wishStatusSchema,
+  type PurchaseWish,
+} from '../domain/library/purchase-wishes'
+import { purchaseWishInputSchema } from './inputs'
 
 export class MusicUseCaseError extends Error {
   readonly code: 'missing_reference' | 'wrong_album' | 'outdated_experience'
@@ -386,6 +392,82 @@ export class MusicLibrary {
     if (item.notes === undefined) delete item.notes
     await this.changeLibrary({ type: 'add_owned_item', ...item })
     return item
+  }
+
+  async addPurchaseWish(
+    userAlbumId: unknown,
+    input: unknown,
+  ): Promise<PurchaseWish> {
+    const request = purchaseWishInputSchema.parse(input)
+    const wish = purchaseWishSchema.parse({
+      ...request,
+      id: this.createId(),
+      userAlbumId: entityIdSchema.parse(userAlbumId),
+      status: 'active',
+      createdAt: this.now().toISOString(),
+    })
+    if (wish.notes === undefined) delete wish.notes
+    await this.changeLibrary({ type: 'add_purchase_wish', ...wish })
+    return wish
+  }
+
+  async updatePurchaseWish(
+    expected: unknown,
+    input: unknown,
+  ): Promise<PurchaseWish> {
+    const wish = purchaseWishSchema.parse(expected)
+    const request = purchaseWishInputSchema.parse(input)
+    await this.changeLibrary({
+      type: 'update_purchase_wish',
+      userAlbumId: wish.userAlbumId,
+      wishId: wish.id,
+      expected: wish,
+      ...request,
+    })
+    return purchaseWishSchema.parse({
+      id: wish.id,
+      userAlbumId: wish.userAlbumId,
+      status: wish.status,
+      createdAt: wish.createdAt,
+      ...Object.fromEntries(
+        Object.entries(request).filter(([, value]) => value !== undefined),
+      ),
+    })
+  }
+
+  async setPurchaseWishStatus(
+    expected: unknown,
+    statusInput: unknown,
+    ownedItemId?: unknown,
+  ): Promise<PurchaseWish> {
+    const wish = purchaseWishSchema.parse(expected)
+    const status = wishStatusSchema.parse(statusInput)
+    const change: LibraryChange = {
+      type: 'set_wish_status',
+      userAlbumId: wish.userAlbumId,
+      wishId: wish.id,
+      status,
+      expectedStatus: wish.status,
+      ...(ownedItemId === undefined
+        ? {}
+        : { ownedItemId: entityIdSchema.parse(ownedItemId) }),
+    }
+    return this.repository.mutate((snapshot) => {
+      snapshot.library = applyLibraryChange(
+        { catalog: snapshot.catalog, localUserId: snapshot.identity.userId },
+        snapshot.library,
+        change,
+      )
+      const updated = snapshot.library.purchaseWishes.find(
+        (row) => row.id === wish.id,
+      )
+      if (!updated)
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'No existe el deseo seleccionado.',
+        )
+      return { snapshot, result: updated }
+    })
   }
 
   async removeOwnedItem(

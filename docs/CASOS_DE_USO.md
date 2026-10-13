@@ -20,6 +20,8 @@ DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/appli
 
 Todos devuelven promesas que se resuelven después de completar la transacción. Las entradas inválidas se rechazan conservando el detalle de validación.
 
+Los [deseos de compra](DESEOS_COMPRA.md) añaden `addPurchaseWish`, `updatePurchaseWish` y `setPurchaseWishStatus`: alta activa, edición con referencia previa y cambio explícito de estado. Cumplir requiere una copia coincidente vigente; registrar ejemplares nunca cumple deseos automáticamente.
+
 ## Altas y relaciones
 
 `createAlbum` requiere título y una lista de créditos con al menos un artista principal. Cada crédito indica un artista existente mediante `artistId` o los datos de un artista nuevo. No se fusionan nombres coincidentes. La posición de crédito corresponde al orden de la lista. Los registros creados manualmente se vinculan a la identidad local como creador.
@@ -61,6 +63,6 @@ Las pruebas de integración usan IndexedDB simulado y datos ficticios para el fl
 
 El adaptador prioriza integridad leyendo y validando un snapshot completo; persiste únicamente las diferencias. Consultas y scopes más acotados podrán incorporarse si las mediciones de colecciones grandes lo requieren, manteniendo las reglas y sus pruebas.
 
-El esquema v2 añade [ejemplares](EJEMPLARES.md), con migración aditiva desde v1. `addOwnedItem` registra cada copia con ID propio; `removeOwnedItem` retira solo el ID elegido tras la confirmación de interfaz. Ambas operaciones conservan catálogo y otras colecciones personales. Consulta, registro manual, listas, experiencia y valoraciones de álbum y pistas usan el núcleo local. Ver [calificaciones de pistas](CALIFICACIONES_PISTAS.md) para identidad compartida, independencia y recuperación de errores en la interfaz. Deseos pertenecen al próximo hito. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
+El esquema v2 añade [ejemplares](EJEMPLARES.md), con migración aditiva desde v1. `addOwnedItem` registra cada copia con ID propio; `removeOwnedItem` retira solo el ID elegido tras la confirmación de interfaz. Ambas operaciones conservan catálogo y otras colecciones personales. Consulta, registro manual, listas, experiencia y valoraciones de álbum y pistas usan el núcleo local. Ver [calificaciones de pistas](CALIFICACIONES_PISTAS.md) para identidad compartida, independencia y recuperación de errores en la interfaz. Los [deseos](DESEOS_COMPRA.md) se incorporan en v3 como registros independientes. No se incorporan funciones de importación, respaldo, sincronización ni autenticación en estos casos de uso.
 
 Referencia: [transacciones de Dexie](<https://dexie.org/docs/Dexie/Dexie.transaction()>).

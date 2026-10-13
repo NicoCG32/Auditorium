@@ -1,6 +1,12 @@
 import { z } from 'zod'
 import { entityIdSchema as id, utcTimestampSchema } from '../shared/scalars'
 import { ownedItemDataSchema, ownedItemSchema } from './owned-items'
+import {
+  purchaseWishDataSchema,
+  purchaseWishSchema,
+  wishStatusSchema,
+  wishTargetSchema,
+} from './purchase-wishes'
 
 export const listeningStatusSchema = z.enum([
   'untracked',
@@ -61,6 +67,7 @@ export const libraryDataSchema = z.strictObject({
   albumRatings: z.array(albumRatingSchema),
   trackRatings: z.array(trackRatingSchema),
   ownedItems: z.array(ownedItemSchema).default([]),
+  purchaseWishes: z.array(purchaseWishSchema).default([]),
 })
 
 const target = { userAlbumId: id }
@@ -70,6 +77,25 @@ const rating = {
   updatedAt: utcTimestampSchema,
 }
 export const libraryChangeSchema = z.discriminatedUnion('type', [
+  z.strictObject({
+    type: z.literal('add_purchase_wish'),
+    ...purchaseWishDataSchema.shape,
+  }),
+  z.strictObject({
+    type: z.literal('update_purchase_wish'),
+    ...target,
+    wishId: id,
+    ...wishTargetSchema.shape,
+    expected: purchaseWishSchema,
+  }),
+  z.strictObject({
+    type: z.literal('set_wish_status'),
+    ...target,
+    wishId: id,
+    status: wishStatusSchema,
+    expectedStatus: wishStatusSchema,
+    ownedItemId: id.optional(),
+  }),
   z.strictObject({
     type: z.literal('add_owned_item'),
     ...ownedItemDataSchema.shape,

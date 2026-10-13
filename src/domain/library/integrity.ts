@@ -180,5 +180,48 @@ export function getLibraryIssues(
       }
     }
   })
+  const wishIds = new Set<string>()
+  library.purchaseWishes.forEach((wish, index) => {
+    const path = ['purchaseWishes', index]
+    if (wishIds.has(wish.id))
+      report('duplicate_id', [...path, 'id'], 'Deseo duplicado por ID.')
+    wishIds.add(wish.id)
+    const entry = entries.get(wish.userAlbumId)
+    if (!entry)
+      report(
+        'missing_reference',
+        [...path, 'userAlbumId'],
+        'No existe la entrada del deseo.',
+      )
+    else if (wish.createdAt < entry.addedAt)
+      report(
+        'item_before_entry',
+        [...path, 'createdAt'],
+        'El deseo no puede preceder al alta en biblioteca.',
+      )
+    if (wish.targetReleaseId) {
+      const release = releases.get(wish.targetReleaseId)
+      if (!release)
+        report(
+          'missing_reference',
+          [...path, 'targetReleaseId'],
+          'No existe la edición deseada.',
+        )
+      else {
+        if (entry && release.albumId !== entry.albumId)
+          report(
+            'wrong_album',
+            [...path, 'targetReleaseId'],
+            'La edición deseada pertenece a otro álbum.',
+          )
+        if (wish.targetFormat && wish.targetFormat !== release.format)
+          report(
+            'incompatible_release',
+            [...path, 'targetFormat'],
+            'El formato y la edición deseados no son compatibles.',
+          )
+      }
+    }
+  })
   return issues
 }
