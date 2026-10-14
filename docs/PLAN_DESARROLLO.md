@@ -113,6 +113,8 @@ Las releases se preparan como tareas de entrega con su propio milestone, sin rea
 
 [DOC-01](https://github.com/NicoCG32/Auditorium/issues/49) consolida las [referencias técnicas del MVP](README.md): arquitectura, dominio y datos, con diagramas y trazabilidad al código. Se sigue en un milestone documental propio; su integración no modifica el tag ni los archivos de la release publicada.
 
+[EXT-01](https://github.com/NicoCG32/Auditorium/issues/24) evalúa MusicBrainz mediante una [propuesta de metadatos externos](METADATOS_EXTERNOS.md) y una prueba offline ficticia. Su resultado define correspondencias, pérdidas de representación, condiciones de uso y requisitos previos; la integración de fuentes, procedencia persistente y revisión de importaciones requieren nuevos incrementos con aceptación propia.
+
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 
 ## Plantilla de issue

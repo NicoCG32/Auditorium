@@ -208,3 +208,5 @@ Fuentes: [package.json](../package.json), [vite.config.ts](../vite.config.ts), [
 Las pruebas se distribuyen por dominio, aplicación, adaptador e interfaz; los E2E ejercitan producción, offline, migraciones y aceptación. La [matriz de validación](VALIDACION_MVP.md) registra cobertura y límites. La evaluación con lectores de pantalla, instalación en Safari/iOS real y rendimiento en hardware limitado siguen fuera de esa evidencia.
 
 Las [decisiones de arquitectura](README.md#decisiones-de-arquitectura) explican almacenamiento local, separación álbum/edición/pista, costo, retirada, identidad del respaldo y espera de actualizaciones. Metadatos externos y cuentas/sincronización siguen como investigaciones del [plan de desarrollo](PLAN_DESARROLLO.md), con contratos y migraciones por definir.
+
+La [evaluación de metadatos externos](METADATOS_EXTERNOS.md) propone un flujo local de revisión y define las condiciones previas del transporte remoto; sus diagramas describen una evolución futura de esta arquitectura.

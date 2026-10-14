@@ -30,16 +30,23 @@ Arquitectura, dominio y datos son vistas complementarias: una relación conceptu
 
 Estas guías documentan las capacidades construidas durante el MVP y complementan las referencias transversales. Las menciones a esquemas v1/v2/v3 corresponden a evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 1.
 
+## Investigaciones y propuestas
+
+| Estudio                                             | Resultado y estado                                                                                                                      |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| [EXT-01: metadatos externos](METADATOS_EXTERNOS.md) | Evaluación de MusicBrainz, condiciones de uso, mapeo y prueba offline ficticia; importación propuesta para una implementación posterior |
+
 ## Decisiones de arquitectura
 
-| Decisión                                                          | Justificación                                                             |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| [ADR-001: MVP local](adr/001-mvp-local.md)                        | Biblioteca ejecutada y guardada en el navegador                           |
-| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md) | Identidades musicales y apariciones diferenciadas                         |
-| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)          | Servicios opcionales evaluados antes de incorporarlos                     |
-| [ADR-004: retirada personal](adr/004-retirada-personal.md)        | Restauración de la misma entrada sin borrar catálogo o datos relacionados |
-| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)  | Adopción atómica de identidad y datos en un destino vacío                 |
-| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)      | Aplicación de recursos nuevos después de cerrar las ventanas anteriores   |
+| Decisión                                                          | Justificación                                                                      |
+| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [ADR-001: MVP local](adr/001-mvp-local.md)                        | Biblioteca ejecutada y guardada en el navegador                                    |
+| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md) | Identidades musicales y apariciones diferenciadas                                  |
+| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)          | Servicios opcionales evaluados antes de incorporarlos                              |
+| [ADR-004: retirada personal](adr/004-retirada-personal.md)        | Restauración de la misma entrada sin borrar catálogo o datos relacionados          |
+| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)  | Adopción atómica de identidad y datos en un destino vacío                          |
+| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)      | Aplicación de recursos nuevos después de cerrar las ventanas anteriores            |
+| [ADR-007: importación revisada](adr/007-importacion-metadatos.md) | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir |
 
 Los ADR conservan la fecha y el contexto de la decisión. El estado de ejecución actual se consulta en la [arquitectura](ARQUITECTURA.md), el [Project](https://github.com/users/NicoCG32/projects/4) y los [hitos](https://github.com/NicoCG32/Auditorium/milestones).
 
