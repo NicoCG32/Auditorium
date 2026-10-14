@@ -2,7 +2,9 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-Las Fases 0, 1, 2 y 3 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. La Fase 4 incorpora retirada reversible, confirmaciones, respaldos JSON con restauración en biblioteca vacía y PWA para reabrir y gestionar la biblioteca sin conexión tras prepararse. Las migraciones y la recuperación se verifican también con reinicio de un navegador real. La candidata `1.0.0-rc.1` prepara la validación final y entrega del MVP; el cierre de la fase requiere revisar e integrar MVP-05. Las cuentas y la sincronización son etapas posteriores.
+El MVP local `1.0.0` completa las Fases 0–4: persistencia, búsqueda, registro manual con revisión de duplicados, ficha, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. Incorpora retirada reversible, confirmaciones, respaldos JSON con restauración en biblioteca vacía y PWA para reabrir y gestionar la biblioteca sin conexión tras prepararse. Las migraciones y la recuperación se verifican también con reinicio de un navegador real. Las cuentas y la sincronización son etapas posteriores.
+
+La [release v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0) distribuye el paquete estático y su checksum SHA-256. Consulta la [guía de uso y entrega](docs/ENTREGA_MVP.md) y el [changelog](CHANGELOG.md).
 
 ## Desarrollo local
 
@@ -50,7 +52,7 @@ TypeScript se fija en 6.0.3 para respetar el [rango compatible de typescript-esl
 
 Para comprobar la aceptación en Chromium, Firefox y WebKit aislados, ejecuta `npx playwright install chromium firefox webkit` una vez y después `npm run test:e2e`. El recorrido principal, las auditorías axe, teclado y pantallas se ejecutan en los tres motores. Las pruebas de offline, actualizaciones y reinicio de proceso se ejecutan en Chromium. El servidor de prueba ocupa `127.0.0.1:4178`; compila dos versiones de producción y usa exclusivamente datos ficticios. No modifica la biblioteca del navegador habitual. Consulta la [matriz de validación y sus límites](docs/VALIDACION_MVP.md).
 
-GitHub Actions ejecuta `npm ci`, `npm run check`, prepara los tres motores y ejecuta `npm run test:e2e` en las PR y en cambios de `main`, con Node 24 y npm 12.2.0, usando un runner Linux estándar. Tras pasar las verificaciones, `npm run package` prepara una candidata estática con documentación, avisos de dependencias e inventario SHA-256, disponible como artefacto del run durante siete días. El flujo no despliega la aplicación. Consulta la [guía de entrega](docs/ENTREGA_MVP.md).
+GitHub Actions ejecuta `npm ci`, `npm run check`, prepara los tres motores y ejecuta `npm run test:e2e` en las PR y en cambios de `main`, con Node 24 y npm 12.2.0, usando un runner Linux estándar. Tras pasar las verificaciones, `npm run package` prepara un paquete estático con documentación, changelog, avisos de dependencias e inventario SHA-256, disponible como artefacto del run durante siete días. Las releases conservan el ZIP y su checksum junto al tag validado. El flujo no despliega la aplicación. Consulta la [guía de entrega](docs/ENTREGA_MVP.md).
 
 La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los proyectos TypeScript de la aplicación y de Node.
 

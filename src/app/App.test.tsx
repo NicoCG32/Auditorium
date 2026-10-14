@@ -646,7 +646,7 @@ test('registro mínimo aparece sin recarga y permite abrir su ficha básica', as
   fillAlbum()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   const album = await screen.findByRole('button', { name: 'Eclipse nuevo' })
-  expect(album).toHaveFocus()
+  await waitFor(() => expect(album).toHaveFocus())
   const snapshot = await repository.readSnapshot()
   expect(snapshot.catalog.albums[0]?.releaseType).toBe('album')
   expect(snapshot.catalog.albums[0]).not.toHaveProperty('originalYear')
