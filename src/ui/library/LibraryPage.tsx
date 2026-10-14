@@ -24,6 +24,10 @@ type LoadState =
   | { status: 'ready'; albums: LibraryAlbum[]; snapshot: LocalSnapshot }
 function errorMessage(error: unknown) {
   if (error instanceof LocalStorageError) {
+    if (error.code === 'quota_exceeded')
+      return 'No hay espacio para abrir tu biblioteca. Los datos existentes se conservan; libera espacio y vuelve a intentar.'
+    if (error.code === 'aborted')
+      return 'La apertura de tu biblioteca no pudo completarse. Los datos existentes se conservan; vuelve a intentar.'
     if (error.code === 'blocked')
       return 'Otra pestaña impide abrir tu biblioteca. Ciérrala y vuelve a intentar.'
     if (error.code === 'unavailable')

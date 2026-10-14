@@ -24,7 +24,7 @@ Una nueva versión descarga sus recursos y espera mientras la versión anterior 
 
 La aplicación no envía `SKIP_WAITING` ni recarga automáticamente ventanas abiertas. Esto protege los borradores y evita mezclar recursos de versiones distintas entre pestañas. La activación elimina únicamente entradas obsoletas de su precaché; no borra otras cachés del sitio, IndexedDB ni la identidad. Un fallo al descargar la actualización conserva la versión activa. **«Comprobar actualización»** permite comprobar de nuevo con conexión.
 
-El service worker no administra datos musicales ni migraciones de la base. Este incremento conserva DB v3 y respaldo v1. La validación adicional de migraciones y recuperación corresponde a MVP-04.
+El service worker no administra datos musicales ni migraciones de la base. Este incremento conserva DB v3 y respaldo v1. La [validación adicional de migraciones y recuperación](MIGRACIONES_RECUPERACION.md) corresponde a MVP-04.
 
 ## Protección y límites del almacenamiento
 

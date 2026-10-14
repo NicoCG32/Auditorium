@@ -59,7 +59,7 @@ Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reap
 
 La [matriz de aceptación de Fase 1](VALIDACION_PERSISTENCIA.md) detalla rechazos y rollback comprobados tras reabrir, aislamiento de lecturas, escrituras concurrentes y conservación de datos y esquemas incompatibles.
 
-Los [respaldos JSON](RESPALDOS_JSON.md) permiten restaurar bibliotecas vacías con adopción de identidad atómica. La [PWA](PWA_OFFLINE.md) conserva los recursos propios para abrir offline y ofrece solicitar protección del almacenamiento. Su service worker no accede a IndexedDB ni modifica la identidad. IndexedDB puede ser eliminado por el navegador; ni la caché ni la protección concedida sustituyen un respaldo. La validación adicional de migraciones/recuperación y la entrega completa continúan en Fase 4.
+Los [respaldos JSON](RESPALDOS_JSON.md) permiten restaurar bibliotecas vacías con adopción de identidad atómica. La [PWA](PWA_OFFLINE.md) conserva los recursos propios para abrir offline y ofrece solicitar protección del almacenamiento. Su service worker no accede a IndexedDB ni modifica la identidad. Las [pruebas de migración y recuperación](MIGRACIONES_RECUPERACION.md) incluyen reinicio de Chromium, preservación completa y fallos con reintento. IndexedDB puede ser eliminado por el navegador; ni la caché ni la protección concedida sustituyen un respaldo. La validación final y entrega del MVP continúa en Fase 4.
 
 Referencias: [ADR-001](adr/001-mvp-local.md), [transacciones y errores en Dexie](https://dexie.org/docs/Tutorial/Best-Practices) e [índices compuestos](https://dexie.org/docs/Compound-Index).
 

@@ -2,7 +2,7 @@
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
-Las Fases 0, 1, 2 y 3 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. La Fase 4 incorpora retirada reversible, confirmaciones, respaldos JSON con restauración en biblioteca vacía y PWA para reabrir y gestionar la biblioteca sin conexión tras prepararse. Quedan la validación adicional de migraciones/recuperación y la entrega completa del MVP. Las cuentas y la sincronización son etapas posteriores.
+Las Fases 0, 1, 2 y 3 están completadas: base ejecutable, dominio, persistencia local, consulta, búsqueda, registro manual con revisión de duplicados, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. La Fase 4 incorpora retirada reversible, confirmaciones, respaldos JSON con restauración en biblioteca vacía y PWA para reabrir y gestionar la biblioteca sin conexión tras prepararse. Las migraciones y la recuperación se verifican también con reinicio de un navegador real. Queda la validación final y entrega completa del MVP. Las cuentas y la sincronización son etapas posteriores.
 
 ## Desarrollo local
 
@@ -76,6 +76,7 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 - [Retirada y eliminaciones personales](docs/ELIMINACIONES_PERSONALES.md)
 - [Respaldos JSON y restauración](docs/RESPALDOS_JSON.md)
 - [Instalación, uso offline y almacenamiento](docs/PWA_OFFLINE.md)
+- [Migraciones, persistencia y recuperación](docs/MIGRACIONES_RECUPERACION.md)
 - [Decisión de actualización PWA](docs/adr/006-actualizaciones-pwa.md)
 - [Decisión de identidad en respaldo](docs/adr/005-identidad-respaldo.md)
 - [Decisión de retirada reversible](docs/adr/004-retirada-personal.md)

@@ -73,6 +73,21 @@ export function checkNativeSchema(
             )
           }
           const transaction = native.transaction(names, 'readonly')
+          // Terminar la inspección antes de abrir otra conexión para migrar.
+          transaction.oncomplete = () => {
+            native.close()
+            resolve()
+          }
+          transaction.onabort = transaction.onerror = () => {
+            native.close()
+            reject(
+              transaction.error ??
+                new LocalStorageError(
+                  'aborted',
+                  'No se pudo completar la comprobación del esquema local.',
+                ),
+            )
+          }
           for (const table of tables) {
             const store = transaction.objectStore(table.name)
             if (
@@ -111,8 +126,6 @@ export function checkNativeSchema(
             }
           }
         }
-        native.close()
-        resolve()
       } catch (error) {
         native.close()
         reject(

@@ -1,6 +1,6 @@
 # Validación del núcleo local
 
-La aceptación de Fase 1 comprueba el dominio y los casos de uso sobre almacenamiento local. La interfaz de biblioteca comienza en Fase 2. Estos resultados no equivalen a la entrega del MVP completo.
+Este documento conserva la aceptación de Fase 1 sobre dominio y casos de uso locales. La Fase 4 añade [migraciones, reinicio del navegador y recuperación](MIGRACIONES_RECUPERACION.md). Estos resultados no equivalen a la entrega del MVP completo.
 
 ## Matriz de aceptación
 
@@ -21,12 +21,12 @@ Las comprobaciones manuales usan páginas auxiliares de desarrollo y bases indep
 
 ## Corrección comprobada
 
-La apertura comparaba la cantidad de índices antes de acceder a cada nombre esperado. Un índice renombrado conservaba esa cantidad y terminaba informado como error inesperado. Ahora se compara el conjunto completo de nombres antes de inspeccionar claves y propiedades. Se devuelve `corrupt_data` conservando el esquema y los registros existentes. La versión permanece en 1 y no requiere migración.
+En DATA-03, la apertura comparaba la cantidad de índices antes de acceder a cada nombre esperado. Un índice renombrado conservaba esa cantidad y terminaba informado como error inesperado. La corrección compara el conjunto completo de nombres antes de inspeccionar claves y propiedades. Devuelve `corrupt_data` conservando el esquema y los registros existentes; ese cambio no requirió migración. La versión actual y sus ampliaciones se documentan en [persistencia local](PERSISTENCIA_LOCAL.md).
 
 La inspección usa los [nombres de índices nativos de IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IDBObjectStore/indexNames); la atomicidad se apoya en el [contrato transaccional de Dexie](<https://dexie.org/docs/Dexie/Dexie.transaction()>).
 
 ## Límites de esta aceptación
 
-Conservar filas dañadas y presentar un error deja disponible la información para una recuperación explícita. Los [respaldos JSON](RESPALDOS_JSON.md) permiten restauración validada y atómica en una biblioteca vacía. No se reparan datos corruptos ni se sustituyen bibliotecas existentes automáticamente; la validación ampliada de migraciones continúa en su tarea de Fase 4. Tampoco se ha medido el rendimiento con colecciones grandes ni se promete conservación si el navegador elimina IndexedDB.
+Conservar filas dañadas y presentar un error deja disponible la información para una recuperación explícita. Los [respaldos JSON](RESPALDOS_JSON.md) permiten restauración validada y atómica en una biblioteca vacía. No se reparan datos corruptos ni se sustituyen bibliotecas existentes automáticamente; la [validación ampliada de migraciones](MIGRACIONES_RECUPERACION.md) detalla resultados y límites. Tampoco se ha medido el rendimiento con colecciones grandes ni se promete conservación si el navegador elimina IndexedDB.
 
-El milestone puede cerrarse cuando la PR de DATA-03 esté revisada e integrada y no queden issues abiertas de Fase 1, siguiendo la [definición de terminado](PLAN_DESARROLLO.md#definición-de-terminado).
+Fase 1 se cerró tras integrar DATA-03. Fase 4 permanece abierta hasta su validación final y entrega, siguiendo la [definición de terminado](PLAN_DESARROLLO.md#definición-de-terminado).
