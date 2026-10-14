@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.0 · 2026-10-11 · Estado: planificación inicial.
+Versión 1.1 · 2026-10-14 · Estado: MVP local v1.0.0 publicado.
 
 ## Objetivo del producto
 
@@ -92,17 +92,17 @@ No se programan reuniones ni recordatorios automáticamente. Se registran result
 
 No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito opcional separado y debe especificar proveedor, condiciones vigentes y validación.
 
-## Primer sprint propuesto
+## Primer sprint propuesto — registro inicial
 
 **S01 — Base ejecutable.** Objetivo: disponer de una plantilla que arranque y pase sus verificaciones, preparada para desarrollar el dominio.
 
-Candidatos: BASE-01, BASE-02 y BASE-03. Requiere integrar el plan (PLAN-01) y refinar la capacidad. No hay fecha de inicio ni sprint activo. El alcance puede dividirse durante la planificación; no incorporar dominio, cuentas ni servicios externos.
+Candidatos originales: BASE-01, BASE-02 y BASE-03. Esta propuesta se registró antes de implementar la base; las Fases 0–4 ya están completadas en el MVP v1.0.0. No hay un sprint activo ni fechas comprometidas para las fases siguientes; su selección se mantiene en el Project.
 
-## Decisiones que se resolverán por hito
+## Decisiones por hito
 
-- **Fase 1:** usar enteros de 2 a 20 para ratings; fijar fechas y opcionales; validar identidad local concurrente y reglas de referencias.
-- **Fase 3:** validar deseos por formato/edición y compatibilidad entre edición y ejemplar.
-- **Fase 4:** concretar consecuencias de eliminar y contrato de identidad en restauración; comprobar snapshots, rollback y evolución del esquema.
+- **Fase 1, implementada:** enteros de 2 a 20 para ratings, fechas y opcionales explícitos, identidad local concurrente y validación de referencias.
+- **Fase 3, implementada:** deseos por formato/edición y compatibilidad entre edición y ejemplar.
+- **Fase 4, implementada:** consecuencias de eliminar, identidad en restauración, snapshots, rollback y evolución del esquema.
 - **Fases 5–6:** verificar derechos, licencias, cuotas y migraciones antes de elegir integraciones.
 
 ## Control de cambios y progreso
@@ -110,6 +110,8 @@ Candidatos: BASE-01, BASE-02 y BASE-03. Requiere integrar el plan (PLAN-01) y re
 Cambios de alcance se reflejan primero en la issue y el objetivo del hito. Cambios arquitectónicos relevantes se documentan con un ADR de producto. Nuevas funciones fuera del MVP permanecen en backlog futuro hasta solicitar su desarrollo.
 
 Las releases se preparan como tareas de entrega con su propio milestone, sin reabrir una fase ya completada. [REL-01](https://github.com/NicoCG32/Auditorium/issues/47) publica el MVP `1.0.0`: versión coherente, changelog, CI del commit exacto, paquete revisado, tag anotado y descarga con checksum verificado. Publicar una release distribuye los archivos; alojar el sitio requiere el hito opcional de despliegue. La issue de release se cierra después de comprobar la publicación y sus assets.
+
+[DOC-01](https://github.com/NicoCG32/Auditorium/issues/49) consolida las [referencias técnicas del MVP](README.md): arquitectura, dominio y datos, con diagramas y trazabilidad al código. Se sigue en un milestone documental propio; su integración no modifica el tag ni los archivos de la release publicada.
 
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 

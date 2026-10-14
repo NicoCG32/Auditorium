@@ -26,7 +26,7 @@ La tabla `ownedItems` usa UUID como clave e índices de entrada personal, edici�
 
 `SCHEMA_V1` conserva su definición histórica y `SCHEMA_V2` añade exclusivamente esa tabla. Antes de abrir se verifican estructura, claves e índices existentes. Una v1 compatible se actualiza a v2 con la tabla nueva vacía, conservando identidad y filas. Estructuras incompletas, versiones intermedias desconocidas o futuras se rechazan sin reconstruir ni degradar la base. Un bloqueo por otra conexión se informa y admite reintento al cerrarla.
 
-Se usan las [versiones declaradas de Dexie](https://dexie.org/docs/Version/Version.stores%28%29), sin transformar registros anteriores ni añadir dependencias. Respaldo, restauración y evolución general del esquema pertenecen a Fase 4.
+Se usan las [versiones declaradas de Dexie](https://dexie.org/docs/Version/Version.stores%28%29), sin transformar registros anteriores ni añadir dependencias. El MVP v1.0.0 incluye [respaldos y restauración](RESPALDOS_JSON.md); el [modelo de datos](MODELO_DATOS.md) describe el esquema vigente y su evolución.
 
 ## Verificación
 

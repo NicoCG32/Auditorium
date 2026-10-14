@@ -33,4 +33,4 @@ Las pruebas recorren la interfaz y el repositorio con datos ficticios: original 
 
 La verificación en IndexedDB real usa una base aislada y comprueba guardado por teclado, posiciones repetidas, rollback, reintento, otra conexión, recarga, copia de lista y responsive. No se añade música de ejemplo a la biblioteca del producto.
 
-La ficha permite [calificar pistas](CALIFICACIONES_PISTAS.md) por identidad compartida entre apariciones; las variantes tienen nota independiente. Los [ejemplares](EJEMPLARES.md) se registran independientemente; los [deseos](DESEOS_COMPRA.md) apuntan a formato o edición y se cumplen mediante acción explícita. No se eliminan álbumes, ediciones ni entidades pista. Respaldo y PWA pertenecen a Fase 4.
+La ficha permite [calificar pistas](CALIFICACIONES_PISTAS.md) por identidad compartida entre apariciones; las variantes tienen nota independiente. Los [ejemplares](EJEMPLARES.md) se registran independientemente; los [deseos](DESEOS_COMPRA.md) apuntan a formato o edición y se cumplen mediante acción explícita. No se eliminan álbumes, ediciones ni entidades pista. El MVP v1.0.0 incluye [respaldos](RESPALDOS_JSON.md) y [PWA](PWA_OFFLINE.md).

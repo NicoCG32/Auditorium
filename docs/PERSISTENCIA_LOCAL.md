@@ -2,6 +2,8 @@
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
+El [modelo de datos](MODELO_DATOS.md) reúne el esquema físico vigente del MVP v1.0.0, sus índices, contratos transaccionales y flujos de respaldo.
+
 ## Apertura e identidad
 
 `IndexedDbRepository` implementa `TransactionalLocalRepository`, que extiende el contrato del dominio `LocalRepository` con `mutate`, además de `open`, `readSnapshot` y `close`. El dominio no importa Dexie ni depende de IndexedDB.

@@ -38,6 +38,6 @@ Después del commit, una lectura fallida muestra el resultado confirmado y las c
 - `readFile(file)` comprueba tamaño, lee texto y valida el archivo, sin escribir en el repositorio.
 - `restore(document, expectedIdentity)` valida versión/datos/tamaño y delega únicamente al caso de restauración vacía.
 
-Continúa el esquema de base v3; no se añaden tablas ni dependencias. Las migraciones de versiones de archivos anteriores se incorporarán explícitamente cuando exista otro contrato soportado; archivos desconocidos o futuros se rechazan. PWA y la validación completa offline siguen en sus tareas de [Fase 4](PLAN_DESARROLLO.md).
+Continúa el esquema de base v3; no se añaden tablas ni dependencias. Las migraciones de versiones de archivos anteriores se incorporarán explícitamente cuando exista otro contrato soportado; archivos desconocidos o futuros se rechazan. El MVP v1.0.0 incluye [PWA](PWA_OFFLINE.md) y la [validación de sus recorridos offline](VALIDACION_MVP.md).
 
 Las pruebas ficticias cubren exportación/restauración completa, identidad, retirados, datos inválidos y tamaño, cuota/aborto tardíos, concurrencia, reapertura y recuperación de lectura. Ver [ADR-005](adr/005-identidad-respaldo.md) y [retirada personal](ELIMINACIONES_PERSONALES.md).
