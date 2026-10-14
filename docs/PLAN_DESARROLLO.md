@@ -109,6 +109,8 @@ Candidatos: BASE-01, BASE-02 y BASE-03. Requiere integrar el plan (PLAN-01) y re
 
 Cambios de alcance se reflejan primero en la issue y el objetivo del hito. Cambios arquitectónicos relevantes se documentan con un ADR de producto. Nuevas funciones fuera del MVP permanecen en backlog futuro hasta solicitar su desarrollo.
 
+Las releases se preparan como tareas de entrega con su propio milestone, sin reabrir una fase ya completada. [REL-01](https://github.com/NicoCG32/Auditorium/issues/47) publica el MVP `1.0.0`: versión coherente, changelog, CI del commit exacto, paquete revisado, tag anotado y descarga con checksum verificado. Publicar una release distribuye los archivos; alojar el sitio requiere el hito opcional de despliegue. La issue de release se cierra después de comprobar la publicación y sus assets.
+
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 
 ## Plantilla de issue

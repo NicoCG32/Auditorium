@@ -1,7 +1,7 @@
 {
   "name": "auditorium",
   "private": true,
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "type": "module",
   "packageManager": "npm@12.2.0",
   "engines": {

@@ -1,6 +1,6 @@
 # Validación final del MVP
 
-MVP-05 reúne la aceptación de las Fases 0–4 y prepara una candidata revisable. La aprobación e integración de su PR son el último criterio de cierre.
+MVP-05 completó la aceptación de las Fases 0–4 mediante la PR #46 integrada. La versión `1.0.0` distribuye ese MVP local, con su guía y la evidencia de validación. La preparación de cada release verifica el commit exacto de entrega antes de etiquetarlo y publicar el paquete.
 
 ## Matriz de aceptación reproducible
 

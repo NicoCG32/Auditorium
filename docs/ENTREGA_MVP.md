@@ -1,6 +1,6 @@
-# Candidata de entrega del MVP
+# Entrega del MVP
 
-Versión `1.0.0-rc.1`. Esta entrega prepara la revisión de MVP-05. La Fase 4 se cierra tras revisar e integrar esa tarea.
+Versión `1.0.0`. MVP local validado e integrado, con las Fases 0–4 completadas. La [release v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0) incluye el paquete estático y su checksum SHA-256.
 
 ## Usar la biblioteca
 
@@ -13,7 +13,19 @@ Versión `1.0.0-rc.1`. Esta entrega prepara la revisión de MVP-05. La Fase 4 se
 
 Retirar un álbum permite restaurarlo con sus datos. Eliminar un ejemplar o quitar una valoración requiere confirmación y no ofrece deshacer automático. Las portadas externas requieren conexión y se muestran mediante una acción explícita.
 
-## Revisar la candidata local
+## Abrir el paquete descargado
+
+Descarga `auditorium-1.0.0.zip` y `SHA256SUMS.txt` desde la release. Verifica el checksum del ZIP antes de extraerlo. En PowerShell puedes calcularlo con `Get-FileHash auditorium-1.0.0.zip -Algorithm SHA256` y compararlo con el archivo de checksums. El ZIP contiene una carpeta `auditorium-1.0.0/`, con el sitio en `site/`, las guías, changelog, avisos de dependencias e inventario de los archivos.
+
+Desde esa carpeta, con Node 24 y npm 12 instalados, puedes iniciar un servidor de revisión:
+
+```sh
+npx --yes vite@8.3.4 preview --host 127.0.0.1 --port 4173 --strictPort --outDir site
+```
+
+Abre `http://127.0.0.1:4173/`. La primera preparación del servidor requiere red para descargar Vite; detenlo con Ctrl+C. La PWA puede reabrirse offline una vez que indique que está preparada. Usa siempre el mismo origen y perfil para acceder a la misma biblioteca.
+
+## Compilar y revisar desde el código
 
 En el repositorio, con Node 24 y npm 12:
 
@@ -26,13 +38,13 @@ npm run package
 npm run preview
 ```
 
-`preview` sirve la compilación en un origen local independiente del servidor de desarrollo. Usa un perfil de prueba vacío y datos ficticios para la revisión. `package` prepara `release/auditorium-1.0.0-rc.1/`: archivos estáticos en `site/`, esta guía, evidencia de validación, avisos de dependencias e inventario SHA-256. No incorpora bibliotecas musicales, respaldos descargados, perfiles ni resultados de pruebas. GitHub Actions conserva la candidata siete días para descargarla desde el run de calidad.
+`preview` sirve la compilación en un origen local independiente del servidor de desarrollo. Usa un perfil de prueba vacío y datos ficticios para la revisión. `package` prepara `release/auditorium-1.0.0/`: archivos estáticos en `site/`, esta guía, evidencia de validación, changelog, avisos de dependencias e inventario SHA-256. No incorpora bibliotecas musicales, respaldos descargados, perfiles ni resultados de pruebas. GitHub Actions conserva cada paquete siete días para descargarlo desde el run de calidad; la GitHub Release conserva el ZIP y su checksum junto al tag.
 
 ## Condiciones de alojamiento
 
-La candidata contiene archivos estáticos, sin servidor de datos. Requiere servir `site/` en la raíz de un origen HTTPS (o localhost para revisión), con MIME correctos para JavaScript, CSS, PNG, SVG y `application/manifest+json`. `sw.js` debe poder consultarse sin una caché HTTP prolongada para detectar actualizaciones. No abras `index.html` mediante `file://`. El alcance y la URL de inicio de la PWA son `/`; alojarla bajo un subdirectorio requiere adaptar y volver a verificar la configuración.
+El paquete contiene archivos estáticos, sin servidor de datos. Requiere servir `site/` en la raíz de un origen HTTPS (o localhost para revisión), con MIME correctos para JavaScript, CSS, PNG, SVG y `application/manifest+json`. `sw.js` debe poder consultarse sin una caché HTTP prolongada para detectar actualizaciones. No abras `index.html` mediante `file://`. El alcance y la URL de inicio de la PWA son `/`; alojarla bajo un subdirectorio requiere adaptar y volver a verificar la configuración.
 
-Esta tarea no publica un sitio ni crea una GitHub Release. El despliegue corresponde a un hito opcional separado.
+La release distribuye el paquete para alojarlo o revisarlo localmente. El despliegue de un sitio corresponde a un hito opcional separado.
 
 ## Límites operativos
 

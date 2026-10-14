@@ -20,6 +20,7 @@ await rm(output, { recursive: true, force: true })
 await mkdir(output, { recursive: true })
 await cp(join(root, 'dist'), join(output, 'site'), { recursive: true })
 await cp(join(root, 'docs', 'ENTREGA_MVP.md'), join(output, 'ENTREGA_MVP.md'))
+await cp(join(root, 'CHANGELOG.md'), join(output, 'CHANGELOG.md'))
 await cp(
   join(root, 'docs', 'VALIDACION_MVP.md'),
   join(output, 'VALIDACION_MVP.md'),
@@ -108,5 +109,5 @@ await writeFile(
   JSON.stringify({ name: 'auditorium', version, files }, null, 2) + '\n',
 )
 console.log(
-  `Candidate prepared: release/auditorium-${version} (${files.length} files plus inventory)`,
+  `Package prepared: release/auditorium-${version} (${files.length} files plus inventory)`,
 )
