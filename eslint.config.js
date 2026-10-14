@@ -14,9 +14,10 @@ export default defineConfig([
     'test-results/**',
     'playwright-report/**',
     '.pwa-test-builds/**',
+    'release/**',
   ]),
   {
-    files: ['**/*.js'],
+    files: ['**/*.{js,mjs}'],
     extends: [js.configs.recommended],
     languageOptions: { globals: globals.node },
   },

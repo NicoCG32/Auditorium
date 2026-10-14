@@ -158,7 +158,7 @@ export function LibraryPage({
   return (
     <div ref={content}>
       <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-        <div>
+        <div className="min-w-0 wrap-anywhere">
           <p className="mb-4 text-xs font-semibold tracking-[0.2em] text-accent-text uppercase">
             El archivo de tu música
           </p>
@@ -205,13 +205,14 @@ export function LibraryPage({
               setNotice('')
             }}
           >
-            Álbumes retirados (
+            Álbumes retirados
             {state.status === 'ready'
-              ? state.snapshot.library.userAlbums.filter(
-                  (row) => row.deletedAt !== undefined,
-                ).length
-              : 0}
-            )
+              ? ` (${
+                  state.snapshot.library.userAlbums.filter(
+                    (row) => row.deletedAt !== undefined,
+                  ).length
+                })`
+              : ''}
           </button>
           <button
             ref={backupButton}
