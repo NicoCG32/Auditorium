@@ -1,6 +1,6 @@
 # Dominio de biblioteca personal
 
-DOM-02 implementa modelos y cambios puros en `src/domain/library/`. El catálogo conserva los datos musicales; la biblioteca conserva la relación personal y sus calificaciones. La persistencia y los formularios se incorporarán en los hitos posteriores.
+Los modelos y cambios puros de la biblioteca residen en `src/domain/library/`. El catálogo conserva los datos musicales; la biblioteca conserva la relación personal y sus calificaciones. El MVP v1.0.0 incorpora persistencia y formularios para estas operaciones. El [modelo de dominio](MODELO_DOMINIO.md) reúne las entidades, relaciones y reglas de la versión completa.
 
 ## Modelos
 
@@ -10,9 +10,9 @@ DOM-02 implementa modelos y cambios puros en `src/domain/library/`. El catálogo
 | AlbumRating | Una nota por entrada personal, con unidades y fecha propias         |
 | TrackRating | Una nota por entrada personal y pista, con unidades y fecha propias |
 
-El snapshot requiere `userAlbums`, `albumRatings` y `trackRatings`, aunque las listas estén vacías. La creación y persistencia del UUID local corresponden a DATA-01; estos modelos reciben una identidad explícita y no inventan una identidad compartida.
+El snapshot requiere `userAlbums`, `albumRatings` y `trackRatings`, además de las colecciones de [ejemplares](EJEMPLARES.md) y [deseos](DESEOS_COMPRA.md), aunque las listas estén vacías. La creación y persistencia del UUID local corresponden a DATA-01; estos modelos reciben una identidad explícita y no inventan una identidad compartida.
 
-`createLibrarySchema({ catalog, localUserId })` valida el contexto y devuelve un schema para comprobar estructura, referencias y pertenencia a esa identidad local. La autorización remota se incorporará en una etapa conectada.
+`createLibrarySchema({ catalog, localUserId })` valida el contexto y devuelve un schema para comprobar estructura, referencias y pertenencia a esa identidad local. Una eventual etapa conectada deberá definir su autorización remota; el MVP no incorpora ese contrato.
 
 ## Invariantes
 

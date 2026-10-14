@@ -56,30 +56,17 @@ GitHub Actions ejecuta `npm ci`, `npm run check`, prepara los tres motores y eje
 
 La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los proyectos TypeScript de la aplicación y de Node.
 
+## Documentación técnica
+
+El [índice de documentación](docs/README.md) organiza las referencias del MVP v1.0.0, las guías funcionales y las decisiones de arquitectura.
+
+- [Arquitectura del sistema](docs/ARQUITECTURA.md): contexto, componentes, dependencias, transacciones, PWA y distribución.
+- [Modelo de dominio](docs/MODELO_DOMINIO.md): entidades, cardinalidades, reglas, estados y ejemplos ficticios.
+- [Modelo de datos](docs/MODELO_DATOS.md): tablas, claves, índices, migraciones, identidad, concurrencia y respaldos.
+
 ## Plan y seguimiento
 
 - [Plan de desarrollo](docs/PLAN_DESARROLLO.md)
 - [Backlog y seguimiento en GitHub Projects](https://github.com/users/NicoCG32/projects/4)
 - [Hitos de entrega](https://github.com/NicoCG32/Auditorium/milestones)
-- [Diseño base](docs/DISENO_BASE.md)
-- [Dominio del catálogo y validación](docs/DOMINIO_CATALOGO.md)
-- [Biblioteca personal y calificaciones](docs/DOMINIO_BIBLIOTECA.md)
-- [Identidad y persistencia local](docs/PERSISTENCIA_LOCAL.md)
-- [Casos de uso y transacciones](docs/CASOS_DE_USO.md)
-- [Validación de integridad y persistencia](docs/VALIDACION_PERSISTENCIA.md)
-- [Consulta y búsqueda de biblioteca](docs/CONSULTA_BIBLIOTECA.md)
-- [Registro manual y revisión de duplicados](docs/REGISTRO_MANUAL.md)
-- [Ficha y valoración del álbum](docs/FICHA_ALBUM.md)
-- [Escucha y notas personales](docs/EXPERIENCIA_PERSONAL.md)
-- [Listas originales y ediciones](docs/LISTAS_EDICIONES.md)
-- [Calificaciones de pistas](docs/CALIFICACIONES_PISTAS.md)
-- [Ejemplares y migración v2](docs/EJEMPLARES.md)
-- [Deseos de compra y migración v3](docs/DESEOS_COMPRA.md)
-- [Retirada y eliminaciones personales](docs/ELIMINACIONES_PERSONALES.md)
-- [Respaldos JSON y restauración](docs/RESPALDOS_JSON.md)
-- [Instalación, uso offline y almacenamiento](docs/PWA_OFFLINE.md)
-- [Migraciones, persistencia y recuperación](docs/MIGRACIONES_RECUPERACION.md)
-- [Decisión de actualización PWA](docs/adr/006-actualizaciones-pwa.md)
-- [Decisión de identidad en respaldo](docs/adr/005-identidad-respaldo.md)
-- [Decisión de retirada reversible](docs/adr/004-retirada-personal.md)
-- Decisiones de arquitectura: [MVP local](docs/adr/001-mvp-local.md), [álbum, edición y pista](docs/adr/002-album-edicion-pista.md) y [costo recurrente cero](docs/adr/003-costo-cero.md).
+- [Decisiones de arquitectura](docs/README.md#decisiones-de-arquitectura)

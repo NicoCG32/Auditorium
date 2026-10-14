@@ -20,4 +20,4 @@ La PWA y su caché se implementarán en Fase 4. IndexedDB conservará los datos 
 - No borrar ni recrear la base automáticamente al fallar. Informar errores y conservar opciones de recuperación.
 - Aislar la persistencia facilita pruebas y evolución, pero no convierte una migración futura a otro motor en una sustitución automática.
 
-Esta decisión describe la arquitectura prevista; la base de datos, respaldos y caché offline todavía no están implementados en Fase 0.
+Esta decisión se tomó en Fase 0, antes de implementar la base de datos, los respaldos y la caché offline. Las tres capacidades están implementadas en el MVP v1.0.0; la [arquitectura vigente](../ARQUITECTURA.md) describe sus componentes y límites.
