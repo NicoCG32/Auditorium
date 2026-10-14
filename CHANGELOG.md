@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 — 2026-10-13
+## 1.0.0 — 2026-10-14
 
 Primera release estable del MVP local. Completa las Fases 0–4.
 
