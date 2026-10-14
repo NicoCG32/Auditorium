@@ -17,7 +17,7 @@ export function App({
       </a>
       <header className="border-b border-border">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 sm:px-10 lg:px-16">
-          <span className="flex items-center gap-3 font-display text-sm font-black tracking-[0.16em]">
+          <span className="flex min-w-0 items-center gap-3 font-display text-sm font-black tracking-[0.16em] wrap-anywhere">
             <span className="brand-mark" aria-hidden="true" />
             AUDITÓRIUM
           </span>

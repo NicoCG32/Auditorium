@@ -86,7 +86,7 @@ export function LibraryControls({
         </select>
       </label>
       <div
-        className="flex items-end gap-1"
+        className="flex flex-wrap items-end gap-1"
         role="group"
         aria-label="Vista de biblioteca"
       >

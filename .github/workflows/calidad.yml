@@ -33,7 +33,16 @@ jobs:
         run: npm ci
       - name: Ejecutar verificaciones
         run: npm run check
-      - name: Preparar Chromium
-        run: npx playwright install --with-deps chromium
-      - name: Verificar PWA sin conexión
+      - name: Preparar navegadores
+        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Verificar aceptación, accesibilidad y PWA
         run: npm run test:e2e
+      - name: Preparar candidata de entrega
+        run: npm run package
+      - name: Conservar candidata para revisión
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: auditorium-candidate-${{ github.sha }}
+          path: release/auditorium-*/
+          if-no-files-found: error
+          retention-days: 7

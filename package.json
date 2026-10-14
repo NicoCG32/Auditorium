@@ -1,7 +1,7 @@
 {
   "name": "auditorium",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0-rc.1",
   "type": "module",
   "packageManager": "npm@12.2.0",
   "engines": {
@@ -19,6 +19,7 @@
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
     "build": "tsc -b && vite build",
+    "package": "npm run build && node scripts/package.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
@@ -28,6 +29,7 @@
     "zod": "4.6.6"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.0",
     "@tailwindcss/vite": "4.3.3",
