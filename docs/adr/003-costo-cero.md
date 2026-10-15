@@ -17,7 +17,7 @@ Un despliegue estático opcional se evaluará como un hito separado, verificando
 
 - Diferenciar la licencia del software de las cuotas de un proveedor. Un plan gratuito puede cambiar; el núcleo local debe continuar funcionando.
 - Revisar costos, licencias, límites y derechos antes de cada integración futura.
-- GitHub Actions usa un runner hospedado estándar de Linux para este repositorio público, sin subir artefactos. No cambiar a runners grandes ni ampliar límites de almacenamiento facturable.
-- La implementación actual no despliega ni activa servicios de datos externos.
+- GitHub Actions usa un runner hospedado estándar de Linux para este repositorio público. Los artefactos tienen retención acotada: paquete de revisión siete días y artefacto Pages un día. No cambiar a runners grandes ni ampliar límites de almacenamiento facturable.
+- WEB-01 incorpora alojamiento estático en GitHub Pages conforme a sus condiciones vigentes; conserva los datos musicales en el navegador. Los servicios de datos externos requieren una evaluación propia.
 
 Referencia de la configuración actual: [facturación de GitHub Actions](https://docs.github.com/en/billing/concepts/product-billing/github-actions).

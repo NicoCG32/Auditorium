@@ -12,7 +12,7 @@ El soporte depende del navegador y sistema. Una aplicación instalada puede usar
 
 ## Qué queda disponible sin red
 
-Tras prepararse, se pueden reabrir y recargar la biblioteca, ficha, formularios, ediciones/pistas, ejemplares, deseos, álbumes retirados y respaldos. Todas esas vistas son navegación interna de la SPA en `/`; también se admiten `/index.html`, parámetros de consulta y fragmentos. No existen enlaces directos por álbum ni un router de rutas adicionales en este incremento.
+Tras prepararse, se pueden reabrir y recargar la biblioteca, ficha, formularios, ediciones/pistas, ejemplares, deseos, álbumes retirados y respaldos. Todas esas vistas son navegación interna de la SPA en su base: `/` en el perfil local y `/Auditorium/` en Pages. También se admite `index.html` bajo esa base, parámetros de consulta y fragmentos. No existen enlaces directos por álbum ni un router de rutas adicionales. La [guía de publicación web](PUBLICACION_WEB.md) explica el origen de almacenamiento y el traslado desde localhost.
 
 Las operaciones locales siguen usando [IndexedDB](PERSISTENCIA_LOCAL.md): altas, consulta, notas, escucha, valoraciones, listas, copias, deseos, retirada/restauración y exportación/importación JSON. No se desactivan por el estado de la red.
 
@@ -36,7 +36,7 @@ Referencias: [persistencia solicitada al navegador](https://developer.mozilla.or
 
 ## Desarrollo y verificación
 
-`npm run dev` mantiene la caché PWA desactivada para evitar servir compilaciones antiguas durante desarrollo. Para probar producción, usa `npm run build` y `npm run preview`, en un origen distinto al servidor de desarrollo. Un hosting debe servir `sw.js`, el módulo Workbox, manifest y recursos del build con sus tipos MIME correctos, y permitir comprobar cambios del service worker sin una caché HTTP permanente. El despliegue sigue siendo un hito separado.
+`npm run dev` mantiene la caché PWA desactivada para evitar servir compilaciones antiguas durante desarrollo. Para probar producción, usa `npm run build` y `npm run preview`, en un origen distinto al servidor de desarrollo. Para `/Auditorium/`, ejecuta `npm run build:pages` y `npm run preview -- --mode pages`. Un hosting debe servir `sw.js`, el módulo Workbox, manifest y recursos del build con sus tipos MIME correctos, y permitir comprobar cambios del service worker sin una caché HTTP permanente. La publicación Pages se valida en el hito WEB-01.
 
 ```sh
 npx playwright install chromium

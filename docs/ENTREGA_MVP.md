@@ -42,9 +42,9 @@ npm run preview
 
 ## Condiciones de alojamiento
 
-El paquete contiene archivos estáticos, sin servidor de datos. Requiere servir `site/` en la raíz de un origen HTTPS (o localhost para revisión), con MIME correctos para JavaScript, CSS, PNG, SVG y `application/manifest+json`. `sw.js` debe poder consultarse sin una caché HTTP prolongada para detectar actualizaciones. No abras `index.html` mediante `file://`. El alcance y la URL de inicio de la PWA son `/`; alojarla bajo un subdirectorio requiere adaptar y volver a verificar la configuración.
+El paquete local contiene archivos estáticos, sin servidor de datos. Requiere servir `site/` en la raíz de un origen HTTPS (o localhost para revisión), con MIME correctos para JavaScript, CSS, PNG, SVG y `application/manifest+json`. `sw.js` debe poder consultarse sin una caché HTTP prolongada para detectar actualizaciones. No abras `index.html` mediante `file://`. El alcance y la URL de inicio de la PWA del paquete son `/`. El perfil separado `npm run build:pages` genera la aplicación para `/Auditorium/`, con su propia validación de subdirectorio.
 
-La release distribuye el paquete para alojarlo o revisarlo localmente. El despliegue de un sitio corresponde a un hito opcional separado.
+La release distribuye el paquete para alojarlo o revisarlo localmente. La [publicación web en GitHub Pages](PUBLICACION_WEB.md) corresponde al hito WEB-01 y conserva los archivos de la release publicada.
 
 ## Límites operativos
 

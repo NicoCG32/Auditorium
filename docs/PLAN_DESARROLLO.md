@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.1 · 2026-10-14 · Estado: MVP local v1.0.0 publicado.
+Versión 1.2 · 2026-10-15 · Estado: MVP local v1.0.0 publicado; publicación web en WEB-01.
 
 ## Objetivo del producto
 
@@ -90,7 +90,7 @@ No se programan reuniones ni recordatorios automáticamente. Se registran result
 | 5    | Metadatos externos        | Investigación y propuesta antes de cualquier integración                             |
 | 6    | Sincronización            | Prueba técnica de identidad, permisos, conflictos, migración y costos                |
 
-No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito opcional separado y debe especificar proveedor, condiciones vigentes y validación.
+No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito separado y debe especificar proveedor, condiciones vigentes y validación. WEB-01 concreta la [web/PWA en GitHub Pages](PUBLICACION_WEB.md), con biblioteca local y conservación de la distribución raíz.
 
 ## Primer sprint propuesto — registro inicial
 
@@ -112,6 +112,8 @@ Cambios de alcance se reflejan primero en la issue y el objetivo del hito. Cambi
 Las releases se preparan como tareas de entrega con su propio milestone, sin reabrir una fase ya completada. [REL-01](https://github.com/NicoCG32/Auditorium/issues/47) publica el MVP `1.0.0`: versión coherente, changelog, CI del commit exacto, paquete revisado, tag anotado y descarga con checksum verificado. Publicar una release distribuye los archivos; alojar el sitio requiere el hito opcional de despliegue. La issue de release se cierra después de comprobar la publicación y sus assets.
 
 [DOC-01](https://github.com/NicoCG32/Auditorium/issues/49) consolida las [referencias técnicas del MVP](README.md): arquitectura, dominio y datos, con diagramas y trazabilidad al código. Se sigue en un milestone documental propio; su integración no modifica el tag ni los archivos de la release publicada.
+
+[WEB-01](https://github.com/NicoCG32/Auditorium/issues/52) publica la aplicación en GitHub Pages. Se prioriza por solicitud de publicación sobre la investigación siguiente, manteniendo EXT-01 en su revisión independiente. Requiere validar raíz y subdirectorio, integrar la PR y comprobar el sitio HTTPS real antes de cerrar el hito; no amplía el alcance a cuentas o sincronización.
 
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 

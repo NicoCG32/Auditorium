@@ -4,6 +4,8 @@ Documentación de la implementación del **MVP v1.0.0**. La release corresponde 
 
 ## Ruta de lectura
 
+Para abrir o mantener la web/PWA alojada, consulta la [guía de GitHub Pages](PUBLICACION_WEB.md), incluido el traslado de la biblioteca desde localhost.
+
 | Necesidad                                                                 | Documento                                |
 | ------------------------------------------------------------------------- | ---------------------------------------- |
 | Comprender límites del sistema, componentes, dependencias y flujos        | [Arquitectura](ARQUITECTURA.md)          |
