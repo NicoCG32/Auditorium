@@ -43,6 +43,7 @@ const contentTypes = {
   '.webmanifest': 'application/manifest+json',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.webp': 'image/webp',
 }
 createServer((request, response) => {
   void serve(request, response).catch(() => {

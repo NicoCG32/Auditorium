@@ -5,6 +5,21 @@ import { parseBackupText, serializeBackup } from '../src/domain/backup'
 
 const base = '/Auditorium/'
 const origin = 'http://127.0.0.1:4179'
+const visualAssets = [
+  'brand/wordmark-dark.svg',
+  'brand/wordmark-light.svg',
+  'brand/logo-stacked.webp',
+  'backgrounds/sanctuary-desktop.webp',
+  'backgrounds/sanctuary-mobile.webp',
+  'backgrounds/parchment-desktop-light.svg',
+  'backgrounds/parchment-mobile-light.svg',
+  'decor/divider-simple.svg',
+  'icons/favicon.svg',
+  'icons/apple-touch-icon.png',
+  'icons/icon-192.png',
+  'icons/icon-512.png',
+  'icons/icon-maskable-512.png',
+].map((path) => `${base}auditorium/${path}`)
 
 async function openPrepared(page: Page) {
   await page.goto(base)
@@ -128,7 +143,7 @@ test('Pages sirve manifest, iconos y todos los chunks con MIME correcto y scope 
   })
   expect(manifest.icons).toHaveLength(3)
   for (const icon of manifest.icons) {
-    expect(icon.src.startsWith(`${base}icons/`)).toBe(true)
+    expect(icon.src.startsWith(`${base}auditorium/icons/`)).toBe(true)
     const response = await request.get(icon.src)
     expect(response.ok()).toBe(true)
     expect(response.headers()['content-type']).toBe('image/png')
@@ -141,6 +156,20 @@ test('Pages sirve manifest, iconos y todos los chunks con MIME correcto y scope 
   expect(resources.some((url) => /\/assets\/storage-.+\.js/.test(url))).toBe(
     true,
   )
+  expect(
+    resources
+      .map((url) => new URL(url).pathname)
+      .filter((path) => path.startsWith(`${base}auditorium/`))
+      .sort(),
+  ).toEqual([...visualAssets].sort())
+  await expect(page.locator('link[rel="icon"]')).toHaveAttribute(
+    'href',
+    `${base}auditorium/icons/favicon.svg`,
+  )
+  await expect(page.locator('link[rel="apple-touch-icon"]')).toHaveAttribute(
+    'href',
+    `${base}auditorium/icons/apple-touch-icon.png`,
+  )
   const types: Record<string, string> = {
     js: 'text/javascript',
     css: 'text/css',
@@ -148,6 +177,7 @@ test('Pages sirve manifest, iconos y todos los chunks con MIME correcto y scope 
     webmanifest: 'application/manifest+json',
     png: 'image/png',
     svg: 'image/svg+xml',
+    webp: 'image/webp',
   }
   for (const resource of resources) {
     const pathname = new URL(resource).pathname
@@ -174,6 +204,13 @@ test('Pages sirve manifest, iconos y todos los chunks con MIME correcto y scope 
     (await devtools.send('Page.getInstallabilityErrors')).installabilityErrors,
   ).toEqual([])
   await devtools.detach()
+  await context.setOffline(true)
+  for (const path of visualAssets) {
+    expect(
+      await page.evaluate(async (url) => (await fetch(url)).ok, path),
+      path,
+    ).toBe(true)
+  }
   expect(errors).toEqual([])
 })
 

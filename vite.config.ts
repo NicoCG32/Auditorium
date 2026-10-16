@@ -26,21 +26,21 @@ export default defineConfig(({ mode }) => {
           start_url: base,
           scope: base,
           display: 'standalone',
-          background_color: '#0c0c0e',
-          theme_color: '#0c0c0e',
+          background_color: '#0a0a0d',
+          theme_color: '#0a0a0d',
           icons: [
             {
-              src: `${base}icons/icon-192.png`,
+              src: `${base}auditorium/icons/icon-192.png`,
               sizes: '192x192',
               type: 'image/png',
             },
             {
-              src: `${base}icons/icon-512.png`,
+              src: `${base}auditorium/icons/icon-512.png`,
               sizes: '512x512',
               type: 'image/png',
             },
             {
-              src: `${base}icons/icon-maskable-512.png`,
+              src: `${base}auditorium/icons/icon-maskable-512.png`,
               sizes: '512x512',
               type: 'image/png',
               purpose: 'maskable',
@@ -51,8 +51,12 @@ export default defineConfig(({ mode }) => {
           cacheId: 'auditorium-shell',
           globPatterns: [
             'index.html',
-            'assets/*.{js,css}',
-            'icons/*.{png,svg}',
+            'assets/*.{js,css,png,svg,webp}',
+            'auditorium/brand/wordmark-{dark,light}.svg',
+            'auditorium/brand/logo-stacked.webp',
+            'auditorium/backgrounds/*.{svg,webp}',
+            'auditorium/icons/{favicon.svg,apple-touch-icon.png,icon-192.png,icon-512.png,icon-maskable-512.png}',
+            'auditorium/decor/divider-simple.svg',
           ],
           navigateFallback: 'index.html',
           navigateFallbackAllowlist: [
