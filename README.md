@@ -8,6 +8,8 @@ La [release v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0) 
 
 La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica mediante GitHub Pages desde revisiones validadas de `main`. Los datos se guardan en tu navegador; la [guía de publicación web](docs/PUBLICACION_WEB.md) explica instalación, traslado por respaldo y límites del origen.
 
+«Apariencia» ofrece temas oscuro y pergamino, ambientación desactivable y una vista previa temporal de una foto local. Las preferencias visuales son independientes de la colección y sus respaldos. Consulta el [sistema de diseño y su validación](docs/DISENO_BASE.md).
+
 ## Desarrollo local
 
 Requisitos: Node.js 24 LTS (24.15.0 o posterior dentro de esa rama) y npm 12.2.x o posterior dentro de la rama 12. La instalación inicial requiere internet para descargar dependencias; ejecutar y compilar la plantilla no requiere claves ni cuentas externas.

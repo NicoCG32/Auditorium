@@ -6,7 +6,7 @@ La web/PWA utiliza la misma aplicación local de Auditorium, compilada para **`/
 
 Abre la dirección con conexión y espera **«Aplicación preparada para usar sin conexión»**. Después puedes reabrirla sin red. El panel «Aplicación y almacenamiento» ofrece instalación cuando el navegador lo permite; también puedes usar su menú. Véanse los [alcances de la PWA](PWA_OFFLINE.md).
 
-La biblioteca se guarda en IndexedDB del origen y perfil del navegador. La publicación distribuye HTML, JS, CSS, manifest e iconos propios. No envía al repositorio la colección, notas, valoraciones o respaldos. Cada persona gestiona su almacenamiento local; el hosting no crea una cuenta ni sincronización.
+La biblioteca se guarda en IndexedDB del origen y perfil del navegador. La publicación distribuye HTML, JS, CSS, manifest y recursos visuales propios. No envía al repositorio la colección, notas, valoraciones o respaldos. Cada persona gestiona su almacenamiento local; el hosting no crea una cuenta ni sincronización. Las preferencias de apariencia se conservan en el navegador; una foto de fondo elegida desde un archivo local permanece sólo como vista previa de esa apertura y se descarta al recargar. Véase [diseño base](DISENO_BASE.md).
 
 Localhost y `https://nicocg32.github.io` son orígenes diferentes. Para trasladar una biblioteca:
 
@@ -37,6 +37,8 @@ npm run preview -- --mode pages
 Abre `/Auditorium/` en la dirección de preview. Para regresar a raíz, ejecuta `npm run build` antes de preview. La release v1.0.0 publicada conserva su tag y archivos originales.
 
 La [configuración de Vite](../vite.config.ts) deriva de la base los recursos, manifest, inicio, alcance, iconos y fallback. `OfflineController` registra el worker con `BASE_URL`. Las vistas permanecen en una única URL; no se añaden rutas por álbum ni una redirección general `404.html`.
+
+Las imágenes de los componentes utilizan `import.meta.env.BASE_URL`. Vite reescribe los `url('/auditorium/...')` públicos del CSS con la base de compilación; por ejemplo, el fondo oscuro se sirve en `/Auditorium/auditorium/backgrounds/sanctuary-desktop.webp`. Favicon e iconos PWA quedan en `/Auditorium/auditorium/icons/`. Se distribuyen 21 recursos visuales y se precargan los 13 utilizados por la interfaz, incluidos ambos temas y fondos aunque la ambientación esté desactivada. Los ocho restantes no se usan ni se precargan.
 
 ## Validación y despliegue
 

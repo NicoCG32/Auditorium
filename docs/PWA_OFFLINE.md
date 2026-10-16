@@ -16,7 +16,9 @@ Tras prepararse, se pueden reabrir y recargar la biblioteca, ficha, formularios,
 
 Las operaciones locales siguen usando [IndexedDB](PERSISTENCIA_LOCAL.md): altas, consulta, notas, escucha, valoraciones, listas, copias, deseos, retirada/restauración y exportación/importación JSON. No se desactivan por el estado de la red.
 
-La caché contiene únicamente el HTML principal, todos los JS/CSS compilados, iconos propios y manifest. No tiene reglas de caché de respuestas en ejecución: no guarda portadas externas, audio, servicios remotos ni archivos JSON arbitrarios. Los enlaces y portadas externos requieren red y mantienen su alternativa textual. La indicación de conexión del navegador es orientativa; no implica comprobar la disponibilidad de un servicio externo.
+La caché contiene el HTML principal, todos los JS/CSS compilados, manifest y los 13 recursos visuales seleccionados en el [diseño base](DISENO_BASE.md): marca para ambos temas, logo de bienvenida, cuatro fondos, divisor e iconos propios. Las rutas de iconos son `auditorium/icons/` bajo la base del build. Ambos temas quedan disponibles sin red; los recursos se precargan incluso con la ambientación desactivada. Los otros ocho recursos visuales distribuidos no se usan ni se precargan.
+
+No hay reglas de caché de respuestas en ejecución: no se guardan portadas externas, audio, servicios remotos ni archivos JSON arbitrarios. Los enlaces y portadas externos requieren red y mantienen su alternativa textual. La indicación de conexión del navegador es orientativa; no implica comprobar la disponibilidad de un servicio externo. La foto opcional de «Apariencia» es una vista previa temporal de archivo local, ajena a la precaché y a los respaldos; se descarta al recargar.
 
 ## Actualizaciones sin recargas forzadas
 

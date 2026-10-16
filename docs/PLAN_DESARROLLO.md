@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.2 · 2026-10-15 · Estado: MVP local v1.0.0 publicado; publicación web en WEB-01.
+Versión 1.3 · 2026-10-16 · Estado: MVP v1.0.0 y web publicados; identidad visual en VIS-01.
 
 ## Objetivo del producto
 
@@ -114,6 +114,8 @@ Las releases se preparan como tareas de entrega con su propio milestone, sin rea
 [DOC-01](https://github.com/NicoCG32/Auditorium/issues/49) consolida las [referencias técnicas del MVP](README.md): arquitectura, dominio y datos, con diagramas y trazabilidad al código. Se sigue en un milestone documental propio; su integración no modifica el tag ni los archivos de la release publicada.
 
 [WEB-01](https://github.com/NicoCG32/Auditorium/issues/52) publica la aplicación en GitHub Pages. Se prioriza por solicitud de publicación sobre la investigación siguiente, manteniendo EXT-01 en su revisión independiente. Requiere validar raíz y subdirectorio, integrar la PR y comprobar el sitio HTTPS real antes de cerrar el hito; no amplía el alcance a cuentas o sincronización.
+
+[VIS-01](https://github.com/NicoCG32/Auditorium/issues/54) adapta la identidad visual después de WEB-01, con marca, temas oscuro/pergamino, ambientación desactivable y vista previa temporal de foto local. Se prioriza por solicitud de producto y usa un milestone propio; EXT-01 mantiene su revisión independiente. Requiere comprobar accesibilidad, móvil/escritorio y recursos offline en raíz y Pages, sin modificar el dominio ni los datos musicales. Mientras las dos entregas estén en revisión, no se inicia otra implementación hasta resolver su revisión o repriorizar expresamente.
 
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 

@@ -18,7 +18,7 @@ flowchart LR
     Archivos["Archivos de respaldo JSON<br/>Fuera del navegador"]
     Externo["Sitios y portadas externos<br/>Requieren conexión"]
     Persona -->|Registro y consulta| App
-    Hosting -->|HTML, JS, CSS, manifest e iconos| App
+    Hosting -->|Código, manifest y recursos visuales| App
     App -->|Exportación explícita| Archivos
     Archivos -->|Selección y restauración confirmada| App
     Persona -->|Consulta externa| Externo
@@ -145,7 +145,7 @@ La interfaz distingue fallo antes del commit de fallo al actualizar la vista des
 
 ## 6. PWA y actualización de recursos
 
-El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos propios. La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado.
+El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos y recursos visuales propios seleccionados en el [diseño base](DISENO_BASE.md). La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado. Tema y ambientación se guardan como preferencias opcionales de presentación en localStorage. La vista previa de una foto local sólo vive en memoria durante la apertura; ninguna de estas opciones modifica IndexedDB ni el respaldo musical.
 
 ```mermaid
 sequenceDiagram
