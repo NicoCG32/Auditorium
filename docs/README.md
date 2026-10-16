@@ -1,8 +1,10 @@
 # Documentación de Auditorium
 
-Documentación de la implementación del **MVP v1.0.0**. La release corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas describen sus contratos y deben revisarse cuando cambien código, esquemas o decisiones.
+Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web y evolución visual. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. Las capacidades futuras aparecen como propuestas separadas.
 
 ## Ruta de lectura
+
+Para abrir o mantener la web/PWA alojada, consulta la [guía de GitHub Pages](PUBLICACION_WEB.md), incluido el traslado de la biblioteca desde localhost.
 
 | Necesidad                                                                 | Documento                                |
 | ------------------------------------------------------------------------- | ---------------------------------------- |

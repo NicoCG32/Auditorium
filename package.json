@@ -19,6 +19,7 @@
     "format:check": "prettier --check .",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test && npm run build",
     "build": "tsc -b && vite build",
+    "build:pages": "tsc -b && vite build --mode pages",
     "package": "npm run build && node scripts/package.mjs",
     "preview": "vite preview --host 127.0.0.1"
   },

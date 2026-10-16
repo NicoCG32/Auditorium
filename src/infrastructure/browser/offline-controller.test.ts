@@ -19,7 +19,7 @@ class FakeWorkers extends EventTarget {
   registration = new FakeRegistration()
   register = vi.fn(() => Promise.resolve(this.registration))
 }
-function environment() {
+function environment(baseUrl = '/') {
   const workers = new FakeWorkers()
   const events = new EventTarget()
   const storage = {
@@ -32,7 +32,7 @@ function environment() {
     workers,
     events,
     storage,
-    baseUrl: '/',
+    baseUrl,
     isOnline: vi.fn(() => true),
     isInstalled: () => false,
   }
@@ -46,8 +46,8 @@ function environment() {
     registration: workers.registration,
   }
 }
-async function started() {
-  const context = environment()
+async function started(baseUrl = '/') {
+  const context = environment(baseUrl)
   context.controller.start()
   await vi.waitFor(() =>
     expect(context.controller.getSnapshot().storage).toBe('available'),
@@ -73,20 +73,26 @@ class FakePrompt extends Event {
   }
 }
 
-test('solo registra una vez; no declara listo antes de activar y controlar', async () => {
-  const context = await started()
-  context.controller.start()
-  expect(context.workers.register).toHaveBeenCalledExactlyOnceWith('/sw.js', {
-    scope: '/',
-    updateViaCache: 'none',
-  })
-  expect(context.controller.getSnapshot().shell).toBe('preparing')
-  context.registration.installing?.change('installed')
-  expect(context.controller.getSnapshot().shell).toBe('preparing')
-  activate(context)
-  expect(context.controller.getSnapshot().shell).toBe('ready')
-  expect(context.controller.getSnapshot().update).toBe('idle')
-})
+test.each(['/', '/Auditorium/'])(
+  'registra una vez bajo %s; espera a activar y controlar para declarar listo',
+  async (baseUrl) => {
+    const context = await started(baseUrl)
+    context.controller.start()
+    expect(context.workers.register).toHaveBeenCalledExactlyOnceWith(
+      `${baseUrl}sw.js`,
+      {
+        scope: baseUrl,
+        updateViaCache: 'none',
+      },
+    )
+    expect(context.controller.getSnapshot().shell).toBe('preparing')
+    context.registration.installing?.change('installed')
+    expect(context.controller.getSnapshot().shell).toBe('preparing')
+    activate(context)
+    expect(context.controller.getSnapshot().shell).toBe('ready')
+    expect(context.controller.getSnapshot().update).toBe('idle')
+  },
+)
 test('una inscripción existente activa también queda lista', async () => {
   const context = environment()
   activate(context)

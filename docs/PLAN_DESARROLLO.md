@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.1 · 2026-10-14 · Estado: MVP local v1.0.0 publicado.
+Versión 1.4 · 2026-10-16 · Estado: MVP v1.0.0, web e identidad visual publicados; evaluación de metadatos en EXT-01.
 
 ## Objetivo del producto
 
@@ -90,7 +90,7 @@ No se programan reuniones ni recordatorios automáticamente. Se registran result
 | 5    | Metadatos externos        | Investigación y propuesta antes de cualquier integración                             |
 | 6    | Sincronización            | Prueba técnica de identidad, permisos, conflictos, migración y costos                |
 
-No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito opcional separado y debe especificar proveedor, condiciones vigentes y validación.
+No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito separado y debe especificar proveedor, condiciones vigentes y validación. WEB-01 concreta la [web/PWA en GitHub Pages](PUBLICACION_WEB.md), con biblioteca local y conservación de la distribución raíz.
 
 ## Primer sprint propuesto — registro inicial
 
@@ -113,7 +113,11 @@ Las releases se preparan como tareas de entrega con su propio milestone, sin rea
 
 [DOC-01](https://github.com/NicoCG32/Auditorium/issues/49) consolida las [referencias técnicas del MVP](README.md): arquitectura, dominio y datos, con diagramas y trazabilidad al código. Se sigue en un milestone documental propio; su integración no modifica el tag ni los archivos de la release publicada.
 
-[EXT-01](https://github.com/NicoCG32/Auditorium/issues/24) evalúa MusicBrainz mediante una [propuesta de metadatos externos](METADATOS_EXTERNOS.md) y una prueba offline ficticia. Su resultado define correspondencias, pérdidas de representación, condiciones de uso y requisitos previos; la integración de fuentes, procedencia persistente y revisión de importaciones requieren nuevos incrementos con aceptación propia.
+[WEB-01](https://github.com/NicoCG32/Auditorium/issues/52) publica la aplicación en GitHub Pages. Se prioriza por solicitud de publicación sobre la investigación siguiente, manteniendo EXT-01 en su revisión independiente. Requiere validar raíz y subdirectorio, integrar la PR y comprobar el sitio HTTPS real antes de cerrar el hito; no amplía el alcance a cuentas o sincronización.
+
+[VIS-01](https://github.com/NicoCG32/Auditorium/issues/54) adapta la identidad visual después de WEB-01, con marca, temas oscuro/pergamino, ambientación desactivable y vista previa temporal de foto local. Se priorizó por solicitud de producto y se completó con un milestone propio. La publicación se verificó con ambos temas, recursos offline y actualización desde la versión anterior, conservando el dominio y los datos musicales.
+
+[EXT-01](https://github.com/NicoCG32/Auditorium/issues/24) evalúa MusicBrainz mediante una [propuesta de metadatos externos](METADATOS_EXTERNOS.md) y una prueba offline ficticia. Su revisión se retoma después de WEB-01 y VIS-01. El resultado define correspondencias, pérdidas de representación, condiciones de uso y requisitos previos; la integración de fuentes, procedencia persistente y revisión de importaciones requieren nuevos incrementos con aceptación propia. Esta evaluación no habilita un importador ni inicia sincronización.
 
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 

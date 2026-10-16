@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Auditórium — Vinilo gótico">
+<title>Auditórium — Vinilo gótico</title>
+<path d="M27 106 Q50 49 85 30 Q116 10 128 6 Q140 10 171 30 Q206 49 229 106" fill="none" stroke="#3F2A2C" stroke-width="7" stroke-linecap="round"/>
+<path d="M42 105 V63 M214 105 V63 M59 82 V47 M197 82 V47 M128 33 V4" stroke="#3F2A2C" stroke-width="5" stroke-linecap="round"/>
+<path d="M128 16 L139 34 L128 47 L117 34Z" fill="#732230" stroke="#3F2A2C" stroke-width="2"/>
+<circle cx="128" cy="135" r="92" fill="#0C0B11" stroke="#3F2A2C" stroke-width="6"/>
+<circle cx="128" cy="135" r="84" fill="url(#disc)"/>
+<circle cx="128" cy="135" r="38" fill="none" stroke="#77737D" stroke-opacity="0.24" stroke-width="1.4"/><circle cx="128" cy="135" r="43" fill="none" stroke="#77737D" stroke-opacity="0.13" stroke-width="1.4"/><circle cx="128" cy="135" r="48" fill="none" stroke="#77737D" stroke-opacity="0.24" stroke-width="1.4"/><circle cx="128" cy="135" r="53" fill="none" stroke="#77737D" stroke-opacity="0.13" stroke-width="1.4"/><circle cx="128" cy="135" r="58" fill="none" stroke="#77737D" stroke-opacity="0.24" stroke-width="1.4"/><circle cx="128" cy="135" r="63" fill="none" stroke="#77737D" stroke-opacity="0.13" stroke-width="1.4"/><circle cx="128" cy="135" r="68" fill="none" stroke="#77737D" stroke-opacity="0.24" stroke-width="1.4"/><circle cx="128" cy="135" r="73" fill="none" stroke="#77737D" stroke-opacity="0.13" stroke-width="1.4"/><circle cx="128" cy="135" r="78" fill="none" stroke="#77737D" stroke-opacity="0.24" stroke-width="1.4"/><circle cx="128" cy="135" r="83" fill="none" stroke="#77737D" stroke-opacity="0.13" stroke-width="1.4"/>
+<circle cx="128" cy="135" r="33" fill="#732230" stroke="#3F2A2C" stroke-width="2.5"/>
+<circle cx="128" cy="135" r="17" fill="none" stroke="#3F2A2C" stroke-opacity="0.55" stroke-width="1"/>
+<path d="M128 109V161M102 135H154" stroke="#3F2A2C" stroke-opacity="0.75" stroke-width="1"/>
+<circle cx="128" cy="135" r="6" fill="#3F2A2C"/>
+<path d="M20 178 Q13 208 39 223 Q51 236 80 237 M236 178 Q243 208 217 223 Q205 236 176 237" fill="none" stroke="#3F2A2C" stroke-width="4"/>
+<path d="M128 229L135 239L128 251L121 239Z" fill="#732230" stroke="#3F2A2C" stroke-width="2"/>
+<defs>
+<linearGradient id="red" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ad3947"/><stop offset="1" stop-color="#6e1624"/></linearGradient>
+<radialGradient id="disc"><stop offset="0" stop-color="#24242a"/><stop offset="0.64" stop-color="#09090d"/><stop offset="0.84" stop-color="#202029"/><stop offset="1" stop-color="#08080b"/></radialGradient>
+</defs>
+</svg>

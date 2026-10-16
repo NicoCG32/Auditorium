@@ -456,7 +456,9 @@ test('ficha muestra metadatos y recibe la portada guardada sin cargarla automát
   expect(
     screen.getByRole('link', { name: 'Abrir enlace de portada' }),
   ).toHaveAttribute('href', 'https://example.invalid/portada.svg')
-  expect(screen.queryByRole('img')).not.toBeInTheDocument()
+  expect(
+    screen.queryByRole('img', { name: 'Portada de Eclipse' }),
+  ).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Mostrar portada' }))
   expect(
     screen.getByRole('img', { name: 'Portada de Eclipse' }),

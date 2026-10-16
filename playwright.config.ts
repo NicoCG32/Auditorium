@@ -14,7 +14,19 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   projects: [
-    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    {
+      name: 'chromium',
+      testIgnore: 'pages.spec.ts',
+      use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chromium-pages',
+      testMatch: 'pages.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://127.0.0.1:4179',
+      },
+    },
     {
       name: 'firefox',
       testMatch: 'acceptance.spec.ts',
@@ -26,10 +38,18 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'node e2e/server.mjs',
-    url: 'http://127.0.0.1:4178',
-    reuseExistingServer: false,
-    timeout: 60_000,
-  },
+  webServer: [
+    {
+      command: 'node e2e/server.mjs',
+      url: 'http://127.0.0.1:4178',
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+    {
+      command: 'node e2e/server.mjs pages',
+      url: 'http://127.0.0.1:4179/Auditorium/',
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
+  ],
 })

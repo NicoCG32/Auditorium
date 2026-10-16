@@ -6,10 +6,15 @@ import { build } from 'vite'
 
 // Two actual production builds with distinct HTML and JS, isolated from dist/.
 const root = process.cwd()
+const pages = process.argv[2] === 'pages'
+const port = pages ? 4179 : 4178
+const base = pages ? '/Auditorium/' : '/'
+const buildRoot = pages ? '.pwa-test-builds/pages' : '.pwa-test-builds'
 for (const version of ['a', 'b']) {
   await build({
     configFile: resolve(root, 'vite.config.ts'),
-    build: { outDir: `.pwa-test-builds/${version}`, emptyOutDir: true },
+    mode: pages ? 'pages' : 'production',
+    build: { outDir: `${buildRoot}/${version}`, emptyOutDir: true },
     plugins: [
       {
         name: 'test-build-version',
@@ -38,16 +43,17 @@ const contentTypes = {
   '.webmanifest': 'application/manifest+json',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
+  '.webp': 'image/webp',
 }
 createServer((request, response) => {
   void serve(request, response).catch(() => {
     if (!response.headersSent) response.writeHead(500)
     response.end()
   })
-}).listen(4178, '127.0.0.1')
+}).listen(port, '127.0.0.1')
 
 async function serve(request, response) {
-  const url = new URL(request.url ?? '/', 'http://127.0.0.1:4178')
+  const url = new URL(request.url ?? '/', `http://127.0.0.1:${port}`)
   if (request.method === 'GET' && url.pathname === '/__test/storage') {
     response.writeHead(200, {
       'Content-Type': 'text/html',
@@ -77,19 +83,24 @@ async function serve(request, response) {
     response.writeHead(405).end()
     return
   }
-  const directory = resolve(root, '.pwa-test-builds', version)
+  const directory = resolve(root, buildRoot, version)
   const pathname = decodeURIComponent(url.pathname)
+  if (!pathname.startsWith(base)) {
+    response.writeHead(404).end()
+    return
+  }
+  const relativePath = pathname.slice(base.length)
   if (
     failAssets &&
     version === 'b' &&
-    /^\/assets\/index-.+\.js$/.test(pathname)
+    /^assets\/index-.+\.js$/.test(relativePath)
   ) {
     response.writeHead(503).end()
     return
   }
   const file = resolve(
     directory,
-    pathname === '/' ? 'index.html' : `.${pathname}`,
+    relativePath === '' ? 'index.html' : relativePath,
   )
   if (!file.startsWith(`${directory}${sep}`)) {
     response.writeHead(403).end()

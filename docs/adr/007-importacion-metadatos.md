@@ -35,4 +35,4 @@ La PWA actual carece de un transporte remoto identificado y de un contrato persi
 
 El primer incremento propuesto es acotado y funciona offline después de adquirir el archivo. No resuelve búsqueda remota, autenticidad del origen, importación completa, portadas ni sincronización. Requiere una interfaz de revisión y un contrato externo distinto del respaldo; no reutiliza `restoreEmpty` ni adopta la identidad del archivo.
 
-El estudio actual no cambia schemas, tablas, formato de respaldo, dependencias ni capacidades de la versión 1.0.0. Aprobar esta decisión permitiría refinar los incrementos descritos en la evaluación; cada implementación mantiene sus propios criterios y PR.
+El estudio actual conserva los schemas, tablas y formato de respaldo del MVP v1.0.0; tampoco cambia dependencias ni añade capacidades de importación a la aplicación web actual. La distribución y la identidad visual posteriores a esa release se mantienen. Aprobar esta decisión permitiría refinar los incrementos descritos en la evaluación; cada implementación mantiene sus propios criterios y PR.

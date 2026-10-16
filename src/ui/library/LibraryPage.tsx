@@ -157,7 +157,7 @@ export function LibraryPage({
       : undefined
   return (
     <div ref={content}>
-      <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
+      <div className="library-intro mb-8 flex flex-wrap items-end justify-between gap-6">
         <div className="min-w-0 wrap-anywhere">
           <p className="mb-4 text-xs font-semibold tracking-[0.2em] text-accent-text uppercase">
             El archivo de tu música
@@ -169,7 +169,7 @@ export function LibraryPage({
             Los álbumes que te acompañan y los que te quedan por descubrir.
           </p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="library-actions flex flex-wrap gap-3">
           <button
             ref={addButton}
             type="button"
@@ -334,25 +334,37 @@ export function LibraryPage({
           }}
         />
       ) : state.albums.length === 0 ? (
-        <section className="library-empty" aria-labelledby="empty-title">
-          <span className="empty-record" aria-hidden="true" />
-          <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
-            Tu archivo comienza aquí
-          </p>
-          <h2 id="empty-title" className="text-3xl font-semibold">
-            Aún no hay álbumes
-          </h2>
-          <p className="mt-4 max-w-md text-muted">
-            Empieza con un artista y un título. Después podrás completar el
-            resto.
-          </p>
-          <button
-            type="button"
-            className="primary-button mt-6"
-            onClick={() => setFormOpen(true)}
-          >
-            Añadir tu primer álbum
-          </button>
+        <section
+          className="library-empty library-welcome"
+          aria-labelledby="empty-title"
+        >
+          <div className="welcome-art" aria-hidden="true">
+            <img
+              src={`${import.meta.env.BASE_URL}auditorium/brand/logo-stacked.webp`}
+              alt=""
+              width={1254}
+              height={1254}
+            />
+          </div>
+          <div className="welcome-copy">
+            <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
+              Tu archivo comienza aquí
+            </p>
+            <h2 id="empty-title" className="text-3xl font-semibold">
+              Aún no hay álbumes
+            </h2>
+            <p className="mt-4 max-w-md text-muted">
+              Empieza con un artista y un título. Después podrás completar el
+              resto.
+            </p>
+            <button
+              type="button"
+              className="primary-button mt-6"
+              onClick={() => setFormOpen(true)}
+            >
+              Añadir tu primer álbum
+            </button>
+          </div>
         </section>
       ) : (
         <>

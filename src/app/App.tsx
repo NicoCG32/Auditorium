@@ -1,7 +1,12 @@
+import { useEffect } from 'react'
 import type { BackupLocalRepository } from '../domain/repositories/local-repository'
 import { LibraryPage } from '../ui/library/LibraryPage'
 import { OfflinePanel } from '../ui/offline/OfflinePanel'
 import type { OfflineController } from '../infrastructure/browser/offline-controller'
+import { AppearanceControls } from '../ui/appearance/AppearanceControls'
+import { PosterBackdrop } from '../ui/appearance/PosterBackdrop'
+import { useAppearance } from '../ui/appearance/use-appearance'
+import { usePosterPreview } from '../ui/appearance/use-poster-preview'
 
 export function App({
   repository,
@@ -10,32 +15,63 @@ export function App({
   repository: BackupLocalRepository
   offline?: OfflineController
 }) {
+  const appearance = useAppearance()
+  const preview = usePosterPreview()
+  useEffect(() => {
+    const html = document.documentElement
+    const previous = html.getAttribute('data-aud-theme')
+    const meta = document.querySelector('meta[name="theme-color"]')
+    const previousColor = meta?.getAttribute('content')
+    html.setAttribute('data-aud-theme', appearance.theme)
+    meta?.setAttribute(
+      'content',
+      appearance.theme === 'light' ? '#ebe2d6' : '#0a0a0d',
+    )
+    return () => {
+      if (previous === null) html.removeAttribute('data-aud-theme')
+      else html.setAttribute('data-aud-theme', previous)
+      if (previousColor) meta?.setAttribute('content', previousColor)
+    }
+  }, [appearance.theme])
   return (
-    <div className="flex min-h-svh flex-col bg-background text-foreground">
+    <div
+      className="aud-app flex min-h-svh flex-col text-foreground"
+      data-aud-theme={appearance.theme}
+      data-aud-ambient={appearance.ambient ? 'on' : 'off'}
+    >
+      <PosterBackdrop poster={preview.poster} visible={appearance.ambient} />
       <a className="skip-link" href="#contenido">
         Ir al contenido
       </a>
-      <header className="border-b border-border">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-6 sm:px-10 lg:px-16">
-          <span className="flex min-w-0 items-center gap-3 font-display text-sm font-black tracking-[0.16em] wrap-anywhere">
-            <span className="brand-mark" aria-hidden="true" />
-            AUDITÓRIUM
-          </span>
-          <span className="text-xs tracking-[0.08em] text-muted">
-            Archivo musical personal
-          </span>
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-brand">
+            <img
+              src={`${import.meta.env.BASE_URL}auditorium/brand/wordmark-${appearance.theme}.svg`}
+              alt="Auditórium · Tu fonoteca digital"
+              width={980}
+              height={198}
+              className="brand-wordmark"
+            />
+          </div>
+          <AppearanceControls appearance={appearance} preview={preview} />
         </div>
       </header>
-      <main
-        id="contenido"
-        tabIndex={-1}
-        className="mx-auto w-full max-w-7xl flex-1 px-6 py-10 sm:px-10 lg:px-16 lg:py-14"
-      >
+      <main id="contenido" tabIndex={-1} className="app-main flex-1">
         <LibraryPage repository={repository} />
       </main>
-      <footer className="mx-auto w-full max-w-7xl px-6 pb-7 sm:px-10 lg:px-16">
+      <footer className="app-footer">
         {offline && <OfflinePanel controller={offline} />}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-5 text-xs text-muted">
+        <img
+          src={`${import.meta.env.BASE_URL}auditorium/decor/divider-simple.svg`}
+          alt=""
+          aria-hidden="true"
+          width={800}
+          height={80}
+          className="brand-divider"
+          loading="lazy"
+        />
+        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
           <p>Tu música. Tu criterio. Tu colección.</p>
           <p>Guardada en este navegador.</p>
         </div>

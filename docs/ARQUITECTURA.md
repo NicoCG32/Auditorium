@@ -18,7 +18,7 @@ flowchart LR
     Archivos["Archivos de respaldo JSON<br/>Fuera del navegador"]
     Externo["Sitios y portadas externos<br/>Requieren conexión"]
     Persona -->|Registro y consulta| App
-    Hosting -->|HTML, JS, CSS, manifest e iconos| App
+    Hosting -->|Código, manifest y recursos visuales| App
     App -->|Exportación explícita| Archivos
     Archivos -->|Selección y restauración confirmada| App
     Persona -->|Consulta externa| Externo
@@ -56,7 +56,7 @@ flowchart TB
 
 IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB conserva los registros musicales y su identidad. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
 
-La navegación entre biblioteca, ficha, registro, retirados y respaldos depende del estado de React. Las aperturas de la PWA admiten `/`, `/index.html` y sus variantes con query o fragmento; no existe un router de fichas por URL o por ID. El alojamiento bajo un subdirectorio requiere adaptar y volver a verificar el alcance de la PWA.
+La navegación entre biblioteca, ficha, registro, retirados y respaldos depende del estado de React. Las aperturas de la PWA admiten la base del build, `index.html` y sus variantes con query o fragmento; no existe un router de fichas por URL o por ID. La distribución local utiliza `/`; el modo Pages utiliza `/Auditorium/`, con manifest, recursos, fallback y alcance verificados para esa base.
 
 ## 4. Organización del código y dependencias
 
@@ -145,7 +145,7 @@ La interfaz distingue fallo antes del commit de fallo al actualizar la vista des
 
 ## 6. PWA y actualización de recursos
 
-El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos propios. La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado.
+El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos y recursos visuales propios seleccionados en el [diseño base](DISENO_BASE.md). La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado. Tema y ambientación se guardan como preferencias opcionales de presentación en localStorage. La vista previa de una foto local sólo vive en memoria durante la apertura; ninguna de estas opciones modifica IndexedDB ni el respaldo musical.
 
 ```mermaid
 sequenceDiagram
@@ -188,7 +188,7 @@ flowchart LR
 
 El navegador ejecuta React, Zod, Dexie y los recursos de Workbox compilados. Node y npm son herramientas de desarrollo/compilación o para iniciar el servidor de revisión; no son un servicio de datos de Auditorium. La configuración de Vite separa Dexie en un chunk de almacenamiento, también incluido en la precarga de la PWA.
 
-La [guía de entrega](ENTREGA_MVP.md) explica requisitos, apertura del ZIP y alojamiento. La release es una distribución de archivos; no proporciona un sitio alojado. El paquete base de v1.0.0 incluye las guías operativas y su evidencia de validación; esta documentación técnica se mantiene en el repositorio y se referencia desde su índice.
+La [guía de entrega](ENTREGA_MVP.md) explica requisitos, apertura del ZIP y alojamiento. La release distribuye archivos para raíz. El hito WEB-01 añade una [publicación web en GitHub Pages](PUBLICACION_WEB.md) desde revisiones validadas de `main`, con build separado para `/Auditorium/`. El paquete base de v1.0.0 conserva sus guías y evidencia; la documentación técnica vigente se mantiene en el repositorio.
 
 Fuentes: [package.json](../package.json), [vite.config.ts](../vite.config.ts), [empaquetado](../scripts/package.mjs) y [flujo de calidad](../.github/workflows/calidad.yml).
 

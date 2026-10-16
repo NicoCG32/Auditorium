@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 80" role="img" aria-label="Separador ornamental">
+<g fill="none" stroke="#B49B86" stroke-width="2"><path d="M20 40H322 M478 40H780"/><path d="M310 30Q332 40 310 50 M490 30Q468 40 490 50"/>
+<path d="M50 25Q67 40 50 55 M750 25Q733 40 750 55"/>
+<path d="M400 5Q425 32 400 75 Q375 48 400 5Z"/></g><circle cx="400" cy="40" r="17" fill="#651b2b" stroke="#B49B86" stroke-width="2"/><circle cx="400" cy="40" r="5" fill="#E9DCCC"/>
+</svg>

@@ -1,6 +1,6 @@
 # Evaluación de metadatos externos
 
-Estado: **propuesta de evolución**, resultado de [EXT-01](https://github.com/NicoCG32/Auditorium/issues/24). Fuentes consultadas el **2026-10-14**. La aplicación publicada v1.0.0 conserva su registro manual y sus contratos locales; este estudio evalúa el mapeo y lo prueba offline con datos ficticios.
+Estado: **propuesta de evolución**, resultado de [EXT-01](https://github.com/NicoCG32/Auditorium/issues/24). Fuentes consultadas el **2026-10-14** y revalidadas el **2026-10-16**. La aplicación conserva el registro manual y el contrato de datos del MVP v1.0.0, con DB v3 y respaldo v1. La distribución web y la identidad visual evolucionaron después de esa release; este estudio evalúa el mapeo contra los contratos locales vigentes y lo prueba offline con datos ficticios.
 
 ## Resultado de la evaluación
 
@@ -66,7 +66,7 @@ Una edición digital no prueba una compra ni crea un `OwnedItem`. Metadatos, ano
 
 La [licencia de datos](https://musicbrainz.org/doc/About/Data_License) distingue core bajo **CC0** de datos suplementarios bajo **CC BY-NC-SA 3.0**. El [inventario](https://musicbrainz.org/doc/MusicBrainz_Database) sitúa anotaciones, etiquetas —incluidas asociaciones de género— y valoraciones de usuarios entre los suplementarios. La primera propuesta selecciona campos core de identificación, créditos, edición y listas; excluye datos suplementarios y portadas. Conservar fuente y fecha mejora la trazabilidad aunque CC0 no exija atribución.
 
-La licencia de los datos es distinta del acceso al servicio. La [API](https://musicbrainz.org/doc/MusicBrainz_API) publica lectura sin API key y uso no comercial gratuito; el uso comercial requiere revisar sus planes o acuerdo. MetaBrainz distingue [categorías de uso](https://metabrainz.org/supporters/account-type), incluida una categoría para autores de software abierto. La publicación de Auditorium en GitHub no decide por sí sola su categoría futura. La adquisición del archivo también queda sujeta a las condiciones aplicables de su fuente.
+La licencia de los datos es distinta del acceso al servicio. La [API](https://musicbrainz.org/doc/MusicBrainz_API) publica lectura sin API key y uso no comercial gratuito; el uso comercial requiere revisar sus planes o acuerdo. MetaBrainz distingue [categorías de uso para datasets y Live Data Feed](https://metabrainz.org/supporters/account-type), incluida una categoría para autores de software abierto. Esa clasificación no fija una tarifa universal para la API ni decide por sí sola la categoría futura de Auditorium por estar publicado en GitHub. La adquisición del archivo también queda sujeta a las condiciones aplicables de su fuente.
 
 El flujo manual permite conservar el funcionamiento local sin infraestructura remota obligatoria. Un adaptador alojado añadiría operación y posibles costos propios; no se selecciona proveedor, cuenta o plan en este estudio.
 
@@ -90,7 +90,7 @@ Un intermediario introduce otro receptor de consultas; no elimina la observació
 
 [Cover Art Archive](https://coverartarchive.org/) conserva el copyright de los titulares de las imágenes; estas no heredan CC0. El derecho a usar una imagen debe revisarse para el uso previsto, y [Internet Archive no garantiza los derechos indicados en sus ítems](https://archivesupport.zendesk.com/hc/en-us/articles/360014759692-Rights).
 
-La [API de CAA](https://musicbrainz.org/doc/Cover_Art_Archive/API) distingue portada de edición y portada representativa de grupo, redirige hacia Internet Archive y ofrece miniaturas de 250/500/1200. Declara ausencia actual de reglas propias de rate limiting, pero también contempla errores y el destino de la redirección; no es una garantía de volumen ilimitado. No se encontró una autorización global de redistribución ni un TTL normativo que justifique caché permanente.
+La [API de CAA](https://musicbrainz.org/doc/Cover_Art_Archive/API) distingue portada de edición y portada representativa de grupo, exige iniciar las solicitudes mediante `coverartarchive.org` y seguir sus redirecciones hacia Internet Archive, y ofrece miniaturas de 250/500/1200. Un adaptador no debe fijar las URLs de destino como un acceso permanente directo. Declara ausencia actual de reglas propias de rate limiting, pero también contempla errores y el destino de la redirección; no es una garantía de volumen ilimitado. No se encontró una autorización global de redistribución ni un TTL normativo que justifique caché permanente.
 
 La propuesta mantiene portada opcional y separada de la importación core: carga por acción explícita, fuente visible, retirada/reemplazo y fallo no bloqueante. Una URL HTTPS no demuestra permiso ni disponibilidad. No se propone descargar binarios a assets, precaché PWA o respaldos. Resolver derechos, destinos HTTPS/CORS y almacenamiento de imágenes requiere su propia tarea.
 
