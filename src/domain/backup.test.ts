@@ -32,7 +32,7 @@ test.each(['', '{', 'null', '[]', '   '])(
     expect(() => parseBackupText(text)).toThrow(BackupError)
   },
 )
-test.each([0, 3, 4, '1', null])(
+test.each([0, 4, 5, '1', null])(
   'versión no compatible %s se rechaza antes de interpretar sus datos',
   (schemaVersion) => {
     expect(() =>
@@ -77,17 +77,20 @@ test.each(['ownedItems', 'purchaseWishes'])(
   },
 )
 
-test('respaldo v1 estricto se normaliza a v2 conservando todos los datos', () => {
-  const current = makeBackup()
-  const legacy = { ...current, schemaVersion: 1 }
-  const before = structuredClone(legacy)
-  expect(parseBackupDocument(legacy)).toEqual(current)
-  expect(parseBackupText(JSON.stringify(legacy))).toEqual(current)
-  expect(JSON.parse(serializeBackup(legacy))).toEqual(current)
-  expect(legacy).toEqual(before)
-})
+test.each([1, 2])(
+  'respaldo v%s estricto se normaliza a v3 conservando todos los datos',
+  (schemaVersion) => {
+    const current = makeBackup()
+    const legacy = { ...current, schemaVersion }
+    const before = structuredClone(legacy)
+    expect(parseBackupDocument(legacy)).toEqual(current)
+    expect(parseBackupText(JSON.stringify(legacy))).toEqual(current)
+    expect(JSON.parse(serializeBackup(legacy))).toEqual(current)
+    expect(legacy).toEqual(before)
+  },
+)
 
-test('respaldo v2 conserva procedencia y relaciones externas junto a identidad, valoraciones y retirados', () => {
+test('respaldo v3 conserva procedencia y relaciones externas junto a identidad, valoraciones y retirados', () => {
   const current = makeBackup()
   current.data.catalog.albums[0]!.catalogReference = {
     provider: 'wikidata',
@@ -98,7 +101,7 @@ test('respaldo v2 conserva procedencia y relaciones externas junto a identidad, 
     youtubeVideoIds: ['ficticio_01'],
   }
   const before = structuredClone(current)
-  expect(current.schemaVersion).toBe(2)
+  expect(current.schemaVersion).toBe(3)
   expect(parseBackupText(serializeBackup(current))).toEqual(current)
   expect(current).toEqual(before)
   expect(() => parseBackupDocument({ ...current, schemaVersion: 1 })).toThrow(
@@ -128,6 +131,47 @@ test('versiones v1 y v2 rechazan campos ajenos y mantienen validación de integr
       BackupError,
     )
   }
+})
+test('respaldo v3 conserva géneros, país y archivo de portada junto al resto de la biblioteca', () => {
+  const backup = makeBackup()
+  backup.data.catalog.albums[0]!.genres = ['Metal', 'Progresivo']
+  backup.data.catalog.albums[0]!.coverImage =
+    'data:image/png;base64,iVBORw0KGgo='
+  backup.data.catalog.artists[0]!.country = 'Chile'
+  const before = structuredClone(backup)
+  expect(parseBackupText(serializeBackup(backup))).toEqual(backup)
+  expect(backup).toEqual(before)
+  for (const schemaVersion of [1, 2])
+    expect(() => parseBackupDocument({ ...backup, schemaVersion })).toThrow(
+      BackupError,
+    )
+})
+test.each([1, 2])(
+  'respaldo antiguo v%s rechaza individualmente campos introducidos en v3',
+  (schemaVersion) => {
+    for (const field of ['genres', 'coverImage', 'country']) {
+      const backup = makeBackup()
+      if (field === 'country') backup.data.catalog.artists[0]!.country = 'Chile'
+      if (field === 'genres') backup.data.catalog.albums[0]!.genres = ['Metal']
+      if (field === 'coverImage')
+        backup.data.catalog.albums[0]!.coverImage =
+          'data:image/png;base64,iVBORw0KGgo='
+      expect(() => parseBackupDocument({ ...backup, schemaVersion })).toThrow(
+        BackupError,
+      )
+    }
+  },
+)
+test('respaldo v2 histórico conserva referencias externas y se normaliza a v3', () => {
+  const backup = makeBackup()
+  backup.data.catalog.albums[0]!.catalogReference = {
+    provider: 'wikidata',
+    entityId: 'Q999999999',
+    retrievedAt: '2026-10-16T12:00:00.000Z',
+  }
+  expect(
+    parseBackupText(JSON.stringify({ ...backup, schemaVersion: 2 })),
+  ).toEqual(backup)
 })
 test.each(['owner', 'duplicate', 'edition', 'track', 'date'])(
   'datos incoherentes %s se rechazan antes de restaurar',

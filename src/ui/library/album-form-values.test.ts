@@ -109,3 +109,39 @@ test('prepara una referencia sin cargar portada y conserva los créditos separad
     },
   })
 })
+
+test('alta manual conserva país y géneros libres sin repetir diferencias de mayúsculas o acentos', () => {
+  const result = parseAlbumForm({
+    ...emptyAlbumForm,
+    artist: 'Banda ficticia',
+    title: 'Obra ficticia',
+    country: ' Chile ',
+    genres: ' Rock, jazz; RÓCK, ',
+  })
+  expect(result).toMatchObject({
+    success: true,
+    input: {
+      genres: ['Rock', 'jazz'],
+      artists: [{ name: 'Banda ficticia', country: 'Chile' }],
+    },
+  })
+})
+
+test('los créditos de una referencia conservan el país de cada artista por separado', () => {
+  const result = parseAlbumForm({
+    ...emptyAlbumForm,
+    title: 'Dúo ficticio',
+    artist: 'A · B',
+    catalogArtists: ['A', 'B'],
+    catalogCountries: ['Chile', 'Perú'],
+  })
+  expect(result).toMatchObject({
+    success: true,
+    input: {
+      artists: [
+        { name: 'A', country: 'Chile' },
+        { name: 'B', country: 'Perú' },
+      ],
+    },
+  })
+})

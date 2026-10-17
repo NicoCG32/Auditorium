@@ -38,7 +38,7 @@ El álbum local mantiene su UUID. `Album.catalogReference` guarda el proveedor `
 
 Un ID de Spotify no certifica disponibilidad en tu región. Un video de YouTube no garantiza un álbum completo, derechos o permanencia. Una referencia de MusicBrainz apunta al álbum conceptual, no necesariamente a la edición física que posees. La aplicación no reproduce ni sincroniza esos servicios. Si se ofrece «Buscar en…», es una búsqueda externa, no una coincidencia verificada.
 
-Cuando existe un identificador de grupo MusicBrainz, puede ofrecerse una URL de portada de Cover Art Archive. Aceptarla es opcional y no demuestra que haya imagen. La ficha sólo la solicita al pulsar «Mostrar portada»; un fallo no impide usar el álbum. No se copian imágenes al repositorio, respaldo o precaché. La licencia CC0 de los datos estructurados de Wikidata no se extiende a las portadas: estas conservan los derechos de sus titulares.
+Cuando existe un identificador de grupo MusicBrainz, puede ofrecerse una URL de portada de Cover Art Archive. Aceptarla es opcional y no demuestra que haya imagen. UX-01 carga automáticamente una portada por URL en el borrador, la ficha y las tarjetas; un fallo ofrece reintento y no impide usar el álbum. El enlace remoto se guarda en el catálogo, sin copiar su binario al respaldo ni a la precaché. Como alternativa, se puede elegir un archivo JPEG/PNG local validado de hasta 2 MiB: se conserva en IndexedDB y en el respaldo y permite ver la imagen offline. Ninguna imagen de usuario pasa a los recursos públicos del repositorio. La licencia CC0 de los datos estructurados de Wikidata no se extiende a las portadas: estas conservan los derechos de sus titulares. Véase [edición y portadas](EDICION_CATALOGO.md).
 
 ### Fuente y transporte
 
@@ -65,7 +65,7 @@ Se seleccionan hasta 24 álbumes activos: los ocho añadidos más recientemente 
 | Orden de alta         | Posición relativa; no se envían fechas exactas                      |
 | Referencias recientes | Hasta ocho referencias del mismo conjunto                           |
 
-No se envían UUID, identidad local, notas libres, pistas, fotos, ejemplares, precios, ubicaciones, deseos, respaldo completo o credenciales de otras plataformas. Aun reducido, el conjunto describe parte de tus preferencias musicales; decide si deseas compartirlo con el proveedor seleccionado.
+No se envían UUID, identidad local, notas libres, pistas, géneros, países, enlaces de portada, fotos, ejemplares, precios, ubicaciones, deseos, respaldo completo o credenciales de otras plataformas. Aun reducido, el conjunto describe parte de tus preferencias musicales; decide si deseas compartirlo con el proveedor seleccionado.
 
 La respuesta contiene entre una y diez sugerencias de esos candidatos, con una razón breve y una acción de volver a escuchar o revalorar. Se valida estructura, unicidad, pertenencia al contexto y longitud antes de mostrarla. El modelo no añade música ni genera portadas o enlaces. Abrir el álbum permite revisarlo; ninguna sugerencia cambia automáticamente escucha, notas o valoraciones.
 
@@ -95,7 +95,7 @@ Las llamadas REST utilizan endpoints fijos, clave en cabecera, sin cookies ni re
 
 ## Datos, offline y recuperación
 
-La referencia de catálogo forma parte del álbum y se conserva en IndexedDB v4 y en los respaldos v2. Las claves, solicitudes y recomendaciones son transitorias. Se admite importar un respaldo v1 estricto, normalizado al contrato v2, sin inventar referencias. Una aplicación anterior no debe abrir una base migrada a v4 ni leer un respaldo v2. Consulta [modelo de datos](MODELO_DATOS.md), [migraciones](MIGRACIONES_RECUPERACION.md) y [respaldos](RESPALDOS_JSON.md).
+La referencia de catálogo forma parte del álbum. Con el refinamiento UX-01 se conserva en IndexedDB v5 y en los respaldos v3, junto con géneros, país de artista y portada local opcionales. Las claves, solicitudes y recomendaciones son transitorias. Se admite importar respaldos v1/v2 estrictos, normalizados al contrato v3 sin inventar metadatos. v1 rechaza `catalogReference`; ambos formatos históricos rechazan géneros, país y portada local. Una aplicación anterior no debe abrir una base migrada a v5 ni leer un respaldo v3. La ampliación no cambia la lista permitida del contexto de recomendaciones: géneros, países, URLs e imágenes locales quedan fuera del envío. Consulta [modelo de datos](MODELO_DATOS.md), [migraciones](MIGRACIONES_RECUPERACION.md) y [respaldos](RESPALDOS_JSON.md).
 
 La PWA precarga sólo recursos propios. No almacena respuestas de Wikidata, Gemini o Groq ni imágenes remotas; estos servicios requieren conexión. La biblioteca manual y sus respaldos siguen disponibles offline cuando la aplicación ya está preparada.
 

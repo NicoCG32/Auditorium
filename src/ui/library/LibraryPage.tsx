@@ -305,7 +305,17 @@ export function LibraryPage({
         />
       ) : recommendationsOpen ? (
         <RecommendationsPanel
-          key={JSON.stringify(state.albums)}
+          key={JSON.stringify(
+            state.albums.map((album) => [
+              album.id,
+              album.title,
+              album.artist,
+              album.originalYear,
+              album.score,
+              album.listeningStatus,
+              album.addedAt,
+            ]),
+          )}
           albums={state.albums}
           provider={recommendationProvider}
           apiKey={recommendationKey}
@@ -366,6 +376,7 @@ export function LibraryPage({
       ) : selected && selectedAlbum && personalEntry ? (
         <AlbumSummary
           key={selected.id}
+          snapshot={state.snapshot}
           album={selectedAlbum}
           entry={selected}
           library={library}
@@ -427,6 +438,7 @@ export function LibraryPage({
       ) : (
         <>
           <LibraryControls
+            albums={state.albums}
             filters={filters}
             onChange={setFilters}
             view={view}

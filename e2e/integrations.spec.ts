@@ -308,7 +308,7 @@ test.beforeEach(async ({ request }) => {
   await request.post('/__test/fail-assets?value=false')
 })
 
-test('catálogo conserva selección, créditos y respaldo2; la portada requiere dos elecciones explícitas', async ({
+test('catálogo conserva selección, créditos y respaldo3; la portada elegida carga automáticamente', async ({
   page,
   browser,
 }) => {
@@ -347,7 +347,10 @@ test('catálogo conserva selección, créditos y respaldo2; la portada requiere 
   await page
     .getByRole('checkbox', { name: /Guardar enlace de portada/u })
     .check()
-  expect(covers).toBe(0)
+  await expect(
+    page.getByRole('img', { name: 'Portada de vista previa' }),
+  ).toBeVisible()
+  await expect.poll(() => covers).toBeGreaterThan(0)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('button', { name: albumTitle, exact: true }),
@@ -363,15 +366,15 @@ test('catálogo conserva selección, créditos y respaldo2; la portada requiere 
   await expect(
     page.getByRole('link', { name: 'Vídeo en YouTube' }),
   ).toHaveAttribute('href', `https://www.youtube.com/watch?v=${'a'.repeat(11)}`)
-  expect(covers).toBe(0)
-  await page.getByRole('button', { name: 'Mostrar portada' }).click()
   await expect(
     page.getByRole('img', { name: `Portada de ${albumTitle}` }),
   ).toBeVisible()
-  expect(covers).toBe(1)
+  await expect(
+    page.getByRole('button', { name: 'Mostrar portada' }),
+  ).toHaveCount(0)
   const text = await exportText(page)
   const backup = parseBackupText(text)
-  expect(backup.schemaVersion).toBe(2)
+  expect(backup.schemaVersion).toBe(3)
   expect(
     backup.data.catalog.artists.map((artist) => artist.name).sort(),
   ).toEqual(['Conjunto ficticio A', 'Conjunto ficticio B'])
@@ -386,6 +389,9 @@ test('catálogo conserva selección, créditos y respaldo2; la portada requiere 
   })
   try {
     const restoredPage = await restoredContext.newPage()
+    await restoredPage.route('https://coverartarchive.org/**', (route) =>
+      route.abort('failed'),
+    )
     await ready(restoredPage)
     await restore(restoredPage, text)
     const restored = parseBackupText(await exportText(restoredPage))

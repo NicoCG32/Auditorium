@@ -16,6 +16,7 @@ import {
   type AlbumFormValues,
 } from './album-form-values'
 import { releaseTypeLabels } from './labels'
+import { CoverFields } from './CoverFields'
 
 interface Props {
   snapshot: LocalSnapshot
@@ -29,6 +30,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
   const [failure, setFailure] = useState('')
   const [review, setReview] = useState<AlbumCandidate[]>([])
   const [busy, setBusy] = useState(false)
+  const [coverBusy, setCoverBusy] = useState(false)
   const [offeredCover, setOfferedCover] = useState<string>()
   const locked = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
@@ -55,6 +57,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
         ? {
             catalogReference: undefined,
             ...(changesArtists ? { catalogArtists: undefined } : {}),
+            ...(changesArtists ? { catalogCountries: undefined } : {}),
             ...(offeredCover && previous.coverUrl === offeredCover
               ? { coverUrl: '' }
               : {}),
@@ -91,7 +94,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     ) : null
   }
   async function save(acknowledge = false) {
-    if (locked.current) return
+    if (locked.current || coverBusy) return
     const parsed = parseAlbumForm(values)
     if (!parsed.success) {
       setErrors(parsed.errors)
@@ -238,13 +241,13 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
                     onChange={(event) =>
                       edit({
                         coverUrl: event.target.checked ? offeredCover : '',
+                        coverImage: undefined,
                       })
                     }
                   />
                   <span>
                     Guardar enlace de portada de Cover Art Archive (puede no
-                    estar disponible). La imagen sólo se consultará al pulsar
-                    «Mostrar portada».
+                    estar disponible). Se mostrará automáticamente.
                   </span>
                 </label>
               ) : null}
@@ -292,7 +295,11 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
                       name="artist-choice"
                       checked={values.artistId === artist.id}
                       onChange={() =>
-                        edit({ artistId: artist.id, artist: artist.name })
+                        edit({
+                          artistId: artist.id,
+                          artist: artist.name,
+                          country: artist.country ?? '',
+                        })
                       }
                     />
                     <span>
@@ -324,6 +331,70 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
             </select>
             {errorFor('releaseType')}
           </label>
+          <label>
+            <span className="field-label">Géneros (separados por comas)</span>
+            <input
+              name="genres"
+              value={values.genres}
+              onChange={(event) => edit({ genres: event.target.value })}
+              aria-invalid={Boolean(errors.genres)}
+              aria-describedby={errors.genres ? 'error-genres' : undefined}
+              placeholder="Rock, jazz, metal…"
+            />
+            {errorFor('genres')}
+          </label>
+          {values.catalogArtists ? (
+            values.catalogArtists.map((name, index) => (
+              <label key={`${index}-${name}`}>
+                <span className="field-label">País de origen de {name}</span>
+                <input
+                  name={`country-${index}`}
+                  maxLength={100}
+                  value={values.catalogCountries?.[index] ?? ''}
+                  onChange={(event) => {
+                    const countries = [
+                      ...(values.catalogCountries ??
+                        values.catalogArtists!.map(() => '')),
+                    ]
+                    countries[index] = event.target.value
+                    edit({ catalogCountries: countries })
+                  }}
+                />
+              </label>
+            ))
+          ) : (
+            <label>
+              <span className="field-label">
+                País de origen de la banda o artista
+              </span>
+              <input
+                name="country"
+                maxLength={100}
+                value={values.country}
+                disabled={values.artistId !== undefined}
+                onChange={(event) => edit({ country: event.target.value })}
+                aria-invalid={Boolean(errors.country)}
+                aria-describedby={errors.country ? 'error-country' : undefined}
+              />
+              {values.artistId ? (
+                <span className="mt-2 block text-xs text-muted">
+                  País del artista seleccionado. Puedes corregirlo desde la
+                  edición de una ficha.
+                </span>
+              ) : null}
+            </label>
+          )}
+          {errorFor('country')}
+          <CoverFields
+            url={values.coverUrl}
+            {...(values.coverImage ? { image: values.coverImage } : {})}
+            onChange={edit}
+            disabled={busy}
+            onBusyChange={setCoverBusy}
+            {...(errors.coverUrl || errors.coverImage
+              ? { error: errors.coverUrl ?? errors.coverImage }
+              : {})}
+          />
           <details className="optional-fields">
             <summary>Más datos (opcionales)</summary>
             <div className="mt-5 grid gap-5">
@@ -345,23 +416,6 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
                   }
                 />
                 {errorFor('originalYear')}
-              </label>
-              <label>
-                <span id="form-cover-label" className="field-label">
-                  Enlace a portada (HTTPS)
-                </span>
-                <input
-                  name="coverUrl"
-                  aria-labelledby="form-cover-label"
-                  type="url"
-                  value={values.coverUrl}
-                  aria-invalid={Boolean(errors.coverUrl)}
-                  aria-describedby={
-                    errors.coverUrl ? 'error-coverUrl' : undefined
-                  }
-                  onChange={(event) => edit({ coverUrl: event.target.value })}
-                />
-                {errorFor('coverUrl')}
               </label>
               <label>
                 <span id="form-description-label" className="field-label">
@@ -451,7 +505,11 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
           ) : null}
           <div className="mt-7 flex flex-wrap gap-3">
             {review.length === 0 ? (
-              <button type="submit" className="primary-button">
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={coverBusy}
+              >
                 Guardar álbum
               </button>
             ) : null}

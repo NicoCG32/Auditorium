@@ -474,6 +474,70 @@
     background: var(--background);
     border: 1px solid var(--border);
   }
+  .cover-container {
+    min-inline-size: 0;
+  }
+  .cover-container-compact {
+    inline-size: 100%;
+    aspect-ratio: 1;
+    overflow: hidden;
+  }
+  .cover-container-compact .album-cover-image {
+    max-inline-size: none;
+    block-size: 100%;
+    object-fit: cover;
+    border: 0;
+    border-block-end: 1px solid var(--border);
+  }
+  .album-row > .cover-container-compact {
+    inline-size: 7rem;
+    flex-shrink: 0;
+  }
+  .album-row .cover-container-compact .album-art {
+    inline-size: 100%;
+  }
+  .cover-fields {
+    display: grid;
+    gap: 0.75rem;
+    min-inline-size: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+  .cover-fields label {
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .cover-fields-preview {
+    inline-size: min(100%, 14rem);
+  }
+  .cover-fields .form-error {
+    color: var(--focus);
+    font-size: 0.875rem;
+  }
+  .edit-artists {
+    min-inline-size: 0;
+    padding: 1rem;
+    border: 1px solid var(--border);
+  }
+  .edit-artist-row {
+    display: grid;
+    gap: 1rem;
+    padding-block: 1.25rem;
+    border-block-end: 1px solid var(--border);
+  }
+  .album-genres {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-block-start: 0.75rem;
+  }
+  .genre-badge {
+    border: 1px solid var(--border);
+    padding: 0.2rem 0.5rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+  }
   .text-button:disabled {
     cursor: default;
     opacity: 0.6;
@@ -935,6 +999,9 @@
       grid-template-columns: minmax(0, 1fr);
     }
     .album-row .album-art {
+      inline-size: 4.5rem;
+    }
+    .album-row > .cover-container-compact {
       inline-size: 4.5rem;
     }
     .album-row .album-copy {

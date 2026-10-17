@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.5 · 2026-10-17 · Estado: MVP v1.0.0, web, identidad visual y evaluación EXT-01 completados; incremento AI-01/CAT-01 en curso.
+Versión 1.6 · 2026-10-17 · Estado: MVP v1.0.0, web, identidad visual y evaluación EXT-01 completados; incremento AI-01/CAT-01 y refinamiento UX-01 en curso.
 
 ## Objetivo del producto
 
@@ -37,7 +37,7 @@ Cada issue incluye identificador estable, resultado esperado, fase, prioridad, d
 - **Terminado:** criterios comprobados y cambio integrado, o decisión documentada cuando no hay código.
 - **Bloqueado:** falta concreta que impide avanzar; registrar causa y condición para resolverla.
 
-Límite inicial: una issue en curso y una en revisión. Un bloqueo conserva el trabajo visible; no justifica empezar múltiples tareas sin priorización. Preparado no significa que el sprint haya empezado ni que el alcance esté autorizado. El incremento AI-01/CAT-01 es una excepción explícita de dos issues coordinadas para las dos capacidades solicitadas; comparten revisión y validación de compatibilidad, sin iniciar otras tareas.
+Límite inicial: una issue en curso y una en revisión. Un bloqueo conserva el trabajo visible; no justifica empezar múltiples tareas sin priorización. Preparado no significa que el sprint haya empezado ni que el alcance esté autorizado. El incremento AI-01/CAT-01 es una excepción explícita de dos issues coordinadas para las dos capacidades solicitadas; comparten revisión y validación de compatibilidad. El feedback de esa revisión se concreta en UX-01 dentro de la misma PR, sin iniciar sincronización ni otro hito.
 
 ## Priorización y refinamiento
 
@@ -121,7 +121,9 @@ Las releases se preparan como tareas de entrega con su propio milestone, sin rea
 
 El hito **Integraciones — Recomendaciones y catálogo** coordina [CAT-01 #57](https://github.com/NicoCG32/Auditorium/issues/57) y [AI-01 #56](https://github.com/NicoCG32/Auditorium/issues/56), ambos Fase 5/P1, sin sprint ni fechas comprometidas. CAT-01, orden 26.1, incorpora búsqueda Wikidata explícita, selección humana, referencias opcionales y conservación del registro manual. AI-01, orden 26.2, incorpora un orden de escucha/revaloración con Gemini o Groq, clave propia sólo en memoria y contexto mínimo. La nueva capacidad amplía el producto después del MVP; no cambia retrospectivamente su alcance. La [ADR-008](adr/008-integraciones-opcionales.md) documenta las decisiones y la [guía de integraciones](INTEGRACIONES_OPCIONALES.md) sus límites.
 
-El incremento exige compatibilidad de DB4/respaldo2 con datos previos, rechazo de referencias desconocidas, errores y cancelación, ausencia de claves persistidas, acceso manual offline y revisión de ambos flujos. La generación autenticada real depende de configurar una clave propia; las pruebas controladas no acreditan cuota o calidad de una cuenta. [SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) permanece en backlog Fase 6/P2, orden 27, sin inicio autorizado por este hito.
+[UX-01 #59](https://github.com/NicoCG32/Auditorium/issues/59), Fase 5/P1 y orden 26.3, refina el flujo dentro de la misma [PR #58](https://github.com/NicoCG32/Auditorium/pull/58), devuelta a borrador. Añade edición del álbum con identidad estable y control de concurrencia, géneros libres, país por artista y portada automática por URL o archivo JPEG/PNG local. AI-01/CAT-01 conservan su seguimiento coordinado; UX-01 está en curso, sin sprint ni fechas comprometidas. La [ADR-009](adr/009-edicion-metadatos-portadas.md) documenta el cambio de interacción y la evolución de datos.
+
+El incremento exige compatibilidad de DB5/respaldo3 con datos y respaldos anteriores estrictos, rechazo de referencias desconocidas, errores y cancelación, ausencia de claves persistidas, acceso manual y portadas locales offline y revisión de los flujos. Los criterios de UX-01 incorporan persistencia tras recarga, edición sin pérdida de relaciones, conflicto concurrente, validación de archivos, filtros/orden y accesibilidad. La generación autenticada real depende de configurar una clave propia; las pruebas controladas no acreditan cuota o calidad de una cuenta. [SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) permanece en backlog Fase 6/P2, orden 27, sin inicio autorizado por este hito.
 
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 

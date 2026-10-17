@@ -1,6 +1,6 @@
 # Evaluación de metadatos externos
 
-Estado: **propuesta de evolución**, resultado de [EXT-01](https://github.com/NicoCG32/Auditorium/issues/24). Fuentes consultadas el **2026-10-14** y revalidadas el **2026-10-16**. El estudio se realizó contra el contrato del MVP v1.0.0, con DB v3 y respaldo v1. La evolución posterior CAT-01 utiliza DB v4/respaldo v2 para referencias Wikidata y se documenta en [integraciones opcionales](INTEGRACIONES_OPCIONALES.md); no implementa el importador de archivos propuesto aquí. La distribución web y la identidad visual evolucionaron después de esa release; este estudio evalúa el mapeo contra los contratos locales vigentes y lo prueba offline con datos ficticios.
+Estado: **propuesta de evolución**, resultado de [EXT-01](https://github.com/NicoCG32/Auditorium/issues/24). Fuentes consultadas el **2026-10-14** y revalidadas el **2026-10-16**. El estudio se realizó contra el contrato del MVP v1.0.0, con DB v3 y respaldo v1. La evolución posterior CAT-01 introdujo DB v4/respaldo v2 para referencias Wikidata; UX-01 amplía el incremento en revisión a DB v5/respaldo v3. Se documenta en [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) y [edición del catálogo](EDICION_CATALOGO.md); no implementa el importador de archivos propuesto aquí. La distribución web y la identidad visual evolucionaron después de esa release; este estudio evalúa el mapeo contra los contratos locales de referencia y lo prueba offline con datos ficticios.
 
 ## Resultado de la evaluación
 
@@ -93,6 +93,8 @@ Un intermediario introduce otro receptor de consultas; no elimina la observació
 La [API de CAA](https://musicbrainz.org/doc/Cover_Art_Archive/API) distingue portada de edición y portada representativa de grupo, exige iniciar las solicitudes mediante `coverartarchive.org` y seguir sus redirecciones hacia Internet Archive, y ofrece miniaturas de 250/500/1200. Un adaptador no debe fijar las URLs de destino como un acceso permanente directo. Declara ausencia actual de reglas propias de rate limiting, pero también contempla errores y el destino de la redirección; no es una garantía de volumen ilimitado. No se encontró una autorización global de redistribución ni un TTL normativo que justifique caché permanente.
 
 La propuesta mantiene portada opcional y separada de la importación core: carga por acción explícita, fuente visible, retirada/reemplazo y fallo no bloqueante. Una URL HTTPS no demuestra permiso ni disponibilidad. No se propone descargar binarios a assets, precaché PWA o respaldos. Resolver derechos, destinos HTTPS/CORS y almacenamiento de imágenes requiere su propia tarea.
+
+Ese criterio de carga pertenece a esta propuesta histórica. El incremento [UX-01](EDICION_CATALOGO.md) adopta carga automática por URL y permite portadas locales validadas en IndexedDB y respaldo; no descarga el binario remoto ni cambia la precaché. La [ADR-009](adr/009-edicion-metadatos-portadas.md) registra esa decisión posterior.
 
 ## Flujo local propuesto
 

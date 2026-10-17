@@ -1,6 +1,6 @@
 # Documentación de Auditorium
 
-Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e integraciones opcionales. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. Las capacidades futuras aparecen como propuestas separadas.
+Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e incremento en revisión de integraciones y edición del catálogo. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. El incremento en revisión todavía no está publicado. Las capacidades futuras aparecen como propuestas separadas.
 
 ## Ruta de lectura
 
@@ -23,14 +23,14 @@ Arquitectura, dominio y datos son vistas complementarias: una relación conceptu
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | Catálogo e identidad     | [Catálogo](DOMINIO_CATALOGO.md), [biblioteca personal](DOMINIO_BIBLIOTECA.md), [persistencia local](PERSISTENCIA_LOCAL.md) |
 | Consultas y alta         | [Consulta y búsqueda](CONSULTA_BIBLIOTECA.md), [registro manual y duplicados](REGISTRO_MANUAL.md)                          |
-| Álbum y experiencia      | [Ficha](FICHA_ALBUM.md), [escucha y notas](EXPERIENCIA_PERSONAL.md)                                                        |
+| Álbum y experiencia      | [Ficha](FICHA_ALBUM.md), [edición del catálogo](EDICION_CATALOGO.md), [escucha y notas](EXPERIENCIA_PERSONAL.md)           |
 | Pistas y ediciones       | [Listas](LISTAS_EDICIONES.md), [calificaciones de pistas](CALIFICACIONES_PISTAS.md)                                        |
 | Colección                | [Ejemplares](EJEMPLARES.md), [deseos de compra](DESEOS_COMPRA.md)                                                          |
 | Cambios personales       | [Retirada y confirmaciones](ELIMINACIONES_PERSONALES.md)                                                                   |
 | Recuperación y offline   | [Respaldos JSON](RESPALDOS_JSON.md), [PWA](PWA_OFFLINE.md), [migraciones](MIGRACIONES_RECUPERACION.md)                     |
 | Implementación y calidad | [Casos de uso](CASOS_DE_USO.md), [integridad y persistencia](VALIDACION_PERSISTENCIA.md), [diseño base](DISENO_BASE.md)    |
 
-Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 2, con importación compatible del formato 1 estricto.
+Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4/v5 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 3, con importación compatible de los formatos 1 y 2 estrictos.
 
 La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica búsqueda Wikidata, procedencia persistente, portadas y enlaces, y recomendaciones Groq/Gemini con clave propia en memoria, datos enviados, condiciones de gratuidad y límites de validación.
 
@@ -52,6 +52,7 @@ La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica bús
 | [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)             | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                            |
 | [ADR-007: importación revisada](adr/007-importacion-metadatos.md)        | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                 |
 | [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md) | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local |
+| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)    | Edición con identidad estable, géneros, país y portada automática local o remota                   |
 
 Los ADR conservan la fecha y el contexto de la decisión. El estado de ejecución actual se consulta en la [arquitectura](ARQUITECTURA.md), el [Project](https://github.com/users/NicoCG32/projects/4) y los [hitos](https://github.com/NicoCG32/Auditorium/milestones).
 

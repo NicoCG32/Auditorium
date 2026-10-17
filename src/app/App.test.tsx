@@ -436,7 +436,7 @@ test('volver tras quitar una nota conserva los filtros y enfoca búsqueda si la 
   ).not.toBeInTheDocument()
 })
 
-test('ficha muestra metadatos y recibe la portada guardada sin cargarla automáticamente', async () => {
+test('ficha muestra metadatos y carga automáticamente la portada guardada', async () => {
   const repository = await populated()
   await repository.mutate((snapshot) => {
     snapshot.catalog.albums = snapshot.catalog.albums.map((album) =>
@@ -457,12 +457,11 @@ test('ficha muestra metadatos y recibe la portada guardada sin cargarla automát
     screen.getByRole('link', { name: 'Abrir enlace de portada' }),
   ).toHaveAttribute('href', 'https://example.invalid/portada.svg')
   expect(
-    screen.queryByRole('img', { name: 'Portada de Eclipse' }),
-  ).not.toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Mostrar portada' }))
-  expect(
     screen.getByRole('img', { name: 'Portada de Eclipse' }),
   ).toHaveAttribute('src', 'https://example.invalid/portada.svg')
+  expect(
+    screen.queryByRole('button', { name: 'Mostrar portada' }),
+  ).not.toBeInTheDocument()
 })
 
 test('cambiar de álbum descarta el borrador y carga su propia nota', async () => {

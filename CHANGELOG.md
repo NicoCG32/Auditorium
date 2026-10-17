@@ -3,11 +3,13 @@
 ## Sin publicar
 
 - Búsqueda opcional de álbumes en Wikidata por acción explícita, con revisión de candidatos, créditos múltiples y borrador editable. El registro manual continúa disponible sin coincidencia, red o servicio.
-- Procedencia y referencias validadas de MusicBrainz, Spotify y YouTube en la ficha; URL de portada opcional de Cover Art Archive, aceptada por separado y cargada sólo al solicitarla.
+- Procedencia y referencias validadas de MusicBrainz, Spotify y YouTube en la ficha; URL de portada opcional de Cover Art Archive, aceptada por separado y cargada automáticamente en el borrador, la ficha y las tarjetas.
 - Recomendaciones de escucha o revaloración mediante Groq o Gemini, con clave propia sólo en memoria, contexto acotado y respuesta validada sobre álbumes ya guardados. No cambia valoraciones ni activa facturación; los niveles gratuitos dependen de cada cuenta y sus cuotas.
-- Base local v4 (nativa 40) con las mismas trece tablas e índices de v3 y referencias opcionales de catálogo. Migración compatible desde v1/v2/v3 sin regenerar identidad ni IDs.
-- Exportación de respaldos v2 e importación del formato v1 estricto normalizado a v2. Las claves y recomendaciones no forman parte de la base, respaldo o precaché.
-- Guía de integraciones y ADR-008, con arquitectura, dominio, datos, privacidad y recuperación actualizados. La release v1.0.0 y sus archivos conservan su contrato original.
+- Edición de metadatos de álbumes guardados con el mismo ID, comprobación de cambios concurrentes y conservación de listas, notas, colección y deseos. Cambiar el nombre de un artista crea una identidad para ese álbum; corregir su país mantiene la referencia compartida y se advierte en el editor.
+- Géneros libres de álbum y país de origen de cada artista, con búsqueda, filtros y ordenación A–Z. Portadas JPEG/PNG locales de hasta 2 MiB, validadas antes de guardarse y disponibles también offline.
+- Base local v5 (nativa 50) con las mismas trece tablas e índices de v3/v4, referencias opcionales de catálogo, géneros, país y portada local. Migración compatible desde v1/v2/v3/v4 sin regenerar identidad ni IDs.
+- Exportación de respaldos v3 e importación de formatos v1/v2 mediante sus contratos históricos estrictos, normalizados a v3. Las claves y recomendaciones no forman parte de la base, respaldo o precaché.
+- Guías de integraciones y edición, ADR-008/ADR-009, con arquitectura, dominio, datos, privacidad y recuperación actualizados. La release v1.0.0 y sus archivos conservan su contrato original.
 
 ## 1.0.0 — 2026-10-14
 

@@ -4,9 +4,13 @@ LIB-03 amplía la ficha abierta desde el título de una tarjeta o al usar un ál
 
 ## Portada
 
-Sin URL guardada, se muestra una representación local de vinilo y «Sin portada registrada». Si existe un enlace HTTPS, «Mostrar portada» permite cargarlo por decisión del usuario. La imagen tiene texto alternativo, tamaño reservado y política de referrer sin referencia de la aplicación. Un fallo de carga vuelve a la representación local y ofrece reintento. También se conserva el enlace directo a la portada.
+Sin portada guardada, se muestra una representación local de vinilo y «Sin portada registrada». Si existe un enlace HTTPS o una imagen local validada, se carga automáticamente al abrir la ficha. La imagen tiene texto alternativo, tamaño reservado y política de referrer sin referencia de la aplicación. Un fallo de carga vuelve a la representación local y ofrece reintento. También se conserva el enlace directo a la portada.
 
-La búsqueda opcional de catálogo puede proponer una URL representativa de Cover Art Archive al seleccionar una referencia; sólo se guarda si la persona la acepta. No se incorporan binarios de portadas al producto. La figura SVG de prueba es ficticia. Mostrar una imagen remota requiere acceso a su proveedor; no se almacena un respaldo de esa imagen ni se promete disponibilidad offline. La elección de mostrarla dura durante el montaje de la ficha y se conserva al actualizar su nota.
+La búsqueda opcional de catálogo puede proponer una URL representativa de Cover Art Archive al seleccionar una referencia; sólo se guarda si la persona la acepta y luego se muestra automáticamente. Una imagen remota requiere acceso a su proveedor y no se copia al respaldo ni a la caché del service worker. Una portada local JPEG/PNG de hasta 2 MiB se valida por tamaño, firma y decodificación antes de aceptarse, se guarda como `Album.coverImage` y acompaña al respaldo; permite ver la imagen offline. No se distribuyen portadas de usuarios como recursos del repositorio.
+
+## Editar el álbum
+
+«Editar álbum» permite corregir título, créditos de artistas, tipo, año, géneros, países de origen, portada y descripción. Los géneros son etiquetas libres del álbum; el país pertenece al artista. El editor advierte cuando ese artista se comparte con otros álbumes. Cancelar conserva los datos anteriores. Guardar preserva `Album.id`, la entrada personal y sus relaciones; no recalcula valoraciones. Una comprobación del estado esperado impide sobrescribir cambios concurrentes. La [guía de edición](EDICION_CATALOGO.md) detalla identidad, procedencia y recuperación.
 
 ## Procedencia y enlaces
 

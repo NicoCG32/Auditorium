@@ -6,7 +6,7 @@ Referencia: MVP **Auditorium v1.0.0** e incrementos posteriores de web, identida
 
 Auditorium permite registrar, consultar y valorar una biblioteca musical y organizar ediciones, ejemplares y deseos de compra. La versión 1.0.0 es una aplicación web de una sola página, instalable como PWA donde el navegador lo admita. Ejecuta sus casos de uso y conserva la biblioteca en el dispositivo, por origen y perfil del navegador.
 
-La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. No dispone de servidor de biblioteca ni de una cuenta autenticada. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
+La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. No dispone de servidor de biblioteca ni de una cuenta autenticada. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos están en revisión y no modifican la release v1.0.0. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
 
 ## 2. Contexto del sistema
 
@@ -16,6 +16,7 @@ flowchart LR
     App["Auditorium<br/>Biblioteca musical local"]
     Hosting["Servidor estático<br/>HTTPS o localhost"]
     Archivos["Archivos de respaldo JSON<br/>Fuera del navegador"]
+    Imagen["Archivo JPEG/PNG local<br/>Elegido por la persona"]
     Externo["Sitios y portadas externos<br/>Requieren conexión"]
     Catalogo["Wikidata<br/>Búsqueda pública opcional"]
     Modelo["Gemini o Groq<br/>Clave propia en memoria"]
@@ -24,14 +25,15 @@ flowchart LR
     App -->|Exportación explícita| Archivos
     Archivos -->|Selección y restauración confirmada| App
     Persona -->|Consulta externa| Externo
-    App -.->|Mostrar portada por acción explícita| Externo
+    App -.->|Portada por URL cargada automáticamente| Externo
+    Imagen -->|Validar e incorporar al álbum| App
     App -->|Título buscado por acción explícita| Catalogo
     Catalogo -->|Candidatos para revisión humana| App
     App -->|Contexto acotado y envío explícito| Modelo
     Modelo -->|Orden sujeto a validación local| App
 ```
 
-El servidor estático distribuye archivos de la aplicación; no recibe las notas, valoraciones o respaldos. Las solicitudes opcionales van directamente al proveedor: Wikidata recibe el título buscado y Gemini/Groq un contexto acotado de candidatos, incluida nota y escucha cuando existan, tras acción explícita. No se transmite el snapshot completo. Mostrar una portada externa solicita su URL al proveedor. La disponibilidad de red que informa el navegador es una señal local, no una comprobación de disponibilidad de esos sitios.
+El servidor estático distribuye archivos de la aplicación; no recibe las notas, valoraciones o respaldos. Las solicitudes opcionales van directamente al proveedor: Wikidata recibe el título buscado y Gemini/Groq un contexto acotado de candidatos, incluida nota y escucha cuando existan, tras acción explícita. No se transmite el snapshot completo ni se amplía el contexto con géneros, países o imágenes. Una portada externa se solicita a su proveedor al aportar una URL válida o mostrar el álbum guardado. Una portada local se valida en el navegador y se conserva como parte del catálogo, sin enviarla a esos proveedores. La disponibilidad de red que informa el navegador es una señal local, no una comprobación de disponibilidad de esos sitios.
 
 ## 3. Componentes en ejecución
 
@@ -66,7 +68,7 @@ flowchart TB
     HTTP <-->|Solicitud explícita y respuesta validada| Proveedores
 ```
 
-IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB conserva los registros musicales y su identidad. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
+IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v5/nativa50 conserva los registros musicales, su identidad y las portadas locales de los álbumes. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
 
 Las referencias de catálogo seleccionadas pertenecen a `Album` y se guardan con el alta local. Las claves y recomendaciones viven sólo en memoria, sin tablas, respaldo o caché. Las consultas se realizan fuera de cualquier transacción IndexedDB; el modelo no recibe un repositorio ni ejecuta escrituras.
 
@@ -173,6 +175,8 @@ La apertura e inicialización de identidad pueden preceder a la transacción de 
 
 La interfaz distingue fallo antes del commit de fallo al actualizar la vista después del commit. Cuando la escritura ya fue confirmada, recupera la lectura sin repetirla. Las confirmaciones destructivas y los editores que requieren referencia previa comprueban su destino dentro de la transacción; no existe un número global de revisión o un protocolo de sincronización entre dispositivos.
 
+`MusicLibrary.updateAlbum` aplica ese límite a la [edición de metadatos](EDICION_CATALOGO.md): compara álbum, créditos ordenados y artistas con la referencia esperada y conserva el ID del álbum y sus relaciones. Renombrar un crédito crea una identidad de artista para ese álbum; corregir el país de un artista que mantiene su ID afecta a sus demás créditos y se advierte en el editor. Géneros y países se proyectan para búsqueda, filtros y orden sin servicios externos. Las portadas locales se validan antes de incorporarse al borrador y no se decodifican dentro de una transacción IndexedDB.
+
 ## 6. PWA y actualización de recursos
 
 El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos y recursos visuales propios seleccionados en el [diseño base](DISENO_BASE.md). La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado. Tema y ambientación se guardan como preferencias opcionales de presentación en localStorage. La vista previa de una foto local sólo vive en memoria durante la apertura; ninguna de estas opciones modifica IndexedDB ni el respaldo musical.
@@ -230,7 +234,7 @@ Fuentes: [package.json](../package.json), [vite.config.ts](../vite.config.ts), [
 | Identidad estable        | Un registro local persistente; las operaciones musicales no lo sustituyen y un respaldo solo lo adopta en un destino vacío                                                                                         |
 | Concurrencia             | Transacciones sobre estado vigente y comprobaciones específicas de contenido/valor esperado; sin suscripción automática a cambios de otras ventanas                                                                |
 | Recuperación             | Errores conservan datos y ofrecen acciones explícitas; no se borra ni recrea una base incompatible automáticamente                                                                                                 |
-| Uso offline              | Recursos propios preparados por service worker y datos en IndexedDB; consultas de catálogo, recomendaciones, portadas y enlaces externos necesitan conexión                                                        |
+| Uso offline              | Recursos propios preparados por service worker y datos en IndexedDB, incluidas portadas locales; consultas de catálogo, recomendaciones, portadas por URL y enlaces externos necesitan conexión                    |
 | Privacidad del contenido | Biblioteca y respaldo procesados localmente; sólo consultas o contexto reducido se envían al solicitar servicios opcionales. Las claves no persisten. Un respaldo contiene información personal sin cifrado propio |
 | Costo obligatorio        | El núcleo local no requiere una cuenta o servicio contratado. Gemini/Groq ofrecen niveles gratuitos sujetos a cuenta, cuotas y condiciones; Auditorium no activa facturación ni garantiza el plan de una clave     |
 | Escala                   | Lectura y validación del snapshot completo, búsqueda/proyección en memoria y escrituras diferenciales; sin medición de bibliotecas grandes que justifique garantías de rendimiento                                 |

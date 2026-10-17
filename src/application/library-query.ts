@@ -10,17 +10,24 @@ export interface LibraryAlbum {
   searchText: string
   originalYear?: number
   score?: number
+  genres?: string[]
+  countries?: string[]
+  coverUrl?: string
+  coverImage?: string
   listeningStatus: ListeningStatus
   addedAt: string
 }
 
 export type RatingFilter = 'all' | 'unrated' | 'rated' | 'high'
-export type LibraryOrder = 'added' | 'title' | 'artist' | 'rating'
+export type LibraryOrder =
+  'added' | 'title' | 'artist' | 'rating' | 'genre' | 'country'
 export interface LibraryFilters {
   search: string
   listening: ListeningStatus | 'all'
   rating: RatingFilter
   order: LibraryOrder
+  genre?: string
+  country?: string
 }
 
 export const defaultLibraryFilters: LibraryFilters = {
@@ -28,11 +35,53 @@ export const defaultLibraryFilters: LibraryFilters = {
   listening: 'all',
   rating: 'all',
   order: 'added',
+  genre: '',
+  country: '',
 }
 
 const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true })
 function normalized(text: string) {
-  return text.normalize('NFD').replace(/\p{M}/gu, '').toLocaleLowerCase('es')
+  return text
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLocaleLowerCase('es')
+    .trim()
+    .replace(/\s+/gu, ' ')
+}
+
+function distinctLabels(labels: string[]) {
+  const distinct = new Map<string, string>()
+  for (const label of labels) {
+    const clean = label.trim().replace(/\s+/gu, ' ')
+    const key = normalized(clean)
+    if (key && !distinct.has(key)) distinct.set(key, clean)
+  }
+  return [...distinct.values()].toSorted(collator.compare)
+}
+
+export interface LibraryFilterOption {
+  value: string
+  label: string
+}
+
+export function libraryFilterOptions(albums: LibraryAlbum[]): {
+  genres: LibraryFilterOption[]
+  countries: LibraryFilterOption[]
+} {
+  const options = (labels: string[]) =>
+    distinctLabels(labels).map((label) => ({ value: normalized(label), label }))
+  return {
+    genres: options(albums.flatMap((album) => album.genres ?? [])),
+    countries: options(albums.flatMap((album) => album.countries ?? [])),
+  }
+}
+
+function compareLabels(a: string[] | undefined, b: string[] | undefined) {
+  const first = distinctLabels(a ?? []).join(' · ')
+  const second = distinctLabels(b ?? []).join(' · ')
+  if (!first) return second ? 1 : 0
+  if (!second) return -1
+  return collator.compare(first, second)
 }
 
 export function projectLibrary(snapshot: LocalSnapshot): LibraryAlbum[] {
@@ -78,8 +127,13 @@ function projectEntries(
         return {
           display: credit.creditedAs ?? artist.name,
           canonical: artist.name,
+          country: artist.country,
         }
       })
+      const genres = distinctLabels(album.genres ?? [])
+      const countries = distinctLabels(
+        names.flatMap((name) => (name.country ? [name.country] : [])),
+      )
       const rating = ratings.get(entry.id)
       return {
         id: entry.id,
@@ -90,6 +144,8 @@ function projectEntries(
           [
             album.title,
             ...names.flatMap((name) => [name.display, name.canonical]),
+            ...genres,
+            ...countries,
           ].join(' '),
         ),
         ...(album.originalYear === undefined
@@ -98,6 +154,12 @@ function projectEntries(
         ...(rating === undefined
           ? {}
           : { score: unitsToScore(rating.scoreUnits) }),
+        ...(genres.length ? { genres } : {}),
+        ...(countries.length ? { countries } : {}),
+        ...(album.coverUrl === undefined ? {} : { coverUrl: album.coverUrl }),
+        ...(album.coverImage === undefined
+          ? {}
+          : { coverImage: album.coverImage }),
         listeningStatus: entry.listeningStatus,
         addedAt: entry.addedAt,
       }
@@ -109,9 +171,18 @@ export function queryLibrary(
   filters: LibraryFilters,
 ): LibraryAlbum[] {
   const words = normalized(filters.search.trim()).split(/\s+/u).filter(Boolean)
+  const genre = normalized(filters.genre ?? '')
+  const country = normalized(filters.country ?? '')
   return albums
     .filter((album) => {
       if (!words.every((word) => album.searchText.includes(word))) return false
+      if (genre && !album.genres?.some((label) => normalized(label) === genre))
+        return false
+      if (
+        country &&
+        !album.countries?.some((label) => normalized(label) === country)
+      )
+        return false
       if (
         filters.listening !== 'all' &&
         filters.listening !== album.listeningStatus
@@ -134,6 +205,9 @@ export function queryLibrary(
       if (filters.order === 'artist')
         order = collator.compare(a.artist, b.artist)
       if (filters.order === 'rating') order = (b.score ?? -1) - (a.score ?? -1)
+      if (filters.order === 'genre') order = compareLabels(a.genres, b.genres)
+      if (filters.order === 'country')
+        order = compareLabels(a.countries, b.countries)
       return (
         order || collator.compare(a.title, b.title) || a.id.localeCompare(b.id)
       )

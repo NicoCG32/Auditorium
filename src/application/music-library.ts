@@ -44,11 +44,25 @@ import {
   type PurchaseWish,
 } from '../domain/library/purchase-wishes'
 import { purchaseWishInputSchema } from './inputs'
+import {
+  buildAlbumEditExpected,
+  editedAlbumFields,
+  sameAlbumEditExpected,
+  updateAlbumInputSchema,
+} from './album-edit'
 
 export class MusicUseCaseError extends Error {
-  readonly code: 'missing_reference' | 'wrong_album' | 'outdated_experience'
+  readonly code:
+    | 'missing_reference'
+    | 'wrong_album'
+    | 'outdated_experience'
+    | 'outdated_album'
   constructor(
-    code: 'missing_reference' | 'wrong_album' | 'outdated_experience',
+    code:
+      | 'missing_reference'
+      | 'wrong_album'
+      | 'outdated_experience'
+      | 'outdated_album',
     message: string,
   ) {
     super(message)
@@ -139,6 +153,7 @@ export class MusicLibrary {
         id: this.createId(),
         name: credit.name,
         sortName: credit.sortName,
+        country: credit.country,
         createdBy: snapshot.identity.userId,
       })
       snapshot.catalog.artists.push(artist)
@@ -170,6 +185,95 @@ export class MusicLibrary {
     const result: CreateAlbumResult = { album, artists, credits }
     if (addToLibrary) result.userAlbum = this.addEntry(snapshot, album.id)
     return result
+  }
+
+  async updateAlbum(input: unknown): Promise<Album> {
+    const request = updateAlbumInputSchema.parse(input)
+    return this.repository.mutate((snapshot) => {
+      const album = snapshot.catalog.albums.find(
+        (row) => row.id === request.albumId,
+      )
+      const active = snapshot.library.userAlbums.some(
+        (entry) =>
+          entry.albumId === request.albumId &&
+          entry.userId === snapshot.identity.userId &&
+          entry.deletedAt === undefined,
+      )
+      if (!album || !active)
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'El álbum ya no está en la biblioteca activa.',
+        )
+      const current = buildAlbumEditExpected(snapshot, album.id)
+      if (!sameAlbumEditExpected(current, request.expected))
+        throw new MusicUseCaseError(
+          'outdated_album',
+          'Los datos del álbum cambiaron después de abrir el formulario. Vuelve a cargarlo antes de guardar.',
+        )
+      const previousArtists = new Map(
+        current.artists.map((artist) => [artist.id, artist]),
+      )
+      const renamedArtists = new Map<string, Artist>()
+      const artists = request.artists.map((credit) => {
+        const existing = credit.artistId
+          ? previousArtists.get(credit.artistId)
+          : undefined
+        if (credit.artistId && !existing)
+          throw new MusicUseCaseError(
+            'missing_reference',
+            'El artista seleccionado no pertenece a los créditos que se están editando.',
+          )
+        if (existing && existing.name === credit.name) {
+          const updated = artistSchema.parse({
+            ...existing,
+            country: credit.country,
+          })
+          if (updated.country === undefined) delete updated.country
+          snapshot.catalog.artists[
+            snapshot.catalog.artists.findIndex(
+              (artist) => artist.id === existing.id,
+            )
+          ] = updated
+          return updated
+        }
+        const renameKey = existing
+          ? JSON.stringify([existing.id, credit.name])
+          : undefined
+        const renamed = renameKey ? renamedArtists.get(renameKey) : undefined
+        if (renamed) return renamed
+        const created = artistSchema.parse({
+          id: this.createId(),
+          name: credit.name,
+          country: credit.country,
+          createdBy: snapshot.identity.userId,
+        })
+        snapshot.catalog.artists.push(created)
+        if (renameKey) renamedArtists.set(renameKey, created)
+        return created
+      })
+      const updated = editedAlbumFields(
+        { ...request, expected: current },
+        album,
+      )
+      snapshot.catalog.albums[
+        snapshot.catalog.albums.findIndex((row) => row.id === album.id)
+      ] = updated
+      snapshot.catalog.albumArtists = snapshot.catalog.albumArtists.filter(
+        (credit) => credit.albumId !== album.id,
+      )
+      snapshot.catalog.albumArtists.push(
+        ...request.artists.map((credit, index) =>
+          albumArtistSchema.parse({
+            albumId: album.id,
+            artistId: artists[index]!.id,
+            role: credit.role,
+            position: index + 1,
+            creditedAs: credit.creditedAs,
+          }),
+        ),
+      )
+      return { snapshot, result: updated }
+    })
   }
 
   async registerAlbum(

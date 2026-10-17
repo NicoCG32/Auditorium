@@ -1,6 +1,6 @@
 # ADR-008 — Referencias de catálogo y recomendaciones opcionales
 
-Estado: aceptada para el incremento AI-01/CAT-01; pendiente de integración y validación de entrega.
+Estado: aceptada para el incremento AI-01/CAT-01; sustituida parcialmente por [ADR-009](009-edicion-metadatos-portadas.md) en versiones de datos e interacción de portada. Pendiente de integración y validación de entrega.
 Fecha: 2026-10-17.
 Referencia: [guía de integraciones](../INTEGRACIONES_OPCIONALES.md), [AI-01](https://github.com/NicoCG32/Auditorium/issues/56) y [CAT-01](https://github.com/NicoCG32/Auditorium/issues/57).
 
@@ -15,8 +15,8 @@ La propuesta [ADR-007](007-importacion-metadatos.md) estudia un importador local
 1. Usar Wikidata Action API para consultas explícitas, anónimas, acotadas y cancelables. Recuperar créditos en lotes y validar entidad musical e IDs antes de ofrecer candidatos. No buscar por cada pulsación ni usar scraping de Metallum.
 2. Exigir selección humana y revisión del borrador antes del guardado local. Preservar créditos múltiples, UUID locales y reglas de duplicados. Cambiar título o artista invalida la asociación; el fallo del catálogo nunca impide el registro manual.
 3. Guardar una referencia estricta opcional en `Album`, con proveedor, QID, fecha y referencias MusicBrainz/Spotify/YouTube existentes. No copiar respuestas arbitrarias ni aceptar enlaces generados por un modelo como evidencia de catálogo.
-4. Publicar una barrera de compatibilidad DB4/nativo40 conservando las trece tablas e índices de v3. Exportar respaldo v2 y admitir respaldo v1 estricto mediante normalización; no regenerar identidad o IDs.
-5. Ofrecer la URL de portada representativa de Cover Art Archive como elección independiente. Cargarla sólo por «Mostrar portada», sin copiar el binario al producto ni incluirlo en respaldos o precaché. La referencia no garantiza imagen, edición exacta o derechos de redistribución.
+4. Decisión histórica: publicar una barrera de compatibilidad DB4/nativo40 conservando las trece tablas e índices de v3 y exportar respaldo v2 con entrada v1 estricta. ADR-009 sustituye el contrato vigente por DB5/respaldo3, con entrada v1/v2 estricta; mantiene identidad e IDs.
+5. Ofrecer la URL de portada representativa de Cover Art Archive como elección independiente. La decisión original exigía «Mostrar portada» y excluía binarios del respaldo; ADR-009 la sustituye por carga automática de URL y una fuente local JPEG/PNG opcional, persistida y exportable. Las imágenes remotas siguen fuera de la precaché y su referencia no garantiza imagen, edición exacta o derechos de redistribución.
 6. Integrar Groq y Gemini mediante REST y modelos fijados, sin SDK ni dependencias adicionales para una solicitud de orden estructurado. Usar clave propia de cada persona sólo en memoria; nunca compilar, compartir, registrar o persistir claves.
 7. Enviar sólo un conjunto acotado de candidatos y señales mínimas tras acción explícita y explicación de datos/política. Resolver referencias efímeras a UUID localmente. Validar respuesta y pertenencia; ninguna sugerencia escribe en la biblioteca.
 8. Aplicar timeout, cancelación y errores sanitizados. No efectuar reintentos, generación al guardar ni cambio automático de proveedor. La cuota gratuita pertenece a la cuenta del usuario; la aplicación no activa pagos ni garantiza uso ilimitado.

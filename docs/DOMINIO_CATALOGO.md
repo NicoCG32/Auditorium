@@ -45,8 +45,9 @@ Las comprobaciones de variantes son iterativas, sin depender de la profundidad d
 - Metadatos desconocidos se omiten. No se inventan año, duración, sello, país ni portada; `null` no representa un dato ausente en estos contratos.
 - Año entero de 1 a 9999, sin consultar el reloj ni imponer un corte histórico arbitrario; las advertencias de plausibilidad con contexto pertenecen a una política posterior explícita.
 - Duraciones y posiciones: enteros positivos seguros. Los números de disco y pista pueden tener huecos mientras se completa la lista.
-- Portada opcional: URL HTTPS. No se descarga ni verifica la imagen al validar.
-- Código de país opcional: dos letras mayúsculas; aquí se comprueba estructura, no pertenencia a un registro de países.
+- Portada opcional: URL HTTPS o data URL JPEG/PNG local de hasta 2 MiB, mutuamente excluyentes. El dominio comprueba estructura, base64 y firma de la imagen local; no hace red ni decodifica imágenes. La selección de archivos comprueba también decodificación y dimensiones en el navegador.
+- Géneros de álbum opcionales: hasta veinte etiquetas libres de ochenta caracteres, sin duplicados normalizados.
+- País de artista opcional: texto de hasta cien caracteres. `Release.countryCode`, propio de una edición, admite dos letras mayúsculas; aquí se comprueba su estructura, no pertenencia a un registro de países.
 - `catalogScope` es `personal` en el MVP; compartir requiere una evolución explícita del contrato.
 - Objetos estrictos: campos desconocidos son errores. Propiedad, ratings y escucha no se incorporan al catálogo.
 
@@ -56,6 +57,6 @@ Los fixtures son ficticios y se usan únicamente en pruebas. La ficha consulta e
 
 CAT-01 amplía `Album` con `catalogReference`: proveedor Wikidata, QID, fecha UTC y referencias opcionales de grupo MusicBrainz, álbumes Spotify y videos YouTube. Es un valor estricto anidado, sin tabla ni índice nuevo. Conserva el UUID local y no autoriza fusión por nombre o ID externo. El [modelo de dominio](MODELO_DOMINIO.md#referencia-externa-de-álbum) detalla formatos y límites.
 
-La búsqueda remota prepara candidatos y el usuario confirma un borrador editable antes del alta. La validación del dominio no hace llamadas ni afirma existencia remota; tampoco requiere que Wikidata conozca el álbum. El registro manual continúa siendo válido. Esta ampliación usa DB4 y respaldo2, con compatibilidad de entrada para el respaldo1 estricto. Las claves y resultados de recomendaciones no forman parte del catálogo. Véanse [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) y [ADR-008](adr/008-integraciones-opcionales.md).
+La búsqueda remota prepara candidatos y el usuario confirma un borrador editable antes del alta. La validación del dominio no hace llamadas ni afirma existencia remota; tampoco requiere que Wikidata conozca el álbum. El registro manual continúa siendo válido. El incremento posterior UX-01 añade géneros del álbum, país de artista y portada local, y permite editar metadatos conservando la identidad del álbum. Usa DB5 y respaldo3, con compatibilidad de entrada para respaldos1/2 estrictos; véase [edición del catálogo](EDICION_CATALOGO.md). Las claves y resultados de recomendaciones no forman parte del catálogo. Véanse [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) y [ADR-008](adr/008-integraciones-opcionales.md).
 
 Referencias: [ADR-002](adr/002-album-edicion-pista.md) y [validación con Zod](https://zod.dev/api).

@@ -2,6 +2,8 @@
 
 Versión `1.0.0`. MVP local validado e integrado, con las Fases 0–4 completadas. La [release v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0) incluye el paquete estático y su checksum SHA-256.
 
+Esta guía conserva el comportamiento del paquete v1.0.0. La [edición del catálogo](EDICION_CATALOGO.md), los géneros, el país de artista y las portadas automáticas/locales pertenecen al incremento posterior en revisión y no modifican ese ZIP ni su tag.
+
 ## Usar la biblioteca
 
 1. Abre la aplicación y añade un álbum con artista y título.
