@@ -1,14 +1,14 @@
 # Migraciones, persistencia y recuperación
 
-La biblioteca usa IndexedDB v3, con esquemas históricos v1 y v2. Las migraciones actuales son aditivas: v2 incorpora ejemplares y v3 deseos. No cambian claves ni índices anteriores, identidad, IDs, notas, valoraciones, ediciones o pistas. El formato de [respaldo JSON v1](RESPALDOS_JSON.md) se versiona por separado.
+La biblioteca usa IndexedDB v4 (nativa 40), con esquemas históricos v1, v2 y v3. v2 incorpora ejemplares y v3 deseos. v4 mantiene las trece tablas e índices de v3 y establece una barrera de compatibilidad para la referencia opcional `Album.catalogReference`. No cambia identidad, IDs, notas, valoraciones, ediciones o pistas ni completa metadatos mediante red. El [respaldo JSON v2](RESPALDOS_JSON.md) se versiona por separado y admite la importación del contrato v1 estricto.
 
 ## Antes y durante una actualización
 
-La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Solo admite versiones nativas 10, 20 y 30, equivalentes a las versiones Dexie 1, 2 y 3. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
+La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Solo admite versiones nativas 10, 20, 30 y 40, equivalentes a las versiones Dexie 1, 2, 3 y 4. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
 
 La transacción de lectura que comprueba el esquema termina antes de cerrar su conexión y abrir la actualización. Así no compite con la migración. Si la inspección aborta, la apertura informa el fallo y admite reintento.
 
-IndexedDB realiza los cambios del esquema en una transacción de actualización. Un fallo de cuota o aborto revierte tanto las tablas nuevas como la versión y las filas. Una migración correcta conserva los registros históricos y crea vacías las colecciones que aún no existían. Una identidad existente no se genera de nuevo.
+IndexedDB realiza los cambios del esquema en una transacción de actualización. Un fallo de cuota o aborto revierte tanto las tablas nuevas como la versión y las filas. Una migración correcta conserva los registros históricos y crea vacías las colecciones que aún no existían; el paso v3→v4 sólo actualiza la versión compatible. Una identidad existente no se genera de nuevo.
 
 Otra ventana con una conexión antigua puede bloquear el cambio de versión. La interfaz pide cerrarla y volver a intentar. Al cerrarse, la solicitud de actualización pendiente puede terminar; sus datos se conservan y el reintento abre la biblioteca vigente. No se borran ni recrean bases para resolver un bloqueo.
 
@@ -18,7 +18,7 @@ Referencias: [actualización de IndexedDB](https://developer.mozilla.org/en-US/d
 
 | Situación                                                            | Comprobación                                                                                                                                                                                |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v1 y v2 pobladas migran a v3                                         | Esquemas históricos independientes de las declaraciones actuales; comparación de todas las filas, claves e índices anteriores, incluidos álbumes retirados, notas literales y ejemplares v2 |
+| v1, v2 y v3 pobladas migran a v4                                     | Esquemas históricos independientes de las declaraciones actuales; comparación de todas las filas, claves e índices anteriores, incluidos álbumes retirados, notas literales y ejemplares v2 |
 | Cuota o aborto durante la migración                                  | Fallo después de crear tablas nuevas; esquema, versión e identidad originales completos tras el rechazo; reintento explícito satisfactorio                                                  |
 | Reinicio real del navegador                                          | Cierre completo de Chromium y nuevo proceso con el mismo perfil temporal; reapertura offline y comparación íntegra de datos y esquema                                                       |
 | Respaldo y recuperación                                              | Archivo realmente descargado de la biblioteca migrada; restauración offline en otro perfil vacío, adopción de identidad y comparación de todas las tablas tras recarga                      |

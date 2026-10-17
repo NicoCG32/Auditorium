@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-Este documento describe los contratos implementados en Auditorium **v1.0.0**. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni funciones pendientes.
+Este documento describe los contratos vigentes de Auditorium, basados en el MVP **v1.0.0** y ampliados por CAT-01. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni funciones pendientes.
 
 ## Alcance y vocabulario
 
@@ -85,7 +85,7 @@ El diagrama muestra relaciones conceptuales y solo los campos necesarios para en
 | Tipo           | Campos obligatorios en el modelo validado                                | Campos opcionales                                                                                                             |
 | -------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
 | `Artist`       | `id`, `name`, `catalogScope`                                             | `sortName`, `createdBy`                                                                                                       |
-| `Album`        | `id`, `title`, `releaseType`, `catalogScope`                             | `originalYear`, `coverUrl`, `description`, `createdBy`                                                                        |
+| `Album`        | `id`, `title`, `releaseType`, `catalogScope`                             | `originalYear`, `coverUrl`, `description`, `createdBy`, `catalogReference`                                                    |
 | `AlbumArtist`  | `albumId`, `artistId`, `role`, `position`                                | `creditedAs`                                                                                                                  |
 | `Track`        | `id`, `albumId`, `title`                                                 | `variantOfTrackId`, `versionLabel`, `referenceDurationMs`                                                                     |
 | `CoreTrack`    | `albumId`, `trackId`, `discNumber`, `trackNumber`                        | Ninguno                                                                                                                       |
@@ -102,6 +102,43 @@ El diagrama muestra relaciones conceptuales y solo los campos necesarios para en
 | `ReleaseTrack.contentRole` | `standard`, `bonus`, `alternate`, `other`                                     |
 
 Los años son enteros de 1 a 9999. Posiciones y duraciones son enteros positivos; las duraciones se guardan en milisegundos. `coverUrl` requiere HTTPS y `countryCode` requiere dos letras mayúsculas; estos contratos verifican estructura, no disponibilidad de la imagen ni pertenencia a un registro de países. Los campos del contrato no implican que todos tengan un editor en la interfaz de esta versión.
+
+### Referencia externa de álbum
+
+`CatalogReference` es un valor opcional anidado en `Album`, no una tabla ni una identidad local alternativa. Su [schema estricto](../src/domain/catalog/catalog-reference.ts) admite:
+
+```mermaid
+classDiagram
+    direction LR
+    Album "1" *-- "0..1" CatalogReference : contiene
+    class Album {
+        UUID id
+        string title
+    }
+    class CatalogReference {
+        string provider
+        string entityId
+        datetime retrievedAt
+        UUID musicBrainzReleaseGroupId
+        string[] spotifyAlbumIds
+        string[] youtubeVideoIds
+    }
+```
+
+La composición indica pertenencia al álbum, sin almacenamiento separado. Las tres propiedades de IDs externos son opcionales; `provider` siempre es `wikidata`.
+
+| Campo                       | Regla                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `provider`                  | Literal `wikidata`                                                                                 |
+| `entityId`                  | QID: `Q` seguido de entero positivo sin cero inicial                                               |
+| `retrievedAt`               | Fecha UTC válida con precisión de milisegundos                                                     |
+| `musicBrainzReleaseGroupId` | UUID opcional del grupo de publicación                                                             |
+| `spotifyAlbumIds`           | Hasta ocho IDs opcionales y sin duplicados; 22 caracteres alfanuméricos por ID                     |
+| `youtubeVideoIds`           | Hasta ocho IDs opcionales y sin duplicados; 11 caracteres alfanuméricos, guion o guion bajo por ID |
+
+El ID externo no impone unicidad global ni autoriza fusionar UUID locales. La fecha identifica la consulta, no certifica vigencia o autenticidad absoluta del contenido. Las URLs de procedencia y streaming se derivan de identificadores válidos; no se persisten respuestas arbitrarias del servicio. `coverUrl` permanece como campo independiente y opcional. El registro manual no necesita una referencia para ser válido. Véase el flujo de [integraciones opcionales](INTEGRACIONES_OPCIONALES.md).
+
+Las recomendaciones son un resultado transitorio de aplicación, no una entidad del catálogo o biblioteca. Sólo proponen orden, razón y acción sobre candidatos activos conocidos; no crean valoraciones ni cambian estados del dominio.
 
 ### Cardinalidades y reglas de catálogo
 
@@ -332,7 +369,7 @@ IndexedDB no declara claves foráneas ni borrados en cascada. Los campos `albumI
 
 `StoredUserAlbum.activeAlbumKey` es un dato derivado de persistencia: usuario/álbum para una entrada activa y `null` para una retirada. Su índice único refuerza la unicidad de entradas activas. No forma parte de `UserAlbum`, del modelo musical ni del respaldo de dominio. La definición física está en [database.ts](../src/infrastructure/db/database.ts) y la traducción en [records.ts](../src/infrastructure/db/records.ts); la evolución del almacenamiento se explica en [persistencia local](PERSISTENCIA_LOCAL.md).
 
-El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 1` y `exportedAt`. Su versión es independiente de la versión 3 de la base local. Incluye entradas retiradas y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
+El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 2` y `exportedAt`. Su versión es independiente de la versión 4 de la base local. Los archivos v1 estrictos se aceptan mediante normalización a v2, conservando identidad y datos sin añadir referencias externas. Incluye entradas retiradas y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
 
 ## Ejemplo de lectura del modelo
 

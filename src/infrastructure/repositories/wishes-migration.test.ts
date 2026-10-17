@@ -4,6 +4,7 @@ import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { beforeEach, afterEach, expect, test } from 'vitest'
 import {
   AuditoriumDatabase,
+  DATABASE_VERSION,
   SCHEMA_V1,
   SCHEMA_V2,
   SCHEMA_V3,
@@ -61,7 +62,7 @@ test.each([
   [2, false],
   [2, true],
 ] as const)(
-  'v%s poblada=%s migra a v3 sin modificar ninguna fila previa',
+  'v%s poblada=%s migra al esquema actual sin modificar ninguna fila previa',
   async (version, populated) => {
     const schema = version === 1 ? SCHEMA_V1 : SCHEMA_V2,
       old = await legacy(version, schema)
@@ -91,7 +92,7 @@ test.each([
     old.close()
     const next = current(),
       snapshot = await next.repository.readSnapshot()
-    expect(next.database.backendDB().version).toBe(30)
+    expect(next.database.backendDB().version).toBe(DATABASE_VERSION * 10)
     expect(snapshot.library.purchaseWishes).toEqual([])
     expect(snapshot.identity.userId).toBe(libraryIds.user)
     expect(await rows(next.database, names)).toEqual(before)

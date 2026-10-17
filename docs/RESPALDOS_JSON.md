@@ -6,9 +6,9 @@ Los archivos generados con nombre `auditorium-*.json` se excluyen del control de
 
 ## Archivo
 
-El primer contrato de respaldo usa `format: "auditorium-backup"`, `schemaVersion: 1`, `exportedAt` UTC y `data` con identidad, catálogo y biblioteca. La versión del archivo es independiente de la versión física de IndexedDB, actualmente v3.
+El contrato vigente exporta `format: "auditorium-backup"`, `schemaVersion: 2`, `exportedAt` UTC y `data` con identidad, catálogo y biblioteca. La versión del archivo es independiente de la versión física de IndexedDB, actualmente v4 (nativa 40). El formato 2 admite la referencia opcional `Album.catalogReference`, incluidos procedencia, fecha e IDs externos validados.
 
-Se incluyen todos los IDs y relaciones: artistas, álbumes y créditos, pistas y variantes, lista original, ediciones y apariciones, entradas personales activas/retiradas, escucha, fechas, notas, ejemplares, deseos y ratings. No se incluyen índices derivados, claves técnicas de metadata ni credenciales. Los IDs y notas literales de un respaldo exportado válido se conservan al restaurar; el orden de pistas continúa determinado por disco/posición.
+Se incluyen todos los IDs y relaciones: artistas, álbumes y créditos, pistas y variantes, lista original, ediciones y apariciones, entradas personales activas/retiradas, escucha, fechas, notas, ejemplares, deseos y ratings. No se incluyen índices derivados, claves técnicas de metadata, credenciales, solicitudes o resultados de recomendaciones. La clave propia de Groq/Gemini existe sólo en memoria y nunca forma parte del archivo. Los IDs y notas literales de un respaldo exportado válido se conservan al restaurar; el orden de pistas continúa determinado por disco/posición.
 
 La exportación obtiene un snapshot validado dentro de una sola transacción de lectura. La descarga utiliza Blob JSON con nombre fechado, sin títulos ni identidad en el nombre. «Descarga iniciada» indica que el navegador recibió la solicitud; comprueba que el archivo se haya guardado en tu equipo. Un fallo no modifica la biblioteca ni produce un respaldo parcial.
 
@@ -38,6 +38,6 @@ Después del commit, una lectura fallida muestra el resultado confirmado y las c
 - `readFile(file)` comprueba tamaño, lee texto y valida el archivo, sin escribir en el repositorio.
 - `restore(document, expectedIdentity)` valida versión/datos/tamaño y delega únicamente al caso de restauración vacía.
 
-Continúa el esquema de base v3; no se añaden tablas ni dependencias. Las migraciones de versiones de archivos anteriores se incorporarán explícitamente cuando exista otro contrato soportado; archivos desconocidos o futuros se rechazan. El MVP v1.0.0 incluye [PWA](PWA_OFFLINE.md) y la [validación de sus recorridos offline](VALIDACION_MVP.md).
+Se aceptan archivos v1 mediante su contrato histórico estricto, que rechaza campos nuevos como `catalogReference`. Tras validar se normalizan internamente a v2 y se comprueban todas las relaciones; se conservan identidad, IDs y valores, sin inventar procedencia. Toda nueva exportación usa v2. Versiones desconocidas o futuras se rechazan. La base v4 conserva las tablas e índices de v3 y bloquea la apertura con binarios anteriores. Una versión antigua de Auditorium no puede leer respaldos v2: conserva los archivos anteriores como copias independientes al actualizar. El MVP v1.0.0 incluye [PWA](PWA_OFFLINE.md) y la [validación de sus recorridos offline](VALIDACION_MVP.md).
 
 Las pruebas ficticias cubren exportación/restauración completa, identidad, retirados, datos inválidos y tamaño, cuota/aborto tardíos, concurrencia, reapertura y recuperación de lectura. Ver [ADR-005](adr/005-identidad-respaldo.md) y [retirada personal](ELIMINACIONES_PERSONALES.md).

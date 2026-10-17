@@ -18,6 +18,7 @@ import type { OwnedItem } from '../../domain/library/owned-items'
 import type { PurchaseWish } from '../../domain/library/purchase-wishes'
 import { PurchaseWishesPanel } from './PurchaseWishesPanel'
 import { RemoveAlbumPanel } from './RemoveAlbumPanel'
+import { AlbumReferenceLinks } from '../catalog/AlbumReferenceLinks'
 
 export function AlbumSummary({
   album,
@@ -108,6 +109,7 @@ export function AlbumSummary({
               href={album.coverUrl}
               target="_blank"
               rel="noopener noreferrer"
+              referrerPolicy="no-referrer"
             >
               Abrir enlace de portada
             </a>
@@ -123,6 +125,7 @@ export function AlbumSummary({
           />
         </div>
       </div>
+      <AlbumReferenceLinks album={album} artist={entry.artist} />
       <AlbumTrackLists
         albumId={album.id}
         catalog={catalog}

@@ -17,6 +17,8 @@ import { AlbumSummary } from './AlbumSummary'
 import { LibraryControls } from './LibraryControls'
 import { RemovedAlbumsPanel } from './RemovedAlbumsPanel'
 import { BackupPanel } from './BackupPanel'
+import type { RecommendationProvider } from '../../application/recommendations'
+import { RecommendationsPanel } from '../recommendations/RecommendationsPanel'
 
 type LoadState =
   | { status: 'loading' }
@@ -57,6 +59,12 @@ export function LibraryPage({
   const [detailBusy, setDetailBusy] = useState(false)
   const [removedOpen, setRemovedOpen] = useState(false)
   const [backupOpen, setBackupOpen] = useState(false)
+  const [recommendationsOpen, setRecommendationsOpen] = useState(false)
+  const [recommendationProvider, setRecommendationProvider] =
+    useState<RecommendationProvider>('groq')
+  const [recommendationKey, setRecommendationKey] = useState('')
+  const recommendationsButton = useRef<HTMLButtonElement>(null)
+  const focusRecommendations = useRef(false)
   const backupButton = useRef<HTMLButtonElement>(null)
   const focusBackup = useRef(false)
   const removedButton = useRef<HTMLButtonElement>(null)
@@ -82,6 +90,10 @@ export function LibraryPage({
     }
   }, [repository, request])
   useEffect(() => {
+    if (!recommendationsOpen && focusRecommendations.current) {
+      recommendationsButton.current?.focus()
+      focusRecommendations.current = false
+    }
     if (!backupOpen && focusBackup.current) {
       backupButton.current?.focus()
       focusBackup.current = false
@@ -112,13 +124,21 @@ export function LibraryPage({
       nextFocus?.focus()
       focusEntry.current = undefined
     }
-  }, [state, selectedId, formOpen, removedOpen, backupOpen])
+  }, [
+    state,
+    selectedId,
+    formOpen,
+    removedOpen,
+    backupOpen,
+    recommendationsOpen,
+  ])
   function refresh() {
     setState({ status: 'loading' })
     setRequest((previous) => previous + 1)
   }
   function complete(entryId: string, openExisting: boolean) {
     setBackupOpen(false)
+    setRecommendationsOpen(false)
     setRemovedOpen(false)
     setFormOpen(false)
     setFilters(defaultLibraryFilters)
@@ -179,6 +199,7 @@ export function LibraryPage({
               setSelectedId(undefined)
               setRemovedOpen(false)
               setBackupOpen(false)
+              setRecommendationsOpen(false)
               setNotice('')
               setFormOpen(true)
             }}
@@ -201,6 +222,7 @@ export function LibraryPage({
             onClick={() => {
               setSelectedId(undefined)
               setRemovedOpen(true)
+              setRecommendationsOpen(false)
               setBackupOpen(false)
               setNotice('')
             }}
@@ -223,10 +245,26 @@ export function LibraryPage({
               setSelectedId(undefined)
               setRemovedOpen(false)
               setBackupOpen(true)
+              setRecommendationsOpen(false)
               setNotice('')
             }}
           >
             Respaldos
+          </button>
+          <button
+            ref={recommendationsButton}
+            type="button"
+            className="action-button"
+            disabled={state.status !== 'ready' || formOpen || detailBusy}
+            onClick={() => {
+              setSelectedId(undefined)
+              setRemovedOpen(false)
+              setBackupOpen(false)
+              setNotice('')
+              setRecommendationsOpen(true)
+            }}
+          >
+            Recomendaciones
           </button>
         </div>
       </div>
@@ -263,6 +301,26 @@ export function LibraryPage({
           onCancel={() => {
             focusAdd.current = true
             setFormOpen(false)
+          }}
+        />
+      ) : recommendationsOpen ? (
+        <RecommendationsPanel
+          key={JSON.stringify(state.albums)}
+          albums={state.albums}
+          provider={recommendationProvider}
+          apiKey={recommendationKey}
+          onProviderChange={(provider) => {
+            setRecommendationProvider(provider)
+            setRecommendationKey('')
+          }}
+          onKeyChange={setRecommendationKey}
+          onOpenAlbum={(entryId) => {
+            setRecommendationsOpen(false)
+            setSelectedId(entryId)
+          }}
+          onClose={() => {
+            focusRecommendations.current = true
+            setRecommendationsOpen(false)
           }}
         />
       ) : backupOpen ? (

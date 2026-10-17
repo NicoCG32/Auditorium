@@ -1,8 +1,8 @@
-# Persistencia local — esquemas v1, v2 y v3
+# Persistencia local — esquemas v1 a v4
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
-El [modelo de datos](MODELO_DATOS.md) reúne el esquema físico vigente del MVP v1.0.0, sus índices, contratos transaccionales y flujos de respaldo.
+El [modelo de datos](MODELO_DATOS.md) reúne el esquema físico vigente y su evolución desde el MVP v1.0.0, sus índices, contratos transaccionales y flujos de respaldo.
 
 ## Apertura e identidad
 
@@ -14,9 +14,9 @@ La identidad es un UUID aleatorio y una fecha UTC de creación, almacenados bajo
 
 Si falta la identidad pero la base contiene datos, la operación falla. No se infiere un propietario ni se crea uno de reemplazo. Una identidad inválida también genera un error conservando los registros originales.
 
-## Esquema actual v3
+## Esquema actual v4
 
-Nombre predeterminado: `auditorium`. Versión lógica actual: 3. Las definiciones v1 y v2 se conservan como historial; v2 añade ejemplares y v3 deseos de compra. Se materializan únicamente las entidades implementadas, además de metadata.
+Nombre predeterminado: `auditorium`. Versión lógica actual: 4, nativa 40. Las definiciones v1, v2 y v3 se conservan como historial; v2 añade ejemplares y v3 deseos de compra. v4 conserva sus trece tablas e índices y admite la referencia opcional de catálogo dentro de `albums`. Es una barrera de compatibilidad para impedir que un binario anterior abra datos con campos nuevos; no consulta servicios ni transforma filas históricas.
 
 | Tabla         | Clave e índices principales                                             |
 | ------------- | ----------------------------------------------------------------------- |
@@ -55,7 +55,7 @@ No borrar, vaciar o recrear automáticamente la base ante un fallo. No registrar
 
 ## Evolución y verificación
 
-`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). `SCHEMA_V3` añade únicamente `purchaseWishes`. v1/v2 compatibles migran a v3 conservando todas sus filas, ejemplares e identidad; se comprueban las tres versiones sin reparar bases incompletas. Ver [deseos y migración v3](DESEOS_COMPRA.md). Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
+`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). `SCHEMA_V3` añade únicamente `purchaseWishes`. v1/v2 compatibles migran a v3 conservando todas sus filas, ejemplares e identidad; se comprueban las tres versiones sin reparar bases incompletas. Ver [deseos y migración v3](DESEOS_COMPRA.md). `SCHEMA_V4` mantiene la estructura física de v3 y establece la barrera para `Album.catalogReference`. v1/v2/v3 compatibles migran a v4 sin perder identidad, IDs ni filas; la inspección acepta únicamente las versiones nativas 10/20/30/40 conocidas. Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
 
 Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reapertura, seis conexiones simultáneas, snapshots, claves únicas, rollback, bloqueos, cuotas y datos/esquemas inválidos. También se verificó IndexedDB real en dos pestañas, con ocho conexiones simultáneas y reapertura tras recargar. Las páginas auxiliares de esa comprobación no forman parte del producto.
 
@@ -67,7 +67,7 @@ Referencias: [ADR-001](adr/001-mvp-local.md), [transacciones y errores en Dexie]
 
 ## Retirada reversible
 
-La [baja personal](ELIMINACIONES_PERSONALES.md) conserva todas las filas dependientes y solo cambia `userAlbums`: fija `deletedAt`/`updatedAt` y deriva `activeAlbumKey=null`. Restaurar elimina el marcador, actualiza la fecha y deriva el índice activo, exigiendo que no exista otra entrada activa del mismo álbum. Se conservan IDs y fecha de alta; una referencia obsoleta se rechaza antes de escribir. No hay tablas nuevas ni migración: continúa el esquema v3. Ver [ADR-004](adr/004-retirada-personal.md).
+La [baja personal](ELIMINACIONES_PERSONALES.md) conserva todas las filas dependientes y solo cambia `userAlbums`: fija `deletedAt`/`updatedAt` y deriva `activeAlbumKey=null`. Restaurar elimina el marcador, actualiza la fecha y deriva el índice activo, exigiendo que no exista otra entrada activa del mismo álbum. Se conservan IDs y fecha de alta; una referencia obsoleta se rechaza antes de escribir. Esta operación no añade tablas ni exige una migración propia; opera en el esquema vigente v4. Ver [ADR-004](adr/004-retirada-personal.md).
 
 ## Restauración vacía
 

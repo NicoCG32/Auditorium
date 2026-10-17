@@ -4,12 +4,15 @@ import {
   type AlbumCandidate,
 } from '../../application/album-candidates'
 import type { MusicLibrary } from '../../application/music-library'
+import type { CatalogCandidate } from '../../application/catalog-lookup'
 import { releaseTypeSchema } from '../../domain/catalog/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
+import { CatalogLookupPanel } from '../catalog/CatalogLookupPanel'
 import {
   emptyAlbumForm,
   parseAlbumForm,
+  prepareCatalogCandidate,
   type AlbumFormValues,
 } from './album-form-values'
 import { releaseTypeLabels } from './labels'
@@ -26,19 +29,56 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
   const [failure, setFailure] = useState('')
   const [review, setReview] = useState<AlbumCandidate[]>([])
   const [busy, setBusy] = useState(false)
+  const [offeredCover, setOfferedCover] = useState<string>()
   const locked = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
   const artistRef = useRef<HTMLInputElement>(null)
   const reviewHeading = useRef<HTMLHeadingElement>(null)
+  const selectionHeading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     artistRef.current?.focus()
   }, [])
   useEffect(() => {
     if (review.length > 0) reviewHeading.current?.focus()
   }, [review])
+  useEffect(() => {
+    if (values.catalogReference) selectionHeading.current?.focus()
+  }, [values.catalogReference])
   const artists = matchingArtists(snapshot.catalog.artists, values.artist)
   function edit(change: Partial<AlbumFormValues>) {
-    setValues((previous) => ({ ...previous, ...change }))
+    const changesArtists = 'artist' in change || 'artistId' in change
+    const changesIdentity = 'title' in change || changesArtists
+    setValues((previous) => ({
+      ...previous,
+      ...change,
+      ...(changesIdentity
+        ? {
+            catalogReference: undefined,
+            ...(changesArtists ? { catalogArtists: undefined } : {}),
+            ...(offeredCover && previous.coverUrl === offeredCover
+              ? { coverUrl: '' }
+              : {}),
+          }
+        : {}),
+    }))
+    if (changesIdentity) setOfferedCover(undefined)
+    setErrors({})
+    setFailure('')
+    setReview([])
+  }
+  function selectCatalogCandidate(candidate: CatalogCandidate) {
+    setValues((previous) =>
+      prepareCatalogCandidate(
+        {
+          ...previous,
+          ...(offeredCover && previous.coverUrl === offeredCover
+            ? { coverUrl: '' }
+            : {}),
+        },
+        candidate,
+      ),
+    )
+    setOfferedCover(candidate.coverUrl)
     setErrors({})
     setFailure('')
     setReview([])
@@ -109,7 +149,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
   return (
     <section className="album-form-panel" aria-labelledby="add-album-title">
       <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
-        Registro manual
+        Tu catálogo
       </p>
       <h2 id="add-album-title" className="text-3xl font-semibold">
         Añadir álbum
@@ -154,7 +194,70 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
               {errorFor('title')}
             </label>
           </div>
-          {artists.length > 0 ? (
+          {values.catalogArtists && values.catalogArtists.length > 1 ? (
+            <p className="text-sm text-muted">
+              Artistas conservados por separado:{' '}
+              {values.catalogArtists.join(' · ')}. Editar «Artista» reemplazará
+              estos créditos por el nombre escrito.
+            </p>
+          ) : null}
+          <CatalogLookupPanel
+            title={values.title}
+            artist={values.artist}
+            onSelect={selectCatalogCandidate}
+            disabled={busy}
+          />
+          {values.catalogReference ? (
+            <section
+              className="catalog-selection"
+              aria-label="Referencia preparada"
+            >
+              <h3
+                ref={selectionHeading}
+                tabIndex={-1}
+                className="font-semibold"
+              >
+                Referencia preparada para guardar
+              </h3>
+              <p className="mt-2 text-sm text-muted">
+                Revisa los datos del formulario. La referencia de Wikidata{' '}
+                {values.catalogReference.entityId} se guardará al confirmar el
+                álbum. Editar artista o título quitará esta asociación.
+              </p>
+              {values.catalogArtists ? (
+                <p className="mt-2 text-sm">
+                  Créditos: {values.catalogArtists.join(' · ')}. Se conservará
+                  cada artista por separado.
+                </p>
+              ) : null}
+              {offeredCover ? (
+                <label className="checkbox-option">
+                  <input
+                    type="checkbox"
+                    checked={values.coverUrl === offeredCover}
+                    onChange={(event) =>
+                      edit({
+                        coverUrl: event.target.checked ? offeredCover : '',
+                      })
+                    }
+                  />
+                  <span>
+                    Guardar enlace de portada de Cover Art Archive (puede no
+                    estar disponible). La imagen sólo se consultará al pulsar
+                    «Mostrar portada».
+                  </span>
+                </label>
+              ) : null}
+              <button
+                type="button"
+                className="text-button mt-3"
+                onClick={() => edit({ catalogReference: undefined })}
+              >
+                Quitar referencia
+              </button>
+            </section>
+          ) : null}
+          {artists.length > 0 && !values.catalogArtists ? (
             <fieldset className="artist-options">
               <legend className="text-sm font-semibold">
                 Hay artistas con este nombre
@@ -293,6 +396,9 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
               <p className="mt-2 text-sm text-muted" role="status">
                 Comprueba si es el mismo álbum. Ningún registro se ha creado ni
                 fusionado.
+                {values.catalogReference
+                  ? ' Abrir uno existente conservará sus datos y su referencia actual.'
+                  : ''}
               </p>
               <ul className="my-4 grid gap-4">
                 {review.map((candidate) => (

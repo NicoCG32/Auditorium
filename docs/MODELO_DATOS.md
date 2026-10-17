@@ -2,7 +2,7 @@
 
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia de Auditorium **v1.0.0**. Complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia vigentes en el código de Auditorium, desde el MVP **v1.0.0** hasta el incremento CAT-01 de DB4/respaldo2. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 
@@ -37,7 +37,7 @@ El diagrama muestra responsabilidades. La inspección precede a la apertura de D
 
 ## Esquema físico vigente
 
-La [definición de la base](../src/infrastructure/db/database.ts) declara versión lógica **3**, correspondiente a versión nativa IndexedDB **30**. Todas las claves primarias son explícitas y únicas. No se emplean claves autoincrementales ni índices `multiEntry`.
+La [definición de la base](../src/infrastructure/db/database.ts) declara versión lógica **4**, correspondiente a versión nativa IndexedDB **40**. Todas las claves primarias son explícitas y únicas. No se emplean claves autoincrementales ni índices `multiEntry`.
 
 En la tabla, los corchetes representan una clave o índice compuesto, en el orden indicado. Los índices secundarios son **no únicos**, excepto los marcados como **único**. Se enumeran los índices declarados y materializados, sin incluir las posibilidades de consulta mediante prefijos compuestos que Dexie pueda ofrecer.
 
@@ -68,8 +68,9 @@ La retirada de un álbum personal no elimina su catálogo ni los registros perso
 | 1             | 10                       | `metadata`, las siete tablas de catálogo, `userAlbums`, `albumRatings` y `trackRatings` |
 | 2             | 20                       | Añade `ownedItems`                                                                      |
 | 3             | 30                       | Añade `purchaseWishes`                                                                  |
+| 4             | 40                       | Admite `Album.catalogReference`; conserva las trece tablas y todos los índices de v3    |
 
-Las migraciones vigentes son aditivas: mantienen claves, índices y registros históricos, y crean las nuevas tablas vacías. No hay una conversión de notas, regeneración de identificadores ni transformación de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
+Las migraciones mantienen claves, índices y registros históricos; v2/v3 crean las nuevas tablas vacías. v4 no crea tablas ni transforma filas: establece una barrera de compatibilidad para el campo opcional `catalogReference`, evitando que una versión anterior lo interprete como corrupción. No hay una conversión de notas, regeneración de identificadores ni transformación de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
 
 ## Identidad y mapeo de registros
 
@@ -135,9 +136,9 @@ Las reglas están en [listas](../src/application/track-lists.ts), [casos de uso 
 
 ## Apertura, errores y recuperación
 
-Antes de abrir o migrar con Dexie, [`checkNativeSchema`](../src/infrastructure/db/preflight.ts) inspecciona la estructura mediante IndexedDB nativo. Acepta las versiones 10, 20 y 30; verifica el conjunto exacto de tablas, rutas de claves primarias, `autoIncrement`, nombres y rutas de índices, unicidad y `multiEntry`. Espera la finalización de la transacción de inspección antes de cerrar esa conexión y continuar con la apertura. Si la base aún no existe, aborta la creación exploratoria y deja la creación real a Dexie.
+Antes de abrir o migrar con Dexie, [`checkNativeSchema`](../src/infrastructure/db/preflight.ts) inspecciona la estructura mediante IndexedDB nativo. Acepta las versiones 10, 20, 30 y 40; verifica el conjunto exacto de tablas, rutas de claves primarias, `autoIncrement`, nombres y rutas de índices, unicidad y `multiEntry`. Espera la finalización de la transacción de inspección antes de cerrar esa conexión y continuar con la apertura. Si la base aún no existe, aborta la creación exploratoria y deja la creación real a Dexie.
 
-Una versión posterior o sin migración compatible se rechaza. Una estructura distinta se informa como corrupta; no se elimina, reconstruye ni corrige automáticamente. Después de abrir, se comprueba que la versión nativa final sea 30. Si otra conexión bloquea la actualización, la aplicación informa el bloqueo y permite reintentar después de cerrarla. Un intento nativo pendiente que termina tras solicitar el cierre se cierra sin inicializar datos.
+Una versión posterior o sin migración compatible se rechaza. Una estructura distinta se informa como corrupta; no se elimina, reconstruye ni corrige automáticamente. Después de abrir, se comprueba que la versión nativa final sea 40. Si otra conexión bloquea la actualización, la aplicación informa el bloqueo y permite reintentar después de cerrarla. Un intento nativo pendiente que termina tras solicitar el cierre se cierra sin inicializar datos.
 
 [`LocalStorageError`](../src/infrastructure/db/errors.ts) conserva el código y la causa del fallo:
 
@@ -158,9 +159,9 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 ## Contrato de respaldo JSON
 
-El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 1`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. No incluye filas de `metadata`, índices técnicos, cachés, imágenes descargadas ni archivos musicales; las URL de portadas se conservan como datos del catálogo.
+El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 2`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. No incluye filas de `metadata`, índices técnicos, cachés, imágenes descargadas ni archivos musicales; las URL de portadas se conservan como datos del catálogo.
 
-La versión **1 del respaldo** no equivale a la versión **1 de IndexedDB**. El formato del respaldo vigente contiene el snapshot completo utilizado por la base v3. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de las tablas nativas.
+La versión **2 del respaldo** no equivale a la versión **2 de IndexedDB**. El formato vigente contiene el snapshot completo utilizado por la base v4, incluidas referencias de catálogo. Se admite el formato 1 mediante un schema histórico estricto que no acepta `catalogReference`; tras validarlo se normaliza a la versión 2 y se comprueba la integridad completa. No se inventan referencias al migrar un archivo anterior. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de las tablas nativas.
 
 [`LibraryBackups`](../src/application/library-backups.ts) aplica un límite de **20 MiB**, medido en bytes:
 
@@ -222,4 +223,4 @@ Si la restauración ya se confirmó pero falla la lectura posterior de la vista,
 
 IndexedDB depende del origen, perfil, disponibilidad y políticas del navegador. La persistencia solicitada al navegador no reemplaza un respaldo externo ni garantiza conservación ante eliminación del almacenamiento. La restauración no repara una base corrupta existente. Un archivo de respaldo contiene información personal y carece de cifrado propio.
 
-v1.0.0 no incorpora servidor de datos, autenticación de cuenta, sincronización entre dispositivos ni importación de servicios musicales. Cualquier incorporación futura debe definir contratos, migraciones y recuperación específicos sin confundirlos con las garantías locales documentadas aquí. Las evidencias de aceptación de la versión se reúnen en [validación del MVP](VALIDACION_MVP.md).
+El núcleo no incorpora servidor de biblioteca, autenticación de cuenta ni sincronización entre dispositivos. Las [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) reciben sólo consultas o contexto acotado por acción explícita. Las claves y resultados de recomendaciones viven en memoria y quedan fuera del snapshot, respaldo y base; únicamente la referencia de catálogo seleccionada se incorpora al álbum. Las evidencias de aceptación de la versión se reúnen en [validación del MVP](VALIDACION_MVP.md).

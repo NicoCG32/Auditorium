@@ -1,6 +1,6 @@
 # Documentación de Auditorium
 
-Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web y evolución visual. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. Las capacidades futuras aparecen como propuestas separadas.
+Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e integraciones opcionales. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. Las capacidades futuras aparecen como propuestas separadas.
 
 ## Ruta de lectura
 
@@ -30,7 +30,9 @@ Arquitectura, dominio y datos son vistas complementarias: una relación conceptu
 | Recuperación y offline   | [Respaldos JSON](RESPALDOS_JSON.md), [PWA](PWA_OFFLINE.md), [migraciones](MIGRACIONES_RECUPERACION.md)                     |
 | Implementación y calidad | [Casos de uso](CASOS_DE_USO.md), [integridad y persistencia](VALIDACION_PERSISTENCIA.md), [diseño base](DISENO_BASE.md)    |
 
-Estas guías documentan las capacidades construidas durante el MVP y complementan las referencias transversales. Las menciones a esquemas v1/v2/v3 corresponden a evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 1.
+Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 2, con importación compatible del formato 1 estricto.
+
+La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica búsqueda Wikidata, procedencia persistente, portadas y enlaces, y recomendaciones Groq/Gemini con clave propia en memoria, datos enviados, condiciones de gratuidad y límites de validación.
 
 ## Investigaciones y propuestas
 
@@ -40,15 +42,16 @@ Estas guías documentan las capacidades construidas durante el MVP y complementa
 
 ## Decisiones de arquitectura
 
-| Decisión                                                          | Justificación                                                                      |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| [ADR-001: MVP local](adr/001-mvp-local.md)                        | Biblioteca ejecutada y guardada en el navegador                                    |
-| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md) | Identidades musicales y apariciones diferenciadas                                  |
-| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)          | Servicios opcionales evaluados antes de incorporarlos                              |
-| [ADR-004: retirada personal](adr/004-retirada-personal.md)        | Restauración de la misma entrada sin borrar catálogo o datos relacionados          |
-| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)  | Adopción atómica de identidad y datos en un destino vacío                          |
-| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)      | Aplicación de recursos nuevos después de cerrar las ventanas anteriores            |
-| [ADR-007: importación revisada](adr/007-importacion-metadatos.md) | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir |
+| Decisión                                                                 | Justificación                                                                                      |
+| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| [ADR-001: MVP local](adr/001-mvp-local.md)                               | Biblioteca ejecutada y guardada en el navegador                                                    |
+| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)        | Identidades musicales y apariciones diferenciadas                                                  |
+| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                 | Servicios opcionales evaluados antes de incorporarlos                                              |
+| [ADR-004: retirada personal](adr/004-retirada-personal.md)               | Restauración de la misma entrada sin borrar catálogo o datos relacionados                          |
+| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)         | Adopción atómica de identidad y datos en un destino vacío                                          |
+| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)             | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                            |
+| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)        | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                 |
+| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md) | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local |
 
 Los ADR conservan la fecha y el contexto de la decisión. El estado de ejecución actual se consulta en la [arquitectura](ARQUITECTURA.md), el [Project](https://github.com/users/NicoCG32/projects/4) y los [hitos](https://github.com/NicoCG32/Auditorium/milestones).
 

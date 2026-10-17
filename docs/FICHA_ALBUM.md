@@ -6,7 +6,11 @@ LIB-03 amplía la ficha abierta desde el título de una tarjeta o al usar un ál
 
 Sin URL guardada, se muestra una representación local de vinilo y «Sin portada registrada». Si existe un enlace HTTPS, «Mostrar portada» permite cargarlo por decisión del usuario. La imagen tiene texto alternativo, tamaño reservado y política de referrer sin referencia de la aplicación. Un fallo de carga vuelve a la representación local y ofrece reintento. También se conserva el enlace directo a la portada.
 
-No se buscan carátulas ni se añaden imágenes ajenas al producto. La figura SVG de prueba es ficticia. Mostrar una imagen remota requiere acceso a su proveedor; no se almacena un respaldo de esa imagen ni se promete disponibilidad offline. La elección de mostrarla dura durante el montaje de la ficha y se conserva al actualizar su nota.
+La búsqueda opcional de catálogo puede proponer una URL representativa de Cover Art Archive al seleccionar una referencia; sólo se guarda si la persona la acepta. No se incorporan binarios de portadas al producto. La figura SVG de prueba es ficticia. Mostrar una imagen remota requiere acceso a su proveedor; no se almacena un respaldo de esa imagen ni se promete disponibilidad offline. La elección de mostrarla dura durante el montaje de la ficha y se conserva al actualizar su nota.
+
+## Procedencia y enlaces
+
+Cuando el álbum tiene `catalogReference`, la ficha muestra la referencia Wikidata y su fecha de consulta. Los IDs externos validados permiten enlaces canónicos a MusicBrainz, álbumes de Spotify y videos de YouTube, sin incrustar reproductores. Su ausencia no se sustituye por una URL inventada. Los enlaces «Buscar en…» se identifican como búsquedas y no garantizan coincidencia. El proveedor y la conectividad determinan su disponibilidad; los enlaces se abren con `noopener noreferrer` y sin referrer. Véase [integraciones opcionales](INTEGRACIONES_OPCIONALES.md).
 
 ## Guardar y quitar nota
 

@@ -29,12 +29,12 @@ export default defineConfig({
     },
     {
       name: 'firefox',
-      testMatch: 'acceptance.spec.ts',
+      testMatch: ['acceptance.spec.ts', 'integrations.spec.ts'],
       use: { ...devices['Desktop Firefox'] },
     },
     {
       name: 'webkit',
-      testMatch: 'acceptance.spec.ts',
+      testMatch: ['acceptance.spec.ts', 'integrations.spec.ts'],
       use: { ...devices['Desktop Safari'] },
     },
   ],

@@ -1,7 +1,11 @@
 // @vitest-environment node
 import { expect, test } from 'vitest'
 import { fixtureId } from '../../domain/catalog/catalog.fixture'
-import { emptyAlbumForm, parseAlbumForm } from './album-form-values'
+import {
+  emptyAlbumForm,
+  parseAlbumForm,
+  prepareCatalogCandidate,
+} from './album-form-values'
 
 test('solo artista y título; campos opcionales vacíos se omiten', () => {
   const result = parseAlbumForm({
@@ -70,4 +74,38 @@ test('errores de artista/título y portada se vinculan a sus campos', () => {
     'coverUrl',
     'title',
   ])
+})
+
+test('prepara una referencia sin cargar portada y conserva los créditos separados', () => {
+  const reference = {
+    provider: 'wikidata' as const,
+    entityId: 'Q999999',
+    retrievedAt: '2026-10-17T00:00:00.000Z',
+  }
+  const values = prepareCatalogCandidate(
+    { ...emptyAlbumForm, description: 'Mi descripción ficticia' },
+    {
+      id: reference.entityId,
+      title: 'Dúo ficticio',
+      artists: ['Artista ficticio A', 'Artista ficticio B'],
+      releaseType: 'ep',
+      originalYear: 2001,
+      description: 'Descripción externa ficticia',
+      catalogReference: reference,
+      coverUrl: 'https://example.invalid/portada.png',
+    },
+  )
+  expect(values.coverUrl).toBe('')
+  expect(values.description).toBe('Mi descripción ficticia')
+  expect(parseAlbumForm(values)).toMatchObject({
+    success: true,
+    input: {
+      catalogReference: reference,
+      artists: [
+        { name: 'Artista ficticio A', role: 'primary' },
+        { name: 'Artista ficticio B', role: 'primary' },
+      ],
+      originalYear: 2001,
+    },
+  })
 })
