@@ -52,4 +52,10 @@ Las comprobaciones de variantes son iterativas, sin depender de la profundidad d
 
 Los fixtures son ficticios y se usan únicamente en pruebas. La ficha consulta el catálogo guardado y permite editar [listas originales y ediciones](LISTAS_EDICIONES.md). No se cargan datos de ejemplo por defecto.
 
+## Referencia de catálogo opcional
+
+CAT-01 amplía `Album` con `catalogReference`: proveedor Wikidata, QID, fecha UTC y referencias opcionales de grupo MusicBrainz, álbumes Spotify y videos YouTube. Es un valor estricto anidado, sin tabla ni índice nuevo. Conserva el UUID local y no autoriza fusión por nombre o ID externo. El [modelo de dominio](MODELO_DOMINIO.md#referencia-externa-de-álbum) detalla formatos y límites.
+
+La búsqueda remota prepara candidatos y el usuario confirma un borrador editable antes del alta. La validación del dominio no hace llamadas ni afirma existencia remota; tampoco requiere que Wikidata conozca el álbum. El registro manual continúa siendo válido. Esta ampliación usa DB4 y respaldo2, con compatibilidad de entrada para el respaldo1 estricto. Las claves y resultados de recomendaciones no forman parte del catálogo. Véanse [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) y [ADR-008](adr/008-integraciones-opcionales.md).
+
 Referencias: [ADR-002](adr/002-album-edicion-pista.md) y [validación con Zod](https://zod.dev/api).

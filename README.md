@@ -10,6 +10,8 @@ La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica me
 
 «Apariencia» ofrece temas oscuro y pergamino, ambientación desactivable y una vista previa temporal de una foto local. Las preferencias visuales son independientes de la colección y sus respaldos. Consulta el [sistema de diseño y su validación](docs/DISENO_BASE.md).
 
+El incremento en desarrollo, todavía **sin publicar**, incorpora [integraciones opcionales](docs/INTEGRACIONES_OPCIONALES.md): búsqueda y selección de referencias de Wikidata al añadir álbumes, y recomendaciones de escucha o revaloración mediante Groq o Gemini con clave propia conservada sólo en memoria. El registro manual sigue disponible sin servicios ni cuentas. Las recomendaciones no cambian tus valoraciones; las referencias de catálogo se incluyen en los respaldos. Estas capacidades pertenecen al código de este incremento y no al ZIP ni al tag de la release v1.0.0; su disponibilidad en Pages depende de integrar y publicar la revisión validada.
+
 ## Desarrollo local
 
 Requisitos: Node.js 24 LTS (24.15.0 o posterior dentro de esa rama) y npm 12.2.x o posterior dentro de la rama 12. La instalación inicial requiere internet para descargar dependencias; ejecutar y compilar la plantilla no requiere claves ni cuentas externas.
@@ -62,7 +64,7 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 
 ## Documentación técnica
 
-El [índice de documentación](docs/README.md) organiza las referencias del MVP v1.0.0, las guías funcionales y las decisiones de arquitectura.
+El [índice de documentación](docs/README.md) organiza las referencias vigentes, las guías funcionales y las decisiones de arquitectura, distinguiendo la release MVP v1.0.0 de los incrementos posteriores.
 
 - [Arquitectura del sistema](docs/ARQUITECTURA.md): contexto, componentes, dependencias, transacciones, PWA y distribución.
 - [Modelo de dominio](docs/MODELO_DOMINIO.md): entidades, cardinalidades, reglas, estados y ejemplos ficticios.

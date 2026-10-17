@@ -32,7 +32,7 @@ test.each(['', '{', 'null', '[]', '   '])(
     expect(() => parseBackupText(text)).toThrow(BackupError)
   },
 )
-test.each([0, 2, 3, '1', null])(
+test.each([0, 3, 4, '1', null])(
   'versión no compatible %s se rechaza antes de interpretar sus datos',
   (schemaVersion) => {
     expect(() =>
@@ -66,7 +66,7 @@ test.each(['identity', 'catalog', 'library'])(
   },
 )
 test.each(['ownedItems', 'purchaseWishes'])(
-  'colección %s ausente no se inventa en un respaldo v1',
+  'colección %s ausente no se inventa en un respaldo',
   (field) => {
     const backup = makeBackup(),
       library: Record<string, unknown> = { ...backup.data.library }
@@ -76,6 +76,59 @@ test.each(['ownedItems', 'purchaseWishes'])(
     ).toThrow()
   },
 )
+
+test('respaldo v1 estricto se normaliza a v2 conservando todos los datos', () => {
+  const current = makeBackup()
+  const legacy = { ...current, schemaVersion: 1 }
+  const before = structuredClone(legacy)
+  expect(parseBackupDocument(legacy)).toEqual(current)
+  expect(parseBackupText(JSON.stringify(legacy))).toEqual(current)
+  expect(JSON.parse(serializeBackup(legacy))).toEqual(current)
+  expect(legacy).toEqual(before)
+})
+
+test('respaldo v2 conserva procedencia y relaciones externas junto a identidad, valoraciones y retirados', () => {
+  const current = makeBackup()
+  current.data.catalog.albums[0]!.catalogReference = {
+    provider: 'wikidata',
+    entityId: 'Q999999999',
+    retrievedAt: '2026-10-16T12:00:00.000Z',
+    musicBrainzReleaseGroupId: ids.album,
+    spotifyAlbumIds: ['a'.repeat(22)],
+    youtubeVideoIds: ['ficticio_01'],
+  }
+  const before = structuredClone(current)
+  expect(current.schemaVersion).toBe(2)
+  expect(parseBackupText(serializeBackup(current))).toEqual(current)
+  expect(current).toEqual(before)
+  expect(() => parseBackupDocument({ ...current, schemaVersion: 1 })).toThrow(
+    BackupError,
+  )
+})
+
+test('versiones v1 y v2 rechazan campos ajenos y mantienen validación de integridad', () => {
+  for (const schemaVersion of [1, 2]) {
+    const current = makeBackup()
+    const album = current.data.catalog.albums[0]!
+    expect(() =>
+      parseBackupDocument({
+        ...current,
+        schemaVersion,
+        data: {
+          ...current.data,
+          catalog: {
+            ...current.data.catalog,
+            albums: [{ ...album, unknown: 'Campo ajeno' }],
+          },
+        },
+      }),
+    ).toThrow(BackupError)
+    current.data.library.userAlbums[0]!.userId = fixtureId(999)
+    expect(() => parseBackupDocument({ ...current, schemaVersion })).toThrow(
+      BackupError,
+    )
+  }
+})
 test.each(['owner', 'duplicate', 'edition', 'track', 'date'])(
   'datos incoherentes %s se rechazan antes de restaurar',
   (kind) => {

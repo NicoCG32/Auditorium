@@ -83,7 +83,7 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(30)
+      expect(migrated.version).toBe(40)
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(rows)
       for (const store of before.stores)
@@ -185,7 +185,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 30)
+        if (name === 'auditorium' && version === 40)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -213,7 +213,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(30)
+    expect(after.version).toBe(40)
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(rows)
   })
@@ -302,7 +302,7 @@ for (const damaged of ['index', 'future', 'identity', 'rating'] as const) {
       ]
     await page.evaluate(seedNativeStorage, {
       name: 'auditorium',
-      version: damaged === 'index' ? 20 : damaged === 'future' ? 40 : 30,
+      version: damaged === 'index' ? 20 : damaged === 'future' ? 50 : 40,
       stores,
       rows,
     })

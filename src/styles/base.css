@@ -513,7 +513,7 @@
     display: grid;
     gap: 1.25rem;
   }
-  .album-form-fields input:not([type='radio']),
+  .album-form-fields input:not([type='radio'], [type='checkbox']),
   .album-form-fields select,
   .album-form-fields textarea {
     inline-size: 100%;
@@ -527,6 +527,162 @@
   }
   .album-form-fields [aria-invalid='true'] {
     border-color: var(--focus);
+  }
+  .integration-panel {
+    max-inline-size: 50rem;
+    margin-inline: auto;
+    padding: clamp(1rem, 4vw, 2.5rem);
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .integration-panel input:not([type='checkbox']),
+  .integration-panel select {
+    inline-size: 100%;
+    min-inline-size: 0;
+    min-block-size: 2.75rem;
+    padding: 0.65rem 0.75rem;
+    border: 1px solid var(--muted);
+    background: var(--background);
+    color: var(--foreground);
+    font-size: 1rem;
+  }
+  .integration-panel > * + * {
+    margin-block-start: 1.25rem;
+  }
+  .integration-panel h2 {
+    font-family: var(--font-identity);
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: 600;
+  }
+  .integration-panel h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .integration-panel p {
+    line-height: 1.7;
+    font-size: 0.875rem;
+  }
+  .integration-panel a {
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+  }
+  .integration-panel .eyebrow {
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent-text);
+    margin-block-end: 0.5rem;
+  }
+  .recommendation-preview {
+    padding: 1rem;
+    background: var(--surface-raised);
+    border: 1px solid var(--border);
+  }
+  .recommendation-preview summary {
+    min-block-size: 2.75rem;
+    align-content: center;
+    cursor: pointer;
+  }
+  .recommendation-candidates,
+  .recommendation-results {
+    display: grid;
+    gap: 1rem;
+    list-style: decimal;
+    padding-inline-start: 1.5rem;
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .recommendation-candidates {
+    margin-block-start: 1rem;
+  }
+  .recommendation-results > li {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+  }
+  .recommendation-results li > * + * {
+    margin-block-start: 0.75rem;
+  }
+  .catalog-lookup,
+  .catalog-selection,
+  .catalog-links {
+    min-inline-size: 0;
+    margin-block-start: 1rem;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    background: var(--surface-raised);
+    font-size: 0.875rem;
+    line-height: 1.6;
+  }
+  .catalog-lookup h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  .catalog-lookup .muted {
+    color: var(--muted);
+    margin-block: 0.75rem;
+  }
+  .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .catalog-lookup button {
+    min-block-size: 2.75rem;
+    padding: 0.65rem 0.8rem;
+    border: 1px solid var(--muted);
+    background: var(--surface);
+    cursor: pointer;
+  }
+  .catalog-lookup button:disabled {
+    cursor: default;
+    opacity: 0.6;
+  }
+  .catalog-lookup a {
+    color: var(--accent-text);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+  .catalog-candidates {
+    display: grid;
+    gap: 1rem;
+  }
+  .catalog-candidate {
+    padding-block: 1rem;
+    border-block-start: 1px solid var(--border);
+    min-inline-size: 0;
+  }
+  .catalog-candidate h4 {
+    font-weight: 600;
+    font-size: 1rem;
+  }
+  .checkbox-option,
+  .integration-panel label:has(input[type='checkbox']) {
+    display: flex;
+    align-items: start;
+    gap: 0.75rem;
+    min-block-size: 2.75rem;
+    padding-block: 0.75rem;
+    cursor: pointer;
+  }
+  .checkbox-option input,
+  .integration-panel input[type='checkbox'] {
+    flex-shrink: 0;
+    inline-size: 1.1rem;
+    block-size: 1.1rem;
+    margin-block-start: 0.25rem;
+    accent-color: var(--accent-text);
   }
   .field-error {
     color: var(--focus);

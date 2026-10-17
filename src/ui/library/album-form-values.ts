@@ -2,6 +2,8 @@ import {
   manualAlbumInputSchema,
   type ManualAlbumInput,
 } from '../../application/inputs'
+import type { CatalogCandidate } from '../../application/catalog-lookup'
+import type { CatalogReference } from '../../domain/catalog/schemas'
 
 export interface AlbumFormValues {
   artist: string
@@ -11,6 +13,8 @@ export interface AlbumFormValues {
   originalYear: string
   coverUrl: string
   description: string
+  catalogReference: CatalogReference | undefined
+  catalogArtists: string[] | undefined
 }
 export const emptyAlbumForm: AlbumFormValues = {
   artist: '',
@@ -20,6 +24,24 @@ export const emptyAlbumForm: AlbumFormValues = {
   originalYear: '',
   coverUrl: '',
   description: '',
+  catalogReference: undefined,
+  catalogArtists: undefined,
+}
+export function prepareCatalogCandidate(
+  values: AlbumFormValues,
+  candidate: CatalogCandidate,
+): AlbumFormValues {
+  return {
+    ...values,
+    title: candidate.title,
+    artist: candidate.artists.join(' · '),
+    artistId: undefined,
+    catalogArtists: [...candidate.artists],
+    releaseType: candidate.releaseType,
+    originalYear: candidate.originalYear?.toString() ?? '',
+    description: values.description || candidate.description || '',
+    catalogReference: candidate.catalogReference,
+  }
 }
 export function parseAlbumForm(
   values: AlbumFormValues,
@@ -30,7 +52,7 @@ export function parseAlbumForm(
   const parsed = manualAlbumInputSchema.safeParse({
     title: values.title,
     releaseType: values.releaseType,
-    artists: [
+    artists: values.catalogArtists?.map((name) => ({ name })) ?? [
       values.artistId === undefined
         ? { name: values.artist }
         : { artistId: values.artistId },
@@ -41,6 +63,9 @@ export function parseAlbumForm(
     ...(values.coverUrl.trim() ? { coverUrl: values.coverUrl.trim() } : {}),
     ...(values.description.trim()
       ? { description: values.description.trim() }
+      : {}),
+    ...(values.catalogReference
+      ? { catalogReference: values.catalogReference }
       : {}),
   })
   if (parsed.success) return { success: true, input: parsed.data }

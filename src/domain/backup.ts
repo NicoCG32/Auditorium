@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { catalogSchema } from './catalog/catalog'
+import { albumSchema, catalogDataSchema } from './catalog/schemas'
 import { localIdentitySchema } from './identity'
 import { libraryDataSchema } from './library/schemas'
 import { getLibraryIssues } from './library/integrity'
@@ -8,7 +9,7 @@ import { purchaseWishSchema } from './library/purchase-wishes'
 import { utcTimestampSchema } from './shared/scalars'
 import type { LocalSnapshot } from './repositories/local-repository'
 
-export const BACKUP_SCHEMA_VERSION = 1
+export const BACKUP_SCHEMA_VERSION = 2
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
 
 export const localSnapshotSchema = z
@@ -40,6 +41,18 @@ export const backupSchema = z.strictObject({
   schemaVersion: z.literal(BACKUP_SCHEMA_VERSION),
   exportedAt: utcTimestampSchema,
   data: localSnapshotSchema,
+})
+
+const legacyBackupSchema = z.strictObject({
+  format: z.literal('auditorium-backup'),
+  schemaVersion: z.literal(1),
+  exportedAt: utcTimestampSchema,
+  data: z.strictObject({
+    ...localSnapshotSchema.shape,
+    catalog: catalogDataSchema.extend({
+      albums: z.array(albumSchema.omit({ catalogReference: true })),
+    }),
+  }),
 })
 export type LibraryBackup = z.output<typeof backupSchema>
 export type BackupCode =
@@ -73,13 +86,29 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
     'format' in input &&
     input.format === 'auditorium-backup' &&
     'schemaVersion' in input &&
-    input.schemaVersion !== BACKUP_SCHEMA_VERSION
+    input.schemaVersion !== BACKUP_SCHEMA_VERSION &&
+    input.schemaVersion !== 1
   )
     throw new BackupError(
       'unsupported_version',
       'La versión del respaldo no es compatible.',
     )
-  const result = backupSchema.safeParse(input)
+  let document: unknown = input
+  if (
+    input &&
+    typeof input === 'object' &&
+    'schemaVersion' in input &&
+    input.schemaVersion === 1
+  ) {
+    const legacy = legacyBackupSchema.safeParse(input)
+    if (!legacy.success)
+      throw new BackupError(
+        'invalid_backup',
+        'El respaldo no cumple el formato o sus relaciones no son válidas.',
+      )
+    document = { ...legacy.data, schemaVersion: BACKUP_SCHEMA_VERSION }
+  }
+  const result = backupSchema.safeParse(document)
   if (!result.success)
     throw new BackupError(
       'invalid_backup',
