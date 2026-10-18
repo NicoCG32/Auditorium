@@ -8,13 +8,17 @@ import { PosterBackdrop } from '../ui/appearance/PosterBackdrop'
 import { useAppearance } from '../ui/appearance/use-appearance'
 import { usePosterPreview } from '../ui/appearance/use-poster-preview'
 import { NavigationProvider } from '../ui/navigation/NavigationProvider'
+import type { CloudAccount } from '../application/cloud-account'
+import { AccountLibrary } from '../ui/account/AccountLibrary'
 
 export function App({
   repository,
   offline,
+  account,
 }: {
   repository: BackupLocalRepository
   offline?: OfflineController
+  account?: CloudAccount
 }) {
   const appearance = useAppearance()
   const preview = usePosterPreview()
@@ -66,9 +70,13 @@ export function App({
         </div>
       </header>
       <main id="contenido" tabIndex={-1} className="app-main flex-1">
-        <NavigationProvider>
-          <LibraryPage repository={repository} />
-        </NavigationProvider>
+        {account ? (
+          <AccountLibrary account={account} />
+        ) : (
+          <NavigationProvider>
+            <LibraryPage repository={repository} />
+          </NavigationProvider>
+        )}
       </main>
       <footer className="app-footer">
         {offline && <OfflinePanel controller={offline} />}
@@ -83,7 +91,10 @@ export function App({
         />
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
           <p>Tu música. Tu criterio. Tu colección.</p>
-          <p>Guardada en este navegador.</p>
+          <p>
+            Guardada en este navegador
+            {account ? ', con cuenta opcional entre dispositivos' : ''}.
+          </p>
         </div>
       </footer>
     </div>

@@ -1,4 +1,6 @@
-# Persistencia local — esquemas v1 a v5
+# Persistencia local — esquemas v1 a v6
+
+El esquema vigente es v6, versión nativa 60: añade la tabla técnica `syncCheckpoint`, vacía para el uso sin cuenta, sin transformar las trece tablas e identidades musicales de v1–v5. Las cachés conectadas se separan por proyecto y cuenta. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) documenta los checkpoints y la [ADR-011](adr/011-supabase-sincronizacion.md) justifica esta evolución. Los apartados v5 siguientes conservan la descripción de sus tablas musicales.
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
@@ -14,9 +16,9 @@ La identidad es un UUID aleatorio y una fecha UTC de creación, almacenados bajo
 
 Si falta la identidad pero la base contiene datos, la operación falla. No se infiere un propietario ni se crea uno de reemplazo. Una identidad inválida también genera un error conservando los registros originales.
 
-## Esquema actual v5
+## Esquema musical heredado de v5
 
-Nombre predeterminado: `auditorium`. Versión lógica actual: 5, nativa 50. Las definiciones v1 a v4 se conservan como historial; v2 añade ejemplares y v3 deseos de compra. v4 conserva sus trece tablas e índices y admite la referencia opcional de catálogo dentro de `albums`. v5 conserva esa estructura y admite `Artist.country`, `Album.genres` y `Album.coverImage` opcionales. Es una barrera de compatibilidad para impedir que un binario anterior abra datos con campos nuevos; no consulta servicios ni transforma filas históricas.
+Nombre predeterminado: `auditorium`. La versión v5 usaba la versión nativa 50; v6 añade el checkpoint técnico. Las definiciones v1 a v4 se conservan como historial; v2 añade ejemplares y v3 deseos de compra. v4 conserva sus trece tablas e índices y admite la referencia opcional de catálogo dentro de `albums`. v5 conserva esa estructura y admite `Artist.country`, `Album.genres` y `Album.coverImage` opcionales. Es una barrera de compatibilidad para impedir que un binario anterior abra datos con campos nuevos; no consulta servicios ni transforma filas históricas.
 
 | Tabla         | Clave e índices principales                                             |
 | ------------- | ----------------------------------------------------------------------- |
@@ -55,7 +57,7 @@ No borrar, vaciar o recrear automáticamente la base ante un fallo. No registrar
 
 ## Evolución y verificación
 
-`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). `SCHEMA_V3` añade únicamente `purchaseWishes`. v1/v2 compatibles migran a v3 conservando todas sus filas, ejemplares e identidad; se comprueban las tres versiones sin reparar bases incompletas. Ver [deseos y migración v3](DESEOS_COMPRA.md). `SCHEMA_V4` mantiene la estructura física de v3 y establece la barrera para `Album.catalogReference`. v1/v2/v3 compatibles migran a v4 sin perder identidad, IDs ni filas; la inspección reconoce las versiones históricas 10/20/30/40. `SCHEMA_V5` conserva esas tablas e índices y establece la barrera para país, géneros y portada local; admite la versión nativa 50 actual y migra las cuatro anteriores sin transformar filas. Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
+`SCHEMA_V1` queda como historial inmutable. `SCHEMA_V2` añade exclusivamente `ownedItems`, vacía al migrar una v1 compatible, conservando filas e identidad. Se comprueban estructura, claves e índices tanto de v1 como v2 y se rechazan esquemas incompletos, versiones intermedias desconocidas o futuras sin reparación automática. La migración se prueba con bibliotecas vacías/pobladas, apertura concurrente y bloqueo de actualización. Ver [ejemplares y migración](EJEMPLARES.md). `SCHEMA_V3` añade únicamente `purchaseWishes`. v1/v2 compatibles migran a v3 conservando todas sus filas, ejemplares e identidad; se comprueban las tres versiones sin reparar bases incompletas. Ver [deseos y migración v3](DESEOS_COMPRA.md). `SCHEMA_V4` mantiene la estructura física de v3 y establece la barrera para `Album.catalogReference`. v1/v2/v3 compatibles migran a v4 sin perder identidad, IDs ni filas; la inspección reconoce las versiones históricas 10/20/30/40. `SCHEMA_V5` conserva esas tablas e índices y establece la barrera para país, géneros y portada local; admite la versión nativa 50 histórica y migra las cuatro anteriores sin transformar filas. Futuros cambios requerirán otra versión y migraciones explícitas cuando afecten datos.
 
 Las pruebas usan fake-indexeddb con bases independientes y datos ficticios: reapertura, seis conexiones simultáneas, snapshots, claves únicas, rollback, bloqueos, cuotas y datos/esquemas inválidos. También se verificó IndexedDB real en dos pestañas, con ocho conexiones simultáneas y reapertura tras recargar. Las páginas auxiliares de esa comprobación no forman parte del producto.
 

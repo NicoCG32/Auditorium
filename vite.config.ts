@@ -74,7 +74,10 @@ export default defineConfig(({ mode }) => {
       rolldownOptions: {
         output: {
           codeSplitting: {
-            groups: [{ name: 'storage', test: /node_modules[\\/]dexie[\\/]/ }],
+            groups: [
+              { name: 'storage', test: /node_modules[\\/]dexie[\\/]/ },
+              { name: 'cloud', test: /node_modules[\\/]@supabase[\\/]/ },
+            ],
           },
         },
       },

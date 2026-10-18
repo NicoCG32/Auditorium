@@ -30,6 +30,35 @@ afterEach(async () => {
   for (const database of new Map(databases.map((db) => [db.name, db])).values())
     await database.delete()
 })
+
+test.each(['identity', 'rating'] as const)(
+  'v5 dañada (%s) conserva esquema y filas al rechazar la migración v6',
+  async (damaged) => {
+    const snapshot = historicalSnapshot(3),
+      stores = historicalStores(3)
+    const rows = historicalRows(snapshot, stores)
+    if (damaged === 'identity') rows['metadata'] = []
+    else
+      rows['albumRatings'] = [
+        { ...snapshot.library.albumRatings[0], scoreUnits: 0 },
+      ]
+    await seedNativeStorage({
+      name: 'migration-recovery',
+      version: 50,
+      stores,
+      rows,
+      factory,
+    })
+    const before = await inspectNativeStorage({
+      name: 'migration-recovery',
+      factory,
+    })
+    await expect(current().repository.readSnapshot()).rejects.toThrow()
+    expect(
+      await inspectNativeStorage({ name: 'migration-recovery', factory }),
+    ).toEqual(before)
+  },
+)
 function current(name = 'migration-recovery') {
   const database = new AuditoriumDatabase(name, {
     indexedDB: factory,
@@ -49,11 +78,11 @@ function current(name = 'migration-recovery') {
     now,
   }
 }
-async function legacy(version: 1 | 2 | 3 | 4) {
-  const historicalVersion = version === 4 ? 3 : version
+async function legacy(version: 1 | 2 | 3 | 4 | 5) {
+  const historicalVersion = version >= 4 ? 3 : (version as 1 | 2 | 3)
   const snapshot = historicalSnapshot(historicalVersion),
     stores = historicalStores(historicalVersion)
-  if (version === 4)
+  if (version >= 4)
     snapshot.catalog.albums[0]!.catalogReference = {
       provider: 'wikidata',
       entityId: 'Q999999999',
@@ -72,7 +101,7 @@ async function legacy(version: 1 | 2 | 3 | 4) {
   }
 }
 
-test.each([1, 2, 3, 4] as const)(
+test.each([1, 2, 3, 4, 5] as const)(
   'contrato histórico v%s conserva todas las filas, retirados e identidad al migrar y exportar',
   async (version) => {
     const { snapshot, before } = await legacy(version)
@@ -106,7 +135,7 @@ test.each([1, 2, 3, 4] as const)(
   },
 )
 
-for (const version of [1, 2, 3, 4] as const) {
+for (const version of [1, 2, 3, 4, 5] as const) {
   test.each([
     ['QuotaExceededError', 'quota_exceeded'],
     ['AbortError', 'aborted'],
@@ -135,7 +164,8 @@ for (const version of [1, 2, 3, 4] as const) {
       expect(connection.createId).not.toHaveBeenCalled()
       connection.repository.close()
       expect((await current().repository.readSnapshot()).identity.userId).toBe(
-        historicalSnapshot(version === 4 ? 3 : version).identity.userId,
+        historicalSnapshot(version >= 4 ? 3 : (version as 1 | 2 | 3)).identity
+          .userId,
       )
       expect(
         (await inspectNativeStorage({ name: 'migration-recovery', factory }))
@@ -184,15 +214,15 @@ test('v5 conserva las trece tablas e índices v4 y persiste metadatos y portada 
         : album,
     ),
   })
-  expect(DATABASE_VERSION).toBe(5)
+  expect(DATABASE_VERSION).toBe(6)
   expect(SCHEMA_V4).toEqual(SCHEMA_V3)
   expect(SCHEMA_V5).toEqual(SCHEMA_V4)
   const native = await inspectNativeStorage({
     name: 'migration-recovery',
     factory,
   })
-  expect(native.version).toBe(50)
-  expect(native.stores).toHaveLength(13)
+  expect(native.version).toBe(60)
+  expect(native.stores).toHaveLength(14)
   const openedAsV3 = factory.open('migration-recovery', 40)
   const failure = await new Promise<DOMException | null>((resolve) => {
     openedAsV3.onerror = () => resolve(openedAsV3.error)

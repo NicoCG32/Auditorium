@@ -21,6 +21,8 @@ import { AlbumForm } from './AlbumForm'
 import { AlbumSummary } from './AlbumSummary'
 import { RemovedAlbumsPanel } from './RemovedAlbumsPanel'
 import { BackupPanel } from './BackupPanel'
+import type { CloudAccount } from '../../application/cloud-account'
+import { AccountPanel } from '../account/AccountPanel'
 import type { RecommendationProvider } from '../../application/recommendations'
 import { RecommendationsPanel } from '../recommendations/RecommendationsPanel'
 import { useNavigation } from '../navigation/navigation-context'
@@ -68,25 +70,36 @@ const optionRoutes: Route[] = [
   { kind: 'options', section: 'backups' },
   { kind: 'options', section: 'removed' },
   { kind: 'options', section: 'wishes' },
+  { kind: 'options', section: 'account' },
 ]
 
 export function LibraryPage({
   repository,
+  account,
 }: {
   repository: BackupLocalRepository
+  account?: CloudAccount
 }) {
   const navigation = useNavigation()
   if (!navigation)
     throw new Error('La biblioteca necesita su controlador de navegación.')
-  return <LibraryContent repository={repository} navigation={navigation} />
+  return (
+    <LibraryContent
+      repository={repository}
+      navigation={navigation}
+      {...(account ? { account } : {})}
+    />
+  )
 }
 
 function LibraryContent({
   repository,
   navigation,
+  account,
 }: {
   repository: BackupLocalRepository
   navigation: NonNullable<ReturnType<typeof useNavigation>>
+  account?: CloudAccount
 }) {
   const navigationState = useSyncExternalStore(
     navigation.subscribe,
@@ -111,6 +124,39 @@ function LibraryContent({
   const content = useRef<HTMLDivElement>(null)
   const emptyForm = useRef<HTMLFormElement>(null)
   const library = useMemo(() => new MusicLibrary(repository), [repository])
+  useEffect(() => {
+    if (!account) return
+    const stopSync = account.startSync(
+      () =>
+        !navigation.drafts
+          .active()
+          .some(
+            (editor) =>
+              editor.id !== 'account' &&
+              (editor.dirty || editor.busy || editor.pendingRead),
+          ) && !navigation.getSnapshot().prompt,
+    )
+    const stopLibrary = account.subscribeLibrary(() => {
+      void repository
+        .readSnapshot()
+        .then((snapshot) => {
+          setState({
+            status: 'ready',
+            albums: projectLibrary(snapshot),
+            snapshot,
+          })
+        })
+        .catch(() => {
+          setNotice(
+            'La biblioteca cambió. Pulsa Actualizar biblioteca para volver a leerla.',
+          )
+        })
+    })
+    return () => {
+      stopSync()
+      stopLibrary()
+    }
+  }, [account, navigation, repository])
   useDraftGuard({
     id: 'operation',
     label: 'Operación de biblioteca',
@@ -394,7 +440,16 @@ function LibraryContent({
           onOpen={(id) => navigation.openAlbum(id, 'collection')}
         />
       ) : route.kind === 'options' ? (
-        route.section === 'recommendations' ? (
+        route.section === 'account' ? (
+          account ? (
+            <AccountPanel account={account} />
+          ) : (
+            <p>
+              El acceso entre dispositivos todavía no está disponible en esta
+              instalación. Puedes seguir usando la biblioteca y sus respaldos.
+            </p>
+          )
+        ) : route.section === 'recommendations' ? (
           <RecommendationsPanel
             albums={state.albums}
             provider={recommendationProvider}

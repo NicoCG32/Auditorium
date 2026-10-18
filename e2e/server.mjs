@@ -7,13 +7,26 @@ import { build } from 'vite'
 // Two actual production builds with distinct HTML and JS, isolated from dist/.
 const root = process.cwd()
 const pages = process.argv[2] === 'pages'
-const port = pages ? 4179 : 4178
+const cloud = process.argv[2] === 'cloud'
+const port = cloud ? 4180 : pages ? 4179 : 4178
 const base = pages ? '/Auditorium/' : '/'
-const buildRoot = pages ? '.pwa-test-builds/pages' : '.pwa-test-builds'
+const buildRoot = cloud
+  ? '.pwa-test-builds/cloud'
+  : pages
+    ? '.pwa-test-builds/pages'
+    : '.pwa-test-builds'
 for (const version of ['a', 'b']) {
   await build({
     configFile: resolve(root, 'vite.config.ts'),
     mode: pages ? 'pages' : 'production',
+    define: {
+      'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(
+        cloud ? 'https://auditorium-test.supabase.co' : '',
+      ),
+      'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
+        cloud ? 'sb_publishable_fictitious_test_key' : '',
+      ),
+    },
     build: { outDir: `${buildRoot}/${version}`, emptyOutDir: true },
     plugins: [
       {

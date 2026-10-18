@@ -16,8 +16,35 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: 'pages.spec.ts',
+      testIgnore: ['pages.spec.ts', 'cloud.spec.ts'],
       use: { ...devices['Desktop Chrome'] },
+    },
+    {
+      name: 'chromium-cloud',
+      testMatch: 'cloud.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        baseURL: 'http://127.0.0.1:4180',
+        serviceWorkers: 'block',
+      },
+    },
+    {
+      name: 'firefox-cloud',
+      testMatch: 'cloud.spec.ts',
+      use: {
+        ...devices['Desktop Firefox'],
+        baseURL: 'http://127.0.0.1:4180',
+        serviceWorkers: 'block',
+      },
+    },
+    {
+      name: 'webkit-cloud',
+      testMatch: 'cloud.spec.ts',
+      use: {
+        ...devices['Desktop Safari'],
+        baseURL: 'http://127.0.0.1:4180',
+        serviceWorkers: 'block',
+      },
     },
     {
       name: 'chromium-pages',
@@ -49,6 +76,12 @@ export default defineConfig({
     },
   ],
   webServer: [
+    {
+      command: 'node e2e/server.mjs cloud',
+      url: 'http://127.0.0.1:4180',
+      reuseExistingServer: false,
+      timeout: 60_000,
+    },
     {
       command: 'node e2e/server.mjs',
       url: 'http://127.0.0.1:4178',

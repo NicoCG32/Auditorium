@@ -12,6 +12,14 @@ import { asLocalStorageError, LocalStorageError } from '../db/errors'
 import { checkNativeSchema } from '../db/preflight'
 import { writeSnapshotChanges } from '../db/write-changes'
 import {
+  canonical,
+  sameSnapshot,
+  syncCheckpointSchema,
+  type SyncCheckpoint,
+  type SyncFrame,
+  type SyncLocalRepository,
+} from '../../domain/sync'
+import {
   BackupError,
   isEmptySnapshot,
   localSnapshotSchema,
@@ -28,13 +36,25 @@ export interface IndexedDbOptions {
   now?: () => Date
 }
 
-export class IndexedDbRepository implements BackupLocalRepository {
+export class IndexedDbRepository
+  implements BackupLocalRepository, SyncLocalRepository
+{
   private readonly database: AuditoriumDatabase
   private readonly createId: () => string
   private readonly now: () => Date
   private opening: Promise<void> | undefined
   private openingBlocked = false
   private closingRequested = false
+  private listeners = new Set<() => void>()
+  subscribeChanges = (listener: () => void) => {
+    this.listeners.add(listener)
+    return () => {
+      this.listeners.delete(listener)
+    }
+  }
+  private notifyChanged() {
+    queueMicrotask(() => this.listeners.forEach((listener) => listener()))
+  }
 
   constructor(options: IndexedDbOptions = {}) {
     this.database = options.database ?? new AuditoriumDatabase()
@@ -244,7 +264,7 @@ export class IndexedDbRepository implements BackupLocalRepository {
     await this.open()
     let operationFailure: Error | undefined
     try {
-      return await this.database.transaction(
+      const result = await this.database.transaction(
         'rw',
         this.database.tables,
         async () => {
@@ -301,6 +321,8 @@ export class IndexedDbRepository implements BackupLocalRepository {
           return mutation.result
         },
       )
+      this.notifyChanged()
+      return result
     } catch (error) {
       if (operationFailure) throw operationFailure
       throw asLocalStorageError(error)
@@ -355,5 +377,45 @@ export class IndexedDbRepository implements BackupLocalRepository {
     // Un open nativo bloqueado no puede cancelarse. Se cierra cuando termine.
     if (this.opening) this.closingRequested = true
     else this.database.close()
+  }
+
+  async readSyncFrame(): Promise<SyncFrame> {
+    await this.open()
+    return this.database.transaction('r', this.database.tables, async () => ({
+      snapshot: await this.readInsideTransaction(),
+      checkpoint: syncCheckpointSchema.parse(
+        (await this.database.syncCheckpoint.get('cloud')) ?? {
+          key: 'cloud',
+          revision: 0,
+        },
+      ),
+    }))
+  }
+
+  async applySyncFrame(
+    expected: SyncFrame,
+    input: LocalSnapshot,
+    checkpoint: SyncCheckpoint,
+  ): Promise<void> {
+    const next = localSnapshotSchema.parse(input)
+    const nextCheckpoint = syncCheckpointSchema.parse(checkpoint)
+    await this.open()
+    await this.database.transaction('rw', this.database.tables, async () => {
+      const before = await this.readInsideTransaction()
+      const previous = (await this.database.syncCheckpoint.get('cloud')) ?? {
+        key: 'cloud',
+        revision: 0,
+      }
+      if (
+        !sameSnapshot(before, expected.snapshot) ||
+        canonical(previous) !== canonical(expected.checkpoint)
+      )
+        throw new Error(
+          'La biblioteca cambió durante la sincronización. Vuelve a intentar.',
+        )
+      await this.database.metadata.put({ key: IDENTITY_KEY, ...next.identity })
+      await writeSnapshotChanges(this.database, before, next)
+      await this.database.syncCheckpoint.put(nextCheckpoint)
+    })
   }
 }

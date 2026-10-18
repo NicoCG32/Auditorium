@@ -1,8 +1,10 @@
 # Documentación de Auditorium
 
-Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e incremento en revisión de integraciones y edición del catálogo. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. El incremento en revisión todavía no está publicado. Las capacidades futuras aparecen como propuestas separadas.
+Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e incrementos de integraciones, edición y cuenta opcional. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. La sincronización y sus requisitos de activación se documentan por separado. Las capacidades futuras aparecen como propuestas separadas.
 
 ## Ruta de lectura
+
+La [guía de cuenta y sincronización](SINCRONIZACION_SUPABASE.md) documenta el incremento posterior al MVP: Supabase opcional, modelo remoto, aislamiento, migración IndexedDB v6, reintentos, conflictos y configuración de correo. La release v1.0.0 conserva su comportamiento local original.
 
 Para abrir o mantener la web/PWA alojada, consulta la [guía de GitHub Pages](PUBLICACION_WEB.md), incluido el traslado de la biblioteca desde localhost.
 
@@ -32,7 +34,7 @@ La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contex
 | Recuperación y offline   | [Respaldos JSON](RESPALDOS_JSON.md), [PWA](PWA_OFFLINE.md), [migraciones](MIGRACIONES_RECUPERACION.md)                     |
 | Implementación y calidad | [Casos de uso](CASOS_DE_USO.md), [integridad y persistencia](VALIDACION_PERSISTENCIA.md), [diseño base](DISENO_BASE.md)    |
 
-Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4/v5 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 3, con importación compatible de los formatos 1 y 2 estrictos.
+Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4/v5/v6 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 3, con importación compatible de los formatos 1 y 2 estrictos.
 
 La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica búsqueda Wikidata, procedencia persistente, portadas y enlaces, y recomendaciones Groq/Gemini con clave propia en memoria, datos enviados, condiciones de gratuidad y límites de validación.
 
@@ -45,6 +47,8 @@ La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica bús
 | [UX-03: contratos de experiencia](CONTRATOS_EXPERIENCIA.md) | Responsabilidades de álbum, valoración, enlaces personales, audio e inventario; compatibilidad y tareas pendientes                      |
 
 ## Decisiones de arquitectura
+
+[ADR-011: cuenta opcional con Supabase](adr/011-supabase-sincronizacion.md) amplía las decisiones del MVP para acceder a una biblioteca privada desde varios dispositivos.
 
 | Decisión                                                                 | Justificación                                                                                       |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |

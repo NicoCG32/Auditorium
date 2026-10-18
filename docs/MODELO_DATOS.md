@@ -1,5 +1,7 @@
 # Modelo de datos y persistencia
 
+La [sincronización opcional con Supabase](SINCRONIZACION_SUPABASE.md) añade una tabla remota privada versionada y el checkpoint técnico de IndexedDB v6. No cambia las entidades musicales ni el respaldo v3. Los apartados del MVP describen su base histórica; el contrato remoto y su RLS se documentan en la guía de sincronización.
+
 ## Propósito y alcance
 
 Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta UX-01 de DB5/respaldo3, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
@@ -229,4 +231,4 @@ Si la restauración ya se confirmó pero falla la lectura posterior de la vista,
 
 IndexedDB depende del origen, perfil, disponibilidad y políticas del navegador. La persistencia solicitada al navegador no reemplaza un respaldo externo ni garantiza conservación ante eliminación del almacenamiento. La restauración no repara una base corrupta existente. Un archivo de respaldo contiene información personal y carece de cifrado propio.
 
-El núcleo no incorpora servidor de biblioteca, autenticación de cuenta ni sincronización entre dispositivos. Las [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) reciben sólo consultas o contexto acotado por acción explícita. Las claves y resultados de recomendaciones viven en memoria y quedan fuera del snapshot, respaldo y base; únicamente la referencia de catálogo seleccionada se incorpora al álbum. Las evidencias de aceptación de la versión se reúnen en [validación del MVP](VALIDACION_MVP.md).
+El modo sin cuenta conserva su biblioteca local. [SYNC-01](SINCRONIZACION_SUPABASE.md) añade autenticación y una biblioteca remota opcionales con un contrato separado. Las [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) reciben sólo consultas o contexto acotado por acción explícita. Las claves y resultados de recomendaciones viven en memoria y quedan fuera del snapshot, respaldo y base; únicamente la referencia de catálogo seleccionada se incorpora al álbum. Las evidencias de aceptación de la versión se reúnen en [validación del MVP](VALIDACION_MVP.md).

@@ -6,9 +6,11 @@ Referencia: MVP **Auditorium v1.0.0** e incrementos posteriores de web, identida
 
 Auditorium permite registrar, consultar y valorar una biblioteca musical y organizar ediciones, ejemplares y deseos de compra. La versión 1.0.0 es una aplicación web de una sola página, instalable como PWA donde el navegador lo admita. Ejecuta sus casos de uso y conserva la biblioteca en el dispositivo, por origen y perfil del navegador.
 
-La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. No dispone de servidor de biblioteca ni de una cuenta autenticada. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos están en revisión y no modifican la release v1.0.0. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
+La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. El modo sin cuenta conserva sus datos localmente; SYNC-01 añade una cuenta y biblioteca remota opcionales, documentadas en la guía de sincronización. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos están en revisión y no modifican la release v1.0.0. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
 
 ## 2. Contexto del sistema
+
+**Evolución posterior al MVP:** [SYNC-01](SINCRONIZACION_SUPABASE.md) incorpora Supabase Auth y una biblioteca remota privada por cuenta. Sus diagramas, límites de acceso, sincronización y conflictos se describen en esa guía y en [ADR-011](adr/011-supabase-sincronizacion.md). El uso sin cuenta mantiene el modelo local descrito aquí; la release v1.0.0 no cambia.
 
 UX-04 incorpora un [controlador de navegación y registro de borradores](NAVEGACION.md) en la capa UI. Las rutas usan fragmentos y preservan raíz/Pages; los índices, guardas de historial y estados de guardado no alteran los contratos de dominio o almacenamiento. Los borradores quedan en memoria de la pestaña, separados de los datos confirmados.
 
@@ -245,6 +247,6 @@ Fuentes: [package.json](../package.json), [vite.config.ts](../vite.config.ts), [
 
 Las pruebas se distribuyen por dominio, aplicación, adaptador e interfaz; los E2E ejercitan producción, offline, migraciones y aceptación. La [matriz de validación](VALIDACION_MVP.md) registra cobertura y límites. La evaluación con lectores de pantalla, instalación en Safari/iOS real y rendimiento en hardware limitado siguen fuera de esa evidencia.
 
-Las [decisiones de arquitectura](README.md#decisiones-de-arquitectura) explican almacenamiento local, separación álbum/edición/pista, costo, retirada, identidad del respaldo, espera de actualizaciones e integraciones opcionales. Cuentas y sincronización siguen en el backlog del [plan de desarrollo](PLAN_DESARROLLO.md).
+Las [decisiones de arquitectura](README.md#decisiones-de-arquitectura) explican almacenamiento local, separación álbum/edición/pista, costo, retirada, identidad del respaldo, espera de actualizaciones e integraciones opcionales. Cuentas y sincronización se incorporan mediante [SYNC-01](SINCRONIZACION_SUPABASE.md), después del MVP original.
 
 La [evaluación de metadatos externos](METADATOS_EXTERNOS.md) conserva la propuesta pendiente de importación de JSON de ediciones MusicBrainz. CAT-01 implementa búsqueda Wikidata de álbumes y no ese importador; tampoco incorpora listas o ediciones desde el servicio externo. La generación autenticada y calidad musical de las recomendaciones requiere comprobarse con una clave propia; las pruebas controladas del contrato no sustituyen esa evidencia.

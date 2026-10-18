@@ -17,3 +17,4 @@ test-results/
 playwright-report/
 .pwa-test-builds/
 release/
+supabase/.temp/

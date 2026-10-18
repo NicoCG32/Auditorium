@@ -5,7 +5,7 @@ export type Route =
   | { kind: 'album'; id: string; editor?: 'edit' | 'experience' | 'collection' }
   | {
       kind: 'options'
-      section: 'backups' | 'removed' | 'recommendations' | 'wishes'
+      section: 'backups' | 'removed' | 'recommendations' | 'wishes' | 'account'
     }
   | { kind: 'unknown' }
 
@@ -14,6 +14,7 @@ const options = {
   retirados: 'removed',
   recomendaciones: 'recommendations',
   deseos: 'wishes',
+  cuenta: 'account',
 } as const
 
 export function parseRoute(hash: string): Route {
@@ -92,6 +93,7 @@ export function routeTitle(route: Route) {
         removed: 'Álbumes retirados',
         recommendations: 'Recomendaciones',
         wishes: 'Deseos de compra',
+        account: 'Cuenta y dispositivos',
       }[route.section]
     case 'unknown':
       return 'Página no encontrada'

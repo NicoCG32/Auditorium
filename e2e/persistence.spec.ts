@@ -83,7 +83,7 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(50)
+      expect(migrated.version).toBe(60)
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(rows)
       for (const store of before.stores)
@@ -185,7 +185,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 50)
+        if (name === 'auditorium' && version === 60)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -213,7 +213,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(50)
+    expect(after.version).toBe(60)
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(rows)
   })
@@ -302,7 +302,7 @@ for (const damaged of ['index', 'future', 'identity', 'rating'] as const) {
       ]
     await page.evaluate(seedNativeStorage, {
       name: 'auditorium',
-      version: damaged === 'index' ? 20 : damaged === 'future' ? 60 : 50,
+      version: damaged === 'index' ? 20 : damaged === 'future' ? 70 : 50,
       stores,
       rows,
     })
@@ -419,9 +419,10 @@ test('cuota al restaurar revierte también identidad y conserva confirmación pa
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
   const after = await audit(page)
-  expect(after.rows).toEqual(
-    historicalRows(makeBackup().data, historicalStores(3)),
-  )
+  expect(after.rows).toEqual({
+    ...historicalRows(makeBackup().data, historicalStores(3)),
+    syncCheckpoint: [],
+  })
   expect(after.rows['purchaseWishes']).toHaveLength(1)
 })
 

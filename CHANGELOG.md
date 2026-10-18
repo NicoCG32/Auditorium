@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- Cuenta opcional con correo y contraseña mediante Supabase, cachés por cuenta y copia explícita de la biblioteca sin cuenta. Conserva el uso local y sin conexión; el registro público por correo queda pendiente de configurar SMTP.
+- Sincronización privada versionada, permisos RLS, escritura con revisión e idempotencia, combinación de cambios independientes y resolución de conflictos con conservación de ambas copias. IndexedDB v6 añade sólo el checkpoint técnico; el respaldo sigue en formato v3.
+- Guía de instalación y operación, modelos remoto/local y diagramas de sincronización, ADR-011 y pruebas de permisos en Postgres y del recorrido de cuenta en navegador.
+
 - Nombres de álbumes, artistas, alias acreditados y géneros con mayúscula inicial por palabra al añadir o editar, también desde catálogo; conserva siglas reconocibles como AC/DC, R.E.M. y U2. Las correcciones de mayúsculas/espacios mantienen IDs y procedencia externa. Lectura e importación conservan los nombres históricos, sin migración masiva.
 
 - Navegación por Biblioteca, Añadir álbum, Calificaciones y Mi colección mediante rutas de fragmento compatibles con Pages. Conserva contexto, consulta, vista, foco y posición al regresar; Calificaciones y Mi colección incorporan índices iniciales sobre los datos existentes, con medios físicos y digitales diferenciados.

@@ -8,6 +8,7 @@ import {
   SCHEMA_V1,
   SCHEMA_V2,
   SCHEMA_V3,
+  SCHEMA_V6,
 } from '../db/database'
 import { IndexedDbRepository } from './indexeddb-repository'
 import { IDENTITY_KEY, toStoredUserAlbum } from '../db/records'
@@ -97,7 +98,7 @@ test.each([
     expect(snapshot.identity.userId).toBe(libraryIds.user)
     expect(await rows(next.database, names)).toEqual(before)
     expect(next.database.tables.map((table) => table.name).sort()).toEqual(
-      Object.keys(SCHEMA_V3).sort(),
+      Object.keys(SCHEMA_V6).sort(),
     )
   },
 )
