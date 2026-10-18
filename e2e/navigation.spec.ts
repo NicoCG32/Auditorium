@@ -91,7 +91,7 @@ test('guardar y salir conserva identidad y datos ajenos, y abre el destino pedid
   await edit(page)
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
-    .fill('Eclipse corregido en navegación')
+    .fill('Eclipse Corregido En Navegación')
   await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Guardar y salir' }).click()
   await expect(page).toHaveURL(/#\/coleccion$/)
@@ -109,7 +109,7 @@ test('guardar y salir conserva identidad y datos ajenos, y abre el destino pedid
   )
   expect(after.data.catalog.albums[0]).toEqual({
     ...before.data.catalog.albums[0],
-    title: 'Eclipse corregido en navegación',
+    title: 'Eclipse Corregido En Navegación',
   })
 })
 

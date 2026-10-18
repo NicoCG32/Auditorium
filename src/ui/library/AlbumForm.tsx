@@ -5,6 +5,7 @@ import {
 } from '../../application/album-candidates'
 import type { MusicLibrary } from '../../application/music-library'
 import type { CatalogCandidate } from '../../application/catalog-lookup'
+import { catalogNameKey } from '../../application/catalog-names'
 import { releaseTypeSchema } from '../../domain/catalog/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
@@ -82,8 +83,15 @@ export function AlbumForm({
   }, [values.catalogReference])
   const artists = matchingArtists(snapshot.catalog.artists, values.artist)
   function edit(change: Partial<AlbumFormValues>) {
-    const changesArtists = 'artist' in change || 'artistId' in change
-    const changesIdentity = 'title' in change || changesArtists
+    const changesArtists =
+      ('artist' in change &&
+        catalogNameKey(change.artist ?? '') !==
+          catalogNameKey(values.artist)) ||
+      ('artistId' in change && change.artistId !== values.artistId)
+    const changesIdentity =
+      changesArtists ||
+      ('title' in change &&
+        catalogNameKey(change.title ?? '') !== catalogNameKey(values.title))
     setValues((previous) => ({
       ...previous,
       ...change,

@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Nombres de álbumes, artistas, alias acreditados y géneros con mayúscula inicial por palabra al añadir o editar, también desde catálogo; conserva siglas reconocibles como AC/DC, R.E.M. y U2. Las correcciones de mayúsculas/espacios mantienen IDs y procedencia externa. Lectura e importación conservan los nombres históricos, sin migración masiva.
+
 - Navegación por Biblioteca, Añadir álbum, Calificaciones y Mi colección mediante rutas de fragmento compatibles con Pages. Conserva contexto, consulta, vista, foco y posición al regresar; Calificaciones y Mi colección incorporan índices iniciales sobre los datos existentes, con medios físicos y digitales diferenciados.
 - Protección de borradores al navegar, usar Atrás/Adelante o cancelar editores: guardar y salir, descartar explícitamente o seguir editando. Un commit con lectura fallida bloquea nuevas escrituras y sólo reintenta lectura; el alta abre su ficha después de confirmar ambos pasos. Los borradores siguen en memoria de la pestaña y no sobreviven a una recarga confirmada.
 - Búsqueda opcional de álbumes en Wikidata por acción explícita, con revisión de candidatos, créditos múltiples y borrador editable. El registro manual continúa disponible sin coincidencia, red o servicio.

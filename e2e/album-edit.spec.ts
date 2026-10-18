@@ -14,6 +14,59 @@ const png = Buffer.from(
   'base64',
 )
 
+test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencias de mayúsculas', async ({
+  page,
+}) => {
+  await ready(page)
+  await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
+  await page
+    .getByRole('textbox', { name: 'Artista', exact: true })
+    .fill('conjunto del sur')
+  await page
+    .getByRole('textbox', { name: 'Título', exact: true })
+    .fill('canción del océano')
+  await page
+    .getByRole('textbox', { name: 'Géneros (separados por comas)' })
+    .fill('metal progresivo, METAL   PROGRESIVO, EDM')
+  await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Canción Del Océano', exact: true }),
+  ).toBeVisible()
+  const before = await exportBackup(page)
+  expect(before.data.catalog.albums[0]!.genres).toEqual([
+    'Metal Progresivo',
+    'EDM',
+  ])
+  expect(before.data.catalog.artists[0]!.name).toBe('Conjunto Del Sur')
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await editor(page, 'Canción Del Océano')
+  await page
+    .getByRole('textbox', { name: 'Título', exact: true })
+    .fill('CANCIÓN DEL OCÉANO')
+  await page.locator('input[name="artist-0"]').fill('CONJUNTO DEL SUR')
+  await save(page)
+  const after = await exportBackup(page)
+  expect(after.data).toEqual(before.data)
+  await page.reload()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Canción Del Océano', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
+  await page
+    .getByRole('textbox', { name: 'Artista', exact: true })
+    .fill('Conjunto del SUR')
+  await page
+    .getByRole('textbox', { name: 'Título', exact: true })
+    .fill('CANCIÓN DEL OCÉANO')
+  await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Abrir álbum existente', exact: true })
+    .click()
+  const final = await exportBackup(page)
+  expect(final.data).toEqual(before.data)
+})
+
 async function ready(page: Page) {
   await page.goto('/')
   await expect(
@@ -134,7 +187,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
   await editor(page)
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
-    .fill('Eclipse corregido ficticio')
+    .fill('Eclipse Corregido Ficticio')
   await page
     .getByRole('combobox', { name: 'Tipo', exact: true })
     .selectOption('ep')
@@ -143,7 +196,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     .fill('2001')
   await page
     .getByRole('textbox', { name: 'Géneros (separados por comas)' })
-    .fill('Metal progresivo, Jazz')
+    .fill('Metal Progresivo, Jazz')
   await page
     .getByRole('textbox', { name: 'País de origen 1', exact: true })
     .fill('Chile')
@@ -160,12 +213,12 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
   await page.reload()
   await expect(
     page.getByRole('heading', {
-      name: 'Eclipse corregido ficticio',
+      name: 'Eclipse Corregido Ficticio',
       exact: true,
     }),
   ).toBeVisible()
   await expect(
-    page.getByText('Metal progresivo · Jazz', { exact: true }),
+    page.getByText('Metal Progresivo · Jazz', { exact: true }),
   ).toBeVisible()
   await expect(
     page.getByText('Umbral Eléctrico: Chile', { exact: true }),
@@ -186,10 +239,10 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     after.data.catalog.albums.find((album) => album.id === ids.album),
   ).toMatchObject({
     id: ids.album,
-    title: 'Eclipse corregido ficticio',
+    title: 'Eclipse Corregido Ficticio',
     originalYear: 2001,
     releaseType: 'ep',
-    genres: ['Metal progresivo', 'Jazz'],
+    genres: ['Metal Progresivo', 'Jazz'],
   })
   expect(
     after.data.catalog.albums.find((album) => album.id === ids.otherAlbum),
@@ -210,15 +263,15 @@ test('géneros y países se combinan con búsqueda, orden y vistas sin cambiar l
   await ready(page)
   await add(
     page,
-    'Álbum de jazz ficticio',
-    'Conjunto jazz ficticio',
+    'Álbum De Jazz Ficticio',
+    'Conjunto Jazz Ficticio',
     'Jazz, Fusión',
     'Chile',
   )
   await add(
     page,
-    'Álbum de metal ficticio',
-    'Conjunto metal ficticio',
+    'Álbum De Metal Ficticio',
+    'Conjunto Metal Ficticio',
     'Metal',
     'Suecia',
   )
@@ -234,10 +287,10 @@ test('géneros y países se combinan con búsqueda, orden y vistas sin cambiar l
     .selectOption('chile')
   await page.getByRole('searchbox').fill('FUSION CHILE')
   await expect(
-    page.getByRole('button', { name: 'Álbum de jazz ficticio', exact: true }),
+    page.getByRole('button', { name: 'Álbum De Jazz Ficticio', exact: true }),
   ).toBeVisible()
   await expect(
-    page.getByRole('button', { name: 'Álbum de metal ficticio', exact: true }),
+    page.getByRole('button', { name: 'Álbum De Metal Ficticio', exact: true }),
   ).toHaveCount(0)
   await page
     .getByRole('combobox', { name: 'País de origen', exact: true })
@@ -260,16 +313,16 @@ test('géneros y países se combinan con búsqueda, orden y vistas sin cambiar l
     .getByRole('list', { name: 'Álbumes de tu biblioteca' })
     .getByRole('heading', { level: 2 })
   await expect(titles).toHaveText([
-    'Álbum de jazz ficticio',
-    'Álbum de metal ficticio',
+    'Álbum De Jazz Ficticio',
+    'Álbum De Metal Ficticio',
   ])
   await page
     .getByRole('combobox', { name: 'Ordenar por' })
     .selectOption('country')
   await page.getByRole('button', { name: 'Cuadrícula', exact: true }).click()
   await expect(titles).toHaveText([
-    'Álbum de jazz ficticio',
-    'Álbum de metal ficticio',
+    'Álbum De Jazz Ficticio',
+    'Álbum De Metal Ficticio',
   ])
   expect((await exportBackup(page)).data).toEqual(before.data)
 })

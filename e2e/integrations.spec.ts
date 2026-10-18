@@ -9,7 +9,7 @@ import { makeBackup } from '../src/domain/backup.fixture'
 // tests exercise the service worker separately with real production caching.
 test.use({ serviceWorkers: 'block' })
 
-const albumTitle = 'Horizonte ficticio'
+const albumTitle = 'Horizonte Ficticio'
 const albumId = 'Q900000001'
 const otherAlbumId = 'Q900000002'
 const artistId = 'Q900000101'
@@ -61,8 +61,8 @@ async function mockCatalog(page: Page) {
         entities: Object.fromEntries(
           (
             [
-              [artistId, 'Conjunto ficticio A'],
-              [collaboratorId, 'Conjunto ficticio B'],
+              [artistId, 'Conjunto Ficticio A'],
+              [collaboratorId, 'Conjunto Ficticio B'],
               [otherArtistId, 'Otro conjunto ficticio'],
             ] as const
           ).map(
@@ -141,7 +141,7 @@ async function addForm(page: Page) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
     .getByRole('textbox', { name: 'Artista', exact: true })
-    .fill('Conjunto ficticio A')
+    .fill('Conjunto Ficticio A')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill(albumTitle)
@@ -334,7 +334,7 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   ).toBeVisible()
   await page
     .locator('.catalog-candidate')
-    .filter({ hasText: 'Conjunto ficticio A · Conjunto ficticio B' })
+    .filter({ hasText: 'Conjunto Ficticio A · Conjunto Ficticio B' })
     .getByRole('button', { name: `Revisar ${albumTitle}` })
     .click()
   const prepared = page.getByRole('region', { name: 'Referencia preparada' })
@@ -379,7 +379,7 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   expect(backup.schemaVersion).toBe(3)
   expect(
     backup.data.catalog.artists.map((artist) => artist.name).sort(),
-  ).toEqual(['Conjunto ficticio A', 'Conjunto ficticio B'])
+  ).toEqual(['Conjunto Ficticio A', 'Conjunto Ficticio B'])
   expect(backup.data.catalog.albumArtists).toHaveLength(2)
   expect(backup.data.catalog.albums[0]).toMatchObject({
     catalogReference: { entityId: albumId },
@@ -422,7 +422,7 @@ test('fallo del catálogo conserva el formulario y permite registrar sin conexi�
   ).toHaveValue(albumTitle)
   await expect(
     page.getByRole('textbox', { name: 'Artista', exact: true }),
-  ).toHaveValue('Conjunto ficticio A')
+  ).toHaveValue('Conjunto Ficticio A')
   await page
     .getByRole('button', { name: 'Continuar con el registro manual' })
     .click()

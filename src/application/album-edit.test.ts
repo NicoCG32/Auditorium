@@ -72,6 +72,96 @@ const input = {
   },
 }
 
+test('capitalizar metadatos históricos conserva identidad, referencia externa y experiencia', async () => {
+  const { repository, service } = setup()
+  const created = await service.createAlbum(input)
+  await service.rateAlbum(created.userAlbum!.id, 8)
+  await repository.mutate((snapshot) => {
+    snapshot.catalog.albums[0]!.title = 'horizonte ficticio'
+    snapshot.catalog.artists[0]!.name = 'banda de ejemplo'
+    snapshot.catalog.albumArtists[0]!.creditedAs = 'banda del sur'
+    return { snapshot, result: undefined }
+  })
+  const before = await repository.readSnapshot()
+  const edit = request(before, created.album.id)
+  await service.updateAlbum({
+    ...edit,
+    title: 'HORIZONTE   FICTICIO',
+    artists: edit.artists.map((artist) => ({
+      ...artist,
+      name: 'BANDA DE EJEMPLO',
+    })),
+  })
+  const after = await repository.readSnapshot()
+  expect(after.catalog.albums[0]).toMatchObject({
+    id: created.album.id,
+    title: 'Horizonte Ficticio',
+    catalogReference: input.catalogReference,
+  })
+  expect(after.catalog.artists).toHaveLength(1)
+  expect(after.catalog.artists[0]).toMatchObject({
+    id: created.artists[0]!.id,
+    name: 'Banda De Ejemplo',
+  })
+  expect(after.catalog.albumArtists[0]).toMatchObject({
+    artistId: created.artists[0]!.id,
+    creditedAs: 'Banda Del Sur',
+  })
+  expect(after.library).toEqual(before.library)
+  await service.updateAlbum(request(after, created.album.id))
+  expect((await repository.readSnapshot()).catalog).toEqual(after.catalog)
+})
+
+test('registrar con variantes de mayúsculas revisa la coincidencia sin crear otro álbum ni artista', async () => {
+  const { repository, service } = setup()
+  const created = await service.registerAlbum({
+    title: 'álbum de prueba',
+    artists: [{ name: 'conjunto del sur' }],
+    genres: ['metal progresivo'],
+  })
+  expect(created.status).toBe('created')
+  const before = await repository.readSnapshot()
+  expect(before.catalog.albums[0]).toMatchObject({
+    title: 'Álbum De Prueba',
+    genres: ['Metal Progresivo'],
+  })
+  expect(before.catalog.artists[0]!.name).toBe('Conjunto Del Sur')
+  expect(
+    await service.registerAlbum({
+      title: 'ÁLBUM DE PRUEBA',
+      artists: [{ name: 'Conjunto del SUR' }],
+    }),
+  ).toMatchObject({
+    status: 'review',
+    candidates: [{ album: { id: before.catalog.albums[0]!.id } }],
+  })
+  expect(await repository.readSnapshot()).toEqual(before)
+})
+
+test('reutilizar por ID un artista histórico capitaliza su nombre sin crear otra identidad', async () => {
+  const { repository, service } = setup()
+  const created = await service.createAlbum(input)
+  await repository.mutate((snapshot) => {
+    snapshot.catalog.artists[0]!.name = 'banda de ejemplo'
+    return { snapshot, result: undefined }
+  })
+  const second = await service.createAlbum({
+    title: 'segundo álbum',
+    artists: [{ artistId: created.artists[0]!.id }],
+  })
+  expect(second.artists[0]).toMatchObject({
+    id: created.artists[0]!.id,
+    name: 'Banda De Ejemplo',
+  })
+  const after = await repository.readSnapshot()
+  expect(after.catalog.artists).toHaveLength(1)
+  expect(
+    after.catalog.albumArtists.every(
+      (credit) => credit.artistId === created.artists[0]!.id,
+    ),
+  ).toBe(true)
+})
+
 test('editar metadatos conserva IDs, biblioteca, valoraciones, pistas, ediciones, ejemplares y deseos', async () => {
   const { repository, service } = setup()
   const created = await service.createAlbum(input)
@@ -151,7 +241,7 @@ test('país compartido se actualiza en la identidad existente; corregir nombre c
   edit = request(before, first.album.id)
   await service.updateAlbum({
     ...edit,
-    artists: [{ ...edit.artists[0]!, name: 'Nombre corregido' }],
+    artists: [{ ...edit.artists[0]!, name: 'Nombre Corregido' }],
   })
   after = await repository.readSnapshot()
   const firstCredit = after.catalog.albumArtists.find(
@@ -161,11 +251,11 @@ test('país compartido se actualiza en la identidad existente; corregir nombre c
   expect(
     after.catalog.artists.find((artist) => artist.id === firstCredit.artistId)
       ?.name,
-  ).toBe('Nombre corregido')
+  ).toBe('Nombre Corregido')
   expect(
     after.catalog.artists.find((artist) => artist.id === first.artists[0]!.id)
       ?.name,
-  ).toBe('Banda de ejemplo')
+  ).toBe('Banda De Ejemplo')
   expect(
     after.catalog.albumArtists.find(
       (credit) => credit.albumId === second.album.id,
@@ -195,7 +285,7 @@ test('corregir un artista con varios roles conserva una sola identidad en este �
     ...edit,
     artists: edit.artists.map((artist) => ({
       ...artist,
-      name: 'Banda corregida',
+      name: 'Banda Corregida',
       country: 'Argentina',
     })),
   })
@@ -212,7 +302,7 @@ test('corregir un artista con varios roles conserva una sola identidad en este �
   expect(after.catalog.artists).toHaveLength(before.catalog.artists.length + 1)
   expect(
     after.catalog.artists.find((artist) => artist.id === credits[0]!.artistId),
-  ).toMatchObject({ name: 'Banda corregida', country: 'Argentina' })
+  ).toMatchObject({ name: 'Banda Corregida', country: 'Argentina' })
   expect(
     after.catalog.artists.find(
       (artist) => artist.id === created.artists[0]!.id,
@@ -242,9 +332,9 @@ test('nombres corregidos iguales no fusionan identidades originales ni un artist
     artists: [
       ...edit.artists.map((artist) => ({
         ...artist,
-        name: 'Nombre compartido',
+        name: 'Nombre Compartido',
       })),
-      { name: 'Nombre compartido', role: 'collaborator' },
+      { name: 'Nombre Compartido', role: 'collaborator' },
     ],
   })
   const after = await repository.readSnapshot()
@@ -254,7 +344,7 @@ test('nombres corregidos iguales no fusionan identidades originales ni un artist
   expect(new Set(credits.map((credit) => credit.artistId)).size).toBe(3)
   expect(
     after.catalog.artists.filter(
-      (artist) => artist.name === 'Nombre compartido',
+      (artist) => artist.name === 'Nombre Compartido',
     ),
   ).toHaveLength(3)
 })
@@ -310,7 +400,7 @@ test('fallo de escritura revierte artista y álbum y permite reintentar el mismo
     )
   const changed = {
     ...edit,
-    title: 'Título corregido',
+    title: 'Título Corregido',
     artists: [{ ...edit.artists[0]!, country: 'Argentina' }],
   }
   await expect(service.updateAlbum(changed)).rejects.toMatchObject({
@@ -319,7 +409,7 @@ test('fallo de escritura revierte artista y álbum y permite reintentar el mismo
   expect(await repository.readSnapshot()).toEqual(before)
   fail.mockRestore()
   await expect(service.updateAlbum(changed)).resolves.toMatchObject({
-    title: 'Título corregido',
+    title: 'Título Corregido',
   })
 })
 

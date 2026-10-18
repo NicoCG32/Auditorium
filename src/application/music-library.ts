@@ -26,6 +26,7 @@ import type {
   TransactionalLocalRepository,
 } from '../domain/repositories/local-repository'
 import { entityIdSchema } from '../domain/shared/scalars'
+import { capitalizeCatalogName, catalogNameKey } from './catalog-names'
 import {
   addReleaseInputSchema,
   addTrackInputSchema,
@@ -147,6 +148,7 @@ export class MusicLibrary {
             'missing_reference',
             'No existe el artista seleccionado.',
           )
+        existing.name = capitalizeCatalogName(existing.name)
         return existing
       }
       const artist = artistSchema.parse({
@@ -223,9 +225,13 @@ export class MusicLibrary {
             'missing_reference',
             'El artista seleccionado no pertenece a los créditos que se están editando.',
           )
-        if (existing && existing.name === credit.name) {
+        if (
+          existing &&
+          catalogNameKey(existing.name) === catalogNameKey(credit.name)
+        ) {
           const updated = artistSchema.parse({
             ...existing,
+            name: credit.name,
             country: credit.country,
           })
           if (updated.country === undefined) delete updated.country

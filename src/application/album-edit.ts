@@ -9,6 +9,11 @@ import {
 import { checkCoverFields } from '../domain/catalog/metadata'
 import { entityIdSchema } from '../domain/shared/scalars'
 import type { LocalSnapshot } from '../domain/repositories/local-repository'
+import {
+  catalogGenresInputSchema,
+  catalogNameInputSchema,
+  catalogNameKey,
+} from './catalog-names'
 
 export const albumEditExpectedSchema = z.strictObject({
   album: albumSchema,
@@ -20,13 +25,16 @@ export type AlbumEditExpected = z.output<typeof albumEditExpectedSchema>
 const editArtistSchema = artistSchema
   .omit({ id: true, sortName: true, catalogScope: true, createdBy: true })
   .extend({
+    name: catalogNameInputSchema,
     artistId: entityIdSchema.optional(),
     role: artistRoleSchema.default('primary'),
-    creditedAs: albumArtistSchema.shape.creditedAs,
+    creditedAs: catalogNameInputSchema.optional(),
   })
 export const updateAlbumInputSchema = albumSchema
   .omit({ id: true, catalogScope: true, createdBy: true })
   .extend({
+    title: catalogNameInputSchema,
+    genres: catalogGenresInputSchema.optional(),
     albumId: entityIdSchema,
     expected: albumEditExpectedSchema,
     artists: z
@@ -111,7 +119,7 @@ export function albumIdentityChanged(
   request: UpdateAlbumInput,
 ): boolean {
   if (
-    request.title !== expected.album.title ||
+    catalogNameKey(request.title) !== catalogNameKey(expected.album.title) ||
     request.artists.length !== expected.credits.length
   )
     return true
@@ -123,8 +131,10 @@ export function albumIdentityChanged(
     return (
       !oldCredit ||
       artist.artistId !== oldCredit.artistId ||
-      artist.name !== previousArtists.get(oldCredit.artistId)?.name ||
-      artist.creditedAs !== oldCredit.creditedAs ||
+      catalogNameKey(artist.name) !==
+        catalogNameKey(previousArtists.get(oldCredit.artistId)?.name ?? '') ||
+      catalogNameKey(artist.creditedAs ?? '') !==
+        catalogNameKey(oldCredit.creditedAs ?? '') ||
       artist.role !== oldCredit.role
     )
   })

@@ -58,6 +58,8 @@ Una portada local confirmada pertenece a IndexedDB y al respaldo, por lo que pue
 
 ## Compatibilidad, privacidad y validación
 
+Al guardar, álbumes, nombres/alias de artistas y géneros adoptan mayúscula inicial por palabra, con las [excepciones de siglas del registro](REGISTRO_MANUAL.md#posibles-duplicados). Cambiar sólo mayúsculas o espacios mantiene la identidad del artista y la referencia externa del álbum. Una corrección real de nombre conserva las reglas de creación de identidad de este documento. Los textos históricos no se reescriben al leer o importar respaldos; se uniforman al editarlos.
+
 El incremento utiliza DB5/nativa50, sin añadir tablas ni índices, y exporta respaldo3. Las bases v1 a v4 se actualizan conservando identidad y filas; los respaldos1/2 se aceptan con sus contratos históricos estrictos y se normalizan al formato actual. No se completan metadatos durante la migración. Una aplicación anterior no puede abrir la base nueva ni leer el archivo nuevo; conserva respaldos previos al actualizar.
 
 El contexto de recomendaciones mantiene la lista permitida anterior. No se envían géneros, países, URL de portada ni imágenes locales al modelo. La edición no genera solicitudes de IA. Consulta [respaldos](RESPALDOS_JSON.md), [integraciones](INTEGRACIONES_OPCIONALES.md) y [ADR-009](adr/009-edicion-metadatos-portadas.md).

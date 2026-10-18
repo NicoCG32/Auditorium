@@ -262,14 +262,14 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
     .getByRole('textbox', { name: 'Artista', exact: true })
-    .fill('Artista ficticio Pages')
+    .fill('Artista Ficticio Pages')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
-    .fill('Horizonte ficticio Pages')
+    .fill('Horizonte Ficticio Pages')
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', {
-      name: 'Horizonte ficticio Pages',
+      name: 'Horizonte Ficticio Pages',
       exact: true,
     }),
   ).toBeVisible()
@@ -304,7 +304,7 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
     expect(response?.fromServiceWorker(), path).toBe(true)
     await expect(
       reopened.getByRole('button', {
-        name: 'Horizonte ficticio Pages',
+        name: 'Horizonte Ficticio Pages',
         exact: true,
       }),
     ).toBeVisible()

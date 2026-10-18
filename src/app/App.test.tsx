@@ -77,7 +77,7 @@ async function openAlbumForm(repository: IndexedDbRepository) {
   )
   fireEvent.click(screen.getByRole('button', { name: 'Añadir álbum' }))
 }
-function fillAlbum(artist = 'Umbral ficticio', title = 'Eclipse nuevo') {
+function fillAlbum(artist = 'Umbral Ficticio', title = 'Eclipse Nuevo') {
   fireEvent.change(screen.getByRole('textbox', { name: 'Artista' }), {
     target: { value: artist },
   })
@@ -648,14 +648,14 @@ test('registro mínimo aparece sin recarga y permite abrir su ficha básica', as
   fillAlbum()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   expect(
-    await screen.findByRole('heading', { name: 'Eclipse nuevo' }),
+    await screen.findByRole('heading', { name: 'Eclipse Nuevo' }),
   ).toHaveFocus()
   const snapshot = await repository.readSnapshot()
   expect(snapshot.catalog.albums[0]?.releaseType).toBe('album')
   expect(snapshot.catalog.albums[0]).not.toHaveProperty('originalYear')
   expect(snapshot.library.userAlbums).toHaveLength(1)
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  expect(screen.getByRole('button', { name: 'Eclipse nuevo' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Eclipse Nuevo' })).toBeVisible()
 })
 
 test('validación de campos y cancelación conservan datos y devuelven el foco', async () => {
@@ -687,7 +687,7 @@ test('tipo y metadatos opcionales se guardan; año inválido conserva el formula
     'true',
   )
   expect(screen.getByRole('textbox', { name: 'Título' })).toHaveValue(
-    'Eclipse nuevo',
+    'Eclipse Nuevo',
   )
   fireEvent.change(screen.getByLabelText('Año original'), {
     target: { value: '1998' },
@@ -696,9 +696,9 @@ test('tipo y metadatos opcionales se guardan; año inválido conserva el formula
     target: { value: 'Descripción ficticia' },
   })
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  await screen.findByRole('heading', { name: 'Eclipse Nuevo' })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  await screen.findByRole('button', { name: 'Eclipse nuevo' })
+  await screen.findByRole('button', { name: 'Eclipse Nuevo' })
   expect((await repository.readSnapshot()).catalog.albums[0]).toMatchObject({
     releaseType: 'ep',
     originalYear: 1998,
@@ -747,25 +747,25 @@ test('crear otro álbum es explícito y conserva artistas homónimos separados',
 test('elige un artista existente por referencia al crear una obra distinta', async () => {
   const repository = await populated()
   await openAlbumForm(repository)
-  fillAlbum('Umbral Eléctrico', 'Nueva órbita')
+  fillAlbum('Umbral Eléctrico', 'Nueva Órbita')
   fireEvent.click(screen.getByRole('radio', { name: /^Usar Umbral Eléctrico/ }))
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  await screen.findByRole('heading', { name: 'Nueva órbita' })
+  await screen.findByRole('heading', { name: 'Nueva Órbita' })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  await screen.findByRole('button', { name: 'Nueva órbita' })
+  await screen.findByRole('button', { name: 'Nueva Órbita' })
   expect((await repository.readSnapshot()).catalog.artists).toHaveLength(1)
 })
 
 test('añadir un álbum del catálogo crea solo la relación y abre su ficha', async () => {
   const repository = connect()
   await new MusicLibrary(repository).createAlbum({
-    title: 'Solo catálogo',
-    artists: [{ name: 'Umbral ficticio' }],
+    title: 'Solo Catálogo',
+    artists: [{ name: 'Umbral Ficticio' }],
     addToLibrary: false,
   })
   const before = await repository.readSnapshot()
   await openAlbumForm(repository)
-  fillAlbum('Umbral ficticio', 'Solo catálogo')
+  fillAlbum('Umbral Ficticio', 'Solo Catálogo')
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   await screen.findByRole('button', { name: 'Añadir álbum del catálogo' })
   fireEvent.click(
@@ -790,14 +790,14 @@ test('fallo de escritura revierte el alta y mantiene valores para reintentar', a
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('No hay espacio')
   expect(screen.getByRole('textbox', { name: 'Título' })).toHaveValue(
-    'Eclipse nuevo',
+    'Eclipse Nuevo',
   )
   expect(await repository.readSnapshot()).toEqual(before)
   failure.mockRestore()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  await screen.findByRole('heading', { name: 'Eclipse Nuevo' })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  await screen.findByRole('button', { name: 'Eclipse nuevo' })
+  await screen.findByRole('button', { name: 'Eclipse Nuevo' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(1)
 })
 
@@ -811,9 +811,9 @@ test('dos envíos rápidos solo ejecutan una operación de registro', async () =
   fireEvent.submit(form)
   fireEvent.submit(form)
   expect(registration).toHaveBeenCalledTimes(1)
-  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  await screen.findByRole('heading', { name: 'Eclipse Nuevo' })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  await screen.findByRole('button', { name: 'Eclipse nuevo' })
+  await screen.findByRole('button', { name: 'Eclipse Nuevo' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(1)
 })
 
@@ -830,9 +830,9 @@ test('fallar la lectura después de guardar no repite la escritura al reintentar
   fireEvent.click(
     screen.getByRole('button', { name: 'Reintentar lectura del álbum' }),
   )
-  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  await screen.findByRole('heading', { name: 'Eclipse Nuevo' })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  await screen.findByRole('button', { name: 'Eclipse nuevo' })
+  await screen.findByRole('button', { name: 'Eclipse Nuevo' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(1)
 })
 

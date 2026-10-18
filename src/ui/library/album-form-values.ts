@@ -4,6 +4,7 @@ import {
 } from '../../application/inputs'
 import type { CatalogCandidate } from '../../application/catalog-lookup'
 import type { CatalogReference } from '../../domain/catalog/schemas'
+import { capitalizeCatalogName } from '../../application/catalog-names'
 
 export interface AlbumFormValues {
   artist: string
@@ -39,7 +40,7 @@ export function splitGenres(value: string): string[] {
   const seen = new Set<string>()
   return value
     .split(/[,;]/u)
-    .map((genre) => genre.trim())
+    .map(capitalizeCatalogName)
     .filter((genre) => {
       const key = genre
         .normalize('NFD')
@@ -56,10 +57,10 @@ export function prepareCatalogCandidate(
 ): AlbumFormValues {
   return {
     ...values,
-    title: candidate.title,
-    artist: candidate.artists.join(' · '),
+    title: capitalizeCatalogName(candidate.title),
+    artist: candidate.artists.map(capitalizeCatalogName).join(' · '),
     artistId: undefined,
-    catalogArtists: [...candidate.artists],
+    catalogArtists: candidate.artists.map(capitalizeCatalogName),
     catalogCountries: candidate.artists.map(() => ''),
     country: '',
     releaseType: candidate.releaseType,

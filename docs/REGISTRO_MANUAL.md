@@ -6,6 +6,10 @@ El formulario registra un artista principal. Si hay artistas con el mismo nombre
 
 ## Posibles duplicados
 
+Los nombres de álbumes, artistas y alias acreditados, y las etiquetas de género, se guardan con mayúscula inicial por palabra: `System Of A Down` y `Metal Progresivo`. Se compactan espacios y se conservan acentos y signos. Se mantienen siglas reconocibles como `AC/DC`, `R.E.M.` y `U2`, numerales romanos habituales y una lista explícita de siglas musicales. La convención se aplica tanto al alta manual como al catálogo seleccionado y al alta directa; no pretende certificar la grafía oficial de una obra. Las palabras sin una excepción se capitalizan aunque el proveedor use otra estilización.
+
+La regla sólo actúa al escribir nombres: consultar o importar un respaldo conserva el texto histórico. Reutilizar un artista por ID uniforma su nombre manteniendo esa identidad. Descripciones, comentarios, países y enlaces no se capitalizan. Las coincidencias y la selección explícita de homónimos siguen las reglas siguientes; uniformar la escritura no fusiona registros.
+
 `MusicLibrary.registerAlbum` valida la entrada y busca coincidencias dentro de la transacción de escritura antes de crear música. Se considera posible coincidencia el mismo título normalizado y un artista del crédito coincidente. Para un artista elegido por referencia se compara su ID; para un nombre nuevo se comparan el nombre y el alias acreditado. La normalización ignora mayúsculas, acentos y espacios repetidos. No se aplica búsqueda aproximada ni se interpreta una coincidencia como identidad confirmada.
 
 La revisión ofrece:

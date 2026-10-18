@@ -49,7 +49,7 @@ function change(label: string, value: string) {
 test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar por género y origen', async () => {
   const before = await repository.readSnapshot()
   await edit()
-  change('Título', 'Eclipse corregido')
+  change('Título', 'Eclipse Corregido')
   change('Géneros (separados por comas)', 'Metal, Progresivo, metal')
   change('País de origen 1', 'Chile')
   change('Año original', '2001')
@@ -58,7 +58,7 @@ test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar 
   )
   await screen.findByText('Datos del álbum guardados.')
   expect(
-    screen.getByRole('heading', { name: 'Eclipse corregido' }),
+    screen.getByRole('heading', { name: 'Eclipse Corregido' }),
   ).toBeVisible()
   expect(screen.getByText('Metal · Progresivo')).toBeVisible()
   const after = await repository.readSnapshot()
@@ -67,7 +67,7 @@ test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar 
   expect(after.catalog.releases).toEqual(before.catalog.releases)
   expect(after.catalog.tracks).toEqual(before.catalog.tracks)
   expect(
-    after.catalog.albums.find((album) => album.title === 'Eclipse corregido'),
+    after.catalog.albums.find((album) => album.title === 'Eclipse Corregido'),
   ).toMatchObject({
     id: before.catalog.albums[0]!.id,
     genres: ['Metal', 'Progresivo'],
@@ -81,7 +81,7 @@ test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar 
     target: { value: 'chile' },
   })
   expect(
-    screen.getByRole('button', { name: 'Eclipse corregido' }),
+    screen.getByRole('button', { name: 'Eclipse Corregido' }),
   ).toBeVisible()
 })
 test('cambiar de editor permite conservar el borrador o guardarlo antes de editar metadatos', async () => {
@@ -177,7 +177,7 @@ test('una corrección concurrente no se sobrescribe y cargar datos reemplaza el 
     ),
     albumId: album.id,
     expected,
-    title: 'Corrección desde otra pestaña',
+    title: 'Corrección Desde Otra Pestaña',
     artists: expected.credits.map((credit) => ({
       artistId: credit.artistId,
       name: expected.artists.find((artist) => artist.id === credit.artistId)!
@@ -204,7 +204,7 @@ test('una corrección concurrente no se sobrescribe y cargar datos reemplaza el 
   )
   await waitFor(() =>
     expect(screen.getByRole('textbox', { name: 'Título' })).toHaveValue(
-      'Corrección desde otra pestaña',
+      'Corrección Desde Otra Pestaña',
     ),
   )
   expect(
@@ -212,23 +212,23 @@ test('una corrección concurrente no se sobrescribe y cargar datos reemplaza el 
   ).toBeEnabled()
 })
 
-test('corregir el título conserva literalmente los géneros existentes con separadores', async () => {
+test('corregir el título conserva los géneros con separadores como etiquetas completas al capitalizar', async () => {
   await repository.mutate((snapshot) => {
     snapshot.catalog.albums.find((album) => album.title === 'Eclipse')!.genres =
       ['Rock, experimental', 'Jazz; fusión']
     return { snapshot, result: undefined }
   })
   await edit()
-  change('Título', 'Título corregido sin cambiar géneros')
+  change('Título', 'Título Corregido Sin Cambiar Géneros')
   fireEvent.click(
     screen.getByRole('button', { name: 'Guardar cambios del álbum' }),
   )
   await screen.findByText('Datos del álbum guardados.')
   expect(
     (await repository.readSnapshot()).catalog.albums.find(
-      (album) => album.title === 'Título corregido sin cambiar géneros',
+      (album) => album.title === 'Título Corregido Sin Cambiar Géneros',
     )!.genres,
-  ).toEqual(['Rock, experimental', 'Jazz; fusión'])
+  ).toEqual(['Rock, Experimental', 'Jazz; Fusión'])
 })
 
 test('el país de un artista con varios roles se edita de forma coherente en todos sus créditos', async () => {

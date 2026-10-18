@@ -2,9 +2,12 @@ import { z } from 'zod'
 import { checkCoverFields } from '../domain/catalog/metadata'
 import { ownedItemDataSchema } from '../domain/library/owned-items'
 import { wishTargetSchema } from '../domain/library/purchase-wishes'
+import {
+  catalogGenresInputSchema,
+  catalogNameInputSchema,
+} from './catalog-names'
 
 import {
-  albumArtistSchema,
   albumSchema,
   artistRoleSchema,
   artistSchema,
@@ -56,17 +59,19 @@ export const personalExperienceInputSchema = z.strictObject({
 
 const credit = {
   role: artistRoleSchema.default('primary'),
-  creditedAs: albumArtistSchema.shape.creditedAs,
+  creditedAs: catalogNameInputSchema.optional(),
 }
 const artistInput = z.union([
   z.strictObject({ artistId: entityIdSchema, ...credit }),
   artistSchema
     .omit({ id: true, catalogScope: true, createdBy: true })
-    .extend(credit),
+    .extend({ ...credit, name: catalogNameInputSchema }),
 ])
 const albumInputSchema = albumSchema
   .omit({ id: true, catalogScope: true, createdBy: true })
   .extend({
+    title: catalogNameInputSchema,
+    genres: catalogGenresInputSchema.optional(),
     artists: z
       .array(artistInput)
       .min(1)

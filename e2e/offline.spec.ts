@@ -162,9 +162,9 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   page.on('pageerror', (error) => errors.push(error.message))
   await openPrepared(page)
   await context.setOffline(true)
-  await addAlbum(page, 'Horizonte ficticio offline')
+  await addAlbum(page, 'Horizonte Ficticio Offline')
   await page
-    .getByRole('button', { name: 'Horizonte ficticio offline', exact: true })
+    .getByRole('button', { name: 'Horizonte Ficticio Offline', exact: true })
     .click()
   await page
     .getByRole('textbox', { name: 'Notas personales', exact: true })
@@ -239,26 +239,26 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
     .click()
   await page
     .getByRole('button', {
-      name: /Restaurar Horizonte ficticio offline, entrada/,
+      name: /Restaurar Horizonte Ficticio Offline, entrada/,
     })
     .click()
   await expect(
     page.getByRole('heading', {
-      name: 'Horizonte ficticio offline',
+      name: 'Horizonte Ficticio Offline',
       exact: true,
     }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await expect(
     page.getByRole('button', {
-      name: 'Horizonte ficticio offline',
+      name: 'Horizonte Ficticio Offline',
       exact: true,
     }),
   ).toBeVisible()
   await page.reload()
   await expect(
     page.getByRole('button', {
-      name: 'Horizonte ficticio offline',
+      name: 'Horizonte Ficticio Offline',
       exact: true,
     }),
   ).toBeVisible()

@@ -14,8 +14,8 @@ let database: AuditoriumDatabase
 let repository: IndexedDbRepository
 const candidate: CatalogCandidate = {
   id: 'Q999999',
-  title: 'Horizonte ficticio',
-  artists: ['Conjunto ficticio A', 'Conjunto ficticio B'],
+  title: 'Horizonte Ficticio',
+  artists: ['Conjunto Ficticio A', 'Conjunto Ficticio B'],
   releaseType: 'album',
   originalYear: 1999,
   catalogReference: {
@@ -51,7 +51,7 @@ async function form() {
     target: { value: 'Conjunto ficticio' },
   })
   fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
-    target: { value: 'Horizonte ficticio' },
+    target: { value: 'Horizonte Ficticio' },
   })
 }
 async function select() {
@@ -62,7 +62,7 @@ async function select() {
   expect(search).not.toHaveBeenCalled()
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   fireEvent.click(
-    await screen.findByRole('button', { name: 'Revisar Horizonte ficticio' }),
+    await screen.findByRole('button', { name: 'Revisar Horizonte Ficticio' }),
   )
   return search
 }
@@ -102,17 +102,17 @@ test('portada requiere elección y editar identidad quita asociación y portada 
     candidate.coverUrl,
   )
   fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
-    target: { value: 'Otra obra ficticia' },
+    target: { value: 'Otra Obra Ficticia' },
   })
   expect(
     screen.queryByRole('region', { name: 'Referencia preparada' }),
   ).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   await screen.findByRole('heading', {
-    name: 'Otra obra ficticia',
+    name: 'Otra Obra Ficticia',
   })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  await screen.findByRole('button', { name: 'Otra obra ficticia' })
+  await screen.findByRole('button', { name: 'Otra Obra Ficticia' })
   const album = (await repository.readSnapshot()).catalog.albums[0]
   expect(album).not.toHaveProperty('catalogReference')
   expect(album).not.toHaveProperty('coverUrl')
@@ -122,6 +122,22 @@ test('portada requiere elección y editar identidad quita asociación y portada 
       .toSorted(),
   ).toEqual(candidate.artists.toSorted())
 })
+test('corregir sólo mayúsculas del título preparado conserva la referencia externa', async () => {
+  await select()
+  fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
+    target: { value: candidate.title.toUpperCase() },
+  })
+  expect(
+    screen.getByRole('region', { name: 'Referencia preparada' }),
+  ).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  await screen.findByRole('heading', { name: 'Horizonte Ficticio' })
+  expect((await repository.readSnapshot()).catalog.albums[0]).toMatchObject({
+    title: 'Horizonte Ficticio',
+    catalogReference: candidate.catalogReference,
+  })
+})
+
 test('un fallo del catálogo conserva datos manuales y permite guardar', async () => {
   vi.spyOn(wikidataCatalogClient, 'search').mockRejectedValue(
     new Error('Detalle privado ficticio'),
@@ -131,7 +147,7 @@ test('un fallo del catálogo conserva datos manuales y permite guardar', async (
   await screen.findByText(/No pudimos consultar Wikidata/u)
   expect(screen.queryByText('Detalle privado ficticio')).not.toBeInTheDocument()
   expect(screen.getByRole('textbox', { name: 'Título' })).toHaveValue(
-    'Horizonte ficticio',
+    'Horizonte Ficticio',
   )
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   await screen.findByRole('heading', { name: candidate.title })

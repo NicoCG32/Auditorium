@@ -104,13 +104,13 @@ test('editar → Recomendaciones no pierde título, cancelación devuelve el foc
 test('guardar y salir confirma datos una vez y abre el destino solicitado', async () => {
   await edit()
   const writes = vi.spyOn(repository, 'mutate')
-  change('Título', 'Eclipse corregido para navegar')
+  change('Título', 'Eclipse Corregido Para Navegar')
   fireEvent.click(screen.getByRole('button', { name: 'Mi colección' }))
   fireEvent.click(screen.getByRole('button', { name: 'Guardar y salir' }))
   await waitFor(() => expect(location.hash).toBe('#/coleccion'))
   expect(writes).toHaveBeenCalledOnce()
   expect((await repository.readSnapshot()).catalog.albums[0]?.title).toBe(
-    'Eclipse corregido para navegar',
+    'Eclipse Corregido Para Navegar',
   )
 })
 
@@ -131,7 +131,7 @@ test('alta confirmada con lectura fallida conserva editor y sólo reintenta lect
   await open()
   fireEvent.click(screen.getByRole('button', { name: 'Añadir álbum' }))
   change('Artista', 'Círculo Norte ficticio')
-  change('Título', 'Umbral de prueba')
+  change('Título', 'Umbral De Prueba')
   const writes = vi.spyOn(repository, 'mutate')
   vi.spyOn(repository, 'readSnapshot').mockRejectedValueOnce(
     new LocalStorageError('unexpected', 'Lectura ficticia'),
@@ -144,7 +144,7 @@ test('alta confirmada con lectura fallida conserva editor y sólo reintenta lect
   expect(location.hash).toBe('#/anadir')
   expect(screen.getByRole('button', { name: 'Biblioteca' })).toBeDisabled()
   fireEvent.click(retry)
-  await screen.findByRole('heading', { name: 'Umbral de prueba' })
+  await screen.findByRole('heading', { name: 'Umbral De Prueba' })
   expect(writes).toHaveBeenCalledOnce()
 })
 
