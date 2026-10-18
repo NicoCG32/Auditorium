@@ -58,6 +58,8 @@ El alta tiene dos etapas reconocibles, sin exigir datos de escucha o propiedad:
 
 Las coincidencias de la biblioteca se distinguen de referencias de catálogo. «Ya está en tu biblioteca → Abrir álbum» no reemplaza silenciosamente el borrador actual. La elección de otro artista con el mismo nombre es explícita y comprensible; no se crean duplicados por una opción predeterminada invisible ni se fusionan homónimos automáticamente.
 
+**Clasificación del álbum**, bajo demanda, presenta tres controles independientes: tipo principal (Full-length, EP, Single, Otro o Sin especificar), categorías combinables (Demo, Split, Recopilación, En vivo y Banda sonora) y publicación (Publicado, Inédito o Desconocido). No exige esos datos para el alta manual. Un EP Demo inédito es una combinación válida; «LP» no debe confundirse con poseer un vinilo. Deluxe, Especial y Aniversario corresponden a una edición física o digital, fuera de la identidad abstracta. El [contrato de clasificación](CONTRATOS_EXPERIENCIA.md#tipo-categorías-publicación-y-edición) define responsabilidad y migración propuesta.
+
 Guardar conduce siempre a la ficha del álbum, tanto para un alta nueva como al abrir una entrada existente. La confirmación ofrece **Calificar este álbum** y **Volver a biblioteca**. No abre de inmediato un formulario de inventario.
 
 **Editar datos del álbum** abre directamente la etapa de revisión con datos y enlaces existentes. Guarda ese conjunto de forma coordinada según [el contrato de escritura](CONTRATOS_EXPERIENCIA.md#3-operaciones-y-concurrencia); no incluye nota, escucha, comentario, pistas o copias. El país pertenece al artista: si corregirlo afecta a otros álbumes con ese mismo artista, se avisa en el propio campo. Cambiar la identidad musical exige revisar o retirar la referencia externa anterior y revisar que los enlaces personales sigan correspondiendo; no se borran enlaces personales sin decisión.
@@ -88,7 +90,7 @@ Recalificar reemplaza la valoración personal actual, con confirmación visible;
 
 ### Colección física
 
-Vista conjunta de ejemplares `medium=physical`, con búsqueda, filtros por formato y acceso a cada álbum. **Registrar copia** solicita el álbum ya existente o permite volver al alta; edición, condición, fecha y notas son datos del ejemplar, no del álbum abstracto. Se muestran varias copias por separado con etiquetas humanas, por ejemplo «Vinilo · Edición de 2021 · Copia 2».
+Vista conjunta de ejemplares `medium=physical`, con búsqueda, filtros por formato y acceso a cada álbum. **Registrar copia** solicita el álbum ya existente o permite volver al alta y elegir su edición opcional. Deluxe, Especial o Aniversario describen esa edición (`Release`); condición, fecha de adquisición y notas describen el ejemplar (`OwnedItem`). Ninguno pertenece al álbum abstracto. Se muestran varias copias por separado con etiquetas humanas, por ejemplo «Vinilo · Edición de 2021 · Copia 2». La misma edición puede tener varias copias, y una edición digital puede existir sin ninguna copia física.
 
 Las adquisiciones `purchased_digital` y los deseos permanecen íntegros y accesibles en la zona secundaria indicada. Una URL de tienda, un deseo o un audio no se cuenta como copia física. Una compra nunca se deduce por abrir el enlace. Las operaciones sobre inventario no cambian experiencia ni metadatos musicales.
 

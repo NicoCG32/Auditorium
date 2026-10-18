@@ -238,6 +238,57 @@
             /></label>
           </div>
           <details>
+            <summary>Tipo, categorías y publicación</summary>
+            <div class="form-pair detail-fields">
+              <label
+                >Tipo principal<select name="album-type">
+                  <option value="unknown">Sin especificar</option>
+                  <option value="full-length">Full-length (álbum)</option>
+                  <option value="ep">EP</option>
+                  <option value="single">Single</option>
+                  <option value="other">Otro</option>
+                </select></label
+              >
+              <label
+                >Publicación<select name="publication-status">
+                  <option value="unknown">Desconocida</option>
+                  <option value="released">Publicado</option>
+                  <option value="unreleased">Inédito</option>
+                </select></label
+              >
+            </div>
+            <fieldset class="link-editor">
+              <legend>Categorías opcionales</legend>
+              <p>
+                Los tres datos se combinan: por ejemplo EP + Demo + Inédito.
+              </p>
+              <label class="check"
+                ><input type="checkbox" name="category" value="demo" />
+                Demo</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="split" />
+                Split</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="compilation" />
+                Recopilación</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="live" /> En
+                vivo</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="soundtrack" />
+                Banda sonora</label
+              >
+            </fieldset>
+            <p>
+              Deluxe o Aniversario se indican en una edición; no necesitas tener
+              una copia.
+            </p>
+          </details>
+          <details>
             <summary>Portada, año y más datos</summary>
             <div class="form-pair detail-fields">
               <label
@@ -316,6 +367,57 @@
           <p class="field-help">
             Este país se usa en los demás álbumes de Círculo Norte.
           </p>
+          <details>
+            <summary>Tipo, categorías y publicación</summary>
+            <div class="form-pair detail-fields">
+              <label
+                >Tipo principal<select name="album-type">
+                  <option value="unknown">Sin especificar</option>
+                  <option value="full-length" selected>
+                    Full-length (álbum)
+                  </option>
+                  <option value="ep">EP</option>
+                  <option value="single">Single</option>
+                  <option value="other">Otro</option>
+                </select></label
+              >
+              <label
+                >Publicación<select name="publication-status">
+                  <option value="unknown">Desconocida</option>
+                  <option value="released" selected>Publicado</option>
+                  <option value="unreleased">Inédito</option>
+                </select></label
+              >
+            </div>
+            <fieldset class="link-editor">
+              <legend>Categorías opcionales</legend>
+              <p>Puedes marcar varias; el tipo principal se conserva.</p>
+              <label class="check"
+                ><input type="checkbox" name="category" value="demo" />
+                Demo</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="split" />
+                Split</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="compilation" />
+                Recopilación</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="live" /> En
+                vivo</label
+              >
+              <label class="check"
+                ><input type="checkbox" name="category" value="soundtrack" />
+                Banda sonora</label
+              >
+            </fieldset>
+            <p>
+              Deluxe o Aniversario describen una edición física o digital, no
+              este álbum abstracto.
+            </p>
+          </details>
           <details>
             <summary>Portada, créditos y descripción</summary>
             <p class="detail-fields">

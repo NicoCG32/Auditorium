@@ -55,6 +55,40 @@ Son cardinalidades conceptuales, no nuevas tablas ni claves foráneas instaladas
 
 `Album.catalogReference` conserva una referencia externa seleccionada, con su procedencia. Un identificador Spotify/YouTube de esa referencia puede ofrecerse como candidato; sólo una elección explícita lo convierte en enlace personal o favorito. Una búsqueda por título/artista no es una URL confirmada del álbum.
 
+### Tipo, categorías, publicación y edición
+
+La clasificación musical pertenece a `Album`, pero se divide en dimensiones independientes. No se obliga a elegir entre «EP» y «Demo» en un mismo selector.
+
+| Dimensión propuesta   | Ubicación        | Valores o ejemplos                                | Regla                                                                             |
+| --------------------- | ---------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Tipo principal        | `Album`          | Full-length, EP, Single, Otro, Sin especificar    | Un valor; no depende del soporte ni del número de copias                          |
+| Categorías            | `Album`          | Demo, Split, Recopilación, En vivo, Banda sonora  | Selección múltiple; ninguna registrada no significa «álbum de estudio» confirmado |
+| Estado de publicación | `Album`          | Publicado, Inédito, Desconocido                   | «Inédito» no sustituye tipo ni categorías; no se deduce de un enlace o del año    |
+| Edición               | `Release`        | Original, Deluxe, Especial, Aniversario, Remaster | Publicación concreta, física o digital; no exige que se posea                     |
+| Soporte de la edición | `Release.format` | Vinilo, CD, Casete, Digital, Otro                 | Una edición digital no se cuenta como copia física                                |
+| Ejemplar personal     | `OwnedItem`      | Mi vinilo, su condición, adquisición y notas      | Puede vincularse a una edición del mismo álbum sin duplicar éste                  |
+
+Se reserva «Full-length» para el tipo musical. «LP» puede mostrarse como término equivalente contextual, pero **Vinilo LP** identifica el soporte: un full-length digital sigue siendo full-length y un EP puede editarse en vinilo.
+
+Ejemplo ficticio: «Umbral» puede ser **EP + Demo + Split + Inédito**, sin nota ni copias. «La última luz» puede tener una edición **Deluxe digital** para escuchar y otra **Aniversario en CD**; poseer dos unidades de esta última produce dos `OwnedItem` vinculados al mismo `Release`, no dos álbumes ni dos ediciones. Una demo publicada sigue siendo Demo y pasa a Publicado; no pierde su categoría.
+
+En la interfaz, tipo, categorías y publicación se completan bajo demanda en Añadir/Editar datos. Deluxe o Aniversario se eligen al consultar/registrar una edición, especialmente desde Colección física; no se piden para guardar el álbum abstracto. Condición, fecha de adquisición y notas describen el ejemplar. Cambiar la edición asociada a una copia no renombra el álbum ni altera las demás copias; editar datos compartidos de una edición es otra operación con alcance visible.
+
+La separación de tipo principal y categorías toma como referencia [MusicBrainz: tipos de grupo de publicación](https://musicbrainz.org/doc/Release_Group/Type). La distinción entre edición digital/física y ejemplar es coherente con [MusicBrainz: publicación concreta](https://musicbrainz.org/doc/Release). **Split y el estado Publicado/Inédito/Desconocido son decisiones de esta propuesta de Auditorium**, no una equivalencia automática con los vocabularios externos. Toda clasificación sugerida por catálogo se revisa y la entrada manual sigue disponible.
+
+#### Transición desde la clasificación vigente
+
+El `Album.releaseType` actual mezcla tipo y categoría en un único enum. UX-05 debe separar esos datos, versionar persistencia/respaldo y adaptar formularios, consultas y consumidores antes de publicar el cambio. El nombre de los campos futuros se fija al implementar; esta tabla define la transformación lógica:
+
+| Valor anterior                                 | Tipo propuesto  | Categoría conservada                                          |
+| ---------------------------------------------- | --------------- | ------------------------------------------------------------- |
+| `album`                                        | Full-length     | Ninguna registrada                                            |
+| `ep` / `single`                                | EP / Single     | Ninguna registrada                                            |
+| `live` / `demo` / `compilation` / `soundtrack` | Sin especificar | En vivo / Demo / Recopilación / Banda sonora, respectivamente |
+| `other`                                        | Otro            | Ninguna registrada                                            |
+
+La migración conserva la clasificación heredada, incluidos antiguos valores por defecto, sin atribuirles verificación externa. No adivina duración/tipo desde Demo o En vivo, ni inventa Split; el estado de publicación anterior queda Desconocido. La persona puede completar esos datos después. `Release.editionLabel`, formatos, listas, IDs y ejemplares no se trasladan a `Album` ni se pierden. Los lectores de respaldos 1/2/3 mantienen sus enums históricos estrictos antes de normalizar a la versión futura.
+
 ## 2. Contrato lógico de enlaces y adjuntos
 
 ### Enlaces personales
@@ -155,7 +189,8 @@ Las mutaciones no cambian la identidad local. Editar un artista conserva la regl
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | UX-04 / VIS-02 | Navegación, borradores y consultas sin cambiar el contrato musical por conveniencia de UI                                  |
 | LINK-01        | Versionar esquema y respaldo al incorporar enlaces/preferencia; validar relaciones y migraciones antes de exponer guardado |
-| UX-05 / UX-06  | Usar comandos coordinados; mantener IDs y reglas de los registros previos                                                  |
+| UX-05          | Separar tipo/categorías/publicación con migración y respaldo versionados; mantener IDs y reglas previas                    |
+| UX-06          | Usar comandos coordinados para experiencia; conservar la clasificación musical                                             |
 | AUDIO-01       | Resolver almacenamiento y recuperación con evidencia, sin afirmar que JSON contiene el audio                               |
 | AUDIO-02       | Aplicar la decisión anterior con su versión y pruebas, si se acepta persistencia                                           |
 | COL-05         | Cambiar proyección/navegación del inventario, conservando medios digitales y deseos                                        |
@@ -180,4 +215,6 @@ La restauración continúa limitada al destino vacío, con adopción atómica de
 
 Aplicar esta matriz a los [cinco escenarios de diseño](EXPERIENCIA_USUARIO.md#6-escenarios-de-aceptación-del-diseño). Para compatibilidad, usar una biblioteca ficticia con entrada activa y retirada, varios créditos, géneros literales, portada local, ratings de álbum/pistas, dos copias físicas, una adquisición digital y deseos. Comparar identidad y relaciones antes/después de migración y restauración, incluyendo fallos de cuota y concurrencia.
 
-La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01/AUDIO-02 deben aportar la evidencia real antes de declararse implementadas. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.
+Añadir casos de EP Demo inédito, full-length En vivo, Split con varios créditos y Deluxe digital sin ejemplares. Verificar la transformación de cada valor antiguo de `releaseType`, corrección posterior sin pérdida de relaciones y dos copias de una misma edición. Ningún caso debe exigir calificación, escucha o propiedad para guardar la clasificación.
+
+La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01/UX-05/AUDIO-02 deben aportar la evidencia real antes de declararse implementadas. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.

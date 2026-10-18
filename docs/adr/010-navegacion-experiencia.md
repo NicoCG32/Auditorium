@@ -17,6 +17,7 @@ La aplicación distingue álbum, edición, calificación y ejemplar en el domini
 5. Vincular enlaces manuales y favorito de reproducción a `UserAlbum`, no al álbum abstracto. Conservar `catalogReference` como procedencia externa y exigir elección para incorporar una sugerencia como enlace personal. Enlazar, reproducir, adjuntar, calificar y poseer siguen siendo hechos independientes.
 6. Definir el audio como adjunto personal, opcionalmente asociado a una pista del mismo álbum. Su soporte, persistencia, límites y respaldo requieren AUDIO-01; reproducción y metadatos desde proveedor requieren MEDIA-01. El núcleo manual y los enlaces externos no esperan esos resultados.
 7. Conservar datos e identidad existentes. La nueva vista física filtra `OwnedItem.medium=physical` y no elimina ni reclasifica compras digitales o deseos. Versionar contratos ejecutables únicamente al implementar nuevos datos, manteniendo lectores históricos estrictos.
+8. Separar en el álbum tipo principal, categorías combinables y estado de publicación. Inédito no excluye Demo, Split o EP. Conservar Deluxe/Especial/Aniversario en la edición física o digital (`Release`) y los datos de posesión en el ejemplar (`OwnedItem`). UX-05 versiona la separación del enum mixto actual sin inventar clasificaciones; COL-05 reutiliza ediciones sin convertirlas en propiedad implícita.
 
 ## Alternativas consideradas
 

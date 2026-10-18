@@ -25,4 +25,6 @@ Probar a 360 × 800 y 1280 × 900, en oscuro y claro; revisar también 320 px, t
 
 El JavaScript sólo compone vistas y datos ficticios en memoria. No importa módulos de la aplicación, no abre IndexedDB/localStorage, no solicita claves, no reproduce ni descarga audio y no realiza consultas a terceros. Recargar restablece la muestra. La navegación visual no implementa guardas, transacciones, errores de almacenamiento, concurrencia ni restauración de contexto de producción; el diálogo de cambios pendientes ilustra las opciones, no las garantiza.
 
+Revisar y Editar muestran, bajo demanda, tipo principal, categorías múltiples y publicación por separado. Los controles ilustran el contrato propuesto; guardar no persiste ni aplica esa clasificación a la ficha de muestra. Deluxe/Especial/Aniversario describen ediciones físicas o digitales, y el inventario distingue la edición del ejemplar poseído.
+
 La opinión de un álbum de muestra se presenta como contenido ilustrativo. Los datos incluyen un álbum escuchado sin nota y otro pendiente con nota para mostrar que esas dimensiones son independientes. La revisión con participantes y las pruebas del código real corresponden a las tareas de implementación y UX-07.

@@ -320,8 +320,8 @@ const dialogs = {
   ],
   copy: [
     'Registrar una copia física',
-    'Elige álbum, formato y edición opcional. Después podrás completar condición, fecha y notas de esa copia.',
-    'Una segunda copia del mismo disco conserva el álbum y tiene su propio registro. Este boceto muestra un vinilo y un CD ficticios.',
+    'Elige álbum, formato y edición opcional (Deluxe, Especial, Aniversario…). Después completa condición, fecha de adquisición y notas de esa copia.',
+    'Dos copias pueden compartir una edición; una edición digital puede existir sin copias físicas. Este boceto muestra un vinilo y un CD ficticios.',
   ],
   legacy: [
     'Adquisiciones y deseos',
