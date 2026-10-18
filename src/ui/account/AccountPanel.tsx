@@ -67,7 +67,7 @@ export function AccountPanel({ account }: { account: CloudAccount }) {
     if (input instanceof HTMLInputElement) input.value = ''
   }
   return (
-    <section className="panel-surface p-6" aria-label="Cuenta y dispositivos">
+    <section className="integration-panel" aria-label="Cuenta y dispositivos">
       {state.user && !state.recovery ? (
         <>
           <h2 className="text-xl font-semibold">Tu biblioteca conectada</h2>
