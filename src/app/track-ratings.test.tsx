@@ -335,7 +335,14 @@ test('cambiar pista o edición no reutiliza borradores; cerrar devuelve foco', a
   await open(repository)
   const eclipse = edit()
   fireEvent.change(eclipse, { target: { value: '10' } })
-  const overture = edit('Overture')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Valorar pista Overture' }),
+  )
+  expect(
+    screen.getByRole('dialog', { name: 'Cambios sin guardar' }),
+  ).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
+  const overture = screen.getByLabelText('Nota de la pista')
   expect(overture).toHaveValue('')
   expect(
     screen.getByRole('button', { name: 'Quitar nota de pista' }),

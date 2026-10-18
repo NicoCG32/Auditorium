@@ -22,6 +22,12 @@ async function addAlbum(page: Page, title: string) {
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Volver a biblioteca', exact: true })
+    .click()
+  await expect(
     page.getByRole('button', { name: title, exact: true }),
   ).toBeVisible()
 }
@@ -242,9 +248,7 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
       exact: true,
     }),
   ).toBeVisible()
-  await page
-    .getByRole('button', { name: 'Volver a biblioteca', exact: true })
-    .click()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await expect(
     page.getByRole('button', {
       name: 'Horizonte ficticio offline',

@@ -461,6 +461,7 @@ test('denegar persistencia no bloquea biblioteca ni respaldo', async ({
     ).data,
   ).toEqual(source)
   await page.reload()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()

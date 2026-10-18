@@ -18,6 +18,7 @@ import { LocalStorageError } from '../../infrastructure/db/errors'
 import { CoverFields } from './CoverFields'
 import { splitGenres } from './album-form-values'
 import { releaseTypeLabels } from './labels'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 
 interface ArtistDraft {
   key: string
@@ -68,10 +69,13 @@ export function AlbumEditPanel({
   onComplete,
   onCancel,
 }: Props) {
-  const [expected, setExpected] = useState(() =>
+  const draftId = `edit:${albumId}`
+  const [expected, setExpected] = useDraftState(draftId, 'expected', () =>
     buildAlbumEditExpected(snapshot, albumId),
   )
-  const [draft, setDraft] = useState(() => draftFrom(expected))
+  const [draft, setDraft] = useDraftState(draftId, 'values', () =>
+    draftFrom(expected),
+  )
   const [busy, setBusy] = useState(false)
   const [coverBusy, setCoverBusy] = useState(false)
   const [pendingRead, setPendingRead] = useState(false)
@@ -82,6 +86,28 @@ export function AlbumEditPanel({
   const heading = useRef<HTMLHeadingElement>(null)
   const form = useRef<HTMLFormElement>(null)
   const readButton = useRef<HTMLButtonElement>(null)
+  const comparable = (value: typeof draft) =>
+    JSON.stringify({
+      ...value,
+      artists: value.artists.map((artist) => [
+        artist.artistId,
+        artist.name,
+        artist.country,
+        artist.role,
+        artist.creditedAs,
+      ]),
+    })
+  useDraftGuard({
+    id: draftId,
+    label: 'Datos del álbum',
+    dirty: comparable(draft) !== comparable(draftFrom(expected)),
+    busy: busy || coverBusy,
+    pendingRead,
+    ...(pendingRead || conflict
+      ? { focus: () => readButton.current?.focus() }
+      : {}),
+    form,
+  })
   useEffect(() => {
     heading.current?.focus()
   }, [])

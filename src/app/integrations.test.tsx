@@ -74,7 +74,7 @@ test('elegir referencia prepara sin escribir; guardar conserva artistas, referen
   ).not.toBeInTheDocument()
   expect(screen.getByLabelText(/Guardar enlace de portada/u)).not.toBeChecked()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  fireEvent.click(await screen.findByRole('button', { name: candidate.title }))
+  await screen.findByRole('heading', { name: candidate.title })
   expect(
     screen.getByRole('link', { name: 'Wikidata · Q999999' }),
   ).toHaveAttribute('href', 'https://www.wikidata.org/wiki/Q999999')
@@ -108,6 +108,10 @@ test('portada requiere elección y editar identidad quita asociación y portada 
     screen.queryByRole('region', { name: 'Referencia preparada' }),
   ).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  await screen.findByRole('heading', {
+    name: 'Otra obra ficticia',
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Otra obra ficticia' })
   const album = (await repository.readSnapshot()).catalog.albums[0]
   expect(album).not.toHaveProperty('catalogReference')
@@ -130,7 +134,7 @@ test('un fallo del catálogo conserva datos manuales y permite guardar', async (
     'Horizonte ficticio',
   )
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  await screen.findByRole('button', { name: candidate.title })
+  await screen.findByRole('heading', { name: candidate.title })
   expect(
     (await repository.readSnapshot()).catalog.albums[0],
   ).not.toHaveProperty('catalogReference')

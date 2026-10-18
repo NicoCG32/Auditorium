@@ -43,6 +43,12 @@ async function add(page: Page, title: string, artist: string) {
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Volver a biblioteca', exact: true })
+    .click()
+  await expect(
     page.getByRole('button', { name: title, exact: true }),
   ).toBeVisible()
 }
@@ -168,7 +174,10 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await expect(
     page.getByRole('textbox', { name: 'Nota del álbum' }),
   ).toHaveValue('9,5')
-  await page.getByRole('button', { name: 'Volver a biblioteca' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Volver a álbumes retirados' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await page.reload()
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
@@ -258,7 +267,13 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
     exact: true,
   })
   if (limitedTabs) await addButton.focus()
-  else await page.keyboard.press(tabKey)
+  else {
+    await page.keyboard.press(tabKey)
+    await expect(
+      page.getByRole('button', { name: 'Biblioteca', exact: true }),
+    ).toBeFocused()
+    await page.keyboard.press(tabKey)
+  }
   await expect(addButton).toBeFocused()
   await addButton.press('Enter')
   await expect(

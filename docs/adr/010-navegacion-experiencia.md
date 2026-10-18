@@ -1,6 +1,6 @@
 # ADR-010 — Navegación por tareas y experiencia personal separada
 
-Estado: propuesta para UX-03; pendiente de revisión e implementación por tareas.
+Estado: diseño acordado en UX-03; navegación y borradores implementados en UX-04, en revisión. Contratos de enlaces, experiencia conjunta, referencia de edición y audio pendientes de sus tareas.
 Fecha: 2026-10-18.
 Referencias: [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61), [experiencia propuesta](../EXPERIENCIA_USUARIO.md), [contratos](../CONTRATOS_EXPERIENCIA.md).
 
@@ -35,4 +35,4 @@ La aplicación distingue álbum, edición, calificación y ejemplar en el domini
 
 El diseño permite revisar pantallas y responsabilidades antes de cambiar runtime. UX-04 implementa las guardas e historial; VIS-02 compone la biblioteca; LINK-01 versiona enlaces; UX-05/06 reorganizan alta y experiencia; COL-05 presenta el inventario; UX-07 valida recorridos y comprensión. Los bocetos son herramientas de revisión, sin acceso al repositorio de datos del usuario.
 
-Esta decisión no modifica schemas, IndexedDB, respaldos, recomendaciones ni el código publicado. Tampoco asegura disponibilidad de proveedores, almacenamiento de audio, sincronización o aceptación de uso con participantes. La implementación de cada tarea debe mostrar su evidencia y respetar [la definición de terminado](../PLAN_DESARROLLO.md#definición-de-terminado).
+La [implementación de navegación](../NAVEGACION.md) no modifica schemas, IndexedDB, respaldos ni recomendaciones y todavía no está publicada. Los índices iniciales usan los datos actuales; la referencia de edición en la nota y los demás contratos futuros aún no se instalan. Esta decisión tampoco asegura disponibilidad de proveedores, almacenamiento de audio, sincronización o aceptación de uso con participantes. Cada tarea debe mostrar su evidencia y respetar [la definición de terminado](../PLAN_DESARROLLO.md#definición-de-terminado).

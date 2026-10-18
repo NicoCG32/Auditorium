@@ -24,7 +24,7 @@ El caso `createAlbum` existente conserva su contrato de alta directa para los ot
 
 Artista, álbum, crédito y relación personal se guardan juntos. La interfaz bloquea controles y envíos repetidos durante la operación y solo anuncia éxito después de confirmar la transacción. Los fallos conservan el formulario para reintentar; no muestran excepciones internas.
 
-Tras un alta, se relee la biblioteca automáticamente, se limpian búsqueda y filtros para hacer visible la entrada y se enfoca su título. La vista de lista/cuadrícula se conserva. Si esa lectura falla después de confirmar el guardado, se informa que el álbum se guardó y se permite reintentar únicamente la lectura.
+Tras un alta se releen los datos y se abre la ficha del álbum. La búsqueda, filtros y vista anteriores de Biblioteca se conservan para regresar; no se limpian para forzar la coincidencia de la entrada nueva. Si la lectura falla después del commit, el formulario muestra el recibo, bloquea otra escritura y permite reintentar únicamente la lectura. Cancelar o navegar con cambios pide guardar, descartar o seguir editando, según la [política de navegación y borradores](NAVEGACION.md).
 
 Los títulos de las tarjetas abren la [ficha del álbum](FICHA_ALBUM.md): artista, tipo, año, escucha, valoración y descripción. La portada registrada se carga automáticamente; sin imagen o al fallar se conserva una representación local. La ficha permite [editar los metadatos guardados](EDICION_CATALOGO.md) conservando el ID del álbum y sus relaciones. Al volver a biblioteca se enfoca la tarjeta correspondiente o la búsqueda cuando los filtros la oculten. LIB-03 añade el editor de valoración del álbum.
 

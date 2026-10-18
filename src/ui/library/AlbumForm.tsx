@@ -17,26 +17,60 @@ import {
 } from './album-form-values'
 import { releaseTypeLabels } from './labels'
 import { CoverFields } from './CoverFields'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 
 interface Props {
   snapshot: LocalSnapshot
   library: MusicLibrary
   onComplete: (entryId: string, openExisting: boolean) => void
   onCancel: () => void
+  onCommitted: () => Promise<LocalSnapshot>
 }
-export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
-  const [values, setValues] = useState(emptyAlbumForm)
+export function AlbumForm({
+  snapshot,
+  library,
+  onComplete,
+  onCancel,
+  onCommitted,
+}: Props) {
+  const [values, setValues] = useDraftState(
+    'new-album',
+    'values',
+    emptyAlbumForm,
+  )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [failure, setFailure] = useState('')
-  const [review, setReview] = useState<AlbumCandidate[]>([])
+  const [review, setReview] = useDraftState<AlbumCandidate[]>(
+    'new-album',
+    'review',
+    [],
+  )
   const [busy, setBusy] = useState(false)
   const [coverBusy, setCoverBusy] = useState(false)
-  const [offeredCover, setOfferedCover] = useState<string>()
+  const [offeredCover, setOfferedCover] = useDraftState<string | undefined>(
+    'new-album',
+    'offered-cover',
+    undefined,
+  )
+  const [pending, setPending] = useState<{ id: string; existing: boolean }>()
   const locked = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
   const artistRef = useRef<HTMLInputElement>(null)
   const reviewHeading = useRef<HTMLHeadingElement>(null)
   const selectionHeading = useRef<HTMLHeadingElement>(null)
+  const retry = useRef<HTMLButtonElement>(null)
+  useDraftGuard({
+    id: 'new-album',
+    label: 'Nuevo álbum',
+    dirty: JSON.stringify(values) !== JSON.stringify(emptyAlbumForm),
+    busy: busy || coverBusy,
+    pendingRead: Boolean(pending),
+    ...(pending ? { focus: () => retry.current?.focus() } : {}),
+    form: formRef,
+  })
+  useEffect(() => {
+    if (pending && !busy) retry.current?.focus()
+  }, [pending, busy, failure])
   useEffect(() => {
     artistRef.current?.focus()
   }, [])
@@ -94,7 +128,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     ) : null
   }
   async function save(acknowledge = false) {
-    if (locked.current || coverBusy) return
+    if (locked.current || coverBusy || pending) return
     const parsed = parseAlbumForm(values)
     if (!parsed.success) {
       setErrors(parsed.errors)
@@ -116,7 +150,11 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
         acknowledge ? review.map((candidate) => candidate.album.id) : [],
       )
       if (result.status === 'review') setReview(result.candidates)
-      else onComplete(result.userAlbum.id, false)
+      else {
+        const committed = { id: result.userAlbum.id, existing: false }
+        setPending(committed)
+        await synchronize(committed)
+      }
     } catch (error) {
       setFailure(
         error instanceof LocalStorageError && error.code === 'quota_exceeded'
@@ -129,13 +167,15 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     }
   }
   async function chooseCandidate(candidate: AlbumCandidate) {
-    if (locked.current) return
+    if (locked.current || pending) return
     locked.current = true
     setBusy(true)
     setFailure('')
     try {
       const entry = await library.addAlbumToLibrary(candidate.album.id)
-      onComplete(entry.id, true)
+      const committed = { id: entry.id, existing: true }
+      setPending(committed)
+      await synchronize(committed)
     } catch {
       setFailure(
         'No se pudo abrir o añadir el álbum seleccionado. Vuelve a intentar.',
@@ -149,6 +189,24 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     event.preventDefault()
     void save()
   }
+  async function synchronize(committed: { id: string; existing: boolean }) {
+    try {
+      await onCommitted()
+      onComplete(committed.id, committed.existing)
+    } catch {
+      setFailure(
+        'El álbum se guardó, pero no pudimos actualizar la biblioteca. Reintenta sólo la lectura para continuar.',
+      )
+    }
+  }
+  async function retryRead() {
+    if (locked.current || !pending) return
+    locked.current = true
+    setBusy(true)
+    await synchronize(pending)
+    setBusy(false)
+    locked.current = false
+  }
   return (
     <section className="album-form-panel" aria-labelledby="add-album-title">
       <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
@@ -161,7 +219,10 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
         Artista y título son suficientes. Los demás datos pueden esperar.
       </p>
       <form ref={formRef} onSubmit={submit} noValidate autoComplete="off">
-        <fieldset disabled={busy} className="album-form-fields">
+        <fieldset
+          disabled={busy || Boolean(pending)}
+          className="album-form-fields"
+        >
           <div className="form-grid">
             <label>
               <span id="form-artist-label" className="field-label">
@@ -488,7 +549,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
               </button>
             </section>
           ) : null}
-          {failure ? (
+          {failure && !pending ? (
             <p role="alert" className="field-error">
               {failure}
             </p>
@@ -519,6 +580,22 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
           </div>
         </fieldset>
       </form>
+      {pending ? (
+        <>
+          <p role="alert" className="field-error">
+            {failure}
+          </p>
+          <button
+            ref={retry}
+            type="button"
+            className="action-button mt-4"
+            disabled={busy}
+            onClick={() => void retryRead()}
+          >
+            Reintentar lectura del álbum
+          </button>
+        </>
+      ) : null}
     </section>
   )
 }

@@ -71,6 +71,7 @@ El [índice de documentación](docs/README.md) organiza las referencias vigentes
 - [Arquitectura del sistema](docs/ARQUITECTURA.md): contexto, componentes, dependencias, transacciones, PWA y distribución.
 - [Modelo de dominio](docs/MODELO_DOMINIO.md): entidades, cardinalidades, reglas, estados y ejemplos ficticios.
 - [Modelo de datos](docs/MODELO_DATOS.md): tablas, claves, índices, migraciones, identidad, concurrencia y respaldos.
+- [Navegación y borradores](docs/NAVEGACION.md): rutas, regreso con contexto y guardado o descarte explícito de cambios.
 
 ## Plan y seguimiento
 

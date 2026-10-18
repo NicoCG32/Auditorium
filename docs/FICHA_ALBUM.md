@@ -31,7 +31,7 @@ Los cambios se anuncian después de confirmar la transacción. La ficha relee un
 - Si la escritura se confirmó pero falla la lectura posterior, se muestra el valor confirmado y una explicación. «Reintentar lectura» no vuelve a guardar ni a quitar la nota. Las escrituras y la navegación esperan a recuperar una lectura coherente.
 - Tras guardar, quitar o recuperar la lectura, el foco vuelve al campo. Al volver a biblioteca se conserva la vista y los filtros y se enfoca la tarjeta; si la nota nueva la deja fuera de los filtros, se enfoca la búsqueda.
 
-Los mensajes usan `status` o `alert` y los controles son nativos con foco visible. Cambiar de álbum descarta un borrador sin guardar y carga su propia nota; los borradores no sobreviven a una recarga. Las otras pestañas se consultan al actualizar o recargar, sin suscripción automática.
+Los mensajes usan `status` o `alert` y los controles son nativos con foco visible. Cambiar de tarea o de álbum con un borrador ofrece Guardar y salir, Descartar cambios o Seguir editando; no se pierde por navegar sin resolver esa decisión. Los borradores no sobreviven a una recarga confirmada. Las otras pestañas se consultan al actualizar o recargar, sin suscripción automática. La [guía de navegación](NAVEGACION.md) detalla historial, contexto y protección de salida.
 
 ## Verificación y límites
 

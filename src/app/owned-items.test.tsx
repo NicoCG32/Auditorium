@@ -124,6 +124,7 @@ test('cancelar registro, cancelar eliminación y Escape no escriben; retornan fo
   begin()
   change('Notas del ejemplar', 'Borrador ficticio')
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar registro' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
   await waitFor(() =>
     expect(
       screen.getByRole('button', { name: 'Registrar ejemplar' }),

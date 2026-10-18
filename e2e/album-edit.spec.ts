@@ -93,6 +93,12 @@ async function add(
     .fill(country)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Volver a biblioteca', exact: true })
+    .click()
+  await expect(
     page.getByRole('button', { name: title, exact: true }),
   ).toBeVisible()
 }
@@ -115,6 +121,9 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     .getByRole('textbox', { name: 'País de origen 1', exact: true })
     .fill('País descartado ficticio')
   await page.getByRole('button', { name: 'Cancelar edición' }).click()
+  await page
+    .getByRole('button', { name: 'Descartar cambios', exact: true })
+    .click()
   await expect(
     page.getByRole('heading', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
@@ -149,9 +158,12 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     page.getByRole('textbox', { name: 'Notas personales', exact: true }),
   ).toHaveValue('  Comentario ficticio.\nSegunda línea.  ')
   await page.reload()
-  await page
-    .getByRole('button', { name: 'Eclipse corregido ficticio', exact: true })
-    .click()
+  await expect(
+    page.getByRole('heading', {
+      name: 'Eclipse corregido ficticio',
+      exact: true,
+    }),
+  ).toBeVisible()
   await expect(
     page.getByText('Metal progresivo · Jazz', { exact: true }),
   ).toBeVisible()
@@ -304,7 +316,9 @@ test('PNG local se valida, carga automáticamente, persiste al recargar y restau
     page.getByRole('button', { name: 'Mostrar portada' }),
   ).toHaveCount(0)
   await page.reload()
-  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Eclipse', exact: true }),
+  ).toBeVisible()
   await expect(cover).toBeVisible()
   await context.setOffline(true)
   const backup = await exportBackup(page)

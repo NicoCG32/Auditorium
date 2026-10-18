@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Navegación por Biblioteca, Añadir álbum, Calificaciones y Mi colección mediante rutas de fragmento compatibles con Pages. Conserva contexto, consulta, vista, foco y posición al regresar; Calificaciones y Mi colección incorporan índices iniciales sobre los datos existentes, con medios físicos y digitales diferenciados.
+- Protección de borradores al navegar, usar Atrás/Adelante o cancelar editores: guardar y salir, descartar explícitamente o seguir editando. Un commit con lectura fallida bloquea nuevas escrituras y sólo reintenta lectura; el alta abre su ficha después de confirmar ambos pasos. Los borradores siguen en memoria de la pestaña y no sobreviven a una recarga confirmada.
 - Búsqueda opcional de álbumes en Wikidata por acción explícita, con revisión de candidatos, créditos múltiples y borrador editable. El registro manual continúa disponible sin coincidencia, red o servicio.
 - Procedencia y referencias validadas de MusicBrainz, Spotify y YouTube en la ficha; URL de portada opcional de Cover Art Archive, aceptada por separado y cargada automáticamente en el borrador, la ficha y las tarjetas.
 - Recomendaciones de escucha o revaloración mediante Groq o Gemini, con clave propia sólo en memoria, contexto acotado y respuesta validada sobre álbumes ya guardados. No cambia valoraciones ni activa facturación; los niveles gratuitos dependen de cada cuenta y sus cuotas.

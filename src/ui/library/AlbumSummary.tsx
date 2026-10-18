@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import type { Album, Catalog } from '../../domain/catalog/schemas'
 import type { LibraryAlbum } from '../../application/library-query'
 import { releaseTypeLabels } from './labels'
@@ -20,6 +20,7 @@ import { PurchaseWishesPanel } from './PurchaseWishesPanel'
 import { RemoveAlbumPanel } from './RemoveAlbumPanel'
 import { AlbumReferenceLinks } from '../catalog/AlbumReferenceLinks'
 import { AlbumEditPanel } from './AlbumEditPanel'
+import { useNavigation } from '../navigation/navigation-context'
 
 export function AlbumSummary({
   snapshot,
@@ -38,6 +39,11 @@ export function AlbumSummary({
   purchaseWishes,
   personalLibrary,
   onRemoved,
+  editing,
+  onEdit,
+  onEditComplete,
+  onEditCancel,
+  backLabel,
 }: {
   snapshot: LocalSnapshot
   album: Album
@@ -55,21 +61,17 @@ export function AlbumSummary({
   purchaseWishes: PurchaseWish[]
   personalLibrary: Library
   onRemoved: () => void
+  editing: boolean
+  onEdit: () => void
+  onEditComplete: () => void
+  onEditCancel: () => void
+  backLabel: string
 }) {
-  const [editing, setEditing] = useState(false)
-  const [notice, setNotice] = useState('')
-  const editButton = useRef<HTMLButtonElement>(null)
-  const focusEdit = useRef(false)
+  const navigation = useNavigation()
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     heading.current?.focus()
   }, [entry.id])
-  useEffect(() => {
-    if (!editing && focusEdit.current) {
-      editButton.current?.focus()
-      focusEdit.current = false
-    }
-  }, [editing])
   const creditedArtists = catalog.albumArtists
     .filter((credit) => credit.albumId === album.id)
     .toSorted((a, b) => a.position - b.position)
@@ -77,56 +79,41 @@ export function AlbumSummary({
       catalog.artists.find((artist) => artist.id === credit.artistId),
     )
     .filter((artist) => artist !== undefined)
+  if (editing)
+    return (
+      <AlbumEditPanel
+        snapshot={snapshot}
+        albumId={album.id}
+        library={library}
+        onCommitted={onExperienceCommitted}
+        onBusyChange={onBusyChange}
+        onComplete={onEditComplete}
+        onCancel={onEditCancel}
+      />
+    )
   return (
     <>
-      {editing ? (
-        <AlbumEditPanel
-          snapshot={snapshot}
-          albumId={album.id}
-          library={library}
-          onCommitted={onExperienceCommitted}
-          onBusyChange={onBusyChange}
-          onComplete={() => {
-            focusEdit.current = true
-            setEditing(false)
-            setNotice('Datos del álbum guardados.')
-          }}
-          onCancel={() => {
-            focusEdit.current = true
-            setEditing(false)
-          }}
-        />
-      ) : null}
-      <section
-        hidden={editing}
-        className="album-summary"
-        aria-labelledby="album-summary-title"
-      >
+      <section className="album-summary" aria-labelledby="album-summary-title">
         <button
           type="button"
           className="text-button mb-6"
           disabled={busy}
           onClick={onBack}
         >
-          Volver a biblioteca
+          {backLabel}
         </button>
         <button
-          ref={editButton}
+          id="album-edit-button"
           type="button"
           className="action-button mb-6 ml-3"
           disabled={busy}
-          onClick={() => {
-            setNotice('')
-            setEditing(true)
+          onClick={(event) => {
+            event.currentTarget.focus()
+            onEdit()
           }}
         >
           Editar álbum
         </button>
-        {notice ? (
-          <p role="status" className="mb-5 text-sm text-accent-text">
-            {notice}
-          </p>
-        ) : null}
         <div className="album-summary-grid">
           <AlbumCover
             title={album.title}
@@ -253,7 +240,7 @@ export function AlbumSummary({
           title={album.title}
           data={personalLibrary}
           library={library}
-          blocked={busy}
+          blocked={busy || Boolean(navigation?.drafts.dirty().length)}
           onBusyChange={onBusyChange}
           onCommitted={onExperienceCommitted}
           onRemoved={onRemoved}

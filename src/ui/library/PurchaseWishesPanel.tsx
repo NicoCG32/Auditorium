@@ -9,6 +9,8 @@ import type { OwnedItem } from '../../domain/library/owned-items'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { ownedItemLabel } from './owned-labels'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
+import { useNavigation } from '../navigation/navigation-context'
 
 const formatLabels = {
   vinyl: 'Vinilo',
@@ -45,11 +47,17 @@ export function PurchaseWishesPanel({
   onBusyChange: (busy: boolean) => void
   onCommitted: () => Promise<LocalSnapshot>
 }) {
-  const [formOpen, setFormOpen] = useState(false)
-  const [editing, setEditing] = useState<PurchaseWish>()
-  const [format, setFormat] = useState('vinyl')
-  const [releaseId, setReleaseId] = useState('')
-  const [notes, setNotes] = useState('')
+  const draftId = `wish:${entryId}`
+  const navigation = useNavigation()
+  const [formOpen, setFormOpen] = useDraftState(draftId, 'open', false)
+  const [editing, setEditing] = useDraftState<PurchaseWish | undefined>(
+    draftId,
+    'editing',
+    undefined,
+  )
+  const [format, setFormat] = useDraftState(draftId, 'format', 'vinyl')
+  const [releaseId, setReleaseId] = useDraftState(draftId, 'release', '')
+  const [notes, setNotes] = useDraftState(draftId, 'notes', '')
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState<PurchaseWish>()
   const [failure, setFailure] = useState('')
@@ -60,6 +68,20 @@ export function PurchaseWishesPanel({
   const retry = useRef<HTMLButtonElement>(null)
   const error = useRef<HTMLParagraphElement>(null)
   const focusAdd = useRef(false)
+  const form = useRef<HTMLFormElement>(null)
+  useDraftGuard({
+    id: draftId,
+    label: 'Deseo de compra',
+    dirty:
+      formOpen &&
+      (format !== (editing ? (editing.targetFormat ?? '') : 'vinyl') ||
+        releaseId !== (editing?.targetReleaseId ?? '') ||
+        notes !== (editing?.notes ?? '')),
+    busy,
+    pendingRead: Boolean(pending),
+    ...(pending ? { focus: () => retry.current?.focus() } : {}),
+    form,
+  })
   useEffect(() => {
     if (formOpen) input.current?.focus()
   }, [formOpen])
@@ -94,9 +116,13 @@ export function PurchaseWishesPanel({
     setFormOpen(true)
   }
   function cancel() {
-    setFormOpen(false)
-    setFailure('')
-    focusAdd.current = true
+    const close = () => {
+      setFormOpen(false)
+      setFailure('')
+      focusAdd.current = true
+    }
+    if (navigation) navigation.closeEditor(draftId, close)
+    else close()
   }
   async function read() {
     try {
@@ -339,6 +365,7 @@ export function PurchaseWishesPanel({
         </button>
       ) : (
         <form
+          ref={form}
           className="grid gap-4 mt-5"
           onSubmit={submit}
           onKeyDown={(event) => {

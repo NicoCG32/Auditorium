@@ -353,10 +353,12 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   await expect.poll(() => covers).toBeGreaterThan(0)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
-    page.getByRole('button', { name: albumTitle, exact: true }),
+    page.getByRole('heading', { name: albumTitle, exact: true }),
   ).toBeVisible()
   await page.reload()
-  await page.getByRole('button', { name: albumTitle, exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: albumTitle, exact: true }),
+  ).toBeVisible()
   await expect(
     page.getByRole('link', { name: `Wikidata · ${albumId}` }),
   ).toHaveAttribute('href', `https://www.wikidata.org/wiki/${albumId}`)
@@ -426,7 +428,6 @@ test('fallo del catálogo conserva el formulario y permite registrar sin conexi�
     .click()
   await context.setOffline(true)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
-  await page.getByRole('button', { name: albumTitle, exact: true }).click()
   await expect(
     page.getByRole('heading', { name: albumTitle, exact: true }),
   ).toBeVisible()
@@ -647,5 +648,8 @@ test('catálogo y recomendaciones son accesibles a360px en temas oscuro y claro'
     await searchCatalog(page)
     await accessible(page)
     await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
+    await page
+      .getByRole('button', { name: 'Descartar cambios', exact: true })
+      .click()
   }
 })

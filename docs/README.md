@@ -19,6 +19,8 @@ Arquitectura, dominio y datos son vistas complementarias: una relación conceptu
 
 ## Guías por capacidad
 
+La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contexto, índices de Calificaciones/Mi colección y protección de cambios implementados en UX-04. La [experiencia propuesta](EXPERIENCIA_USUARIO.md) sigue especificando los refinamientos pendientes de formularios y datos.
+
 | Área                     | Referencias                                                                                                                |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
 | Catálogo e identidad     | [Catálogo](DOMINIO_CATALOGO.md), [biblioteca personal](DOMINIO_BIBLIOTECA.md), [persistencia local](PERSISTENCIA_LOCAL.md) |
@@ -44,18 +46,18 @@ La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica bús
 
 ## Decisiones de arquitectura
 
-| Decisión                                                                 | Justificación                                                                                         |
-| ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| [ADR-001: MVP local](adr/001-mvp-local.md)                               | Biblioteca ejecutada y guardada en el navegador                                                       |
-| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)        | Identidades musicales y apariciones diferenciadas                                                     |
-| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                 | Servicios opcionales evaluados antes de incorporarlos                                                 |
-| [ADR-004: retirada personal](adr/004-retirada-personal.md)               | Restauración de la misma entrada sin borrar catálogo o datos relacionados                             |
-| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)         | Adopción atómica de identidad y datos en un destino vacío                                             |
-| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)             | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                               |
-| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)        | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                    |
-| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md) | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local    |
-| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)    | Edición con identidad estable, géneros, país y portada automática local o remota                      |
-| [ADR-010: navegación por tareas](adr/010-navegacion-experiencia.md)      | Propuesta de navegación y guardados por responsabilidad, enlaces personales y colección física aparte |
+| Decisión                                                                 | Justificación                                                                                       |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| [ADR-001: MVP local](adr/001-mvp-local.md)                               | Biblioteca ejecutada y guardada en el navegador                                                     |
+| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)        | Identidades musicales y apariciones diferenciadas                                                   |
+| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                 | Servicios opcionales evaluados antes de incorporarlos                                               |
+| [ADR-004: retirada personal](adr/004-retirada-personal.md)               | Restauración de la misma entrada sin borrar catálogo o datos relacionados                           |
+| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)         | Adopción atómica de identidad y datos en un destino vacío                                           |
+| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)             | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                             |
+| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)        | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                  |
+| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md) | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local  |
+| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)    | Edición con identidad estable, géneros, país y portada automática local o remota                    |
+| [ADR-010: navegación por tareas](adr/010-navegacion-experiencia.md)      | Navegación y borradores en UX-04; enlaces, experiencia conjunta y contratos de colección por tareas |
 
 Los ADR conservan la fecha y el contexto de la decisión. El estado de ejecución actual se consulta en la [arquitectura](ARQUITECTURA.md), el [Project](https://github.com/users/NicoCG32/projects/4) y los [hitos](https://github.com/NicoCG32/Auditorium/milestones).
 

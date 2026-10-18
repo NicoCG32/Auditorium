@@ -10,6 +10,8 @@ La estructura distingue datos musicales de catálogo, experiencia personal y rec
 
 ## 2. Contexto del sistema
 
+UX-04 incorpora un [controlador de navegación y registro de borradores](NAVEGACION.md) en la capa UI. Las rutas usan fragmentos y preservan raíz/Pages; los índices, guardas de historial y estados de guardado no alteran los contratos de dominio o almacenamiento. Los borradores quedan en memoria de la pestaña, separados de los datos confirmados.
+
 ```mermaid
 flowchart LR
     Persona["Persona que organiza su música"]

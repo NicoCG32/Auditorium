@@ -470,6 +470,7 @@ test('cambiar de álbum descarta el borrador y carga su propia nota', async () =
   const input = await openRating(repository)
   fireEvent.change(input, { target: { value: '1,5' } })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
   fireEvent.click(screen.getByRole('button', { name: 'Otra órbita' }))
   expect(screen.getByRole('textbox', { name: 'Nota del álbum' })).toHaveValue(
     '8',
@@ -646,16 +647,15 @@ test('registro mínimo aparece sin recarga y permite abrir su ficha básica', as
   expect(screen.getByRole('textbox', { name: 'Artista' })).toHaveFocus()
   fillAlbum()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  const album = await screen.findByRole('button', { name: 'Eclipse nuevo' })
-  await waitFor(() => expect(album).toHaveFocus())
+  expect(
+    await screen.findByRole('heading', { name: 'Eclipse nuevo' }),
+  ).toHaveFocus()
   const snapshot = await repository.readSnapshot()
   expect(snapshot.catalog.albums[0]?.releaseType).toBe('album')
   expect(snapshot.catalog.albums[0]).not.toHaveProperty('originalYear')
   expect(snapshot.library.userAlbums).toHaveLength(1)
-  fireEvent.click(album)
-  expect(screen.getByRole('heading', { name: 'Eclipse nuevo' })).toHaveFocus()
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
-  expect(screen.getByRole('button', { name: 'Eclipse nuevo' })).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Eclipse nuevo' })).toBeVisible()
 })
 
 test('validación de campos y cancelación conservan datos y devuelven el foco', async () => {
@@ -696,6 +696,8 @@ test('tipo y metadatos opcionales se guardan; año inválido conserva el formula
     target: { value: 'Descripción ficticia' },
   })
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Eclipse nuevo' })
   expect((await repository.readSnapshot()).catalog.albums[0]).toMatchObject({
     releaseType: 'ep',
@@ -735,6 +737,8 @@ test('crear otro álbum es explícito y conserva artistas homónimos separados',
   await screen.findByRole('button', { name: 'Crear otro álbum' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(2)
   fireEvent.click(screen.getByRole('button', { name: 'Crear otro álbum' }))
+  await screen.findByRole('heading', { name: 'Eclipse' })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('searchbox')
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(3)
   expect((await repository.readSnapshot()).catalog.artists).toHaveLength(2)
@@ -746,6 +750,8 @@ test('elige un artista existente por referencia al crear una obra distinta', asy
   fillAlbum('Umbral Eléctrico', 'Nueva órbita')
   fireEvent.click(screen.getByRole('radio', { name: /^Usar Umbral Eléctrico/ }))
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  await screen.findByRole('heading', { name: 'Nueva órbita' })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Nueva órbita' })
   expect((await repository.readSnapshot()).catalog.artists).toHaveLength(1)
 })
@@ -789,6 +795,8 @@ test('fallo de escritura revierte el alta y mantiene valores para reintentar', a
   expect(await repository.readSnapshot()).toEqual(before)
   failure.mockRestore()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Eclipse nuevo' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(1)
 })
@@ -803,6 +811,8 @@ test('dos envíos rápidos solo ejecutan una operación de registro', async () =
   fireEvent.submit(form)
   fireEvent.submit(form)
   expect(registration).toHaveBeenCalledTimes(1)
+  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Eclipse nuevo' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(1)
 })
@@ -816,8 +826,12 @@ test('fallar la lectura después de guardar no repite la escritura al reintentar
   )
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   await screen.findByRole('alert')
-  expect(screen.getByText('Álbum guardado en tu biblioteca.')).toBeVisible()
-  fireEvent.click(screen.getByRole('button', { name: 'Volver a intentar' }))
+  expect(screen.getByRole('alert')).toHaveTextContent('El álbum se guardó')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Reintentar lectura del álbum' }),
+  )
+  await screen.findByRole('heading', { name: 'Eclipse nuevo' })
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Eclipse nuevo' })
   expect((await repository.readSnapshot()).catalog.albums).toHaveLength(1)
 })

@@ -84,20 +84,36 @@ test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar 
     screen.getByRole('button', { name: 'Eclipse corregido' }),
   ).toBeVisible()
 })
-test('cancelar preserva el álbum y los borradores de experiencia abiertos antes de editar', async () => {
+test('cambiar de editor permite conservar el borrador o guardarlo antes de editar metadatos', async () => {
   const before = await repository.readSnapshot()
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
   change('Notas personales', 'Borrador ficticio por guardar')
   fireEvent.click(screen.getByRole('button', { name: 'Editar álbum' }))
+  expect(
+    screen.getByRole('dialog', { name: 'Cambios sin guardar' }),
+  ).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Seguir editando' }))
+  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
+    'Borrador ficticio por guardar',
+  )
+  expect(await repository.readSnapshot()).toEqual(before)
+  fireEvent.click(screen.getByRole('button', { name: 'Editar álbum' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar y salir' }))
+  await screen.findByRole('textbox', { name: 'Título' })
   change('Título', 'Edición que se cancela')
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar edición' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
   expect(screen.getByRole('heading', { name: 'Eclipse' })).toBeVisible()
   expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
     'Borrador ficticio por guardar',
   )
   expect(screen.getByRole('button', { name: 'Editar álbum' })).toHaveFocus()
-  expect(await repository.readSnapshot()).toEqual(before)
+  const after = await repository.readSnapshot()
+  expect(after.catalog).toEqual(before.catalog)
+  expect(after.library.userAlbums[0]?.personalNotes).toBe(
+    'Borrador ficticio por guardar',
+  )
 })
 test('cuota mantiene álbum y borrador, reintentar guarda una sola edición', async () => {
   const before = await repository.readSnapshot()

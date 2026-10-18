@@ -11,6 +11,7 @@ import {
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { listeningLabels } from './labels'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 
 interface Props {
   entry: UserAlbum
@@ -35,9 +36,20 @@ export function AlbumExperienceForm({
   onCommitted,
   onBusyChange,
 }: Props) {
-  const [status, setStatus] = useState<ListeningStatus>(entry.listeningStatus)
-  const [notes, setNotes] = useState(entry.personalNotes ?? '')
-  const [base, setBase] = useState(() => expectedExperience(entry))
+  const draftId = `experience:${entry.id}`
+  const [status, setStatus] = useDraftState<ListeningStatus>(
+    draftId,
+    'status',
+    entry.listeningStatus,
+  )
+  const [notes, setNotes] = useDraftState(
+    draftId,
+    'notes',
+    entry.personalNotes ?? '',
+  )
+  const [base, setBase] = useDraftState(draftId, 'expected', () =>
+    expectedExperience(entry),
+  )
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState<UserAlbum>()
   const [failure, setFailure] = useState('')
@@ -47,6 +59,19 @@ export function AlbumExperienceForm({
   const focusInput = useRef(false)
   const select = useRef<HTMLSelectElement>(null)
   const readButton = useRef<HTMLButtonElement>(null)
+  const form = useRef<HTMLFormElement>(null)
+  useDraftGuard({
+    id: draftId,
+    label: 'Escucha y notas personales',
+    dirty:
+      status !== base.listeningStatus || notes !== (base.personalNotes ?? ''),
+    busy,
+    pendingRead: Boolean(pending),
+    ...(pending || conflict
+      ? { focus: () => readButton.current?.focus() }
+      : {}),
+    form,
+  })
   const current = pending ?? entry
   useEffect(() => {
     if (busy) return
@@ -150,7 +175,7 @@ export function AlbumExperienceForm({
           {listeningLabels[current.listeningStatus]}
         </strong>
       </p>
-      <form onSubmit={submit} noValidate autoComplete="off">
+      <form ref={form} onSubmit={submit} noValidate autoComplete="off">
         <fieldset
           disabled={busy || pending !== undefined || blocked}
           className="mt-5 min-w-0"

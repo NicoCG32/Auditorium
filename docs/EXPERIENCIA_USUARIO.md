@@ -1,8 +1,10 @@
 # Experiencia de biblioteca, escucha y colección
 
-Estado: **diseño propuesto para UX-03, pendiente de revisión**. Fecha: 2026-10-18. Referencias: [UX-02 #60](https://github.com/NicoCG32/Auditorium/issues/60), [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61) y [ADR-010](adr/010-navegacion-experiencia.md).
+Estado: **diseño de referencia acordado en UX-03, implementación por tareas**. UX-04 incorpora la base de navegación en revisión; los demás refinamientos mantienen sus tareas. Fecha: 2026-10-18. Referencias: [UX-02 #60](https://github.com/NicoCG32/Auditorium/issues/60), [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61) y [ADR-010](adr/010-navegacion-experiencia.md).
 
 Este documento define el recorrido que se implementará por tareas. No describe una interfaz ya publicada ni modifica el contrato vigente DB5/respaldo3. Los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) separan música, experiencia, enlaces y posesión. Los [bocetos navegables](prototipos/experiencia/index.html) permiten comparar las pantallas en escritorio y móvil con datos ficticios; no acceden a la biblioteca real ni guardan cambios.
+
+UX-04 implementa la base de [navegación, contexto y borradores](NAVEGACION.md), con índices iniciales de Calificaciones y Mi colección. Los editores finales, composición visual y ampliaciones de datos de las tareas siguientes continúan siendo propuesta; esta base no incluye aún el selector de edición de referencia ni el guardado conjunto de nota/escucha/comentario.
 
 ## 1. Jerarquía de navegación
 

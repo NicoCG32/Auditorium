@@ -27,7 +27,15 @@ export function AlbumCard({
           {album.originalYear ?? 'Año sin registrar'}
         </p>
         <h2 className="text-xl font-semibold leading-tight wrap-anywhere">
-          <button type="button" className="album-title-button" onClick={onOpen}>
+          <button
+            id={`album-open-${album.id}`}
+            type="button"
+            className="album-title-button"
+            onClick={(event) => {
+              event.currentTarget.focus()
+              onOpen()
+            }}
+          >
             {album.title}
           </button>
         </h2>
