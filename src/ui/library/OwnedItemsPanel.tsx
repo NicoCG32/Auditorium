@@ -11,6 +11,8 @@ import {
 import type { Release } from '../../domain/catalog/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
+import { useNavigation } from '../navigation/navigation-context'
 import {
   ownedMediumLabels,
   ownedFormatLabels,
@@ -37,14 +39,32 @@ export function OwnedItemsPanel({
   onBusyChange: (busy: boolean) => void
   onCommitted: () => Promise<LocalSnapshot>
 }) {
-  const [formOpen, setFormOpen] = useState(false)
-  const [medium, setMedium] = useState<OwnedItem['medium']>('physical')
-  const [format, setFormat] = useState<OwnedItem['format']>('cd')
-  const [releaseId, setReleaseId] = useState('')
-  const [acquiredAt, setAcquiredAt] = useState('')
-  const [mediaCondition, setMediaCondition] = useState('')
-  const [sleeveCondition, setSleeveCondition] = useState('')
-  const [notes, setNotes] = useState('')
+  const draftId = `owned:${entryId}`
+  const navigation = useNavigation()
+  const [formOpen, setFormOpen] = useDraftState(draftId, 'open', false)
+  const [medium, setMedium] = useDraftState<OwnedItem['medium']>(
+    draftId,
+    'medium',
+    'physical',
+  )
+  const [format, setFormat] = useDraftState<OwnedItem['format']>(
+    draftId,
+    'format',
+    'cd',
+  )
+  const [releaseId, setReleaseId] = useDraftState(draftId, 'release', '')
+  const [acquiredAt, setAcquiredAt] = useDraftState(draftId, 'acquired', '')
+  const [mediaCondition, setMediaCondition] = useDraftState(
+    draftId,
+    'media',
+    '',
+  )
+  const [sleeveCondition, setSleeveCondition] = useDraftState(
+    draftId,
+    'sleeve',
+    '',
+  )
+  const [notes, setNotes] = useDraftState(draftId, 'notes', '')
   const [deleting, setDeleting] = useState<OwnedItem>()
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState<ConfirmedChange>()
@@ -58,6 +78,26 @@ export function OwnedItemsPanel({
   const retry = useRef<HTMLButtonElement>(null)
   const error = useRef<HTMLParagraphElement>(null)
   const focusAdd = useRef(false)
+  const form = useRef<HTMLFormElement>(null)
+  useDraftGuard({
+    id: draftId,
+    label: 'Nuevo ejemplar',
+    dirty:
+      formOpen &&
+      Boolean(
+        medium !== 'physical' ||
+        format !== 'cd' ||
+        releaseId ||
+        acquiredAt ||
+        mediaCondition ||
+        sleeveCondition ||
+        notes,
+      ),
+    busy,
+    pendingRead: Boolean(pending),
+    ...(pending ? { focus: () => retry.current?.focus() } : {}),
+    form,
+  })
   useEffect(() => {
     if (formOpen) mediumInput.current?.focus()
   }, [formOpen])
@@ -272,6 +312,7 @@ export function OwnedItemsPanel({
         </button>
       ) : (
         <form
+          ref={form}
           onSubmit={submit}
           noValidate
           autoComplete="off"
@@ -406,9 +447,13 @@ export function OwnedItemsPanel({
                 type="button"
                 className="action-button"
                 onClick={() => {
-                  setFormOpen(false)
-                  setFailure('')
-                  focusAdd.current = true
+                  const close = () => {
+                    setFormOpen(false)
+                    setFailure('')
+                    focusAdd.current = true
+                  }
+                  if (navigation) navigation.closeEditor(draftId, close)
+                  else close()
                 }}
               >
                 Cancelar registro

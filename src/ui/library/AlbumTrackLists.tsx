@@ -23,6 +23,8 @@ import { TrackRatingForm } from './TrackRatingForm'
 import type { TrackRating } from '../../domain/library/schemas'
 import { unitsToScore } from '../../domain/library/scores'
 import { formatScore } from './labels'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
+import { useNavigation } from '../navigation/navigation-context'
 
 const formatLabels: Record<string, string> = {
   vinyl: 'Vinilo',
@@ -56,14 +58,21 @@ export function AlbumTrackLists({
     score: number | undefined
   }>()
   const panel = useRef<HTMLElement>(null)
-  const [target, setTarget] = useState('core')
-  const [mode, setMode] = useState<'view' | 'edit' | 'create'>('view')
-  const [rows, setRows] = useState<TrackDraft[]>([])
-  const [base, setBase] = useState('')
-  const [editionName, setEditionName] = useState('')
-  const [format, setFormat] = useState('cd')
-  const [year, setYear] = useState('')
-  const [copy, setCopy] = useState(true)
+  const draftId = `tracks:${entryId}`
+  const navigation = useNavigation()
+  const [target, setTarget] = useDraftState(draftId, 'target', 'core')
+  const [mode, setMode] = useDraftState<'view' | 'edit' | 'create'>(
+    draftId,
+    'mode',
+    'view',
+  )
+  const [rows, setRows] = useDraftState<TrackDraft[]>(draftId, 'rows', [])
+  const [base, setBase] = useDraftState(draftId, 'base', '')
+  const [initialRows, setInitialRows] = useDraftState(draftId, 'initial', '')
+  const [editionName, setEditionName] = useDraftState(draftId, 'edition', '')
+  const [format, setFormat] = useDraftState(draftId, 'format', 'cd')
+  const [year, setYear] = useDraftState(draftId, 'year', '')
+  const [copy, setCopy] = useDraftState(draftId, 'copy', true)
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState(false)
   const [conflict, setConflict] = useState(false)
@@ -74,6 +83,20 @@ export function AlbumTrackLists({
   const alert = useRef<HTMLParagraphElement>(null)
   const retry = useRef<HTMLButtonElement>(null)
   const focusPanel = useRef(false)
+  const form = useRef<HTMLFormElement>(null)
+  useDraftGuard({
+    id: draftId,
+    label: mode === 'create' ? 'Nueva edición' : 'Lista de pistas',
+    dirty:
+      mode === 'edit'
+        ? JSON.stringify(rows) !== initialRows
+        : mode === 'create' &&
+          Boolean(editionName || year || format !== 'cd' || !copy),
+    busy,
+    pendingRead: pending,
+    ...(pending || conflict ? { focus: () => retry.current?.focus() } : {}),
+    form,
+  })
   useEffect(() => {
     if (mode !== 'view' || focusPanel.current) heading.current?.focus()
     focusPanel.current = false
@@ -104,23 +127,31 @@ export function AlbumTrackLists({
   const title = selected
     ? `${selected.editionLabel ?? 'Edición sin nombre'} · ${formatLabels[selected.format]}`
     : 'Lista original'
+  function withTrackClosed(action: () => void) {
+    if (ratedTrackId && navigation)
+      navigation.closeEditor(`track-rating:${entryId}:${ratedTrackId}`, action)
+    else action()
+  }
   function beginEdit() {
+    withTrackClosed(startEdit)
+  }
+  function startEdit() {
     setRatedTrackId(undefined)
-    setRows(
-      saved.map((row) => ({
-        ...emptyTrackDraft(row.trackNumber),
-        source: row.trackId,
-        disc: String(row.discNumber),
-        ...('id' in row
-          ? {
-              occurrenceId: row.id,
-              role: row.contentRole,
-              displayTitle: row.displayTitleOverride ?? '',
-              duration: formatDuration(row.durationMs),
-            }
-          : {}),
-      })),
-    )
+    const initial = saved.map((row) => ({
+      ...emptyTrackDraft(row.trackNumber),
+      source: row.trackId,
+      disc: String(row.discNumber),
+      ...('id' in row
+        ? {
+            occurrenceId: row.id,
+            role: row.contentRole,
+            displayTitle: row.displayTitleOverride ?? '',
+            duration: formatDuration(row.durationMs),
+          }
+        : {}),
+    }))
+    setRows(initial)
+    setInitialRows(JSON.stringify(initial))
     setBase(trackListToken(catalog, albumId, releaseId))
     setError('')
     setNotice('')
@@ -258,10 +289,13 @@ export function AlbumTrackLists({
             value={target}
             disabled={blocked || mode !== 'view'}
             onChange={(event) => {
-              setTarget(event.target.value)
-              setRatedTrackId(undefined)
-              setNotice('')
-              setError('')
+              const next = event.target.value
+              withTrackClosed(() => {
+                setTarget(next)
+                setRatedTrackId(undefined)
+                setNotice('')
+                setError('')
+              })
             }}
           >
             <option value="core">Original — lista de referencia</option>
@@ -279,14 +313,16 @@ export function AlbumTrackLists({
           className="action-button"
           disabled={blocked || mode !== 'view'}
           onClick={() => {
-            setEditionName('')
-            setRatedTrackId(undefined)
-            setYear('')
-            setFormat('cd')
-            setCopy(true)
-            setError('')
-            setNotice('')
-            setMode('create')
+            withTrackClosed(() => {
+              setEditionName('')
+              setRatedTrackId(undefined)
+              setYear('')
+              setFormat('cd')
+              setCopy(true)
+              setError('')
+              setNotice('')
+              setMode('create')
+            })
           }}
         >
           Nueva edición
@@ -360,7 +396,12 @@ export function AlbumTrackLists({
                           className="text-button"
                           data-track-rating-id={row.trackId}
                           disabled={blocked}
-                          onClick={() => setRatedTrackId(row.trackId)}
+                          onClick={() => {
+                            if (ratedTrackId !== row.trackId)
+                              withTrackClosed(() =>
+                                setRatedTrackId(row.trackId),
+                              )
+                          }}
                         >
                           Valorar pista {track?.title}
                         </button>
@@ -422,6 +463,7 @@ export function AlbumTrackLists({
             {mode === 'edit' ? `Editar ${title}` : 'Registrar edición'}
           </h4>
           <form
+            ref={form}
             noValidate
             autoComplete="off"
             onSubmit={mode === 'edit' ? submitList : submitEdition}

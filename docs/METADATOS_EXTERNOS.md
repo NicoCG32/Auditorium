@@ -1,6 +1,6 @@
 # Evaluación de metadatos externos
 
-Estado: **propuesta de evolución**, resultado de [EXT-01](https://github.com/NicoCG32/Auditorium/issues/24). Fuentes consultadas el **2026-10-14** y revalidadas el **2026-10-16**. La aplicación conserva el registro manual y el contrato de datos del MVP v1.0.0, con DB v3 y respaldo v1. La distribución web y la identidad visual evolucionaron después de esa release; este estudio evalúa el mapeo contra los contratos locales vigentes y lo prueba offline con datos ficticios.
+Estado: **propuesta de evolución**, resultado de [EXT-01](https://github.com/NicoCG32/Auditorium/issues/24). Fuentes consultadas el **2026-10-14** y revalidadas el **2026-10-16**. El estudio se realizó contra el contrato del MVP v1.0.0, con DB v3 y respaldo v1. La evolución posterior CAT-01 introdujo DB v4/respaldo v2 para referencias Wikidata; UX-01 amplía el incremento en revisión a DB v5/respaldo v3. Se documenta en [integraciones opcionales](INTEGRACIONES_OPCIONALES.md) y [edición del catálogo](EDICION_CATALOGO.md); no implementa el importador de archivos propuesto aquí. La distribución web y la identidad visual evolucionaron después de esa release; este estudio evalúa el mapeo contra los contratos locales de referencia y lo prueba offline con datos ficticios.
 
 ## Resultado de la evaluación
 
@@ -94,6 +94,8 @@ La [API de CAA](https://musicbrainz.org/doc/Cover_Art_Archive/API) distingue por
 
 La propuesta mantiene portada opcional y separada de la importación core: carga por acción explícita, fuente visible, retirada/reemplazo y fallo no bloqueante. Una URL HTTPS no demuestra permiso ni disponibilidad. No se propone descargar binarios a assets, precaché PWA o respaldos. Resolver derechos, destinos HTTPS/CORS y almacenamiento de imágenes requiere su propia tarea.
 
+Ese criterio de carga pertenece a esta propuesta histórica. El incremento [UX-01](EDICION_CATALOGO.md) adopta carga automática por URL y permite portadas locales validadas en IndexedDB y respaldo; no descarga el binario remoto ni cambia la precaché. La [ADR-009](adr/009-edicion-metadatos-portadas.md) registra esa decisión posterior.
+
 ## Flujo local propuesto
 
 ```mermaid
@@ -139,7 +141,7 @@ La [prueba de estudio](../src/test/studies/musicbrainz-mapping.test.ts) usa dato
 npm run test -- src/test/studies/musicbrainz-mapping.test.ts
 ```
 
-Las correspondencias y selecciones aprobadas están escritas a mano; el caso de homónimos utiliza el registro manual existente. La prueba comprueba ejemplos sin escritura, pistas contextuales por álbum, conservación de identidad/biblioteca y rechazo de referencias inválidas. Simula una aprobación mediante una mutación local de catálogo; no implementa un matcher por MBID, resolución de alias, parser ni importador de respuestas completas. La procedencia permanece fuera del snapshot actual.
+Las correspondencias y selecciones aprobadas están escritas a mano; el caso de homónimos utiliza el registro manual existente. La prueba comprueba ejemplos sin escritura, pistas contextuales por álbum, conservación de identidad/biblioteca y rechazo de referencias inválidas. Simula una aprobación mediante una mutación local de catálogo; no implementa un matcher por MBID, resolución de alias, parser ni importador de respuestas completas. La procedencia del archivo MusicBrainz de este estudio permanece fuera de su snapshot de prueba; la referencia Wikidata incorporada después por CAT-01 es otro contrato.
 
 La evidencia no cubre transporte, CORS, headers efectivos, licencias particulares de imágenes, servicio real, archivos hostiles completos, una interfaz de revisión ni migraciones de procedencia. Esos requisitos se conservan como criterios de implementación posterior.
 
@@ -153,4 +155,4 @@ La evidencia no cubre transporte, CORS, headers efectivos, licencias particulare
 | Transporte remoto opcional    | Condiciones de uso, identificación efectiva, CORS/redirects, límite compartido, fallos y privacidad verificados |
 | Portadas opcionales           | Derechos/condiciones revisados, carga explícita y política de almacenamiento propias                            |
 
-Spotify, YouTube, reproducción, cuentas y sincronización requieren estudios y tareas diferentes. Este resultado completa la evaluación de MusicBrainz sin autorizar esas integraciones.
+Este resultado completa la evaluación de MusicBrainz sin habilitar esas integraciones. El incremento posterior AI-01/CAT-01 permite referencias enlazables a Spotify/YouTube recuperadas de Wikidata y recomendaciones opcionales, según la [ADR-008](adr/008-integraciones-opcionales.md). No incorpora reproducción, cuentas de biblioteca, sincronización ni el importador JSON propuesto aquí.

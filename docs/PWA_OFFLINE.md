@@ -18,7 +18,7 @@ Las operaciones locales siguen usando [IndexedDB](PERSISTENCIA_LOCAL.md): altas,
 
 La caché contiene el HTML principal, todos los JS/CSS compilados, manifest y los 13 recursos visuales seleccionados en el [diseño base](DISENO_BASE.md): marca para ambos temas, logo de bienvenida, cuatro fondos, divisor e iconos propios. Las rutas de iconos son `auditorium/icons/` bajo la base del build. Ambos temas quedan disponibles sin red; los recursos se precargan incluso con la ambientación desactivada. Los otros ocho recursos visuales distribuidos no se usan ni se precargan.
 
-No hay reglas de caché de respuestas en ejecución: no se guardan portadas externas, audio, servicios remotos ni archivos JSON arbitrarios. Los enlaces y portadas externos requieren red y mantienen su alternativa textual. La indicación de conexión del navegador es orientativa; no implica comprobar la disponibilidad de un servicio externo. La foto opcional de «Apariencia» es una vista previa temporal de archivo local, ajena a la precaché y a los respaldos; se descarta al recargar.
+No hay reglas de caché de respuestas en ejecución: no se guardan portadas externas, audio, servicios remotos ni archivos JSON arbitrarios. Las búsquedas de catálogo y las recomendaciones opcionales, así como enlaces y portadas por URL, requieren red. Las portadas locales JPEG/PNG pertenecen a los datos de IndexedDB y sus respaldos, y pueden verse sin conexión; no se añaden a Cache Storage. La biblioteca manual mantiene su funcionamiento local. Las claves, solicitudes y respuestas de proveedores no pasan a la precaché ni a reglas de caché en ejecución. La indicación de conexión del navegador es orientativa; no implica comprobar la disponibilidad de un servicio externo. La foto opcional de «Apariencia» es una vista previa temporal de archivo local, ajena a la precaché y a los respaldos; se descarta al recargar.
 
 ## Actualizaciones sin recargas forzadas
 
@@ -26,7 +26,7 @@ Una nueva versión descarga sus recursos y espera mientras la versión anterior 
 
 La aplicación no envía `SKIP_WAITING` ni recarga automáticamente ventanas abiertas. Esto protege los borradores y evita mezclar recursos de versiones distintas entre pestañas. La activación elimina únicamente entradas obsoletas de su precaché; no borra otras cachés del sitio, IndexedDB ni la identidad. Un fallo al descargar la actualización conserva la versión activa. **«Comprobar actualización»** permite comprobar de nuevo con conexión.
 
-El service worker no administra datos musicales ni migraciones de la base. Este incremento conserva DB v3 y respaldo v1. La [validación adicional de migraciones y recuperación](MIGRACIONES_RECUPERACION.md) corresponde a MVP-04.
+El service worker no administra datos musicales ni migraciones de la base. El incremento vigente utiliza DB v5 y respaldo v3 por referencias de catálogo, géneros, país y portada local; este cambio de datos es independiente del ciclo del service worker. La clave de recomendaciones sólo vive en memoria, no se entrega al controlador offline ni se conserva al recargar. La [validación adicional de migraciones y recuperación](MIGRACIONES_RECUPERACION.md) corresponde a MVP-04.
 
 ## Protección y límites del almacenamiento
 

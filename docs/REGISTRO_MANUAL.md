@@ -1,10 +1,14 @@
 # Registro manual de álbumes
 
-LIB-02 permite añadir álbumes desde la biblioteca, incluido su estado vacío. Artista y título son los únicos datos obligatorios. El tipo empieza como «Álbum» y se puede cambiar; año original, enlace HTTPS a portada y descripción son opcionales. Los campos opcionales vacíos se omiten, sin inventar metadatos.
+LIB-02 permite añadir álbumes desde la biblioteca, incluido su estado vacío. Artista y título son los únicos datos obligatorios. El tipo empieza como «Álbum» y se puede cambiar; año original, géneros, país de origen del artista, portada y descripción son opcionales. La portada admite un enlace HTTPS o un archivo JPEG/PNG local de hasta 2 MiB; la vista previa se carga automáticamente. Los campos opcionales vacíos se omiten, sin inventar metadatos.
 
-El formulario registra un artista principal. Si hay artistas con el mismo nombre normalizado, ofrece reutilizar un registro por referencia explícita o crear uno nuevo. La selección muestra sus álbumes conocidos para ayudar a distinguir homónimos. No se fusionan artistas por nombre. Créditos múltiples siguen admitidos por el modelo y los casos de uso, aunque esta primera interfaz registre uno.
+El formulario registra un artista principal. Si hay artistas con el mismo nombre normalizado, ofrece reutilizar un registro por referencia explícita o crear uno nuevo. La selección muestra sus álbumes conocidos para ayudar a distinguir homónimos. No se fusionan artistas por nombre. El alta manual registra ese crédito principal; una selección de catálogo externo puede preparar varios créditos, que se conservan conjuntamente.
 
 ## Posibles duplicados
+
+Los nombres de álbumes, artistas y alias acreditados, y las etiquetas de género, se guardan con mayúscula inicial por palabra: `System Of A Down` y `Metal Progresivo`. Se compactan espacios y se conservan acentos y signos. Se mantienen siglas reconocibles como `AC/DC`, `R.E.M.` y `U2`, numerales romanos habituales y una lista explícita de siglas musicales. La convención se aplica tanto al alta manual como al catálogo seleccionado y al alta directa; no pretende certificar la grafía oficial de una obra. Las palabras sin una excepción se capitalizan aunque el proveedor use otra estilización.
+
+La regla sólo actúa al escribir nombres: consultar o importar un respaldo conserva el texto histórico. Reutilizar un artista por ID uniforma su nombre manteniendo esa identidad. Descripciones, comentarios, países y enlaces no se capitalizan. Las coincidencias y la selección explícita de homónimos siguen las reglas siguientes; uniformar la escritura no fusiona registros.
 
 `MusicLibrary.registerAlbum` valida la entrada y busca coincidencias dentro de la transacción de escritura antes de crear música. Se considera posible coincidencia el mismo título normalizado y un artista del crédito coincidente. Para un artista elegido por referencia se compara su ID; para un nombre nuevo se comparan el nombre y el alias acreditado. La normalización ignora mayúsculas, acentos y espacios repetidos. No se aplica búsqueda aproximada ni se interpreta una coincidencia como identidad confirmada.
 
@@ -24,9 +28,9 @@ El caso `createAlbum` existente conserva su contrato de alta directa para los ot
 
 Artista, álbum, crédito y relación personal se guardan juntos. La interfaz bloquea controles y envíos repetidos durante la operación y solo anuncia éxito después de confirmar la transacción. Los fallos conservan el formulario para reintentar; no muestran excepciones internas.
 
-Tras un alta, se relee la biblioteca automáticamente, se limpian búsqueda y filtros para hacer visible la entrada y se enfoca su título. La vista de lista/cuadrícula se conserva. Si esa lectura falla después de confirmar el guardado, se informa que el álbum se guardó y se permite reintentar únicamente la lectura.
+Tras un alta se releen los datos y se abre la ficha del álbum. La búsqueda, filtros y vista anteriores de Biblioteca se conservan para regresar; no se limpian para forzar la coincidencia de la entrada nueva. Si la lectura falla después del commit, el formulario muestra el recibo, bloquea otra escritura y permite reintentar únicamente la lectura. Cancelar o navegar con cambios pide guardar, descartar o seguir editando, según la [política de navegación y borradores](NAVEGACION.md).
 
-Los títulos de las tarjetas abren la [ficha del álbum](FICHA_ALBUM.md): artista, tipo, año, escucha, valoración y descripción. La portada se carga solo mediante acción del usuario; sin enlace o al fallar se conserva una representación local. Al volver a biblioteca se enfoca la tarjeta correspondiente o la búsqueda cuando los filtros la oculten. LIB-03 añade el editor de valoración del álbum.
+Los títulos de las tarjetas abren la [ficha del álbum](FICHA_ALBUM.md): artista, tipo, año, escucha, valoración y descripción. La portada registrada se carga automáticamente; sin imagen o al fallar se conserva una representación local. La ficha permite [editar los metadatos guardados](EDICION_CATALOGO.md) conservando el ID del álbum y sus relaciones. Al volver a biblioteca se enfoca la tarjeta correspondiente o la búsqueda cuando los filtros la oculten. LIB-03 añade el editor de valoración del álbum.
 
 El formulario enfoca Artista al abrir; la validación enfoca un campo inválido y abre sus detalles si estaban plegados. Los errores se asocian mediante `aria-describedby`, manteniendo etiquetas estables. El aviso de coincidencias recibe foco para continuar por teclado. Cancelar vuelve al botón de alta sin escribir música. Las entradas del formulario no se conservan después de cancelarlo o recargar.
 
@@ -36,6 +40,6 @@ Pruebas con datos ficticios comprueban alta mínima, opcionales, validación, ar
 
 La comprobación manual recorre el componente con IndexedDB real en una base independiente: alta, duplicado, reutilización de artista, año inválido, cuota inyectada y rollback, reintento, nueva obra deliberada, incorporación desde catálogo y persistencia tras recarga. Formulario y ficha comprobados a 320 píxeles. No se agotó realmente el almacenamiento del navegador.
 
-El esquema sigue en v1 y no requiere migración. No se añaden importaciones remotas, ejemplares, respaldo, PWA ni sincronización. Las preferencias de consulta siguen limitadas al montaje y las actualizaciones entre pestañas se consultan al actualizar o recargar.
+LIB-02 se implementó inicialmente sobre v1. El incremento vigente usa DB5 y respaldo3 y conserva este flujo manual junto con las capacidades posteriores de colección y PWA. CAT-01 añade una [búsqueda opcional de referencias](INTEGRACIONES_OPCIONALES.md) mediante botón: seleccionar prepara un borrador editable con procedencia, no guarda ni fusiona por sí mismo. Cambiar título o artista descarta la asociación externa. Errores, ausencia de coincidencia o falta de red no impiden guardar manualmente. Las preferencias de consulta siguen limitadas al montaje y los cambios entre pestañas se consultan al actualizar o recargar.
 
 Referencias: [casos de uso transaccionales](CASOS_DE_USO.md), [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) y [formularios en React](https://react.dev/reference/react-dom/components/form).

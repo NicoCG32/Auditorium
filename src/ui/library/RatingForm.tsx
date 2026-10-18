@@ -3,8 +3,11 @@ import { LocalStorageError } from '../../infrastructure/db/errors'
 import { formatScore } from './labels'
 import { parseRating } from './parse-rating'
 import { LibraryChangeError } from '../../domain/library/library'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
+import { useNavigation } from '../navigation/navigation-context'
 
 interface Props {
+  draftId: string
   kind: 'album' | 'track'
   title: string
   score: number | undefined
@@ -18,6 +21,7 @@ interface Props {
   blocked: boolean
 }
 export function RatingForm({
+  draftId,
   kind,
   title,
   score,
@@ -28,8 +32,9 @@ export function RatingForm({
   onClose,
 }: Props) {
   const isTrack = kind === 'track'
+  const navigation = useNavigation()
   const prefix = `${kind}-rating`
-  const [draft, setDraft] = useState(() =>
+  const [draft, setDraft] = useDraftState(draftId, 'score', () =>
     score === undefined ? '' : formatScore(score),
   )
   const [validation, setValidation] = useState('')
@@ -46,6 +51,16 @@ export function RatingForm({
   const locked = useRef(false)
   const focusInput = useRef(false)
   const current = pending ? pending.score : score
+  const form = useRef<HTMLFormElement>(null)
+  useDraftGuard({
+    id: draftId,
+    label: title,
+    dirty: draft !== (current === undefined ? '' : formatScore(current)),
+    busy,
+    pendingRead: Boolean(pending),
+    ...(pending ? { focus: () => retry.current?.focus() } : {}),
+    form,
+  })
   useEffect(() => {
     if (removing) keep.current?.focus()
   }, [removing])
@@ -151,7 +166,7 @@ export function RatingForm({
           {current === undefined ? 'Sin nota' : `${formatScore(current)} / 10`}
         </strong>
       </p>
-      <form onSubmit={submit} noValidate autoComplete="off">
+      <form ref={form} onSubmit={submit} noValidate autoComplete="off">
         <fieldset
           disabled={
             busy || pending !== undefined || blocked || Boolean(removing)
@@ -214,7 +229,15 @@ export function RatingForm({
               {isTrack ? 'Quitar nota de pista' : 'Quitar nota'}
             </button>
             {onClose ? (
-              <button type="button" className="text-button" onClick={onClose}>
+              <button
+                type="button"
+                className="text-button"
+                onClick={() =>
+                  navigation
+                    ? navigation.closeEditor(draftId, onClose)
+                    : onClose()
+                }
+              >
                 Cerrar valoración de pista
               </button>
             ) : null}

@@ -10,6 +10,10 @@ La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica me
 
 «Apariencia» ofrece temas oscuro y pergamino, ambientación desactivable y una vista previa temporal de una foto local. Las preferencias visuales son independientes de la colección y sus respaldos. Consulta el [sistema de diseño y su validación](docs/DISENO_BASE.md).
 
+El incremento en desarrollo, todavía **sin publicar**, incorpora [integraciones opcionales](docs/INTEGRACIONES_OPCIONALES.md): búsqueda y selección de referencias de Wikidata al añadir álbumes, y recomendaciones de escucha o revaloración mediante Groq o Gemini con clave propia conservada sólo en memoria. El registro manual sigue disponible sin servicios ni cuentas. Las recomendaciones no cambian tus valoraciones; las referencias de catálogo se incluyen en los respaldos. El mismo incremento añade [edición de álbumes](docs/EDICION_CATALOGO.md), géneros, país de origen de los artistas y portadas automáticas por URL o archivo local JPEG/PNG. Estas capacidades pertenecen al código de este incremento y no al ZIP ni al tag de la release v1.0.0; su disponibilidad en Pages depende de integrar y publicar la revisión validada.
+
+La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Colección física. Es un diseño para revisión: enlaces personales, nueva navegación, reproducción y audio local se siguen en tareas separadas y no se declaran implementados por esta documentación.
+
 ## Desarrollo local
 
 Requisitos: Node.js 24 LTS (24.15.0 o posterior dentro de esa rama) y npm 12.2.x o posterior dentro de la rama 12. La instalación inicial requiere internet para descargar dependencias; ejecutar y compilar la plantilla no requiere claves ni cuentas externas.
@@ -30,9 +34,9 @@ npm run preview
 
 `build` comprueba los tipos de la aplicación, configuración y pruebas E2E, y genera los archivos estáticos y la PWA en `dist/`. `preview` permite revisar esa compilación localmente. El service worker se desactiva en desarrollo; usa el origen de preview para probar offline. Los artefactos generados y las dependencias no se versionan.
 
-La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista, filtros de escucha y nota, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes, revisar coincidencias, consultar su ficha, valorar y editar escucha y comentarios de forma independiente. La ficha reúne la lista original y las ediciones con orden propio, pistas compartidas, bonus y variantes. Las notas de pistas se comparten entre sus apariciones; una variante tiene nota propia y la del álbum no se recalcula. Incluye portada opcional, protección de borradores y errores con reintento. La colección registra copias independientes y compras digitales, con eliminación confirmada. Los deseos apuntan a un formato o edición y una compra coincidente ofrece cumplirlos mediante una acción explícita. Permite retirar álbumes sin perder datos y restaurar la misma entrada desde «Álbumes retirados». Quitar valoraciones y ejemplares requiere confirmar sus consecuencias. «Respaldos» descarga la biblioteca completa y restaura datos e identidad desde un JSON validado, únicamente en un destino vacío.
+La pantalla principal consulta la biblioteca guardada en este navegador: búsqueda por título/artista/género/país, filtros de escucha, nota, género y país, ordenación y vistas de cuadrícula/lista. Permite añadir álbumes, revisar coincidencias, consultar su ficha, corregir sus metadatos, valorar y editar escucha y comentarios de forma independiente. Los géneros pertenecen al álbum y el país de origen a cada artista acreditado. La ficha reúne la lista original y las ediciones con orden propio, pistas compartidas, bonus y variantes. Las notas de pistas se comparten entre sus apariciones; una variante tiene nota propia y la del álbum no se recalcula. Incluye portada opcional, protección de borradores y errores con reintento. La colección registra copias independientes y compras digitales, con eliminación confirmada. Los deseos apuntan a un formato o edición y una compra coincidente ofrece cumplirlos mediante una acción explícita. Permite retirar álbumes sin perder datos y restaurar la misma entrada desde «Álbumes retirados». Quitar valoraciones y ejemplares requiere confirmar sus consecuencias. «Respaldos» descarga la biblioteca completa y restaura datos e identidad desde un JSON validado, únicamente en un destino vacío.
 
-«Aplicación y almacenamiento» informa cuándo se puede reabrir sin conexión, ofrece instalación donde se admita y permite solicitar protección del almacenamiento. Una nueva versión espera al cierre de todas las ventanas, conservando la biblioteca y los borradores de ventanas abiertas. Las portadas y enlaces externos requieren red. El navegador puede eliminar datos locales; guarda respaldos fuera del dispositivo. Consulta los [alcances y límites de la PWA](docs/PWA_OFFLINE.md).
+«Aplicación y almacenamiento» informa cuándo se puede reabrir sin conexión, ofrece instalación donde se admita y permite solicitar protección del almacenamiento. Una nueva versión espera al cierre de todas las ventanas, conservando la biblioteca y los borradores de ventanas abiertas. Las portadas por URL y los enlaces externos requieren red. Una portada JPEG/PNG local validada de hasta 2 MiB se conserva con el álbum y el respaldo y puede verse offline. El navegador puede eliminar datos locales; guarda respaldos fuera del dispositivo. Consulta los [alcances y límites de la PWA](docs/PWA_OFFLINE.md).
 
 ## Verificaciones
 
@@ -62,11 +66,12 @@ La configuración sigue la [guía de Vite](https://vite.dev/guide/) y separa los
 
 ## Documentación técnica
 
-El [índice de documentación](docs/README.md) organiza las referencias del MVP v1.0.0, las guías funcionales y las decisiones de arquitectura.
+El [índice de documentación](docs/README.md) organiza las referencias vigentes, las guías funcionales y las decisiones de arquitectura, distinguiendo la release MVP v1.0.0 de los incrementos posteriores.
 
 - [Arquitectura del sistema](docs/ARQUITECTURA.md): contexto, componentes, dependencias, transacciones, PWA y distribución.
 - [Modelo de dominio](docs/MODELO_DOMINIO.md): entidades, cardinalidades, reglas, estados y ejemplos ficticios.
 - [Modelo de datos](docs/MODELO_DATOS.md): tablas, claves, índices, migraciones, identidad, concurrencia y respaldos.
+- [Navegación y borradores](docs/NAVEGACION.md): rutas, regreso con contexto y guardado o descarte explícito de cambios.
 
 ## Plan y seguimiento
 

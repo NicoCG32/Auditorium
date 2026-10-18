@@ -8,6 +8,7 @@ DATA-02 conecta los modelos con IndexedDB mediante `MusicLibrary`, en `src/appli
 | ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
 | createAlbum                           | Crea álbum, créditos, artistas nuevos indicados y, por defecto, entrada personal en una operación       |
 | registerAlbum                         | Devuelve coincidencias para revisión o crea álbum y relación personal tras la decisión explícita        |
+| updateAlbum                           | Corrige metadatos de un álbum activo con estado esperado, conservando su ID y relaciones                |
 | addAlbumToLibrary                     | Crea una entrada activa o devuelve la existente sin alterar notas o fechas                              |
 | addRelease                            | Crea una edición del álbum y copia su lista original si existe, salvo indicación contraria              |
 | addTrackToRelease                     | Reutiliza una pista indicada por UUID o crea una nueva, y añade su aparición ordenada                   |
@@ -33,6 +34,8 @@ Los [deseos de compra](DESEOS_COMPRA.md) añaden `addPurchaseWish`, `updatePurch
 `addTrackToRelease` recibe una edición, disco y posición. Para reutilizar indica `trackId`; para crear indica `track` con título y metadatos opcionales de variante. Ambas opciones son excluyentes. Una pista debe pertenecer al álbum de la edición. `corePosition`, si se especifica, añade también una aparición a la lista original; añadir un bonus a una reedición no modifica esa lista automáticamente.
 
 Los consumidores deben ordenar las listas por disco/posición; el orden de los arrays del snapshot no sustituye sus campos de orden.
+
+`updateAlbum` recibe el ID del álbum activo, los metadatos corregidos y una referencia esperada de álbum, créditos y artistas. La comparación ocurre dentro de la transacción; un conflicto devuelve `outdated_album` sin sobrescribir. Conserva la identidad del álbum, pistas, listas, ediciones y todas las relaciones personales. Los créditos se guardan por separado y en su orden. Renombrar un artista crea una identidad para ese álbum; corregir su país manteniendo el ID afecta al artista compartido, con advertencia de interfaz. Cambiar título o identidad de créditos descarta la referencia externa anterior. La selección y decodificación de portada local ocurre antes de llamar al caso de uso. Consulta [edición del catálogo](EDICION_CATALOGO.md).
 
 `saveTrackList` reemplaza las apariciones de una única lista, conservando pistas y datos personales. Valida referencias y posiciones finales y rechaza una lista desactualizada dentro de la transacción. Permite guardar intercambios de posición sin estados intermedios visibles. Ver [listas originales y ediciones](LISTAS_EDICIONES.md).
 
@@ -69,7 +72,7 @@ Referencia: [transacciones de Dexie](<https://dexie.org/docs/Dexie/Dexie.transac
 
 ## Retirada y confirmaciones
 
-La [retirada personal](ELIMINACIONES_PERSONALES.md) marca la entrada y conserva notas, escucha, valoraciones, copias y deseos; «Álbumes retirados» permite restaurar el mismo ID sin fusionarlo con otra entrada activa. La baja verifica la referencia personal leída y solo actualiza `userAlbums` y su índice derivado, manteniendo esquema v3 y catálogo. Quitar valoraciones exige confirmar su valor y alcance; una nota distinta de la confirmada no se retira. Ver [ADR-004](adr/004-retirada-personal.md).
+La [retirada personal](ELIMINACIONES_PERSONALES.md) marca la entrada y conserva notas, escucha, valoraciones, copias y deseos; «Álbumes retirados» permite restaurar el mismo ID sin fusionarlo con otra entrada activa. La baja verifica la referencia personal leída y solo actualiza `userAlbums` y su índice derivado, sin requerir un cambio de esquema ni modificar el catálogo. Quitar valoraciones exige confirmar su valor y alcance; una nota distinta de la confirmada no se retira. Ver [ADR-004](adr/004-retirada-personal.md).
 
 ## Respaldos
 

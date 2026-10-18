@@ -1,5 +1,12 @@
 import { z } from 'zod'
 import { entityIdSchema as id } from '../shared/scalars'
+import { catalogReferenceSchema } from './catalog-reference'
+import { countrySchema, coverImageSchema, genresSchema } from './metadata'
+
+export {
+  catalogReferenceSchema,
+  type CatalogReference,
+} from './catalog-reference'
 
 const text = z.string().trim().min(1, 'El texto no puede estar vacío.')
 const position = z.int().positive()
@@ -44,6 +51,7 @@ export const artistSchema = z.strictObject({
   id,
   name: text,
   sortName: text.optional(),
+  country: countrySchema.optional(),
   ...personalCatalog,
 })
 export const albumSchema = z.strictObject({
@@ -52,6 +60,9 @@ export const albumSchema = z.strictObject({
   releaseType: releaseTypeSchema.default('album'),
   originalYear: year.optional(),
   coverUrl: z.url({ protocol: /^https$/ }).optional(),
+  coverImage: coverImageSchema.optional(),
+  genres: genresSchema.optional(),
+  catalogReference: catalogReferenceSchema.optional(),
   description: text.optional(),
   ...personalCatalog,
 })

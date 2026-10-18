@@ -26,6 +26,7 @@ export function TrackRatingForm({
 }) {
   return (
     <RatingForm
+      draftId={`track-rating:${entryId}:${trackId}`}
       kind="track"
       title={`Tu valoración de ${title}`}
       score={score}

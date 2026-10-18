@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.4 · 2026-10-16 · Estado: MVP v1.0.0, web e identidad visual publicados; evaluación de metadatos en EXT-01.
+Versión 1.7 · 2026-10-18 · Estado: MVP v1.0.0, web, identidad visual y evaluación EXT-01 completados; AI-01/CAT-01/UX-01 en revisión y UX-03 en diseño.
 
 ## Objetivo del producto
 
@@ -37,7 +37,7 @@ Cada issue incluye identificador estable, resultado esperado, fase, prioridad, d
 - **Terminado:** criterios comprobados y cambio integrado, o decisión documentada cuando no hay código.
 - **Bloqueado:** falta concreta que impide avanzar; registrar causa y condición para resolverla.
 
-Límite inicial: una issue en curso y una en revisión. Un bloqueo conserva el trabajo visible; no justifica empezar múltiples tareas sin priorización. Preparado no significa que el sprint haya empezado ni que el alcance esté autorizado.
+Límite inicial: una issue en curso y una en revisión. Un bloqueo conserva el trabajo visible; no justifica empezar múltiples tareas sin priorización. Preparado no significa que el sprint haya empezado ni que el alcance esté autorizado. El incremento AI-01/CAT-01 es una excepción explícita de dos issues coordinadas para las dos capacidades solicitadas; comparten revisión y validación de compatibilidad. Su refinamiento UX-01 comparte PR. La revisión posterior del recorrido se planifica como UX-02, con una única tarea de ejecución activa al comenzar por UX-03; no se inicia sincronización.
 
 ## Priorización y refinamiento
 
@@ -80,15 +80,15 @@ No se programan reuniones ni recordatorios automáticamente. Se registran result
 
 ## Roadmap
 
-| Fase | Objetivo                  | Condición de salida                                                                  |
-| ---- | ------------------------- | ------------------------------------------------------------------------------------ |
-| 0    | Base ejecutable y calidad | Plantilla local, TS estricto, scripts operativos, estilos base y decisiones técnicas |
-| 1    | Dominio y persistencia    | Casos de uso locales, integridad, identidad estable y transacciones probadas         |
-| 2    | Biblioteca y altas        | Crear → guardar → buscar → abrir → calificar, con persistencia                       |
-| 3    | Ediciones y colección     | Pistas, variantes, copias y deseos con reglas independientes                         |
-| 4    | MVP utilizable            | Respaldo/restauración, PWA/offline, migraciones y validación completa                |
-| 5    | Metadatos externos        | Investigación y propuesta antes de cualquier integración                             |
-| 6    | Sincronización            | Prueba técnica de identidad, permisos, conflictos, migración y costos                |
+| Fase | Objetivo                  | Condición de salida                                                                                      |
+| ---- | ------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 0    | Base ejecutable y calidad | Plantilla local, TS estricto, scripts operativos, estilos base y decisiones técnicas                     |
+| 1    | Dominio y persistencia    | Casos de uso locales, integridad, identidad estable y transacciones probadas                             |
+| 2    | Biblioteca y altas        | Crear → guardar → buscar → abrir → calificar, con persistencia                                           |
+| 3    | Ediciones y colección     | Pistas, variantes, copias y deseos con reglas independientes                                             |
+| 4    | MVP utilizable            | Respaldo/restauración, PWA/offline, migraciones y validación completa                                    |
+| 5    | Integraciones opcionales  | Evaluación de fuentes, selección revisada y recomendaciones, con privacidad y compatibilidad verificadas |
+| 6    | Sincronización            | Prueba técnica de identidad, permisos, conflictos, migración y costos                                    |
 
 No publicar una fase anterior a la 4 como MVP completo. El despliegue es un hito separado y debe especificar proveedor, condiciones vigentes y validación. WEB-01 concreta la [web/PWA en GitHub Pages](PUBLICACION_WEB.md), con biblioteca local y conservación de la distribución raíz.
 
@@ -117,7 +117,23 @@ Las releases se preparan como tareas de entrega con su propio milestone, sin rea
 
 [VIS-01](https://github.com/NicoCG32/Auditorium/issues/54) adapta la identidad visual después de WEB-01, con marca, temas oscuro/pergamino, ambientación desactivable y vista previa temporal de foto local. Se priorizó por solicitud de producto y se completó con un milestone propio. La publicación se verificó con ambos temas, recursos offline y actualización desde la versión anterior, conservando el dominio y los datos musicales.
 
-[EXT-01](https://github.com/NicoCG32/Auditorium/issues/24) evalúa MusicBrainz mediante una [propuesta de metadatos externos](METADATOS_EXTERNOS.md) y una prueba offline ficticia. Su revisión se retoma después de WEB-01 y VIS-01. El resultado define correspondencias, pérdidas de representación, condiciones de uso y requisitos previos; la integración de fuentes, procedencia persistente y revisión de importaciones requieren nuevos incrementos con aceptación propia. Esta evaluación no habilita un importador ni inicia sincronización.
+[EXT-01](https://github.com/NicoCG32/Auditorium/issues/24) completó la evaluación de MusicBrainz mediante una [propuesta de metadatos externos](METADATOS_EXTERNOS.md) y una prueba offline ficticia. El resultado define correspondencias, pérdidas de representación, condiciones de uso y requisitos previos. La propuesta de importador JSON de ediciones continúa pendiente; el estudio no habilita ese importador ni inicia sincronización.
+
+El hito **Integraciones — Recomendaciones y catálogo** coordina [CAT-01 #57](https://github.com/NicoCG32/Auditorium/issues/57) y [AI-01 #56](https://github.com/NicoCG32/Auditorium/issues/56), ambos Fase 5/P1, sin sprint ni fechas comprometidas. CAT-01, orden 26.1, incorpora búsqueda Wikidata explícita, selección humana, referencias opcionales y conservación del registro manual. AI-01, orden 26.2, incorpora un orden de escucha/revaloración con Gemini o Groq, clave propia sólo en memoria y contexto mínimo. La nueva capacidad amplía el producto después del MVP; no cambia retrospectivamente su alcance. La [ADR-008](adr/008-integraciones-opcionales.md) documenta las decisiones y la [guía de integraciones](INTEGRACIONES_OPCIONALES.md) sus límites.
+
+[UX-01 #59](https://github.com/NicoCG32/Auditorium/issues/59), Fase 5/P1 y orden 26.3, refina el flujo dentro de la misma [PR #58](https://github.com/NicoCG32/Auditorium/pull/58), devuelta a borrador. Añade edición del álbum con identidad estable y control de concurrencia, géneros libres, país por artista y portada automática por URL o archivo JPEG/PNG local. AI-01/CAT-01 y UX-01 conservan su seguimiento en revisión, sin sprint ni fechas comprometidas. La [ADR-009](adr/009-edicion-metadatos-portadas.md) documenta el cambio de interacción y la evolución de datos. La validación técnica previa no sustituye la revisión de claridad del recorrido.
+
+[UX-02 #60](https://github.com/NicoCG32/Auditorium/issues/60) coordina el hito **Experiencia — Biblioteca, calificaciones y Mi colección**. [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61), Fase 2/P1 y orden 26.41, define la [navegación y experiencia propuestas](EXPERIENCIA_USUARIO.md), [contratos independientes](CONTRATOS_EXPERIENCIA.md), [bocetos](prototipos/experiencia/index.html) y [ADR-010](adr/010-navegacion-experiencia.md). Es diseño en revisión progresiva, sin cambiar runtime, DB5 ni respaldo3. La secuencia del núcleo continúa con navegación/borradores, composición visual de Biblioteca, enlaces personales, alta/edición, ficha/calificaciones, Mi colección y validación de comprensión. Mi colección es el último destino principal y diferencia Físico / Digital adquirido; utilidades y deseos conservan acceso secundario.
+
+El refinamiento de clasificación se implementa en [UX-05 #65](https://github.com/NicoCG32/Auditorium/issues/65): tipo principal, categorías múltiples y estado de publicación del álbum, con migración del enum mixto actual y respaldo versionado. Deluxe/Especial/Aniversario siguen en la edición física o digital; [COL-05 #71](https://github.com/NicoCG32/Auditorium/issues/71) distingue esa edición de cada copia poseída. No se requiere poseer, escuchar o calificar para clasificar un álbum.
+
+El diseño mantiene un solo álbum y una sola nota personal por identidad musical. [UX-06 #66](https://github.com/NicoCG32/Auditorium/issues/66) incorporará un selector opcional de edición de referencia entre las ediciones ya añadidas al mismo álbum, sin exigir adquisición ni generar notas por edición, con persistencia/respaldo versionados y datos anteriores sin selección inventada. COL-05 presenta **Mi colección**, con Físico y Digital adquirido diferenciados y deseos secundarios. Los bocetos previos todavía no incorporan estos dos refinamientos, documentados en UX-03.
+
+[UX-04 #62](https://github.com/NicoCG32/Auditorium/issues/62) implementa la [base de navegación y borradores](NAVEGACION.md): rutas por fragmentos, historial protegido, contexto y regreso, índices iniciales de Calificaciones/Mi colección, y guardado o descarte explícito. El alta abre su ficha después de la lectura confirmada; un fallo posterior al commit sólo reintenta lectura. No cambia DB5/respaldo3 ni implementa las ampliaciones de las tareas siguientes. La composición final de Biblioteca, editores y colección mantiene su seguimiento propio.
+
+El hito **Reproducción — Servicios compatibles y audio local** sigue MEDIA-01/PLAY-01 y AUDIO-01/AUDIO-02 de forma independiente. La viabilidad de metadatos desde URL, inserción oficial, formatos de archivo, persistencia y respaldo debe concretarse antes de implementar cada capacidad. La investigación no bloquea el registro manual ni los enlaces externos. Los nuevos hitos representan incrementos que abarcan áreas de fases anteriores; no reabren sus milestones históricos ni modifican retrospectivamente el MVP. Las dependencias, estados y orden vigentes se mantienen en el Project, sin sprint nuevo activo ni fechas comprometidas.
+
+El incremento exige compatibilidad de DB5/respaldo3 con datos y respaldos anteriores estrictos, rechazo de referencias desconocidas, errores y cancelación, ausencia de claves persistidas, acceso manual y portadas locales offline y revisión de los flujos. Los criterios de UX-01 incorporan persistencia tras recarga, edición sin pérdida de relaciones, conflicto concurrente, validación de archivos, filtros/orden y accesibilidad. La generación autenticada real depende de configurar una clave propia; las pruebas controladas no acreditan cuota o calidad de una cuenta. [SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) permanece en backlog Fase 6/P2, orden 27, sin inicio autorizado por este hito.
 
 Seguir issues terminadas frente a seleccionadas, bloqueos abiertos y evidencia de aceptación. No medir progreso por líneas de código ni usar porcentajes sin una base acordada.
 

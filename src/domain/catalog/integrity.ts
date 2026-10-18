@@ -8,6 +8,7 @@ export type CatalogRule =
   | 'duplicate_position'
   | 'wrong_album'
   | 'cyclic_variant'
+  | 'conflicting_cover'
 
 export interface CatalogIssue {
   rule: CatalogRule
@@ -87,6 +88,13 @@ export function getCatalogIssues(catalog: Catalog): CatalogIssue[] {
     creditPositions.add(positionKey)
   })
   catalog.albums.forEach((album, index) => {
+    if (album.coverUrl !== undefined && album.coverImage !== undefined) {
+      report(
+        'conflicting_cover',
+        ['albums', index, 'coverImage'],
+        'El álbum sólo puede tener una fuente de portada.',
+      )
+    }
     if (!primaryAlbums.has(album.id)) {
       report(
         'missing_primary_artist',

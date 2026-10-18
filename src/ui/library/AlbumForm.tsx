@@ -4,41 +4,126 @@ import {
   type AlbumCandidate,
 } from '../../application/album-candidates'
 import type { MusicLibrary } from '../../application/music-library'
+import type { CatalogCandidate } from '../../application/catalog-lookup'
+import { catalogNameKey } from '../../application/catalog-names'
 import { releaseTypeSchema } from '../../domain/catalog/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
+import { CatalogLookupPanel } from '../catalog/CatalogLookupPanel'
 import {
   emptyAlbumForm,
   parseAlbumForm,
+  prepareCatalogCandidate,
   type AlbumFormValues,
 } from './album-form-values'
 import { releaseTypeLabels } from './labels'
+import { CoverFields } from './CoverFields'
+import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 
 interface Props {
   snapshot: LocalSnapshot
   library: MusicLibrary
   onComplete: (entryId: string, openExisting: boolean) => void
   onCancel: () => void
+  onCommitted: () => Promise<LocalSnapshot>
 }
-export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
-  const [values, setValues] = useState(emptyAlbumForm)
+export function AlbumForm({
+  snapshot,
+  library,
+  onComplete,
+  onCancel,
+  onCommitted,
+}: Props) {
+  const [values, setValues] = useDraftState(
+    'new-album',
+    'values',
+    emptyAlbumForm,
+  )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [failure, setFailure] = useState('')
-  const [review, setReview] = useState<AlbumCandidate[]>([])
+  const [review, setReview] = useDraftState<AlbumCandidate[]>(
+    'new-album',
+    'review',
+    [],
+  )
   const [busy, setBusy] = useState(false)
+  const [coverBusy, setCoverBusy] = useState(false)
+  const [offeredCover, setOfferedCover] = useDraftState<string | undefined>(
+    'new-album',
+    'offered-cover',
+    undefined,
+  )
+  const [pending, setPending] = useState<{ id: string; existing: boolean }>()
   const locked = useRef(false)
   const formRef = useRef<HTMLFormElement>(null)
   const artistRef = useRef<HTMLInputElement>(null)
   const reviewHeading = useRef<HTMLHeadingElement>(null)
+  const selectionHeading = useRef<HTMLHeadingElement>(null)
+  const retry = useRef<HTMLButtonElement>(null)
+  useDraftGuard({
+    id: 'new-album',
+    label: 'Nuevo álbum',
+    dirty: JSON.stringify(values) !== JSON.stringify(emptyAlbumForm),
+    busy: busy || coverBusy,
+    pendingRead: Boolean(pending),
+    ...(pending ? { focus: () => retry.current?.focus() } : {}),
+    form: formRef,
+  })
+  useEffect(() => {
+    if (pending && !busy) retry.current?.focus()
+  }, [pending, busy, failure])
   useEffect(() => {
     artistRef.current?.focus()
   }, [])
   useEffect(() => {
     if (review.length > 0) reviewHeading.current?.focus()
   }, [review])
+  useEffect(() => {
+    if (values.catalogReference) selectionHeading.current?.focus()
+  }, [values.catalogReference])
   const artists = matchingArtists(snapshot.catalog.artists, values.artist)
   function edit(change: Partial<AlbumFormValues>) {
-    setValues((previous) => ({ ...previous, ...change }))
+    const changesArtists =
+      ('artist' in change &&
+        catalogNameKey(change.artist ?? '') !==
+          catalogNameKey(values.artist)) ||
+      ('artistId' in change && change.artistId !== values.artistId)
+    const changesIdentity =
+      changesArtists ||
+      ('title' in change &&
+        catalogNameKey(change.title ?? '') !== catalogNameKey(values.title))
+    setValues((previous) => ({
+      ...previous,
+      ...change,
+      ...(changesIdentity
+        ? {
+            catalogReference: undefined,
+            ...(changesArtists ? { catalogArtists: undefined } : {}),
+            ...(changesArtists ? { catalogCountries: undefined } : {}),
+            ...(offeredCover && previous.coverUrl === offeredCover
+              ? { coverUrl: '' }
+              : {}),
+          }
+        : {}),
+    }))
+    if (changesIdentity) setOfferedCover(undefined)
+    setErrors({})
+    setFailure('')
+    setReview([])
+  }
+  function selectCatalogCandidate(candidate: CatalogCandidate) {
+    setValues((previous) =>
+      prepareCatalogCandidate(
+        {
+          ...previous,
+          ...(offeredCover && previous.coverUrl === offeredCover
+            ? { coverUrl: '' }
+            : {}),
+        },
+        candidate,
+      ),
+    )
+    setOfferedCover(candidate.coverUrl)
     setErrors({})
     setFailure('')
     setReview([])
@@ -51,7 +136,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     ) : null
   }
   async function save(acknowledge = false) {
-    if (locked.current) return
+    if (locked.current || coverBusy || pending) return
     const parsed = parseAlbumForm(values)
     if (!parsed.success) {
       setErrors(parsed.errors)
@@ -73,7 +158,11 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
         acknowledge ? review.map((candidate) => candidate.album.id) : [],
       )
       if (result.status === 'review') setReview(result.candidates)
-      else onComplete(result.userAlbum.id, false)
+      else {
+        const committed = { id: result.userAlbum.id, existing: false }
+        setPending(committed)
+        await synchronize(committed)
+      }
     } catch (error) {
       setFailure(
         error instanceof LocalStorageError && error.code === 'quota_exceeded'
@@ -86,13 +175,15 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     }
   }
   async function chooseCandidate(candidate: AlbumCandidate) {
-    if (locked.current) return
+    if (locked.current || pending) return
     locked.current = true
     setBusy(true)
     setFailure('')
     try {
       const entry = await library.addAlbumToLibrary(candidate.album.id)
-      onComplete(entry.id, true)
+      const committed = { id: entry.id, existing: true }
+      setPending(committed)
+      await synchronize(committed)
     } catch {
       setFailure(
         'No se pudo abrir o añadir el álbum seleccionado. Vuelve a intentar.',
@@ -106,10 +197,28 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
     event.preventDefault()
     void save()
   }
+  async function synchronize(committed: { id: string; existing: boolean }) {
+    try {
+      await onCommitted()
+      onComplete(committed.id, committed.existing)
+    } catch {
+      setFailure(
+        'El álbum se guardó, pero no pudimos actualizar la biblioteca. Reintenta sólo la lectura para continuar.',
+      )
+    }
+  }
+  async function retryRead() {
+    if (locked.current || !pending) return
+    locked.current = true
+    setBusy(true)
+    await synchronize(pending)
+    setBusy(false)
+    locked.current = false
+  }
   return (
     <section className="album-form-panel" aria-labelledby="add-album-title">
       <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
-        Registro manual
+        Tu catálogo
       </p>
       <h2 id="add-album-title" className="text-3xl font-semibold">
         Añadir álbum
@@ -118,7 +227,10 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
         Artista y título son suficientes. Los demás datos pueden esperar.
       </p>
       <form ref={formRef} onSubmit={submit} noValidate autoComplete="off">
-        <fieldset disabled={busy} className="album-form-fields">
+        <fieldset
+          disabled={busy || Boolean(pending)}
+          className="album-form-fields"
+        >
           <div className="form-grid">
             <label>
               <span id="form-artist-label" className="field-label">
@@ -154,7 +266,70 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
               {errorFor('title')}
             </label>
           </div>
-          {artists.length > 0 ? (
+          {values.catalogArtists && values.catalogArtists.length > 1 ? (
+            <p className="text-sm text-muted">
+              Artistas conservados por separado:{' '}
+              {values.catalogArtists.join(' · ')}. Editar «Artista» reemplazará
+              estos créditos por el nombre escrito.
+            </p>
+          ) : null}
+          <CatalogLookupPanel
+            title={values.title}
+            artist={values.artist}
+            onSelect={selectCatalogCandidate}
+            disabled={busy}
+          />
+          {values.catalogReference ? (
+            <section
+              className="catalog-selection"
+              aria-label="Referencia preparada"
+            >
+              <h3
+                ref={selectionHeading}
+                tabIndex={-1}
+                className="font-semibold"
+              >
+                Referencia preparada para guardar
+              </h3>
+              <p className="mt-2 text-sm text-muted">
+                Revisa los datos del formulario. La referencia de Wikidata{' '}
+                {values.catalogReference.entityId} se guardará al confirmar el
+                álbum. Editar artista o título quitará esta asociación.
+              </p>
+              {values.catalogArtists ? (
+                <p className="mt-2 text-sm">
+                  Créditos: {values.catalogArtists.join(' · ')}. Se conservará
+                  cada artista por separado.
+                </p>
+              ) : null}
+              {offeredCover ? (
+                <label className="checkbox-option">
+                  <input
+                    type="checkbox"
+                    checked={values.coverUrl === offeredCover}
+                    onChange={(event) =>
+                      edit({
+                        coverUrl: event.target.checked ? offeredCover : '',
+                        coverImage: undefined,
+                      })
+                    }
+                  />
+                  <span>
+                    Guardar enlace de portada de Cover Art Archive (puede no
+                    estar disponible). Se mostrará automáticamente.
+                  </span>
+                </label>
+              ) : null}
+              <button
+                type="button"
+                className="text-button mt-3"
+                onClick={() => edit({ catalogReference: undefined })}
+              >
+                Quitar referencia
+              </button>
+            </section>
+          ) : null}
+          {artists.length > 0 && !values.catalogArtists ? (
             <fieldset className="artist-options">
               <legend className="text-sm font-semibold">
                 Hay artistas con este nombre
@@ -189,7 +364,11 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
                       name="artist-choice"
                       checked={values.artistId === artist.id}
                       onChange={() =>
-                        edit({ artistId: artist.id, artist: artist.name })
+                        edit({
+                          artistId: artist.id,
+                          artist: artist.name,
+                          country: artist.country ?? '',
+                        })
                       }
                     />
                     <span>
@@ -221,6 +400,70 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
             </select>
             {errorFor('releaseType')}
           </label>
+          <label>
+            <span className="field-label">Géneros (separados por comas)</span>
+            <input
+              name="genres"
+              value={values.genres}
+              onChange={(event) => edit({ genres: event.target.value })}
+              aria-invalid={Boolean(errors.genres)}
+              aria-describedby={errors.genres ? 'error-genres' : undefined}
+              placeholder="Rock, jazz, metal…"
+            />
+            {errorFor('genres')}
+          </label>
+          {values.catalogArtists ? (
+            values.catalogArtists.map((name, index) => (
+              <label key={`${index}-${name}`}>
+                <span className="field-label">País de origen de {name}</span>
+                <input
+                  name={`country-${index}`}
+                  maxLength={100}
+                  value={values.catalogCountries?.[index] ?? ''}
+                  onChange={(event) => {
+                    const countries = [
+                      ...(values.catalogCountries ??
+                        values.catalogArtists!.map(() => '')),
+                    ]
+                    countries[index] = event.target.value
+                    edit({ catalogCountries: countries })
+                  }}
+                />
+              </label>
+            ))
+          ) : (
+            <label>
+              <span className="field-label">
+                País de origen de la banda o artista
+              </span>
+              <input
+                name="country"
+                maxLength={100}
+                value={values.country}
+                disabled={values.artistId !== undefined}
+                onChange={(event) => edit({ country: event.target.value })}
+                aria-invalid={Boolean(errors.country)}
+                aria-describedby={errors.country ? 'error-country' : undefined}
+              />
+              {values.artistId ? (
+                <span className="mt-2 block text-xs text-muted">
+                  País del artista seleccionado. Puedes corregirlo desde la
+                  edición de una ficha.
+                </span>
+              ) : null}
+            </label>
+          )}
+          {errorFor('country')}
+          <CoverFields
+            url={values.coverUrl}
+            {...(values.coverImage ? { image: values.coverImage } : {})}
+            onChange={edit}
+            disabled={busy}
+            onBusyChange={setCoverBusy}
+            {...(errors.coverUrl || errors.coverImage
+              ? { error: errors.coverUrl ?? errors.coverImage }
+              : {})}
+          />
           <details className="optional-fields">
             <summary>Más datos (opcionales)</summary>
             <div className="mt-5 grid gap-5">
@@ -242,23 +485,6 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
                   }
                 />
                 {errorFor('originalYear')}
-              </label>
-              <label>
-                <span id="form-cover-label" className="field-label">
-                  Enlace a portada (HTTPS)
-                </span>
-                <input
-                  name="coverUrl"
-                  aria-labelledby="form-cover-label"
-                  type="url"
-                  value={values.coverUrl}
-                  aria-invalid={Boolean(errors.coverUrl)}
-                  aria-describedby={
-                    errors.coverUrl ? 'error-coverUrl' : undefined
-                  }
-                  onChange={(event) => edit({ coverUrl: event.target.value })}
-                />
-                {errorFor('coverUrl')}
               </label>
               <label>
                 <span id="form-description-label" className="field-label">
@@ -293,6 +519,9 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
               <p className="mt-2 text-sm text-muted" role="status">
                 Comprueba si es el mismo álbum. Ningún registro se ha creado ni
                 fusionado.
+                {values.catalogReference
+                  ? ' Abrir uno existente conservará sus datos y su referencia actual.'
+                  : ''}
               </p>
               <ul className="my-4 grid gap-4">
                 {review.map((candidate) => (
@@ -328,7 +557,7 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
               </button>
             </section>
           ) : null}
-          {failure ? (
+          {failure && !pending ? (
             <p role="alert" className="field-error">
               {failure}
             </p>
@@ -345,7 +574,11 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
           ) : null}
           <div className="mt-7 flex flex-wrap gap-3">
             {review.length === 0 ? (
-              <button type="submit" className="primary-button">
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={coverBusy}
+              >
                 Guardar álbum
               </button>
             ) : null}
@@ -355,6 +588,22 @@ export function AlbumForm({ snapshot, library, onComplete, onCancel }: Props) {
           </div>
         </fieldset>
       </form>
+      {pending ? (
+        <>
+          <p role="alert" className="field-error">
+            {failure}
+          </p>
+          <button
+            ref={retry}
+            type="button"
+            className="action-button mt-4"
+            disabled={busy}
+            onClick={() => void retryRead()}
+          >
+            Reintentar lectura del álbum
+          </button>
+        </>
+      ) : null}
     </section>
   )
 }

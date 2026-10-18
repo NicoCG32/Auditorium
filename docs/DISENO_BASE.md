@@ -59,7 +59,7 @@ Los componentes construyen sus URLs públicas mediante `import.meta.env.BASE_URL
 - Enlace «Ir al contenido» visible al recibir foco; destino principal identificable.
 - Foco visible de tres píxeles y controles de apariencia con áreas de interacción de al menos 44 píxeles de alto.
 - Sin animaciones continuas; las transiciones se desactivan con `prefers-reduced-motion`. En colores forzados se oculta la ambientación y se conservan bordes funcionales.
-- Decoración de vinilo en CSS, marcada como decorativa para lectores de pantalla. La ficha permite mostrar una URL de portada guardada por acción explícita; no se distribuyen carátulas ajenas.
+- Decoración de vinilo en CSS, marcada como decorativa para lectores de pantalla. Las tarjetas y la ficha muestran automáticamente la portada guardada por URL o archivo local. El registro y la edición muestran una vista previa automática; el vinilo se conserva como alternativa cuando no hay imagen o falla. No se distribuyen carátulas de usuarios como recursos propios.
 - Controles de búsqueda, escucha, nota, orden y vista operativos sobre la biblioteca guardada. Registro manual con validación, revisión de duplicados y ficha con metadatos y valoración. Errores de escritura y lectura con reintento y foco accesible.
 - Editor separado de experiencia personal, con estado de escucha y comentario multilínea. Una operación de detalle bloquea los otros editores hasta guardar y actualizar la ficha; los conflictos conservan el borrador para su revisión.
 - Estados separados de carga, vacío, sin coincidencias y error con reintento. Ver [consulta de biblioteca](CONSULTA_BIBLIOTECA.md).

@@ -117,6 +117,8 @@ for (const theme of ['dark', 'light'] as const) {
           exact: true,
         })
         .check()
+      // This reload explicitly discards the fictitious draft after the theme check.
+      page.once('dialog', (dialog) => dialog.accept())
       await page.reload()
       await expect(page.locator('.aud-app')).toHaveAttribute(
         'data-aud-theme',
@@ -127,7 +129,7 @@ for (const theme of ['dark', 'light'] as const) {
         'off',
       )
       await expect(
-        page.getByRole('button', { name: 'Eclipse', exact: true }),
+        page.getByRole('heading', { name: 'Eclipse', exact: true }),
       ).toBeVisible()
       const after = await rawDatabase(page)
       expect(after).toEqual(before)

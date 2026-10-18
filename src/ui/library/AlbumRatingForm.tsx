@@ -18,6 +18,7 @@ export function AlbumRatingForm({
 }) {
   return (
     <RatingForm
+      draftId={`rating:${entryId}`}
       kind="album"
       title="Tu valoración del álbum"
       score={score}

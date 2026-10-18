@@ -14,7 +14,7 @@ import type { PurchaseWish } from '../../domain/library/purchase-wishes'
 import type { IdentityRecord, StoredUserAlbum } from './records'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 3
+export const DATABASE_VERSION = 5
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -42,6 +42,10 @@ export const SCHEMA_V3 = {
     'id, userAlbumId, targetReleaseId, targetFormat, status, createdAt',
 } as const
 
+// La nueva versión evita que clientes anteriores lean campos que no conocen.
+export const SCHEMA_V4 = { ...SCHEMA_V3 } as const
+export const SCHEMA_V5 = { ...SCHEMA_V4 } as const
+
 export class AuditoriumDatabase extends Dexie {
   readonly nativeFactory: IDBFactory | undefined
   readonly metadata: Table<IdentityRecord, string>
@@ -67,6 +71,8 @@ export class AuditoriumDatabase extends Dexie {
     this.version(1).stores(SCHEMA_V1)
     this.version(2).stores(SCHEMA_V2)
     this.version(3).stores(SCHEMA_V3)
+    this.version(4).stores(SCHEMA_V4)
+    this.version(5).stores(SCHEMA_V5)
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.artists = this.table<Artist, string>('artists')
     this.albums = this.table<Album, string>('albums')

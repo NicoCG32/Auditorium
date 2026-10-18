@@ -3,7 +3,13 @@ import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { LibraryBackups } from '../../application/library-backups'
 import { parseBackupText } from '../../domain/backup'
-import { AuditoriumDatabase } from '../db/database'
+import {
+  AuditoriumDatabase,
+  DATABASE_VERSION,
+  SCHEMA_V3,
+  SCHEMA_V4,
+  SCHEMA_V5,
+} from '../db/database'
 import { IndexedDbRepository } from './indexeddb-repository'
 import {
   historicalStores,
@@ -43,9 +49,16 @@ function current(name = 'migration-recovery') {
     now,
   }
 }
-async function legacy(version: 1 | 2) {
-  const snapshot = historicalSnapshot(version),
-    stores = historicalStores(version)
+async function legacy(version: 1 | 2 | 3 | 4) {
+  const historicalVersion = version === 4 ? 3 : version
+  const snapshot = historicalSnapshot(historicalVersion),
+    stores = historicalStores(historicalVersion)
+  if (version === 4)
+    snapshot.catalog.albums[0]!.catalogReference = {
+      provider: 'wikidata',
+      entityId: 'Q999999999',
+      retrievedAt: '2026-10-16T12:00:00.000Z',
+    }
   await seedNativeStorage({
     name: 'migration-recovery',
     version: version * 10,
@@ -59,7 +72,7 @@ async function legacy(version: 1 | 2) {
   }
 }
 
-test.each([1, 2] as const)(
+test.each([1, 2, 3, 4] as const)(
   'contrato histórico v%s conserva todas las filas, retirados e identidad al migrar y exportar',
   async (version) => {
     const { snapshot, before } = await legacy(version)
@@ -69,7 +82,7 @@ test.each([1, 2] as const)(
       name: 'migration-recovery',
       factory,
     })
-    expect(after.version).toBe(30)
+    expect(after.version).toBe(DATABASE_VERSION * 10)
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(rows)
     for (const definition of before.stores)
@@ -80,8 +93,10 @@ test.each([1, 2] as const)(
     expect(
       migrated.library.userAlbums.find((entry) => entry.deletedAt),
     ).toEqual(snapshot.library.userAlbums.find((entry) => entry.deletedAt))
-    expect(migrated.library.purchaseWishes).toEqual([])
-    expect(migrated.library.ownedItems).toHaveLength(version === 2 ? 1 : 0)
+    expect(migrated.library.purchaseWishes).toEqual(
+      snapshot.library.purchaseWishes,
+    )
+    expect(migrated.library.ownedItems).toHaveLength(version >= 2 ? 1 : 0)
     expect(connection.createId).not.toHaveBeenCalled()
     expect(connection.now).not.toHaveBeenCalled()
     const exported = await new LibraryBackups(connection.repository).export()
@@ -91,7 +106,7 @@ test.each([1, 2] as const)(
   },
 )
 
-for (const version of [1, 2] as const) {
+for (const version of [1, 2, 3, 4] as const) {
   test.each([
     ['QuotaExceededError', 'quota_exceeded'],
     ['AbortError', 'aborted'],
@@ -101,11 +116,15 @@ for (const version of [1, 2] as const) {
       const { before } = await legacy(version)
       let injected = false
       const connection = current()
-      connection.database.version(3).upgrade(async (transaction) => {
-        expect(await transaction.table('purchaseWishes').count()).toBe(0)
-        injected = true
-        throw new DOMException('Fictitious migration fault', name)
-      })
+      connection.database
+        .version(DATABASE_VERSION)
+        .upgrade(async (transaction) => {
+          expect(await transaction.table('purchaseWishes').count()).toBe(
+            version >= 3 ? 1 : 0,
+          )
+          injected = true
+          throw new DOMException('Fictitious migration fault', name)
+        })
       await expect(connection.repository.readSnapshot()).rejects.toMatchObject({
         code,
       })
@@ -116,15 +135,74 @@ for (const version of [1, 2] as const) {
       expect(connection.createId).not.toHaveBeenCalled()
       connection.repository.close()
       expect((await current().repository.readSnapshot()).identity.userId).toBe(
-        historicalSnapshot(version).identity.userId,
+        historicalSnapshot(version === 4 ? 3 : version).identity.userId,
       )
       expect(
         (await inspectNativeStorage({ name: 'migration-recovery', factory }))
           .version,
-      ).toBe(30)
+      ).toBe(DATABASE_VERSION * 10)
     },
   )
 }
+
+test('v5 conserva las trece tablas e índices v4 y persiste metadatos y portada sin cambiar UUID ni biblioteca personal', async () => {
+  const { snapshot } = await legacy(4)
+  const connection = current()
+  await connection.repository.readSnapshot()
+  const reference = {
+    provider: 'wikidata' as const,
+    entityId: 'Q999999999',
+    retrievedAt: '2026-10-16T12:00:00.000Z',
+    spotifyAlbumIds: ['a'.repeat(22)],
+    youtubeVideoIds: ['ficticio_01'],
+  }
+  await connection.repository.mutate((currentSnapshot) => {
+    currentSnapshot.catalog.albums[0]!.catalogReference = reference
+    currentSnapshot.catalog.albums[0]!.genres = ['Metal', 'Progresivo']
+    currentSnapshot.catalog.albums[0]!.coverImage =
+      'data:image/png;base64,iVBORw0KGgo='
+    currentSnapshot.catalog.artists[0]!.country = 'Chile'
+    return { snapshot: currentSnapshot, result: undefined }
+  })
+  connection.repository.close()
+  const reopened = await current().repository.readSnapshot()
+  expect(reopened.identity).toEqual(snapshot.identity)
+  expect(reopened.library).toEqual(snapshot.library)
+  expect(reopened.catalog).toEqual({
+    ...snapshot.catalog,
+    artists: snapshot.catalog.artists.map((artist, index) =>
+      index === 0 ? { ...artist, country: 'Chile' } : artist,
+    ),
+    albums: snapshot.catalog.albums.map((album, index) =>
+      index === 0
+        ? {
+            ...album,
+            catalogReference: reference,
+            genres: ['Metal', 'Progresivo'],
+            coverImage: 'data:image/png;base64,iVBORw0KGgo=',
+          }
+        : album,
+    ),
+  })
+  expect(DATABASE_VERSION).toBe(5)
+  expect(SCHEMA_V4).toEqual(SCHEMA_V3)
+  expect(SCHEMA_V5).toEqual(SCHEMA_V4)
+  const native = await inspectNativeStorage({
+    name: 'migration-recovery',
+    factory,
+  })
+  expect(native.version).toBe(50)
+  expect(native.stores).toHaveLength(13)
+  const openedAsV3 = factory.open('migration-recovery', 40)
+  const failure = await new Promise<DOMException | null>((resolve) => {
+    openedAsV3.onerror = () => resolve(openedAsV3.error)
+    openedAsV3.onsuccess = () => {
+      openedAsV3.result.close()
+      resolve(null)
+    }
+  })
+  expect(failure?.name).toBe('VersionError')
+})
 
 test.each(['unique', 'keyPath', 'multiEntry'] as const)(
   'contrato histórico alterado en %s se rechaza antes de cambiar esquema o datos',

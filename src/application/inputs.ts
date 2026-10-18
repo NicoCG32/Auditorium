@@ -1,9 +1,13 @@
 import { z } from 'zod'
+import { checkCoverFields } from '../domain/catalog/metadata'
 import { ownedItemDataSchema } from '../domain/library/owned-items'
 import { wishTargetSchema } from '../domain/library/purchase-wishes'
+import {
+  catalogGenresInputSchema,
+  catalogNameInputSchema,
+} from './catalog-names'
 
 import {
-  albumArtistSchema,
   albumSchema,
   artistRoleSchema,
   artistSchema,
@@ -55,17 +59,19 @@ export const personalExperienceInputSchema = z.strictObject({
 
 const credit = {
   role: artistRoleSchema.default('primary'),
-  creditedAs: albumArtistSchema.shape.creditedAs,
+  creditedAs: catalogNameInputSchema.optional(),
 }
 const artistInput = z.union([
   z.strictObject({ artistId: entityIdSchema, ...credit }),
   artistSchema
     .omit({ id: true, catalogScope: true, createdBy: true })
-    .extend(credit),
+    .extend({ ...credit, name: catalogNameInputSchema }),
 ])
-export const createAlbumInputSchema = albumSchema
+const albumInputSchema = albumSchema
   .omit({ id: true, catalogScope: true, createdBy: true })
   .extend({
+    title: catalogNameInputSchema,
+    genres: catalogGenresInputSchema.optional(),
     artists: z
       .array(artistInput)
       .min(1)
@@ -73,12 +79,15 @@ export const createAlbumInputSchema = albumSchema
         (artists) => artists.some((artist) => artist.role === 'primary'),
         'Debe existir un artista principal.',
       ),
-    addToLibrary: z.boolean().default(true),
   })
 
-export const manualAlbumInputSchema = createAlbumInputSchema.omit({
-  addToLibrary: true,
-})
+export const createAlbumInputSchema = albumInputSchema
+  .extend({
+    addToLibrary: z.boolean().default(true),
+  })
+  .superRefine(checkCoverFields)
+export const manualAlbumInputSchema =
+  albumInputSchema.superRefine(checkCoverFields)
 export type CreateAlbumInput = z.output<typeof createAlbumInputSchema>
 export type ManualAlbumInput = z.output<typeof manualAlbumInputSchema>
 

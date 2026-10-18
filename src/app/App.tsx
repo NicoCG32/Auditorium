@@ -7,6 +7,7 @@ import { AppearanceControls } from '../ui/appearance/AppearanceControls'
 import { PosterBackdrop } from '../ui/appearance/PosterBackdrop'
 import { useAppearance } from '../ui/appearance/use-appearance'
 import { usePosterPreview } from '../ui/appearance/use-poster-preview'
+import { NavigationProvider } from '../ui/navigation/NavigationProvider'
 
 export function App({
   repository,
@@ -40,7 +41,14 @@ export function App({
       data-aud-ambient={appearance.ambient ? 'on' : 'off'}
     >
       <PosterBackdrop poster={preview.poster} visible={appearance.ambient} />
-      <a className="skip-link" href="#contenido">
+      <a
+        className="skip-link"
+        href="#contenido"
+        onClick={(event) => {
+          event.preventDefault()
+          document.getElementById('contenido')?.focus()
+        }}
+      >
         Ir al contenido
       </a>
       <header className="app-header">
@@ -58,7 +66,9 @@ export function App({
         </div>
       </header>
       <main id="contenido" tabIndex={-1} className="app-main flex-1">
-        <LibraryPage repository={repository} />
+        <NavigationProvider>
+          <LibraryPage repository={repository} />
+        </NavigationProvider>
       </main>
       <footer className="app-footer">
         {offline && <OfflinePanel controller={offline} />}

@@ -1,6 +1,10 @@
 # Modelo de dominio
 
-Este documento describe los contratos implementados en Auditorium **v1.0.0**. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni funciones pendientes.
+Este documento describe los contratos de Auditorium en el incremento en revisión, basados en el MVP **v1.0.0** y ampliados por CAT-01 y UX-01. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni modifican la release publicada.
+
+UX-03 define por separado los [contratos propuestos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). Esos conceptos todavía no forman parte de los schemas ejecutables que describe este documento. En particular, el `releaseType` vigente aún mezcla tipo principal y categorías; la propuesta los separa y trata Inédito como estado de publicación, conservando ediciones en `Release` y ejemplares en `OwnedItem`.
+
+El refinamiento propuesto conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Mi colección agrupará ejemplares físicos y compras digitales con filtros diferenciados; una edición puede conocerse sin poseerse. La referencia y el cambio de navegación aún no están implementados.
 
 ## Alcance y vocabulario
 
@@ -40,11 +44,15 @@ erDiagram
     Artist {
         UUID id
         string name
+        string country "opcional; origen del artista"
     }
     Album {
         UUID id
         string title
         string releaseType
+        string[] genres "opcional; etiquetas del álbum"
+        string coverUrl "opcional; HTTPS"
+        string coverImage "opcional; data URL JPEG/PNG"
     }
     AlbumArtist {
         UUID albumId
@@ -84,8 +92,8 @@ El diagrama muestra relaciones conceptuales y solo los campos necesarios para en
 
 | Tipo           | Campos obligatorios en el modelo validado                                | Campos opcionales                                                                                                             |
 | -------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `Artist`       | `id`, `name`, `catalogScope`                                             | `sortName`, `createdBy`                                                                                                       |
-| `Album`        | `id`, `title`, `releaseType`, `catalogScope`                             | `originalYear`, `coverUrl`, `description`, `createdBy`                                                                        |
+| `Artist`       | `id`, `name`, `catalogScope`                                             | `sortName`, `country`, `createdBy`                                                                                            |
+| `Album`        | `id`, `title`, `releaseType`, `catalogScope`                             | `originalYear`, `genres`, `coverUrl`, `coverImage`, `description`, `createdBy`, `catalogReference`                            |
 | `AlbumArtist`  | `albumId`, `artistId`, `role`, `position`                                | `creditedAs`                                                                                                                  |
 | `Track`        | `id`, `albumId`, `title`                                                 | `variantOfTrackId`, `versionLabel`, `referenceDurationMs`                                                                     |
 | `CoreTrack`    | `albumId`, `trackId`, `discNumber`, `trackNumber`                        | Ninguno                                                                                                                       |
@@ -101,7 +109,50 @@ El diagrama muestra relaciones conceptuales y solo los campos necesarios para en
 | `Release.format`           | `vinyl`, `cd`, `cassette`, `digital`, `other`                                 |
 | `ReleaseTrack.contentRole` | `standard`, `bonus`, `alternate`, `other`                                     |
 
-Los años son enteros de 1 a 9999. Posiciones y duraciones son enteros positivos; las duraciones se guardan en milisegundos. `coverUrl` requiere HTTPS y `countryCode` requiere dos letras mayúsculas; estos contratos verifican estructura, no disponibilidad de la imagen ni pertenencia a un registro de países. Los campos del contrato no implican que todos tengan un editor en la interfaz de esta versión.
+Los años son enteros de 1 a 9999. Posiciones y duraciones son enteros positivos; las duraciones se guardan en milisegundos. `coverUrl` requiere HTTPS y `Release.countryCode` requiere dos letras mayúsculas; estos contratos verifican estructura, no disponibilidad de la imagen ni pertenencia a un registro de países. Los campos del contrato no implican que todos tengan un editor en la interfaz de esta versión.
+
+`Album.genres` admite hasta veinte etiquetas libres de hasta ochenta caracteres, sin duplicados al normalizar mayúsculas, acentos y espacios exteriores. `Artist.country` es texto opcional de hasta cien caracteres que describe el origen de una persona o agrupación; no sustituye al país de una edición. Los álbumes con varios artistas conservan créditos y países separados. La consulta local agrupa etiquetas equivalentes para buscar, filtrar y ordenar.
+
+`Album.coverImage` contiene una data URL JPEG/PNG con base64 canónico, firma válida y un máximo de 2 MiB decodificados. Es excluyente con `coverUrl`. Al seleccionar un archivo en la interfaz se comprueban además decodificación, dimensiones máximas de 8192 por eje y 32 millones de píxeles. El schema del dominio no abre imágenes ni hace llamadas de red. La portada local se conserva en IndexedDB y respaldos; la remota conserva sólo su enlace.
+
+La [edición de metadatos](EDICION_CATALOGO.md) mantiene el ID de álbum y sus relaciones personales y musicales, con comprobación del estado esperado. Cambiar un nombre de artista crea una identidad para ese crédito del álbum y no renombra registros compartidos. Corregir el país de un artista que mantiene su ID cambia el dato en sus demás créditos; la interfaz advierte ese alcance.
+
+### Referencia externa de álbum
+
+`CatalogReference` es un valor opcional anidado en `Album`, no una tabla ni una identidad local alternativa. Su [schema estricto](../src/domain/catalog/catalog-reference.ts) admite:
+
+```mermaid
+classDiagram
+    direction LR
+    Album "1" *-- "0..1" CatalogReference : contiene
+    class Album {
+        UUID id
+        string title
+    }
+    class CatalogReference {
+        string provider
+        string entityId
+        datetime retrievedAt
+        UUID musicBrainzReleaseGroupId
+        string[] spotifyAlbumIds
+        string[] youtubeVideoIds
+    }
+```
+
+La composición indica pertenencia al álbum, sin almacenamiento separado. Las tres propiedades de IDs externos son opcionales; `provider` siempre es `wikidata`.
+
+| Campo                       | Regla                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------- |
+| `provider`                  | Literal `wikidata`                                                                                 |
+| `entityId`                  | QID: `Q` seguido de entero positivo sin cero inicial                                               |
+| `retrievedAt`               | Fecha UTC válida con precisión de milisegundos                                                     |
+| `musicBrainzReleaseGroupId` | UUID opcional del grupo de publicación                                                             |
+| `spotifyAlbumIds`           | Hasta ocho IDs opcionales y sin duplicados; 22 caracteres alfanuméricos por ID                     |
+| `youtubeVideoIds`           | Hasta ocho IDs opcionales y sin duplicados; 11 caracteres alfanuméricos, guion o guion bajo por ID |
+
+El ID externo no impone unicidad global ni autoriza fusionar UUID locales. La fecha identifica la consulta, no certifica vigencia o autenticidad absoluta del contenido. Las URLs de procedencia y streaming se derivan de identificadores válidos; no se persisten respuestas arbitrarias del servicio. La portada permanece como dato independiente y opcional. Editar título, identidad, alias, rol u orden de los créditos invalida la referencia anterior; corregir año, géneros, país, descripción o portada la conserva. El registro manual no necesita una referencia para ser válido. Véase el flujo de [integraciones opcionales](INTEGRACIONES_OPCIONALES.md).
+
+Las recomendaciones son un resultado transitorio de aplicación, no una entidad del catálogo o biblioteca. Sólo proponen orden, razón y acción sobre candidatos activos conocidos; no crean valoraciones ni cambian estados del dominio.
 
 ### Cardinalidades y reglas de catálogo
 
@@ -332,7 +383,7 @@ IndexedDB no declara claves foráneas ni borrados en cascada. Los campos `albumI
 
 `StoredUserAlbum.activeAlbumKey` es un dato derivado de persistencia: usuario/álbum para una entrada activa y `null` para una retirada. Su índice único refuerza la unicidad de entradas activas. No forma parte de `UserAlbum`, del modelo musical ni del respaldo de dominio. La definición física está en [database.ts](../src/infrastructure/db/database.ts) y la traducción en [records.ts](../src/infrastructure/db/records.ts); la evolución del almacenamiento se explica en [persistencia local](PERSISTENCIA_LOCAL.md).
 
-El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 1` y `exportedAt`. Su versión es independiente de la versión 3 de la base local. Incluye entradas retiradas y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
+El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 3` y `exportedAt`. Su versión es independiente de la versión 5 de la base local. Los archivos v1/v2 estrictos se aceptan mediante normalización a v3, conservando identidad y datos sin añadir metadatos. Sus contratos históricos rechazan país de artista, géneros y portada local; v1 tampoco admite referencia externa. El formato actual incluye portadas locales, entradas retiradas y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
 
 ## Ejemplo de lectura del modelo
 

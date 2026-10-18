@@ -178,6 +178,7 @@ test('Escape y cancelar formulario no escriben y devuelven foco', async () => {
       fireEvent.click(
         screen.getByRole('button', { name: 'Cancelar formulario de deseo' }),
       )
+    fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
     expect(
       screen.getByRole('button', { name: 'Registrar deseo' }),
     ).toHaveFocus()

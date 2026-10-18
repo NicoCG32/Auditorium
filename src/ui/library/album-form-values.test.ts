@@ -1,12 +1,16 @@
 // @vitest-environment node
 import { expect, test } from 'vitest'
 import { fixtureId } from '../../domain/catalog/catalog.fixture'
-import { emptyAlbumForm, parseAlbumForm } from './album-form-values'
+import {
+  emptyAlbumForm,
+  parseAlbumForm,
+  prepareCatalogCandidate,
+} from './album-form-values'
 
 test('solo artista y título; campos opcionales vacíos se omiten', () => {
   const result = parseAlbumForm({
     ...emptyAlbumForm,
-    artist: ' Umbral ficticio ',
+    artist: ' Umbral Ficticio ',
     title: ' Eclipse ',
     originalYear: ' ',
     coverUrl: ' ',
@@ -17,14 +21,14 @@ test('solo artista y título; campos opcionales vacíos se omiten', () => {
     input: {
       title: 'Eclipse',
       releaseType: 'album',
-      artists: [{ name: 'Umbral ficticio', role: 'primary' }],
+      artists: [{ name: 'Umbral Ficticio', role: 'primary' }],
     },
   })
 })
 test('metadatos válidos y artista por referencia explícita', () => {
   const result = parseAlbumForm({
     ...emptyAlbumForm,
-    artist: 'Umbral ficticio',
+    artist: 'Umbral Ficticio',
     artistId: fixtureId(1),
     title: 'Otra órbita',
     releaseType: 'ep',
@@ -47,7 +51,7 @@ test.each(['0', '-1', '1998.5', '10000', '1e3', 'texto'])(
   (originalYear) => {
     const result = parseAlbumForm({
       ...emptyAlbumForm,
-      artist: 'Umbral ficticio',
+      artist: 'Umbral Ficticio',
       title: 'Eclipse',
       originalYear,
     })
@@ -70,4 +74,108 @@ test('errores de artista/título y portada se vinculan a sus campos', () => {
     'coverUrl',
     'title',
   ])
+})
+
+test('prepara una referencia sin cargar portada y conserva los créditos separados', () => {
+  const reference = {
+    provider: 'wikidata' as const,
+    entityId: 'Q999999',
+    retrievedAt: '2026-10-17T00:00:00.000Z',
+  }
+  const values = prepareCatalogCandidate(
+    { ...emptyAlbumForm, description: 'Mi descripción ficticia' },
+    {
+      id: reference.entityId,
+      title: 'Dúo ficticio',
+      artists: ['Artista Ficticio A', 'Artista Ficticio B'],
+      releaseType: 'ep',
+      originalYear: 2001,
+      description: 'Descripción externa ficticia',
+      catalogReference: reference,
+      coverUrl: 'https://example.invalid/portada.png',
+    },
+  )
+  expect(values.coverUrl).toBe('')
+  expect(values.description).toBe('Mi descripción ficticia')
+  expect(parseAlbumForm(values)).toMatchObject({
+    success: true,
+    input: {
+      catalogReference: reference,
+      artists: [
+        { name: 'Artista Ficticio A', role: 'primary' },
+        { name: 'Artista Ficticio B', role: 'primary' },
+      ],
+      originalYear: 2001,
+    },
+  })
+})
+
+test('la selección externa prepara nombres capitalizados y conserva la referencia y el texto original externo', () => {
+  const candidate = {
+    id: 'Q999999',
+    title: 'obra del sur',
+    artists: ['ac/dc', 'r.e.m.'],
+    releaseType: 'album' as const,
+    catalogReference: {
+      provider: 'wikidata' as const,
+      entityId: 'Q999999',
+      retrievedAt: '2026-10-17T00:00:00.000Z',
+    },
+  }
+  const values = prepareCatalogCandidate(emptyAlbumForm, candidate)
+  expect(values).toMatchObject({
+    title: 'Obra Del Sur',
+    artist: 'AC/DC · R.E.M.',
+    catalogArtists: ['AC/DC', 'R.E.M.'],
+    catalogReference: candidate.catalogReference,
+  })
+  expect(candidate.title).toBe('obra del sur')
+  expect(
+    parseAlbumForm({
+      ...values,
+      genres: 'metal progresivo, METAL   PROGRESIVO, edm',
+    }),
+  ).toMatchObject({
+    success: true,
+    input: {
+      genres: ['Metal Progresivo', 'EDM'],
+      catalogReference: candidate.catalogReference,
+    },
+  })
+})
+
+test('alta manual conserva país y géneros libres sin repetir diferencias de mayúsculas o acentos', () => {
+  const result = parseAlbumForm({
+    ...emptyAlbumForm,
+    artist: 'Banda ficticia',
+    title: 'Obra ficticia',
+    country: ' Chile ',
+    genres: ' Rock, jazz; RÓCK, ',
+  })
+  expect(result).toMatchObject({
+    success: true,
+    input: {
+      genres: ['Rock', 'Jazz'],
+      artists: [{ name: 'Banda Ficticia', country: 'Chile' }],
+    },
+  })
+})
+
+test('los créditos de una referencia conservan el país de cada artista por separado', () => {
+  const result = parseAlbumForm({
+    ...emptyAlbumForm,
+    title: 'Dúo ficticio',
+    artist: 'A · B',
+    catalogArtists: ['A', 'B'],
+    catalogCountries: ['Chile', 'Perú'],
+  })
+  expect(result).toMatchObject({
+    success: true,
+    input: {
+      artists: [
+        { name: 'A', country: 'Chile' },
+        { name: 'B', country: 'Perú' },
+      ],
+    },
+  })
 })

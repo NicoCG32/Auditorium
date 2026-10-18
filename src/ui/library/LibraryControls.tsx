@@ -1,7 +1,9 @@
-import type {
-  LibraryFilters,
-  LibraryOrder,
-  RatingFilter,
+import {
+  libraryFilterOptions,
+  type LibraryAlbum,
+  type LibraryFilters,
+  type LibraryOrder,
+  type RatingFilter,
 } from '../../application/library-query'
 import { listeningStatusSchema } from '../../domain/library/schemas'
 import { listeningLabels } from './labels'
@@ -11,6 +13,7 @@ interface Props {
   onChange: (filters: LibraryFilters) => void
   view: 'grid' | 'list'
   onViewChange: (view: 'grid' | 'list') => void
+  albums?: LibraryAlbum[]
 }
 
 export function LibraryControls({
@@ -18,7 +21,9 @@ export function LibraryControls({
   onChange,
   view,
   onViewChange,
+  albums,
 }: Props) {
+  const options = libraryFilterOptions(albums ?? [])
   return (
     <section
       aria-label="Buscar y filtrar biblioteca"
@@ -29,11 +34,57 @@ export function LibraryControls({
         <input
           type="search"
           value={filters.search}
-          placeholder="Título o artista…"
+          placeholder="Título, artista, género o país…"
           onChange={(event) =>
             onChange({ ...filters, search: event.target.value })
           }
         />
+      </label>
+      <label>
+        <span className="field-label">Género</span>
+        <select
+          value={filters.genre ?? ''}
+          onChange={(event) =>
+            onChange({ ...filters, genre: event.target.value })
+          }
+        >
+          <option value="">Todos los géneros</option>
+          {filters.genre &&
+          !options.genres.some((option) => option.value === filters.genre) ? (
+            <option value={filters.genre}>
+              {filters.genre} (sin coincidencias)
+            </option>
+          ) : null}
+          {options.genres.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <label>
+        <span className="field-label">País de origen</span>
+        <select
+          value={filters.country ?? ''}
+          onChange={(event) =>
+            onChange({ ...filters, country: event.target.value })
+          }
+        >
+          <option value="">Todos los países</option>
+          {filters.country &&
+          !options.countries.some(
+            (option) => option.value === filters.country,
+          ) ? (
+            <option value={filters.country}>
+              {filters.country} (sin coincidencias)
+            </option>
+          ) : null}
+          {options.countries.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
       </label>
       <label>
         <span className="field-label">Escucha</span>
@@ -83,6 +134,8 @@ export function LibraryControls({
           <option value="title">Título A–Z</option>
           <option value="artist">Artista A–Z</option>
           <option value="rating">Mayor nota</option>
+          <option value="genre">Género A–Z</option>
+          <option value="country">País de origen A–Z</option>
         </select>
       </label>
       <div

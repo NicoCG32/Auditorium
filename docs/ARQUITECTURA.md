@@ -1,14 +1,16 @@
 # Arquitectura del sistema
 
-Referencia: **Auditorium v1.0.0**, MVP local publicado. Este documento describe la implementación ejecutable y sus límites; las decisiones históricas se conservan en los [ADR](README.md#decisiones-de-arquitectura). Los modelos de [dominio](MODELO_DOMINIO.md) y [datos](MODELO_DATOS.md) completan esta vista.
+Referencia: MVP **Auditorium v1.0.0** e incrementos posteriores de web, identidad visual e integraciones opcionales. Este documento describe la implementación vigente y sus límites; las decisiones históricas se conservan en los [ADR](README.md#decisiones-de-arquitectura). Los modelos de [dominio](MODELO_DOMINIO.md) y [datos](MODELO_DATOS.md) completan esta vista.
 
 ## 1. Objetivo y alcance
 
 Auditorium permite registrar, consultar y valorar una biblioteca musical y organizar ediciones, ejemplares y deseos de compra. La versión 1.0.0 es una aplicación web de una sola página, instalable como PWA donde el navegador lo admita. Ejecuta sus casos de uso y conserva la biblioteca en el dispositivo, por origen y perfil del navegador.
 
-La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. No dispone de servidor de biblioteca ni de una cuenta autenticada. Las plataformas musicales son referencias externas que la persona puede consultar; esta versión no importa, sincroniza ni reproduce sus catálogos.
+La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. No dispone de servidor de biblioteca ni de una cuenta autenticada. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos están en revisión y no modifican la release v1.0.0. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
 
 ## 2. Contexto del sistema
+
+UX-04 incorpora un [controlador de navegación y registro de borradores](NAVEGACION.md) en la capa UI. Las rutas usan fragmentos y preservan raíz/Pages; los índices, guardas de historial y estados de guardado no alteran los contratos de dominio o almacenamiento. Los borradores quedan en memoria de la pestaña, separados de los datos confirmados.
 
 ```mermaid
 flowchart LR
@@ -16,16 +18,24 @@ flowchart LR
     App["Auditorium<br/>Biblioteca musical local"]
     Hosting["Servidor estático<br/>HTTPS o localhost"]
     Archivos["Archivos de respaldo JSON<br/>Fuera del navegador"]
+    Imagen["Archivo JPEG/PNG local<br/>Elegido por la persona"]
     Externo["Sitios y portadas externos<br/>Requieren conexión"]
+    Catalogo["Wikidata<br/>Búsqueda pública opcional"]
+    Modelo["Gemini o Groq<br/>Clave propia en memoria"]
     Persona -->|Registro y consulta| App
     Hosting -->|Código, manifest y recursos visuales| App
     App -->|Exportación explícita| Archivos
     Archivos -->|Selección y restauración confirmada| App
     Persona -->|Consulta externa| Externo
-    App -.->|Mostrar portada por acción explícita| Externo
+    App -.->|Portada por URL cargada automáticamente| Externo
+    Imagen -->|Validar e incorporar al álbum| App
+    App -->|Título buscado por acción explícita| Catalogo
+    Catalogo -->|Candidatos para revisión humana| App
+    App -->|Contexto acotado y envío explícito| Modelo
+    Modelo -->|Orden sujeto a validación local| App
 ```
 
-El servidor distribuye archivos de la aplicación; no recibe las notas, valoraciones o respaldos. Mostrar una portada externa solicita su URL al proveedor. La disponibilidad de red que informa el navegador es una señal local, no una comprobación de disponibilidad de esos sitios.
+El servidor estático distribuye archivos de la aplicación; no recibe las notas, valoraciones o respaldos. Las solicitudes opcionales van directamente al proveedor: Wikidata recibe el título buscado y Gemini/Groq un contexto acotado de candidatos, incluida nota y escucha cuando existan, tras acción explícita. No se transmite el snapshot completo ni se amplía el contexto con géneros, países o imágenes. Una portada externa se solicita a su proveedor al aportar una URL válida o mostrar el álbum guardado. Una portada local se valida en el navegador y se conserva como parte del catálogo, sin enviarla a esos proveedores. La disponibilidad de red que informa el navegador es una señal local, no una comprobación de disponibilidad de esos sitios.
 
 ## 3. Componentes en ejecución
 
@@ -40,6 +50,8 @@ flowchart TB
         Offline["OfflineController<br/>Instalación y almacenamiento"]
         SW["Service worker generado<br/>Workbox"]
         Cache[("Cache Storage<br/>Recursos propios de la aplicación")]
+        Sesion["Memoria de la pestaña<br/>Clave y recomendaciones transitorias"]
+        HTTP["Adaptadores REST opcionales<br/>Wikidata y recomendaciones"]
         SPA --> Casos
         Casos --> Adaptador
         Adaptador --> DB
@@ -47,16 +59,24 @@ flowchart TB
         Offline -->|Registro y estado| SW
         SW --> Cache
         SW -->|Recursos offline| SPA
+        SPA --> Sesion
+        SPA --> HTTP
     end
     Hosting -->|Primera apertura o actualización| SPA
     Hosting -->|Precarga| SW
     Archivo["Respaldo JSON seleccionado o descargado"]
     SPA <-->|Importar o exportar| Archivo
+    Proveedores["Wikidata / Gemini / Groq"]
+    HTTP <-->|Solicitud explícita y respuesta validada| Proveedores
 ```
 
-IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB conserva los registros musicales y su identidad. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
+IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v5/nativa50 conserva los registros musicales, su identidad y las portadas locales de los álbumes. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
+
+Las referencias de catálogo seleccionadas pertenecen a `Album` y se guardan con el alta local. Las claves y recomendaciones viven sólo en memoria, sin tablas, respaldo o caché. Las consultas se realizan fuera de cualquier transacción IndexedDB; el modelo no recibe un repositorio ni ejecuta escrituras.
 
 La navegación entre biblioteca, ficha, registro, retirados y respaldos depende del estado de React. Las aperturas de la PWA admiten la base del build, `index.html` y sus variantes con query o fragmento; no existe un router de fichas por URL o por ID. La distribución local utiliza `/`; el modo Pages utiliza `/Auditorium/`, con manifest, recursos, fallback y alcance verificados para esa base.
+
+UX-03 propone una [arquitectura de información por tareas](EXPERIENCIA_USUARIO.md), rutas por fragmentos, contexto de regreso y borradores independientes del montaje de pantallas. La [ADR-010](adr/010-navegacion-experiencia.md) y los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) corresponden a trabajo futuro; no sustituyen esta descripción de componentes y persistencia actuales.
 
 ## 4. Organización del código y dependencias
 
@@ -70,6 +90,9 @@ flowchart TB
     Repo["infrastructure/repositories<br/>IndexedDbRepository"]
     DB["infrastructure/db<br/>Dexie, preflight, escritura y errores"]
     Browser["infrastructure/browser<br/>PWA y descarga de respaldo"]
+    CatalogPort["application/catalog-lookup<br/>Contrato de búsqueda"]
+    Recs["application/recommendations<br/>Contexto y validación del orden"]
+    Remote["infrastructure/catalog + infrastructure/ai<br/>REST acotado"]
     Main --> UI
     Main --> Repo
     Main --> Browser
@@ -82,6 +105,11 @@ flowchart TB
     Repo -.->|Implementa| Port
     Repo --> Domain
     Repo --> DB
+    UI --> CatalogPort
+    UI --> Recs
+    UI --> Remote
+    Remote --> CatalogPort
+    Remote --> Recs
 ```
 
 Las flechas continuas indican uso o dependencia; la discontinua representa implementación de un contrato. El dominio y los casos de uso no importan React, Dexie ni el adaptador de persistencia. La interfaz sí conoce utilidades del navegador, el controlador offline y códigos de error de infraestructura para ofrecer mensajes y recuperación adecuados. Esta separación es por responsabilidades, con un puerto de almacenamiento; no supone independencia total de todos los adaptadores en la presentación.
@@ -102,6 +130,14 @@ Las flechas continuas indican uso o dependencia; la discontinua representa imple
 `LocalRepository` ofrece `open`, `readSnapshot` y `close`. `TransactionalLocalRepository` añade `mutate`, con una transformación síncrona sobre un `LocalSnapshot`; devuelve su resultado después del commit. `BackupLocalRepository` añade `restoreEmpty(snapshot, expectedIdentity)` para el único flujo que puede adoptar otra identidad.
 
 Los casos musicales reciben `TransactionalLocalRepository`. `LibraryBackups` y la presentación reciben el contrato ampliado de respaldos. Las pruebas pueden inyectar instancias y generadores de IDs/fechas; la implementación habitual usa UUID y fechas del dispositivo. Los contratos no incorporan transporte HTTP ni autenticación de cuenta.
+
+### Contratos de integraciones opcionales
+
+`CatalogLookupClient.search` devuelve candidatos tipados y una referencia validada; la interfaz conserva la decisión de selección y el borrador. El adaptador Wikidata usa un endpoint fijo, lectura anónima, `Api-User-Agent`, lotes y separación de solicitudes, sin caché del service worker. El guardado posterior utiliza los casos musicales habituales, incluidos duplicados y commit atómico.
+
+`buildRecommendationContext` selecciona hasta 24 álbumes activos (ocho recientes y hasta dieciséis adicionales). El adaptador de recomendaciones sólo serializa una lista permitida: referencias temporales, título/artista acotados, año, nota, escucha y orden relativo de alta. Los UUID se resuelven localmente. No recibe notas libres, identidad, compras, deseos, fechas exactas ni respaldos. La clave se envía en cabecera al proveedor elegido, nunca en URL. La respuesta sólo puede ordenar candidatos conocidos y no modifica valoraciones.
+
+Cada flujo exige una acción explícita, timeout, cancelación, validación y mensajes propios de error. No hay reintentos ni cambios automáticos de proveedor. La [guía de integraciones](INTEGRACIONES_OPCIONALES.md) contiene los diagramas de interacción, modelos fijados, privacidad y límites de cuotas. La [ADR-008](adr/008-integraciones-opcionales.md) diferencia esta implementación de la propuesta de importador MusicBrainz JSON.
 
 ## 5. Flujo de una escritura musical
 
@@ -142,6 +178,8 @@ sequenceDiagram
 La apertura e inicialización de identidad pueden preceder a la transacción de negocio. Dentro de esta última, leer el estado vigente, transformar, validar y escribir forman una operación atómica. Las mutaciones musicales conservan `userId` y `createdAt`; ninguna realiza I/O externo dentro del callback. El detalle de índices, diferencias y rollback está en [modelo de datos](MODELO_DATOS.md).
 
 La interfaz distingue fallo antes del commit de fallo al actualizar la vista después del commit. Cuando la escritura ya fue confirmada, recupera la lectura sin repetirla. Las confirmaciones destructivas y los editores que requieren referencia previa comprueban su destino dentro de la transacción; no existe un número global de revisión o un protocolo de sincronización entre dispositivos.
+
+`MusicLibrary.updateAlbum` aplica ese límite a la [edición de metadatos](EDICION_CATALOGO.md): compara álbum, créditos ordenados y artistas con la referencia esperada y conserva el ID del álbum y sus relaciones. Renombrar un crédito crea una identidad de artista para ese álbum; corregir el país de un artista que mantiene su ID afecta a sus demás créditos y se advierte en el editor. Géneros y países se proyectan para búsqueda, filtros y orden sin servicios externos. Las portadas locales se validan antes de incorporarse al borrador y no se decodifican dentro de una transacción IndexedDB.
 
 ## 6. PWA y actualización de recursos
 
@@ -194,19 +232,19 @@ Fuentes: [package.json](../package.json), [vite.config.ts](../vite.config.ts), [
 
 ## 8. Propiedades, límites y decisiones
 
-| Propiedad                | Mecanismo y límite                                                                                                                                                                 |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Integridad local         | Validación de schemas y referencias en snapshots, índices seleccionados y commit/rollback transaccional                                                                            |
-| Identidad estable        | Un registro local persistente; las operaciones musicales no lo sustituyen y un respaldo solo lo adopta en un destino vacío                                                         |
-| Concurrencia             | Transacciones sobre estado vigente y comprobaciones específicas de contenido/valor esperado; sin suscripción automática a cambios de otras ventanas                                |
-| Recuperación             | Errores conservan datos y ofrecen acciones explícitas; no se borra ni recrea una base incompatible automáticamente                                                                 |
-| Uso offline              | Recursos propios preparados por service worker y datos en IndexedDB; portadas externas y consultas a sitios necesitan conexión                                                     |
-| Privacidad del contenido | Biblioteca y respaldo procesados localmente; un respaldo JSON contiene información personal sin cifrado propio y debe guardarse fuera del repositorio público                      |
-| Costo obligatorio        | El funcionamiento local no requiere una cuenta o servicio contratado; un proveedor de alojamiento futuro debe evaluarse por separado                                               |
-| Escala                   | Lectura y validación del snapshot completo, búsqueda/proyección en memoria y escrituras diferenciales; sin medición de bibliotecas grandes que justifique garantías de rendimiento |
+| Propiedad                | Mecanismo y límite                                                                                                                                                                                                 |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Integridad local         | Validación de schemas y referencias en snapshots, índices seleccionados y commit/rollback transaccional                                                                                                            |
+| Identidad estable        | Un registro local persistente; las operaciones musicales no lo sustituyen y un respaldo solo lo adopta en un destino vacío                                                                                         |
+| Concurrencia             | Transacciones sobre estado vigente y comprobaciones específicas de contenido/valor esperado; sin suscripción automática a cambios de otras ventanas                                                                |
+| Recuperación             | Errores conservan datos y ofrecen acciones explícitas; no se borra ni recrea una base incompatible automáticamente                                                                                                 |
+| Uso offline              | Recursos propios preparados por service worker y datos en IndexedDB, incluidas portadas locales; consultas de catálogo, recomendaciones, portadas por URL y enlaces externos necesitan conexión                    |
+| Privacidad del contenido | Biblioteca y respaldo procesados localmente; sólo consultas o contexto reducido se envían al solicitar servicios opcionales. Las claves no persisten. Un respaldo contiene información personal sin cifrado propio |
+| Costo obligatorio        | El núcleo local no requiere una cuenta o servicio contratado. Gemini/Groq ofrecen niveles gratuitos sujetos a cuenta, cuotas y condiciones; Auditorium no activa facturación ni garantiza el plan de una clave     |
+| Escala                   | Lectura y validación del snapshot completo, búsqueda/proyección en memoria y escrituras diferenciales; sin medición de bibliotecas grandes que justifique garantías de rendimiento                                 |
 
 Las pruebas se distribuyen por dominio, aplicación, adaptador e interfaz; los E2E ejercitan producción, offline, migraciones y aceptación. La [matriz de validación](VALIDACION_MVP.md) registra cobertura y límites. La evaluación con lectores de pantalla, instalación en Safari/iOS real y rendimiento en hardware limitado siguen fuera de esa evidencia.
 
-Las [decisiones de arquitectura](README.md#decisiones-de-arquitectura) explican almacenamiento local, separación álbum/edición/pista, costo, retirada, identidad del respaldo y espera de actualizaciones. Metadatos externos y cuentas/sincronización siguen como investigaciones del [plan de desarrollo](PLAN_DESARROLLO.md), con contratos y migraciones por definir.
+Las [decisiones de arquitectura](README.md#decisiones-de-arquitectura) explican almacenamiento local, separación álbum/edición/pista, costo, retirada, identidad del respaldo, espera de actualizaciones e integraciones opcionales. Cuentas y sincronización siguen en el backlog del [plan de desarrollo](PLAN_DESARROLLO.md).
 
-La [evaluación de metadatos externos](METADATOS_EXTERNOS.md) propone un flujo local de revisión y define las condiciones previas del transporte remoto; sus diagramas describen una evolución futura de esta arquitectura.
+La [evaluación de metadatos externos](METADATOS_EXTERNOS.md) conserva la propuesta pendiente de importación de JSON de ediciones MusicBrainz. CAT-01 implementa búsqueda Wikidata de álbumes y no ese importador; tampoco incorpora listas o ediciones desde el servicio externo. La generación autenticada y calidad musical de las recomendaciones requiere comprobarse con una clave propia; las pruebas controladas del contrato no sustituyen esa evidencia.

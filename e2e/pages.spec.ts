@@ -21,6 +21,44 @@ const visualAssets = [
   'icons/icon-maskable-512.png',
 ].map((path) => `${base}auditorium/${path}`)
 
+test('rutas de navegación y borradores conservan base Pages y query después de recargar', async ({
+  page,
+}) => {
+  await openPrepared(page)
+  const fixture = await restoreFixture(page)
+  const entryId = fixture.data.library.userAlbums[0]!.id
+  await page.goto(`${base}index.html?contexto=prueba#/album/${entryId}/editar`)
+  await expect(
+    page.getByRole('textbox', { name: 'Título', exact: true }),
+  ).toHaveValue('Eclipse')
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Calificaciones', exact: true })
+    .click()
+  await expect(page).toHaveURL(
+    /\/Auditorium\/index\.html\?contexto=prueba#\/calificaciones$/,
+  )
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { name: 'Calificaciones', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await page
+    .getByRole('textbox', { name: 'Título', exact: true })
+    .fill('Borrador ficticio Pages')
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
+  await page
+    .getByRole('button', { name: 'Descartar cambios', exact: true })
+    .click()
+  await expect(page).toHaveURL(
+    /\/Auditorium\/index\.html\?contexto=prueba#\/coleccion$/,
+  )
+  await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
+  expect((await exportedBackup(page)).data).toEqual(fixture.data)
+})
+
 async function openPrepared(page: Page) {
   await page.goto(base)
   await expect(
@@ -224,14 +262,17 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
     .getByRole('textbox', { name: 'Artista', exact: true })
-    .fill('Artista ficticio Pages')
+    .fill('Artista Ficticio Pages')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
-    .fill('Horizonte ficticio Pages')
+    .fill('Horizonte Ficticio Pages')
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
-  await page
-    .getByRole('button', { name: 'Horizonte ficticio Pages', exact: true })
-    .click()
+  await expect(
+    page.getByRole('heading', {
+      name: 'Horizonte Ficticio Pages',
+      exact: true,
+    }),
+  ).toBeVisible()
   await page
     .getByRole('textbox', { name: 'Notas personales', exact: true })
     .fill('Notas ficticias guardadas sin conexión desde Pages.')
@@ -263,7 +304,7 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
     expect(response?.fromServiceWorker(), path).toBe(true)
     await expect(
       reopened.getByRole('button', {
-        name: 'Horizonte ficticio Pages',
+        name: 'Horizonte Ficticio Pages',
         exact: true,
       }),
     ).toBeVisible()

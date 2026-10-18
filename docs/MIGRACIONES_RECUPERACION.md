@@ -1,24 +1,26 @@
 # Migraciones, persistencia y recuperación
 
-La biblioteca usa IndexedDB v3, con esquemas históricos v1 y v2. Las migraciones actuales son aditivas: v2 incorpora ejemplares y v3 deseos. No cambian claves ni índices anteriores, identidad, IDs, notas, valoraciones, ediciones o pistas. El formato de [respaldo JSON v1](RESPALDOS_JSON.md) se versiona por separado.
+El incremento UX-01 usa IndexedDB v5 (nativa 50), con esquemas históricos v1 a v4. v2 incorpora ejemplares, v3 deseos y v4 la referencia opcional `Album.catalogReference`. v5 mantiene las trece tablas e índices y establece una barrera de compatibilidad para país de artista, géneros y portada local. No cambia identidad, IDs, notas, valoraciones, ediciones o pistas ni completa metadatos mediante red. El [respaldo JSON v3](RESPALDOS_JSON.md) se versiona por separado y admite importar los contratos v1/v2 estrictos.
 
 ## Antes y durante una actualización
 
-La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Solo admite versiones nativas 10, 20 y 30, equivalentes a las versiones Dexie 1, 2 y 3. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
+La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Solo admite versiones nativas 10, 20, 30, 40 y 50, equivalentes a las versiones Dexie 1 a 5. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
 
 La transacción de lectura que comprueba el esquema termina antes de cerrar su conexión y abrir la actualización. Así no compite con la migración. Si la inspección aborta, la apertura informa el fallo y admite reintento.
 
-IndexedDB realiza los cambios del esquema en una transacción de actualización. Un fallo de cuota o aborto revierte tanto las tablas nuevas como la versión y las filas. Una migración correcta conserva los registros históricos y crea vacías las colecciones que aún no existían. Una identidad existente no se genera de nuevo.
+IndexedDB realiza los cambios del esquema en una transacción de actualización. Un fallo de cuota o aborto revierte tanto las tablas nuevas como la versión y las filas. Una migración correcta conserva los registros históricos y crea vacías las colecciones que aún no existían; los pasos v3→v4 y v4→v5 sólo actualizan la versión compatible. Una identidad existente no se genera de nuevo.
 
 Otra ventana con una conexión antigua puede bloquear el cambio de versión. La interfaz pide cerrarla y volver a intentar. Al cerrarse, la solicitud de actualización pendiente puede terminar; sus datos se conservan y el reintento abre la biblioteca vigente. No se borran ni recrean bases para resolver un bloqueo.
 
 Referencias: [actualización de IndexedDB](https://developer.mozilla.org/en-US/docs/Web/API/IDBOpenDBRequest/upgradeneeded_event), [aborto transaccional](https://developer.mozilla.org/en-US/docs/Web/API/IDBTransaction/abort), [bloqueos en Dexie](https://dexie.org/docs/Dexie/Dexie.on.blocked).
 
-## Evidencia de aceptación
+## Matriz de aceptación
+
+La evidencia del MVP y de AI-01/CAT-01 corresponde a sus revisiones anteriores. UX-01 amplía esta matriz a v5 y respaldo v3; su validación y revisión están en curso en la [issue #59](https://github.com/NicoCG32/Auditorium/issues/59). La enumeración de comprobaciones no acredita por sí sola la nueva entrega.
 
 | Situación                                                            | Comprobación                                                                                                                                                                                |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| v1 y v2 pobladas migran a v3                                         | Esquemas históricos independientes de las declaraciones actuales; comparación de todas las filas, claves e índices anteriores, incluidos álbumes retirados, notas literales y ejemplares v2 |
+| v1, v2, v3 y v4 pobladas migran a v5                                 | Esquemas históricos independientes de las declaraciones actuales; comparación de todas las filas, claves e índices anteriores, incluidos álbumes retirados, notas literales y ejemplares v2 |
 | Cuota o aborto durante la migración                                  | Fallo después de crear tablas nuevas; esquema, versión e identidad originales completos tras el rechazo; reintento explícito satisfactorio                                                  |
 | Reinicio real del navegador                                          | Cierre completo de Chromium y nuevo proceso con el mismo perfil temporal; reapertura offline y comparación íntegra de datos y esquema                                                       |
 | Respaldo y recuperación                                              | Archivo realmente descargado de la biblioteca migrada; restauración offline en otro perfil vacío, adopción de identidad y comparación de todas las tablas tras recarga                      |

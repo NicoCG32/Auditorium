@@ -8,7 +8,7 @@ Referencia: [evaluación EXT-01](../METADATOS_EXTERNOS.md).
 
 Auditorium mantiene identidades musicales locales, pistas contextuales al álbum y una biblioteca personal independiente del catálogo. Los metadatos externos pueden reducir el registro manual, pero sus entidades, créditos, formatos e identidades no coinciden completamente con esos contratos. Una importación automática puede cambiar relaciones que sostienen valoraciones e historial.
 
-La PWA actual carece de un transporte remoto identificado y de un contrato persistente de procedencia. Las restricciones y fuentes verificadas se describen en la evaluación; la compatibilidad se prueba offline, sin introducir una integración de producto.
+En el momento de este estudio, la PWA carecía de un transporte remoto identificado y de un contrato persistente de procedencia para importar ediciones de MusicBrainz. Las restricciones y fuentes verificadas se describen en la evaluación; la compatibilidad se prueba offline, sin introducir una integración de producto.
 
 ## Decisión propuesta
 
@@ -35,4 +35,4 @@ La PWA actual carece de un transporte remoto identificado y de un contrato persi
 
 El primer incremento propuesto es acotado y funciona offline después de adquirir el archivo. No resuelve búsqueda remota, autenticidad del origen, importación completa, portadas ni sincronización. Requiere una interfaz de revisión y un contrato externo distinto del respaldo; no reutiliza `restoreEmpty` ni adopta la identidad del archivo.
 
-El estudio actual conserva los schemas, tablas y formato de respaldo del MVP v1.0.0; tampoco cambia dependencias ni añade capacidades de importación a la aplicación web actual. La distribución y la identidad visual posteriores a esa release se mantienen. Aprobar esta decisión permitiría refinar los incrementos descritos en la evaluación; cada implementación mantiene sus propios criterios y PR.
+Este estudio conservó los schemas, tablas y formato de respaldo del MVP v1.0.0; tampoco cambió dependencias ni añadió capacidades de importación a la aplicación. El incremento posterior [ADR-008](008-integraciones-opcionales.md) incorpora búsqueda Wikidata y referencia de álbum inicialmente con DB4/respaldo2; [ADR-009](009-edicion-metadatos-portadas.md) amplía el contrato en revisión a DB5/respaldo3. Ninguno implementa el importador de JSON de ediciones descrito aquí. La distribución y la identidad visual posteriores a esa release se mantienen. Aprobar esta decisión permitiría refinar los incrementos descritos en la evaluación; cada implementación mantiene sus propios criterios y PR.

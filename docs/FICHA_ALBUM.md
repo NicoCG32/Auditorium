@@ -4,9 +4,17 @@ LIB-03 amplía la ficha abierta desde el título de una tarjeta o al usar un ál
 
 ## Portada
 
-Sin URL guardada, se muestra una representación local de vinilo y «Sin portada registrada». Si existe un enlace HTTPS, «Mostrar portada» permite cargarlo por decisión del usuario. La imagen tiene texto alternativo, tamaño reservado y política de referrer sin referencia de la aplicación. Un fallo de carga vuelve a la representación local y ofrece reintento. También se conserva el enlace directo a la portada.
+Sin portada guardada, se muestra una representación local de vinilo y «Sin portada registrada». Si existe un enlace HTTPS o una imagen local validada, se carga automáticamente al abrir la ficha. La imagen tiene texto alternativo, tamaño reservado y política de referrer sin referencia de la aplicación. Un fallo de carga vuelve a la representación local y ofrece reintento. También se conserva el enlace directo a la portada.
 
-No se buscan carátulas ni se añaden imágenes ajenas al producto. La figura SVG de prueba es ficticia. Mostrar una imagen remota requiere acceso a su proveedor; no se almacena un respaldo de esa imagen ni se promete disponibilidad offline. La elección de mostrarla dura durante el montaje de la ficha y se conserva al actualizar su nota.
+La búsqueda opcional de catálogo puede proponer una URL representativa de Cover Art Archive al seleccionar una referencia; sólo se guarda si la persona la acepta y luego se muestra automáticamente. Una imagen remota requiere acceso a su proveedor y no se copia al respaldo ni a la caché del service worker. Una portada local JPEG/PNG de hasta 2 MiB se valida por tamaño, firma y decodificación antes de aceptarse, se guarda como `Album.coverImage` y acompaña al respaldo; permite ver la imagen offline. No se distribuyen portadas de usuarios como recursos del repositorio.
+
+## Editar el álbum
+
+«Editar álbum» permite corregir título, créditos de artistas, tipo, año, géneros, países de origen, portada y descripción. Los géneros son etiquetas libres del álbum; el país pertenece al artista. El editor advierte cuando ese artista se comparte con otros álbumes. Cancelar conserva los datos anteriores. Guardar preserva `Album.id`, la entrada personal y sus relaciones; no recalcula valoraciones. Una comprobación del estado esperado impide sobrescribir cambios concurrentes. La [guía de edición](EDICION_CATALOGO.md) detalla identidad, procedencia y recuperación.
+
+## Procedencia y enlaces
+
+Cuando el álbum tiene `catalogReference`, la ficha muestra la referencia Wikidata y su fecha de consulta. Los IDs externos validados permiten enlaces canónicos a MusicBrainz, álbumes de Spotify y videos de YouTube, sin incrustar reproductores. Su ausencia no se sustituye por una URL inventada. Los enlaces «Buscar en…» se identifican como búsquedas y no garantizan coincidencia. El proveedor y la conectividad determinan su disponibilidad; los enlaces se abren con `noopener noreferrer` y sin referrer. Véase [integraciones opcionales](INTEGRACIONES_OPCIONALES.md).
 
 ## Guardar y quitar nota
 
@@ -23,7 +31,7 @@ Los cambios se anuncian después de confirmar la transacción. La ficha relee un
 - Si la escritura se confirmó pero falla la lectura posterior, se muestra el valor confirmado y una explicación. «Reintentar lectura» no vuelve a guardar ni a quitar la nota. Las escrituras y la navegación esperan a recuperar una lectura coherente.
 - Tras guardar, quitar o recuperar la lectura, el foco vuelve al campo. Al volver a biblioteca se conserva la vista y los filtros y se enfoca la tarjeta; si la nota nueva la deja fuera de los filtros, se enfoca la búsqueda.
 
-Los mensajes usan `status` o `alert` y los controles son nativos con foco visible. Cambiar de álbum descarta un borrador sin guardar y carga su propia nota; los borradores no sobreviven a una recarga. Las otras pestañas se consultan al actualizar o recargar, sin suscripción automática.
+Los mensajes usan `status` o `alert` y los controles son nativos con foco visible. Cambiar de tarea o de álbum con un borrador ofrece Guardar y salir, Descartar cambios o Seguir editando; no se pierde por navegar sin resolver esa decisión. Los borradores no sobreviven a una recarga confirmada. Las otras pestañas se consultan al actualizar o recargar, sin suscripción automática. La [guía de navegación](NAVEGACION.md) detalla historial, contexto y protección de salida.
 
 ## Verificación y límites
 

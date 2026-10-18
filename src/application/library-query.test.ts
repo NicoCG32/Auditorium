@@ -11,8 +11,11 @@ import {
 import type { LocalSnapshot } from '../domain/repositories/local-repository'
 import {
   defaultLibraryFilters,
+  libraryFilterOptions,
   projectLibrary,
+  projectRemovedAlbums,
   queryLibrary,
+  type LibraryAlbum,
   type LibraryOrder,
   type RatingFilter,
 } from './library-query'
@@ -91,6 +94,84 @@ describe('proyección de biblioteca', () => {
         search: 'luz del umbral eclipse',
       }).map((album) => album.albumId),
     ).toEqual([ids.album])
+  })
+  test('proyecta géneros, portadas y todos los países de los artistas acreditados', () => {
+    const data = snapshot()
+    Object.assign(data.catalog.albums[0]!, {
+      genres: ['  Metal progresivo ', 'MÉTAL progresivo', 'Jazz'],
+      coverUrl: 'https://example.org/portada.png',
+      coverImage: 'data:image/png;base64,aW1hZ2Vu',
+    })
+    data.catalog.artists[0]!.country = '  Chile '
+    data.catalog.artists.push({
+      id: ids.collaborator,
+      name: 'Luz ficticia',
+      country: 'CHÍLE',
+      catalogScope: 'personal',
+    })
+    data.catalog.artists.push({
+      id: fixtureId(42),
+      name: 'Artista invitado',
+      country: 'España',
+      catalogScope: 'personal',
+    })
+    data.catalog.albumArtists.push(
+      {
+        albumId: ids.album,
+        artistId: ids.collaborator,
+        role: 'collaborator',
+        position: 2,
+      },
+      {
+        albumId: ids.album,
+        artistId: fixtureId(42),
+        role: 'featured',
+        position: 3,
+      },
+    )
+    const before = structuredClone(data)
+    const albums = projectLibrary(data)
+    expect(albums[0]).toMatchObject({
+      genres: ['Jazz', 'Metal progresivo'],
+      countries: ['Chile', 'España'],
+      coverUrl: 'https://example.org/portada.png',
+      coverImage: 'data:image/png;base64,aW1hZ2Vu',
+    })
+    expect(
+      queryLibrary(albums, {
+        ...defaultLibraryFilters,
+        search: 'metal espana',
+      }).map((album) => album.id),
+    ).toEqual([libraryIds.entry])
+    expect(data).toEqual(before)
+  })
+  test('datos opcionales ausentes conservan la proyección anterior', () => {
+    const [album] = projectLibrary(snapshot())
+    expect(album).not.toHaveProperty('genres')
+    expect(album).not.toHaveProperty('countries')
+    expect(album).not.toHaveProperty('coverUrl')
+    expect(album).not.toHaveProperty('coverImage')
+  })
+  test('las opciones activas no incorporan géneros ni países de álbumes retirados', () => {
+    const data = snapshot()
+    data.catalog.albums[0]!.genres = ['Jazz']
+    data.catalog.albums[1]!.genres = ['Rock']
+    data.catalog.artists.push({
+      id: ids.collaborator,
+      name: 'Artista retirado',
+      country: 'Perú',
+      catalogScope: 'personal',
+    })
+    data.catalog.albumArtists[1]!.artistId = ids.collaborator
+    data.library.userAlbums[1]!.deletedAt = times.updated
+    expect(libraryFilterOptions(projectLibrary(data))).toEqual({
+      genres: [{ value: 'jazz', label: 'Jazz' }],
+      countries: [],
+    })
+    expect(projectRemovedAlbums(data)[0]).toMatchObject({
+      genres: ['Rock'],
+      countries: ['Perú'],
+    })
   })
 })
 
@@ -180,4 +261,94 @@ describe('búsqueda, filtros y orden', () => {
     ).toBe(libraryIds.otherEntry)
     expect(albums).toEqual(before)
   })
+  test('combina género y país con escucha, nota y búsqueda sin exigir datos nuevos', () => {
+    const albums = projectLibrary(snapshot())
+    Object.assign(albums[0]!, {
+      genres: ['Metal progresivo', 'Rock'],
+      countries: ['Chile', 'España'],
+    })
+    Object.assign(albums[1]!, { genres: ['Rock'], countries: ['Chile'] })
+    const before = structuredClone(albums)
+    expect(
+      queryLibrary(albums, {
+        search: 'eclipse',
+        listening: 'queued',
+        rating: 'high',
+        order: 'title',
+        genre: '  MÉTAL   progresivo  ',
+        country: 'ESPANA',
+      }).map((album) => album.id),
+    ).toEqual([libraryIds.entry])
+    expect(
+      queryLibrary(albums, {
+        ...defaultLibraryFilters,
+        genre: 'rock',
+        country: 'peru',
+      }),
+    ).toEqual([])
+    expect(
+      queryLibrary(projectLibrary(snapshot()), {
+        ...defaultLibraryFilters,
+        genre: 'rock',
+      }),
+    ).toEqual([])
+    expect(albums).toEqual(before)
+  })
+  test('las opciones agrupan alias de acentos, mayúsculas y espacios manteniendo etiquetas', () => {
+    const albums = projectLibrary(snapshot())
+    Object.assign(albums[0]!, {
+      genres: ['  Metal progresivo  ', 'Jazz'],
+      countries: ['España'],
+    })
+    Object.assign(albums[1]!, {
+      genres: ['MÉTAL   PROGRESIVO', 'Rock'],
+      countries: [' espana ', 'Chile'],
+    })
+    const before = structuredClone(albums)
+    expect(libraryFilterOptions(albums)).toEqual({
+      genres: [
+        { value: 'jazz', label: 'Jazz' },
+        { value: 'metal progresivo', label: 'Metal progresivo' },
+        { value: 'rock', label: 'Rock' },
+      ],
+      countries: [
+        { value: 'chile', label: 'Chile' },
+        { value: 'espana', label: 'España' },
+      ],
+    })
+    expect(albums).toEqual(before)
+  })
+  test.each<['genre' | 'country', 'genres' | 'countries']>([
+    ['genre', 'genres'],
+    ['country', 'countries'],
+  ])(
+    'ordena por %s con vacíos al final y desempate de título',
+    (order, field) => {
+      const base = projectLibrary(snapshot())[0]!
+      const row = (
+        id: string,
+        title: string,
+        labels?: string[],
+      ): LibraryAlbum => ({
+        ...base,
+        id,
+        title,
+        ...(labels ? { [field]: labels } : {}),
+      })
+      const albums = [
+        row('missing', 'Sin datos'),
+        row('b', 'Segundo', ['Zulu']),
+        row('empty', 'Vacío', []),
+        row('a2', 'Beta', ['Álfa']),
+        row('a1', 'Alba', ['alfa']),
+      ]
+      const before = structuredClone(albums)
+      expect(
+        queryLibrary(albums, { ...defaultLibraryFilters, order }).map(
+          (album) => album.id,
+        ),
+      ).toEqual(['a1', 'a2', 'b', 'missing', 'empty'])
+      expect(albums).toEqual(before)
+    },
+  )
 })

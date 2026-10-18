@@ -43,6 +43,12 @@ async function add(page: Page, title: string, artist: string) {
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
+    page.getByRole('heading', { name: title, exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole('button', { name: 'Volver a biblioteca', exact: true })
+    .click()
+  await expect(
     page.getByRole('button', { name: title, exact: true }),
   ).toBeVisible()
 }
@@ -69,17 +75,17 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   const errors: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await ready(page)
-  await add(page, 'Horizonte ficticio', 'Conjunto ficticio')
-  await add(page, 'Segundo álbum ficticio', 'Otro artista ficticio')
+  await add(page, 'Horizonte Ficticio', 'Conjunto Ficticio')
+  await add(page, 'Segundo Álbum Ficticio', 'Otro Artista Ficticio')
   await page
     .getByRole('searchbox', { name: 'Buscar en tu biblioteca' })
     .fill('horizonte')
   await expect(
-    page.getByRole('button', { name: 'Segundo álbum ficticio', exact: true }),
+    page.getByRole('button', { name: 'Segundo Álbum Ficticio', exact: true }),
   ).toHaveCount(0)
   await page.getByRole('button', { name: 'Lista', exact: true }).click()
   await page
-    .getByRole('button', { name: 'Horizonte ficticio', exact: true })
+    .getByRole('button', { name: 'Horizonte Ficticio', exact: true })
     .click()
   await page
     .getByRole('textbox', { name: 'Nota del álbum', exact: true })
@@ -163,12 +169,15 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
   await page.getByRole('button', { name: 'Álbumes retirados (1)' }).click()
   await page
-    .getByRole('button', { name: /Restaurar Horizonte ficticio, entrada/ })
+    .getByRole('button', { name: /Restaurar Horizonte Ficticio, entrada/ })
     .click()
   await expect(
     page.getByRole('textbox', { name: 'Nota del álbum' }),
   ).toHaveValue('9,5')
-  await page.getByRole('button', { name: 'Volver a biblioteca' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Volver a álbumes retirados' }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await page.reload()
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
@@ -258,7 +267,13 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
     exact: true,
   })
   if (limitedTabs) await addButton.focus()
-  else await page.keyboard.press(tabKey)
+  else {
+    await page.keyboard.press(tabKey)
+    await expect(
+      page.getByRole('button', { name: 'Biblioteca', exact: true }),
+    ).toBeFocused()
+    await page.keyboard.press(tabKey)
+  }
   await expect(addButton).toBeFocused()
   await addButton.press('Enter')
   await expect(
