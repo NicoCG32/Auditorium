@@ -291,7 +291,8 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
   await page.getByRole('button', { name: 'Guardar nota', exact: true }).click()
   await expect(page.getByText('Nota guardada.', { exact: true })).toBeVisible()
   const before = await rawDatabase(page)
-  expect(Object.keys(before)).toHaveLength(13)
+  expect(Object.keys(before)).toHaveLength(14)
+  expect(before['syncCheckpoint']).toEqual([])
   await page.close()
   for (const path of [
     base,
@@ -399,7 +400,7 @@ test('Pages no controla rutas ajenas ni cachea JSON arbitrario o páginas inexis
   expect(await cachedUrls(page)).toEqual(urlsBefore)
 })
 
-test('Pages espera a las dos ventanas para actualizar y conserva las 13 tablas e identidad', async ({
+test('Pages espera a las dos ventanas para actualizar y conserva las tablas y la identidad', async ({
   page,
   context,
   request,
@@ -407,7 +408,8 @@ test('Pages espera a las dos ventanas para actualizar y conserva las 13 tablas e
   await openPrepared(page)
   const source = await restoreFixture(page)
   const before = await rawDatabase(page)
-  expect(Object.keys(before)).toHaveLength(13)
+  expect(Object.keys(before)).toHaveLength(14)
+  expect(before['syncCheckpoint']).toEqual([])
   const other = await context.newPage()
   await openPrepared(other)
   await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
