@@ -4,6 +4,8 @@ Este documento describe los contratos de Auditorium en el incremento en revisió
 
 UX-03 define por separado los [contratos propuestos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). Esos conceptos todavía no forman parte de los schemas ejecutables que describe este documento. En particular, el `releaseType` vigente aún mezcla tipo principal y categorías; la propuesta los separa y trata Inédito como estado de publicación, conservando ediciones en `Release` y ejemplares en `OwnedItem`.
 
+El refinamiento propuesto conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Mi colección agrupará ejemplares físicos y compras digitales con filtros diferenciados; una edición puede conocerse sin poseerse. La referencia y el cambio de navegación aún no están implementados.
+
 ## Alcance y vocabulario
 
 | Concepto             | Tipo                          | Significado                                                                                                                                       |

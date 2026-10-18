@@ -59,6 +59,8 @@ Son cardinalidades conceptuales, no nuevas tablas ni claves foráneas instaladas
 
 La clasificación musical pertenece a `Album`, pero se divide en dimensiones independientes. No se obliga a elegir entre «EP» y «Demo» en un mismo selector.
 
+Biblioteca muestra una sola entrada personal por álbum conceptual. Original, Deluxe, Especial y Aniversario son ediciones agrupadas en su ficha, nunca entradas duplicadas por edición, formato, plataforma o adquisición. Las diferencias de pistas de una reedición se describen en su propia lista, conservando la identidad del álbum. No se fusionan automáticamente obras distintas por compartir título; una regrabación completa o un disco de remezclas concebido como obra independiente requiere revisar su identidad.
+
 | Dimensión propuesta   | Ubicación        | Valores o ejemplos                                | Regla                                                                             |
 | --------------------- | ---------------- | ------------------------------------------------- | --------------------------------------------------------------------------------- |
 | Tipo principal        | `Album`          | Full-length, EP, Single, Otro, Sin especificar    | Un valor; no depende del soporte ni del número de copias                          |
@@ -72,7 +74,7 @@ Se reserva «Full-length» para el tipo musical. «LP» puede mostrarse como té
 
 Ejemplo ficticio: «Umbral» puede ser **EP + Demo + Split + Inédito**, sin nota ni copias. «La última luz» puede tener una edición **Deluxe digital** para escuchar y otra **Aniversario en CD**; poseer dos unidades de esta última produce dos `OwnedItem` vinculados al mismo `Release`, no dos álbumes ni dos ediciones. Una demo publicada sigue siendo Demo y pasa a Publicado; no pierde su categoría.
 
-En la interfaz, tipo, categorías y publicación se completan bajo demanda en Añadir/Editar datos. Deluxe o Aniversario se eligen al consultar/registrar una edición, especialmente desde Colección física; no se piden para guardar el álbum abstracto. Condición, fecha de adquisición y notas describen el ejemplar. Cambiar la edición asociada a una copia no renombra el álbum ni altera las demás copias; editar datos compartidos de una edición es otra operación con alcance visible.
+En la interfaz, tipo, categorías y publicación se completan bajo demanda en Añadir/Editar datos. Deluxe o Aniversario se eligen al consultar/registrar una edición, especialmente desde Mi colección; no se piden para guardar el álbum abstracto. Condición, fecha de adquisición y notas describen el ejemplar. Cambiar la edición asociada a una copia no renombra el álbum ni altera las demás copias; editar datos compartidos de una edición es otra operación con alcance visible.
 
 La separación de tipo principal y categorías toma como referencia [MusicBrainz: tipos de grupo de publicación](https://musicbrainz.org/doc/Release_Group/Type). La distinción entre edición digital/física y ejemplar es coherente con [MusicBrainz: publicación concreta](https://musicbrainz.org/doc/Release). **Split y el estado Publicado/Inédito/Desconocido son decisiones de esta propuesta de Auditorium**, no una equivalencia automática con los vocabularios externos. Toda clasificación sugerida por catálogo se revisa y la entrada manual sigue disponible.
 
@@ -88,6 +90,28 @@ El `Album.releaseType` actual mezcla tipo y categoría en un único enum. UX-05 
 | `other`                                        | Otro            | Ninguna registrada                                            |
 
 La migración conserva la clasificación heredada, incluidos antiguos valores por defecto, sin atribuirles verificación externa. No adivina duración/tipo desde Demo o En vivo, ni inventa Split; el estado de publicación anterior queda Desconocido. La persona puede completar esos datos después. `Release.editionLabel`, formatos, listas, IDs y ejemplares no se trasladan a `Album` ni se pierden. Los lectores de respaldos 1/2/3 mantienen sus enums históricos estrictos antes de normalizar a la versión futura.
+
+### Calificación única y edición de referencia
+
+La valoración personal pertenece al álbum conceptual a través de `AlbumRating`, no a cada `Release`. Una nueva escucha de una edición Deluxe, remasterizada o con bonus puede motivar recalificar ese mismo álbum; no crea otra nota, otro álbum ni un promedio entre versiones o pistas.
+
+UX-06 propone un campo opcional `AlbumRating.referenceReleaseId`, contexto de la valoración actual. Se elige mediante un selector simple **Edición de referencia**:
+
+- Primera opción **Sin edición de referencia**, predeterminada para datos anteriores y nuevas notas.
+- Sólo ediciones ya añadidas a ese álbum (`Release.albumId` coincide), incluidas físicas o digitales que no se posean. Las adquisiciones no son las opciones del selector.
+- Etiquetas con edición, formato y año conocidos, por ejemplo «Deluxe · Digital · 2021» y «Aniversario · CD · 2031». Distinguir etiquetas coincidentes con datos de edición disponibles sin usar UUID como texto principal.
+- Sin ediciones, explicar «Aún no has añadido ediciones» y permitir calificar sin referencia. Añadir una edición sigue siendo otra tarea; el selector no crea ediciones por texto libre ni consulta catálogos.
+- Cambiar o quitar la selección no cambia la cifra de la nota, pistas, enlaces ni colección. Una nueva edición o adquisición no sustituye automáticamente la referencia elegida.
+- Guardar nota y referencia es atómico dentro de Mi experiencia, junto al resto de ese ámbito. La referencia sólo se guarda cuando existe nota; quitar la nota también retira su referencia y conserva escucha/comentario.
+- Recalificar conserva la referencia vigente salvo cambio explícito. No se permite eliminar una edición y dejar una referencia huérfana: antes de eliminarla debe resolverse explícitamente esa referencia, conservando la nota.
+
+No es la edición favorita de reproducción ni una prueba de adquisición. El cambio requiere versionar schema, persistencia y respaldo en UX-06, con comparación concurrente del valor esperado y validación de pertenencia al mismo álbum. Las calificaciones anteriores llegan sin referencia y no se deduce una desde la primera edición, un enlace o un ejemplar.
+
+### Mi colección: adquisiciones físicas y digitales
+
+El destino antes llamado Colección física pasa a **Mi colección**, con filtros **Físico** y **Digital adquirido** y recuentos separados, además de una vista conjunta. `OwnedItem.medium` conserva `physical` o `purchased_digital`; el cambio de nombre no reclasifica datos. Registrar una adquisición es explícito, con edición opcional del mismo álbum y formato compatible. Dos ejemplares de la misma edición siguen siendo dos registros.
+
+Una compra individual digital puede registrarse como adquisición; una suscripción, un enlace de streaming, la reproducción o un audio adjunto no acreditan por sí solos una compra ni crean registros. Los deseos conservan su acceso secundario y no cuentan como adquisiciones. Quitar una adquisición no elimina la edición del catálogo ni la referencia de una nota.
 
 ## 2. Contrato lógico de enlaces y adjuntos
 
@@ -141,14 +165,14 @@ AUDIO-01 debe decidir antes de AUDIO-02: temporal o persistente, soporte real po
 
 El diseño propone estos ámbitos de escritura, que se implementan en sus tareas respectivas:
 
-| Acción visible           | Cambio coordinado                                       | Conserva                                                       |
-| ------------------------ | ------------------------------------------------------- | -------------------------------------------------------------- |
-| Añadir a mi biblioteca   | Álbum/créditos/entrada, enlaces y favorito elegidos     | Identidad local y registros anteriores; no crea nota ni copias |
-| Guardar datos del álbum  | Metadatos/créditos/portada y enlaces del editor         | IDs musicales/personales, experiencia, listas, copias y deseos |
-| Guardar mi experiencia   | Nota opcional, escucha y comentario de esa entrada      | Catálogo, enlaces, adjuntos, copias, deseos y notas de pistas  |
-| Quitar nota              | Retirada explícita de `AlbumRating`                     | Entrada, escucha, comentario y resto de relaciones             |
-| Guardar copia            | Datos de un ejemplar físico y su edición opcional       | Álbum, experiencia, enlaces y otras copias                     |
-| Elegir o quitar favorito | Puntero de preferencia y enlace afectado cuando proceda | Metadatos, experiencia y propiedad                             |
+| Acción visible           | Cambio coordinado                                              | Conserva                                                             |
+| ------------------------ | -------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Añadir a mi biblioteca   | Álbum/créditos/entrada, enlaces y favorito elegidos            | Identidad local y registros anteriores; no crea nota ni copias       |
+| Guardar datos del álbum  | Metadatos/créditos/portada y enlaces del editor                | IDs musicales/personales, experiencia, listas, copias y deseos       |
+| Guardar mi experiencia   | Nota y edición de referencia opcionales, escucha y comentario  | Catálogo, enlaces, adjuntos, adquisiciones, deseos y notas de pistas |
+| Quitar nota              | Retirada explícita de `AlbumRating` y su referencia de edición | Entrada, escucha, comentario y resto de relaciones                   |
+| Guardar adquisición      | Datos de ejemplar físico o compra digital y edición opcional   | Álbum, experiencia, enlaces y otras adquisiciones                    |
+| Elegir o quitar favorito | Puntero de preferencia y enlace afectado cuando proceda        | Metadatos, experiencia y propiedad                                   |
 
 La arquitectura actual permite transformaciones síncronas dentro de `repository.mutate`; las tareas de implementación deben incorporar la escritura coordinada en un único límite de commit. No encadenar varios comandos independientes y anunciar un éxito conjunto cuando sólo se ha guardado una parte. Las consultas externas y la lectura/decodificación de archivos ocurren fuera de la transacción; sólo sus resultados ya validados entran en el guardado.
 
@@ -177,7 +201,7 @@ sequenceDiagram
     end
 ```
 
-Cada comando compara sólo el conjunto esperado que puede sobrescribir: álbum/créditos/artistas compartidos y enlaces/preferencia para el editor de datos; nota/escucha/comentario para experiencia; ejemplar objetivo para inventario. Una modificación de otro álbum no debe provocar conflicto por sí sola. Un cambio relevante concurrente conserva borrador y exige revisión; nunca basta un botón genérico que sobrescriba lo nuevo sin mostrarlo.
+Cada comando compara sólo el conjunto esperado que puede sobrescribir: álbum/créditos/artistas compartidos y enlaces/preferencia para el editor de datos; nota/referencia de edición/escucha/comentario para experiencia; adquisición objetivo para inventario. Una modificación de otro álbum no debe provocar conflicto por sí sola. Un cambio relevante concurrente conserva borrador y exige revisión; nunca basta un botón genérico que sobrescriba lo nuevo sin mostrarlo.
 
 Las mutaciones no cambian la identidad local. Editar un artista conserva la regla vigente sobre país compartido y renombre de un crédito; el contexto visible explica ese alcance. Un reintento posterior a un commit sólo recupera lectura, no recrea enlaces, copias o el álbum.
 
@@ -190,20 +214,20 @@ Las mutaciones no cambian la identidad local. Editar un artista conserva la regl
 | UX-04 / VIS-02 | Navegación, borradores y consultas sin cambiar el contrato musical por conveniencia de UI                                  |
 | LINK-01        | Versionar esquema y respaldo al incorporar enlaces/preferencia; validar relaciones y migraciones antes de exponer guardado |
 | UX-05          | Separar tipo/categorías/publicación con migración y respaldo versionados; mantener IDs y reglas previas                    |
-| UX-06          | Usar comandos coordinados para experiencia; conservar la clasificación musical                                             |
+| UX-06          | Versionar referencia opcional de edición en la nota; escritura coordinada de experiencia y compatibilidad de notas previas |
 | AUDIO-01       | Resolver almacenamiento y recuperación con evidencia, sin afirmar que JSON contiene el audio                               |
 | AUDIO-02       | Aplicar la decisión anterior con su versión y pruebas, si se acepta persistencia                                           |
-| COL-05         | Cambiar proyección/navegación del inventario, conservando medios digitales y deseos                                        |
+| COL-05         | Presentar Mi colección con adquisiciones físicas/digitales separables, conservando registros y acceso a deseos             |
 
 Los archivos de respaldo1/2/3 mantienen validadores históricos estrictos. Un importador futuro normaliza desde cada contrato validado, sin aceptar campos nuevos en versiones antiguas. Los registros anteriores llegan sin enlaces personales ni favorito; no se inventan a partir de referencias de catálogo. La identidad, UUID, fechas, texto de notas, ratings, pistas, ediciones, copias, deseos y retirada se conservan.
 
-Una versión antigua debe rechazar esquemas y respaldos futuros con mensaje recuperable. La migración es atómica, conserva la barrera de versión existente y nunca elimina filas por dejar de mostrarlas en Colección física. No se fija ahora un número de versión futuro ni se cambia el tag publicado.
+Una versión antigua debe rechazar esquemas y respaldos futuros con mensaje recuperable. La migración es atómica, conserva la barrera de versión existente y nunca elimina filas por cambiar la vista de Mi colección. No se fija ahora un número de versión futuro ni se cambia el tag publicado.
 
 La restauración continúa limitada al destino vacío, con adopción atómica de identidad y datos; el rediseño no introduce fusiones de bibliotecas. Si el futuro respaldo de audio es separado, debe poder distinguir metadatos recuperados de archivos pendientes de volver a adjuntar y explicar los límites antes de exportar. Un archivo JSON de 20 MiB no equivale a un paquete de medios completo.
 
 ## 5. Matriz de independencia y comprobación
 
-| Evento                    | Catálogo        | Experiencia                            | Enlaces                             | Adjuntos                         | Inventario físico   |
+| Evento                    | Catálogo        | Experiencia                            | Enlaces                             | Adjuntos                         | Mi colección        |
 | ------------------------- | --------------- | -------------------------------------- | ----------------------------------- | -------------------------------- | ------------------- |
 | Guardar enlace o favorito | Se conserva     | Se conserva                            | Cambia                              | Se conserva                      | Se conserva         |
 | Abrir/reproducir fuente   | Se conserva     | Se conserva                            | Se conserva                         | Sólo recurso temporal si procede | Se conserva         |
@@ -215,6 +239,6 @@ La restauración continúa limitada al destino vacío, con adopción atómica de
 
 Aplicar esta matriz a los [cinco escenarios de diseño](EXPERIENCIA_USUARIO.md#6-escenarios-de-aceptación-del-diseño). Para compatibilidad, usar una biblioteca ficticia con entrada activa y retirada, varios créditos, géneros literales, portada local, ratings de álbum/pistas, dos copias físicas, una adquisición digital y deseos. Comparar identidad y relaciones antes/después de migración y restauración, incluyendo fallos de cuota y concurrencia.
 
-Añadir casos de EP Demo inédito, full-length En vivo, Split con varios créditos y Deluxe digital sin ejemplares. Verificar la transformación de cada valor antiguo de `releaseType`, corrección posterior sin pérdida de relaciones y dos copias de una misma edición. Ningún caso debe exigir calificación, escucha o propiedad para guardar la clasificación.
+Añadir casos de EP Demo inédito, full-length En vivo, Split con varios créditos y Deluxe digital sin ejemplares. Verificar la transformación de cada valor antiguo de `releaseType`, corrección posterior sin pérdida de relaciones y dos copias de una misma edición. Ningún caso debe exigir calificación, escucha o propiedad para guardar la clasificación. Comprobar nota única con/sin referencia, selección de edición no poseída, rechazo de edición ajena, retirada explícita de referencia, conservación al recalificar, eliminación de edición referenciada y migración/restauración de notas anteriores sin selección inventada.
 
 La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01/UX-05/AUDIO-02 deben aportar la evidencia real antes de declararse implementadas. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.
