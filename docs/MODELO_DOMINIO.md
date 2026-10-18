@@ -2,6 +2,8 @@
 
 Este documento describe los contratos de Auditorium en el incremento en revisión, basados en el MVP **v1.0.0** y ampliados por CAT-01 y UX-01. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni modifican la release publicada.
 
+UX-03 define por separado los [contratos propuestos de enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). Esos conceptos todavía no forman parte de los schemas ejecutables que describe este documento.
+
 ## Alcance y vocabulario
 
 | Concepto             | Tipo                          | Significado                                                                                                                                       |

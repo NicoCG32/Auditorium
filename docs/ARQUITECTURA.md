@@ -74,6 +74,8 @@ Las referencias de catálogo seleccionadas pertenecen a `Album` y se guardan con
 
 La navegación entre biblioteca, ficha, registro, retirados y respaldos depende del estado de React. Las aperturas de la PWA admiten la base del build, `index.html` y sus variantes con query o fragmento; no existe un router de fichas por URL o por ID. La distribución local utiliza `/`; el modo Pages utiliza `/Auditorium/`, con manifest, recursos, fallback y alcance verificados para esa base.
 
+UX-03 propone una [arquitectura de información por tareas](EXPERIENCIA_USUARIO.md), rutas por fragmentos, contexto de regreso y borradores independientes del montaje de pantallas. La [ADR-010](adr/010-navegacion-experiencia.md) y los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) corresponden a trabajo futuro; no sustituyen esta descripción de componentes y persistencia actuales.
+
 ## 4. Organización del código y dependencias
 
 ```mermaid

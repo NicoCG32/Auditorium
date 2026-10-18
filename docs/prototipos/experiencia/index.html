@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Auditórium — Propuesta de experiencia</title>
+    <link
+      rel="icon"
+      href="../../../public/auditorium/icons/favicon.svg"
+      type="image/svg+xml"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="prototype.js" defer></script>
+  </head>
+  <body>
+    <a class="skip" href="#contenido">Ir al contenido</a>
+    <aside class="sidebar">
+      <div class="brand-row">
+        <a href="#biblioteca" aria-label="Auditórium, biblioteca">
+          <img
+            class="brand dark-brand"
+            src="../../../public/auditorium/brand/wordmark-dark.svg"
+            alt="Auditórium · Tu fonoteca digital"
+            width="980"
+            height="198"
+          />
+          <img
+            class="brand light-brand"
+            src="../../../public/auditorium/brand/wordmark-light.svg"
+            alt="Auditórium · Tu fonoteca digital"
+            width="980"
+            height="198"
+          />
+        </a>
+        <div class="header-buttons">
+          <button
+            class="theme-button"
+            type="button"
+            aria-label="Cambiar a tema claro"
+          >
+            ◐</button
+          ><button
+            class="more-button quiet"
+            type="button"
+            data-dialog="options"
+            aria-label="Más opciones"
+          >
+            ⋯
+          </button>
+        </div>
+      </div>
+      <nav aria-label="Navegación principal">
+        <a href="#biblioteca" data-nav="biblioteca"
+          ><span aria-hidden="true">▦</span>Biblioteca</a
+        >
+        <a href="#anadir" data-nav="anadir"
+          ><span aria-hidden="true">＋</span>Añadir álbum</a
+        >
+        <a href="#calificaciones" data-nav="calificaciones"
+          ><span aria-hidden="true">☆</span>Calificaciones</a
+        >
+        <a href="#coleccion" data-nav="coleccion"
+          ><span aria-hidden="true">◎</span>Colección física</a
+        >
+      </nav>
+      <div class="sidebar-end">
+        <p>Tu música.<br />Tu propio criterio.</p>
+        <button class="quiet" type="button" data-dialog="options">
+          Más opciones <span aria-hidden="true">↗</span>
+        </button>
+      </div>
+    </aside>
+    <main id="contenido" tabindex="-1">
+      <div class="prototype-label">
+        <span class="dot"></span>Boceto navegable · Datos ficticios · Sin
+        guardado
+      </div>
+      <p class="notice" role="status" id="notice"></p>
+
+      <section data-screen="biblioteca" aria-labelledby="library-title">
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">TU ARCHIVO PERSONAL</p>
+            <h1 id="library-title">
+              Tu biblioteca<span class="accent">.</span>
+            </h1>
+            <p class="subtitle">Lo que descubriste. Lo que siempre vuelve.</p>
+          </div>
+          <a class="button primary desktop-add" href="#anadir"
+            >＋ Añadir álbum</a
+          >
+        </div>
+        <div class="search-row">
+          <label class="search"
+            ><span class="sr-only">Buscar en tu biblioteca</span
+            ><span aria-hidden="true">⌕</span
+            ><input
+              id="search"
+              type="search"
+              placeholder="Buscar álbum, artista, género…"
+          /></label>
+          <button
+            class="button"
+            type="button"
+            id="filter-button"
+            aria-expanded="false"
+            aria-controls="filters"
+          >
+            Filtros <span aria-hidden="true">☷</span>
+          </button>
+        </div>
+        <div class="filter-panel" id="filters" hidden>
+          <label
+            >Género<select id="genre">
+              <option value="">Todos los géneros</option>
+              <option>Metal</option>
+              <option>Post-rock</option>
+              <option>Jazz</option>
+            </select></label
+          >
+          <label
+            >País<select id="country">
+              <option value="">Todos los países</option>
+              <option>Chile</option>
+              <option>Finlandia</option>
+              <option>Argentina</option>
+            </select></label
+          >
+          <label
+            >Escucha<select id="listening">
+              <option value="">Todos los estados</option>
+              <option>Por escuchar</option>
+              <option>Escuchando</option>
+              <option>Escuchado</option>
+            </select></label
+          >
+          <label
+            >Nota<select id="score-filter">
+              <option value="">Todas las notas</option>
+              <option value="unrated">Sin nota</option>
+              <option value="rated">Con nota</option>
+            </select></label
+          >
+          <button class="text-button" type="button" id="reset-filters">
+            Limpiar filtros
+          </button>
+        </div>
+        <div class="collection-toolbar">
+          <p id="result-count" role="status">9 álbumes</p>
+          <label
+            ><span class="sr-only">Ordenar biblioteca</span
+            ><select id="order">
+              <option value="added">Añadidos recientemente</option>
+              <option value="title">Título A–Z</option>
+              <option value="score">Mayor nota</option>
+            </select></label
+          >
+        </div>
+        <div id="album-grid" class="album-grid"></div>
+        <div id="no-results" class="empty" hidden>
+          <h2>No hay coincidencias</h2>
+          <p>Prueba otra búsqueda o limpia los filtros.</p>
+          <button class="button" type="button" id="show-all">
+            Ver todos los álbumes
+          </button>
+        </div>
+      </section>
+
+      <section data-screen="anadir" aria-labelledby="add-title" hidden>
+        <a href="#biblioteca" class="back">← Biblioteca</a>
+        <p class="eyebrow">1 DE 2 · IDENTIFICAR</p>
+        <h1 id="add-title">Añadir un álbum<span class="accent">.</span></h1>
+        <p class="subtitle">
+          Empieza con el artista y el título. El resto puede esperar.
+        </p>
+        <form class="editor" data-next="revision">
+          <div class="form-pair">
+            <label
+              >Artista<input
+                name="artist"
+                required
+                value="Círculo Norte"
+                autocomplete="off" /></label
+            ><label
+              >Título del álbum<input
+                name="title"
+                required
+                value="Umbral"
+                autocomplete="off"
+            /></label>
+          </div>
+          <div class="catalog-help">
+            <div>
+              <h2>¿Quieres completar datos desde el catálogo?</h2>
+              <p>
+                Busca una referencia para revisarla. También puedes añadirlo tú.
+              </p>
+            </div>
+            <button class="button" type="button" data-dialog="catalog">
+              Buscar referencia
+            </button>
+          </div>
+          <div class="form-end">
+            <button class="button primary" type="submit">
+              Revisar datos manualmente →</button
+            ><a href="#biblioteca" class="text-button">Cancelar</a>
+          </div>
+        </form>
+      </section>
+
+      <section data-screen="revision" aria-labelledby="review-title" hidden>
+        <a href="#anadir" class="back">← Identificar álbum</a>
+        <p class="eyebrow">2 DE 2 · REVISAR</p>
+        <h1 id="review-title">Revisar álbum<span class="accent">.</span></h1>
+        <p class="subtitle">
+          Revisa los datos y añade dónde te gusta escucharlo.
+        </p>
+        <form class="editor" data-next="album">
+          <div class="review-intro">
+            <div class="small-cover art ember" aria-hidden="true">
+              <span>CN</span>
+            </div>
+            <div>
+              <h2 data-demo-title>Umbral</h2>
+              <p data-demo-artist>Círculo Norte</p>
+              <a class="text-button" href="#anadir"
+                >Corregir artista o título</a
+              >
+            </div>
+          </div>
+          <div class="form-pair">
+            <label
+              >Géneros <span class="optional">opcional</span
+              ><input value="Metal, Progresivo" /></label
+            ><label
+              >País del artista <span class="optional">opcional</span
+              ><input value="Chile"
+            /></label>
+          </div>
+          <details>
+            <summary>Portada, año y más datos</summary>
+            <div class="form-pair detail-fields">
+              <label
+                >Enlace de portada<input
+                  type="url"
+                  placeholder="https://…" /></label
+              ><label
+                >Año original<input
+                  inputmode="numeric"
+                  placeholder="Por ejemplo, 2021"
+              /></label>
+            </div>
+            <p>También podrás completar estos datos después.</p>
+          </details>
+          <fieldset class="link-editor">
+            <legend>Escuchar</legend>
+            <p>
+              Guarda tu fuente preferida. No hace falta haber escuchado el
+              álbum.
+            </p>
+            <div class="form-pair">
+              <label
+                >Servicio o etiqueta<input
+                  value="Mi servicio favorito" /></label
+              ><label
+                >Enlace de reproducción<input
+                  type="url"
+                  placeholder="https://…"
+              /></label>
+            </div>
+            <label class="check"
+              ><input type="checkbox" /> Usar como fuente favorita para este
+              álbum</label
+            ><button type="button" class="text-button" data-dialog="links">
+              ＋ Añadir otro enlace
+            </button>
+          </fieldset>
+          <details>
+            <summary>Enlaces de compra</summary>
+            <div class="detail-fields">
+              <label
+                >Enlace de tienda<input type="url" placeholder="https://…"
+              /></label>
+              <p>Guardar un enlace no registra una compra.</p>
+            </div>
+          </details>
+          <div class="form-end">
+            <button type="submit" class="button primary">
+              Añadir a mi biblioteca</button
+            ><a href="#anadir" class="text-button">Atrás</a>
+          </div>
+        </form>
+      </section>
+
+      <section data-screen="editar" aria-labelledby="edit-title" hidden>
+        <a href="#album" class="back">← Umbral</a>
+        <p class="eyebrow">DATOS Y ENLACES</p>
+        <h1 id="edit-title">
+          Editar datos del álbum<span class="accent">.</span>
+        </h1>
+        <p class="subtitle">
+          Tu experiencia y tus copias se mantienen por separado.
+        </p>
+        <form class="editor" data-next="album">
+          <div class="form-pair">
+            <label>Título<input name="title" required value="Umbral" /></label
+            ><label
+              >Artista<input name="artist" required value="Círculo Norte"
+            /></label>
+          </div>
+          <div class="form-pair">
+            <label>Año original<input inputmode="numeric" value="2021" /></label
+            ><label>Géneros<input value="Metal, Progresivo" /></label>
+          </div>
+          <label>País del artista<input value="Chile" /></label>
+          <p class="field-help">
+            Este país se usa en los demás álbumes de Círculo Norte.
+          </p>
+          <details>
+            <summary>Portada, créditos y descripción</summary>
+            <p class="detail-fields">
+              Aquí se completan los datos adicionales del álbum.
+            </p>
+          </details>
+          <fieldset class="link-editor">
+            <legend>Escuchar</legend>
+            <div class="form-pair">
+              <label
+                >Servicio o etiqueta<input
+                  value="Mi servicio favorito" /></label
+              ><label
+                >Enlace de reproducción<input
+                  type="url"
+                  placeholder="https://…"
+              /></label>
+            </div>
+            <label class="check"
+              ><input type="checkbox" checked /> Fuente favorita de este
+              álbum</label
+            ><button class="text-button" type="button" data-dialog="links">
+              ＋ Añadir otro enlace
+            </button>
+          </fieldset>
+          <details>
+            <summary>Enlaces de compra</summary>
+            <div class="detail-fields">
+              <label
+                >Enlace de tienda<input type="url" placeholder="https://…"
+              /></label>
+            </div>
+          </details>
+          <div class="form-end">
+            <button class="button primary" type="submit">
+              Guardar datos y enlaces</button
+            ><button class="text-button" type="button" data-dialog="draft">
+              Cancelar edición
+            </button>
+          </div>
+        </form>
+      </section>
+
+      <section data-screen="album" aria-labelledby="album-title" hidden>
+        <a class="back" href="#biblioteca">← Biblioteca</a>
+        <div class="album-hero">
+          <div class="hero-cover art ember" aria-hidden="true">
+            <span>CN</span>
+          </div>
+          <div>
+            <p class="eyebrow">EN TU BIBLIOTECA</p>
+            <h1 id="album-title" data-demo-title>Umbral</h1>
+            <p class="artist-name" data-demo-artist>Círculo Norte</p>
+            <p class="metadata">
+              2021 <span>·</span> Chile <span>·</span> Álbum
+            </p>
+            <div class="tags"><span>Metal</span><span>Progresivo</span></div>
+            <div class="hero-actions">
+              <button class="button primary" type="button" data-dialog="listen">
+                ▶ Escuchar</button
+              ><button class="button" type="button" data-dialog="purchase">
+                Comprar ↗</button
+              ><a class="text-button" href="#editar">Editar datos</a>
+            </div>
+          </div>
+        </div>
+        <div class="section-heading">
+          <h2>Mi experiencia</h2>
+          <a class="text-button" href="#experiencia">Calificar o editar →</a>
+        </div>
+        <div class="experience-card">
+          <div>
+            <span class="eyebrow">TU NOTA</span>
+            <p class="big-score">8,5<span> / 10</span></p>
+          </div>
+          <div>
+            <span class="eyebrow">ESCUCHA</span>
+            <p>Escuchado</p>
+            <p class="muted">«Un disco para volver con calma.»</p>
+          </div>
+        </div>
+        <div class="secondary-grid">
+          <a class="info-card" href="#editar"
+            ><span class="eyebrow">ESCUCHAR Y COMPRAR</span>
+            <h2>Tus enlaces</h2>
+            <p>Una fuente favorita de escucha.</p>
+            <span class="text-button">Revisar enlaces →</span></a
+          ><a class="info-card" href="#coleccion"
+            ><span class="eyebrow">COLECCIÓN FÍSICA</span>
+            <h2>2 copias</h2>
+            <p>Un vinilo y un CD de este álbum.</p>
+            <span class="text-button">Ver en mi colección →</span></a
+          >
+        </div>
+        <details class="specialized">
+          <summary>Pistas y ediciones</summary>
+          <p>
+            La lista musical y sus ediciones se consultan y editan desde esta
+            sección, sin abrir el inventario ni cambiar tu nota.
+          </p>
+          <ol>
+            <li>Umbral</li>
+            <li>Todo lo que permanece</li>
+            <li>La última luz</li>
+          </ol>
+        </details>
+      </section>
+
+      <section
+        data-screen="calificaciones"
+        aria-labelledby="ratings-title"
+        hidden
+      >
+        <p class="eyebrow">TU CRITERIO</p>
+        <h1 id="ratings-title">Calificaciones<span class="accent">.</span></h1>
+        <p class="subtitle">Tu opinión también cambia con cada escucha.</p>
+        <div class="segmented" role="group" aria-label="Filtrar calificaciones">
+          <button type="button" aria-pressed="true" data-rating-view="all">
+            Todos</button
+          ><button
+            type="button"
+            aria-pressed="false"
+            data-rating-view="unrated"
+          >
+            Por calificar <span>3</span></button
+          ><button type="button" aria-pressed="false" data-rating-view="rated">
+            Calificados <span>6</span>
+          </button>
+        </div>
+        <label class="search rating-search"
+          ><span class="sr-only">Buscar para calificar</span
+          ><span aria-hidden="true">⌕</span
+          ><input
+            id="rating-search"
+            type="search"
+            placeholder="Buscar álbum o artista…"
+        /></label>
+        <div id="ratings-list" class="ratings-list"></div>
+      </section>
+
+      <section
+        data-screen="experiencia"
+        aria-labelledby="experience-title"
+        hidden
+      >
+        <a class="back" href="#calificaciones">← Calificaciones</a>
+        <p class="eyebrow">UMBRAL · CÍRCULO NORTE</p>
+        <h1 id="experience-title">
+          Mi experiencia<span class="accent">.</span>
+        </h1>
+        <p class="subtitle">Escucha, nota y recuerdos. Todo en su lugar.</p>
+        <form class="editor" data-next="album">
+          <div class="form-pair">
+            <label
+              >Mi nota<input
+                inputmode="decimal"
+                value="8,5"
+                aria-describedby="score-help"
+              /><span id="score-help" class="field-help"
+                >De 1 a 10, en pasos de 0,5. También puedes dejarla sin
+                nota.</span
+              ></label
+            ><label
+              >Estado de escucha<select>
+                <option>Sin registrar</option>
+                <option>Por escuchar</option>
+                <option>Escuchando</option>
+                <option selected>Escuchado</option>
+              </select></label
+            >
+          </div>
+          <label
+            >Mi comentario<textarea rows="4">
+Un disco para volver con calma.</textarea>
+          </label>
+          <div class="form-end">
+            <button class="button primary" type="submit">
+              Guardar mi experiencia</button
+            ><button class="text-button" type="button" data-dialog="draft">
+              Cancelar
+            </button>
+          </div>
+          <p class="field-help">
+            Tu nota es independiente de las pistas y de si tienes una copia.
+          </p>
+        </form>
+      </section>
+
+      <section data-screen="coleccion" aria-labelledby="physical-title" hidden>
+        <div class="page-heading">
+          <div>
+            <p class="eyebrow">TU INVENTARIO</p>
+            <h1 id="physical-title">
+              Colección física<span class="accent">.</span>
+            </h1>
+            <p class="subtitle">
+              Las copias que tienen un lugar en tu estantería.
+            </p>
+          </div>
+          <button class="button primary" type="button" data-dialog="copy">
+            ＋ Registrar copia
+          </button>
+        </div>
+        <div class="inventory-summary">
+          <strong>2 copias</strong><span>1 álbum</span
+          ><span>1 vinilo · 1 CD</span>
+        </div>
+        <div class="search-row">
+          <label class="search"
+            ><span class="sr-only">Buscar en colección física</span
+            ><span aria-hidden="true">⌕</span
+            ><input
+              id="copy-search"
+              type="search"
+              placeholder="Buscar álbum o artista…" /></label
+          ><label
+            ><span class="sr-only">Formato físico</span
+            ><select id="copy-format">
+              <option value="">Todos los formatos</option>
+              <option value="Vinilo">Vinilo</option>
+              <option value="CD">CD</option>
+            </select></label
+          >
+        </div>
+        <div class="physical-copies">
+          <article class="physical-copy" data-format="Vinilo">
+            <div class="copy-art art ember" aria-hidden="true">
+              <span>CN</span>
+            </div>
+            <div>
+              <p class="eyebrow">VINILO · COPIA 1</p>
+              <h2>Umbral</h2>
+              <p>Círculo Norte · Edición de 2021</p>
+              <p class="muted">Estado: muy bueno</p>
+              <a class="text-button" href="#album">Ver álbum →</a>
+            </div>
+            <button class="quiet" type="button" data-dialog="copy">
+              Editar copia
+            </button>
+          </article>
+          <article class="physical-copy" data-format="CD">
+            <div class="copy-art art ember" aria-hidden="true">
+              <span>CN</span>
+            </div>
+            <div>
+              <p class="eyebrow">CD · COPIA 2</p>
+              <h2>Umbral</h2>
+              <p>Círculo Norte · Reedición de 2023</p>
+              <p class="muted">Estado: como nuevo</p>
+              <a class="text-button" href="#album">Ver álbum →</a>
+            </div>
+            <button class="quiet" type="button" data-dialog="copy">
+              Editar copia
+            </button>
+          </article>
+        </div>
+        <p class="inventory-footnote">
+          ¿Buscas tus compras digitales o deseos?
+          <button class="text-button" type="button" data-dialog="legacy">
+            Consultar adquisiciones y deseos →
+          </button>
+        </p>
+      </section>
+      <footer>
+        Tu música. Tu criterio. Tu colección.<span
+          >Propuesta visual · UX-03</span
+        >
+      </footer>
+    </main>
+
+    <dialog id="preview-dialog" aria-labelledby="dialog-title">
+      <button
+        type="button"
+        class="dialog-close quiet"
+        aria-label="Cerrar diálogo"
+      >
+        ×
+      </button>
+      <p class="eyebrow">BOCETO DE INTERACCIÓN</p>
+      <h2 id="dialog-title"></h2>
+      <div id="dialog-content"></div>
+      <div class="form-end">
+        <button class="button primary dialog-close" type="button">
+          Entendido
+        </button>
+      </div>
+    </dialog>
+  </body>
+</html>

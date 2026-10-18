@@ -12,6 +12,8 @@ La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica me
 
 El incremento en desarrollo, todavía **sin publicar**, incorpora [integraciones opcionales](docs/INTEGRACIONES_OPCIONALES.md): búsqueda y selección de referencias de Wikidata al añadir álbumes, y recomendaciones de escucha o revaloración mediante Groq o Gemini con clave propia conservada sólo en memoria. El registro manual sigue disponible sin servicios ni cuentas. Las recomendaciones no cambian tus valoraciones; las referencias de catálogo se incluyen en los respaldos. El mismo incremento añade [edición de álbumes](docs/EDICION_CATALOGO.md), géneros, país de origen de los artistas y portadas automáticas por URL o archivo local JPEG/PNG. Estas capacidades pertenecen al código de este incremento y no al ZIP ni al tag de la release v1.0.0; su disponibilidad en Pages depende de integrar y publicar la revisión validada.
 
+La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Colección física. Es un diseño para revisión: enlaces personales, nueva navegación, reproducción y audio local se siguen en tareas separadas y no se declaran implementados por esta documentación.
+
 ## Desarrollo local
 
 Requisitos: Node.js 24 LTS (24.15.0 o posterior dentro de esa rama) y npm 12.2.x o posterior dentro de la rama 12. La instalación inicial requiere internet para descargar dependencias; ejecutar y compilar la plantilla no requiere claves ni cuentas externas.
