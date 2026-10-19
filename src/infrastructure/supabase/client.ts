@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import { cloudAuthStorage } from './auth-browser'
 import {
   BACKUP_SCHEMA_VERSION,
   MAX_BACKUP_BYTES,
@@ -46,24 +47,13 @@ export function createCloudClient(config: CloudConfiguration) {
   const tabKey = `auditorium-auth-tab:${project}`
   const tabId = sessionStorage.getItem(tabKey) ?? crypto.randomUUID()
   sessionStorage.setItem(tabKey, tabId)
-  const storageFor = (key: string) =>
-    key.endsWith('-code-verifier') ? localStorage : sessionStorage
-  const storageName = (key: string) =>
-    key.endsWith('-code-verifier') ? `auditorium-pkce:${project}` : key
   return createClient(config.url, config.publishableKey, {
     auth: {
       flowType: 'pkce',
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storage: {
-        // Email links often open a new tab. Share only the short-lived PKCE
-        // verifier; access/refresh tokens remain scoped to the current tab.
-        getItem: (key) => storageFor(key).getItem(storageName(key)),
-        setItem: (key, value) =>
-          storageFor(key).setItem(storageName(key), value),
-        removeItem: (key) => storageFor(key).removeItem(storageName(key)),
-      },
+      storage: cloudAuthStorage(project, tabId),
       storageKey: `auditorium-auth:${project}:${tabId}`,
     },
   })

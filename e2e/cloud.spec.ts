@@ -9,6 +9,43 @@ const email = 'listener@example.invalid'
 const userId = fixtureId(901)
 const password = 'Fictitious-Password-Only'
 
+for (const error of [
+  '#error=access_denied&error_code=otp_expired&error_description=fictitious-private-description',
+  '?error=access_denied&error_code=otp_expired&code=fictitious-private-code',
+]) {
+  test(`un enlace caducado permite volver a solicitar acceso: ${error.startsWith('#') ? 'fragmento' : 'consulta'}`, async ({
+    page,
+    context,
+  }) => {
+    await mock(context, new Map())
+    await page.goto(`/${error}`)
+    await expect(
+      page.getByRole('heading', { name: 'Iniciar sesión' }),
+    ).toBeVisible()
+    await expect(
+      page
+        .getByRole('status')
+        .filter({ hasText: 'El enlace de acceso ha caducado' }),
+    ).toBeVisible()
+    expect(new URL(page.url()).hash).toBe('#/opciones/cuenta')
+    expect(new URL(page.url()).search).toBe('')
+    await page
+      .getByRole('button', { name: 'Olvidé mi contraseña', exact: true })
+      .click()
+    await page.getByRole('textbox', { name: 'Correo electrónico' }).fill(email)
+    await page
+      .getByRole('button', { name: 'Enviar enlace', exact: true })
+      .click()
+    await expect(
+      page.getByText(
+        'Si el correo corresponde a una cuenta, recibirás un enlace de recuperación.',
+        { exact: true },
+      ),
+    ).toBeVisible()
+    expect(page.url()).not.toContain('fictitious-private')
+  })
+}
+
 function fakeSession(id = userId, address = email) {
   const claims = Buffer.from(
     JSON.stringify({

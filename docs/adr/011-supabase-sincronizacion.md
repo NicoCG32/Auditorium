@@ -18,6 +18,6 @@ Mantener tokens en la pestaña y compartir sólo el verificador temporal PKCE en
 
 GitHub Pages puede servir la aplicación sin un servidor propio. El modo local conserva su independencia de Supabase. El documento completo simplifica la atomicidad entre datos relacionados, a cambio de transferencia y almacenamiento mayores; el máximo es 20 MiB. La normalización y un protocolo incremental se evaluarán si crece el uso.
 
-Confirmación y recuperación públicas necesitan un SMTP configurado; el servicio incluido sólo permite direcciones del equipo. Su habilitación se sigue como tarea separada. No se activan planes de pago, correo comercial ni almacenamiento de audio en este incremento. La sincronización no sustituye respaldos externos, cifrado del dispositivo ni un historial recuperable del servidor.
+Confirmación y recuperación públicas necesitan un SMTP configurado; el servicio incluido sólo permite direcciones del equipo. Su habilitación se sigue como tarea separada. [AUTH-02](https://github.com/NicoCG32/Auditorium/issues/77) incorpora posteriormente Brevo Free para el correo transaccional, con credenciales sólo en Supabase y confirmación de correo habilitada. No se activan planes de pago, campañas comerciales ni almacenamiento de audio en este incremento. La sincronización no sustituye respaldos externos, cifrado del dispositivo ni un historial recuperable del servidor.
 
 Ver [contrato, diagramas y validación](../SINCRONIZACION_SUPABASE.md) y [SYNC-01](https://github.com/NicoCG32/Auditorium/issues/25).

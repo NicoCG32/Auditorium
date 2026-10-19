@@ -9,6 +9,7 @@ import {
   createCloudClient,
 } from './infrastructure/supabase/client'
 import { CloudAccount } from './application/cloud-account'
+import { consumeAuthReturnError } from './infrastructure/supabase/auth-browser'
 
 const rootElement = document.getElementById('root')
 
@@ -20,11 +21,14 @@ const repository = new IndexedDbRepository()
 const cloud = cloudConfiguration()
 let account: CloudAccount | undefined
 try {
+  const authNotice = cloud ? consumeAuthReturnError() : ''
   account = cloud
     ? new CloudAccount(
         createCloudClient(cloud),
         repository,
         new URL(cloud.url).hostname,
+        undefined,
+        authNotice,
       )
     : undefined
 } catch {

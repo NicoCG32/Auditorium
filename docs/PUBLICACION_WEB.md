@@ -1,6 +1,6 @@
 # Publicación web en GitHub Pages
 
-La [cuenta y sincronización opcionales](SINCRONIZACION_SUPABASE.md) requieren configurar `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` como variables de repositorio de GitHub antes de compilar Pages. No son claves privilegiadas. Auth utiliza la URL exacta del sitio, incluido `/Auditorium/`, para confirmación y recuperación. El registro público por correo depende de configurar SMTP; el funcionamiento sin cuenta sigue disponible.
+La [cuenta y sincronización opcionales](SINCRONIZACION_SUPABASE.md) requieren configurar `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY` como variables de repositorio de GitHub antes de compilar Pages. No son claves privilegiadas. Auth utiliza la URL exacta del sitio, incluido `/Auditorium/`, para confirmación y recuperación. La instalación publicada usa Brevo Free como SMTP de Auth; sus credenciales se guardan sólo en Supabase. En otras instalaciones debe configurarse un proveedor de correo para el registro público; el funcionamiento sin cuenta sigue disponible.
 
 La web/PWA utiliza la misma aplicación local de Auditorium, compilada para **`/Auditorium/`**. Su dirección de proyecto es [Auditorium web](https://nicocg32.github.io/Auditorium/). La disponibilidad de una revisión se comprueba en GitHub Actions y en el entorno `github-pages`.
 

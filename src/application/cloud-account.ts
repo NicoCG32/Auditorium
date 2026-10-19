@@ -27,6 +27,7 @@ export class CloudAccount {
   private listeners = new Set<() => void>()
   private libraryListeners = new Set<() => void>()
   private disposeAuth: (() => void) | undefined
+  private earlyRecoveryUserId: string | undefined
   private canSync: () => boolean = () => false
   private active = false
   constructor(
@@ -34,6 +35,7 @@ export class CloudAccount {
     guest: BackupLocalRepository,
     namespace: string,
     createRepository?: (id: string) => IndexedDbRepository,
+    initialNotice = '',
   ) {
     this.client = client
     this.guest = guest
@@ -50,8 +52,15 @@ export class CloudAccount {
       user: null,
       repository: guest,
       recovery: false,
-      notice: '',
+      notice: initialNotice,
     }
+    // A fast PKCE exchange can finish before React mounts its subscription.
+    // Retain only the verified user's ID so INITIAL_SESSION keeps that intent.
+    const { data } = this.client.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' && session)
+        this.earlyRecoveryUserId = session.user.id
+    })
+    this.disposeAuth = () => data.subscription.unsubscribe()
   }
   getSnapshot = () => this.state
   subscribe = (listener: () => void) => {
@@ -73,6 +82,11 @@ export class CloudAccount {
   private accept(event: AuthChangeEvent, session: Session | null) {
     if (!this.active) return
     const id = session?.user.id
+    const recovering =
+      event === 'PASSWORD_RECOVERY' ||
+      (event === 'INITIAL_SESSION' &&
+        id !== undefined &&
+        id === this.earlyRecoveryUserId)
     if (id !== this.state.user?.id) {
       this.state.engine?.stop()
       if (this.state.repository !== this.guest) this.state.repository.close()
@@ -89,10 +103,11 @@ export class CloudAccount {
           repository,
           engine,
           user: { id: session.user.id, email: session.user.email ?? '' },
-          recovery: event === 'PASSWORD_RECOVERY',
-          notice: '',
+          recovery: recovering,
+          notice: event === 'INITIAL_SESSION' ? this.state.notice : '',
         })
       } else {
+        this.earlyRecoveryUserId = undefined
         this.state = {
           loading: false,
           repository: this.guest,
@@ -105,15 +120,17 @@ export class CloudAccount {
     } else
       this.update({
         loading: false,
-        recovery: this.state.recovery || event === 'PASSWORD_RECOVERY',
+        recovery: this.state.recovery || recovering,
       })
   }
   start() {
     this.active = true
+    const stopPrevious = this.disposeAuth
     const { data } = this.client.auth.onAuthStateChange((event, session) =>
       this.accept(event, session),
     )
     this.disposeAuth = () => data.subscription.unsubscribe()
+    stopPrevious?.()
     void this.client.auth.getSession().then(({ data: initial, error }) => {
       if (!this.active || !this.state.loading) return
       if (error)
@@ -211,6 +228,7 @@ export class CloudAccount {
       throw new Error(
         'No se pudo cambiar la contraseña. Solicita un enlace nuevo o vuelve a intentar.',
       )
+    this.earlyRecoveryUserId = undefined
     this.update({ recovery: false })
   }
   async importGuest() {

@@ -14,6 +14,8 @@ Los formularios en edición retrasan la aplicación de cambios remotos. Sin cone
 
 **Olvidé mi contraseña** envía un enlace. Al abrirlo en el mismo navegador se solicita una contraseña nueva de al menos 12 caracteres. Los tokens de sesión se guardan en `sessionStorage`; sólo el verificador temporal PKCE se comparte mediante `localStorage` para permitir que el enlace se abra en otra pestaña. Las contraseñas nunca entran en IndexedDB, borradores, historial ni respaldos. El service worker no guarda respuestas de Auth o de la base remota.
 
+Los enlaces de acceso son de un solo uso: abre sólo el correo más reciente en el mismo navegador y perfil donde solicitaste la recuperación. Si Auth devuelve un error porque el enlace caducó, ya se utilizó o no es válido, Auditorium limpia los parámetros de error de la URL y abre **Cuenta y dispositivos** con una explicación para solicitar otro enlace. Una sesión válida del dispositivo se conserva.
+
 ## Arquitectura
 
 ```mermaid
@@ -88,7 +90,28 @@ Ante un conflicto puedes descargar ambas copias y elegir cuál conservar. Antes 
 5. En GitHub Pages configura las variables de repositorio `SUPABASE_URL` y `SUPABASE_PUBLISHABLE_KEY`. El workflow las incorpora exclusivamente a la compilación del sitio. Sin configuración, el uso local continúa disponible.
 6. Configura SMTP antes de abrir el registro a otras personas. El correo incluido de Supabase sólo entrega a direcciones del equipo y tiene un límite reducido; no acredita entrega pública. No se desactiva la confirmación para sortearlo.
 
-La apertura pública por correo queda pendiente de SMTP. Una opción para evaluar es [Brevo Free](https://help.brevo.com/hc/es/articles/208580669-FAQ-Cu%C3%A1les-son-los-l%C3%ADmites-del-plan-Gratis), con hasta 300 envíos diarios según sus condiciones consultadas el 18 de octubre de 2026. Requiere crear y validar la cuenta/remitente y comprobar los requisitos de entrega. Sus credenciales se introducen directamente en Supabase, fuera del repositorio y de Pages. No se ha contratado ni conectado ese servicio.
+### Correo transaccional con Brevo
+
+La instalación de Pages utiliza [Brevo Free](https://help.brevo.com/hc/es/articles/208580669-FAQ-Cu%C3%A1les-son-los-l%C3%ADmites-del-plan-Gratis) como SMTP de Supabase Auth. El navegador solicita el registro o la recuperación a Supabase; Supabase envía el mensaje a través de Brevo. Pages no accede a la clave SMTP ni envía el correo directamente.
+
+| Parámetro en Supabase   | Valor                                                                       |
+| ----------------------- | --------------------------------------------------------------------------- |
+| Nombre del remitente    | Auditorium                                                                  |
+| Dirección del remitente | Una dirección verificada en Brevo                                           |
+| Host                    | `smtp-relay.brevo.com`                                                      |
+| Puerto                  | `587`                                                                       |
+| Usuario                 | El identificador SMTP que muestra Brevo; puede diferir del correo de acceso |
+| Contraseña              | Una clave SMTP exclusiva para esta instalación, no una clave API            |
+
+Para reproducir la configuración:
+
+1. Crea una cuenta gratuita en Brevo y verifica el remitente. Si dispones de dominio propio, autentícalo siguiendo sus instrucciones. Brevo puede sustituir la dirección de un remitente sin dominio autenticado por una de sus dominios de envío; el nombre visible permanece Auditorium.
+2. Genera una clave SMTP exclusiva y cópiala directamente en **Supabase → Authentication → Emails → SMTP Settings**. Completa los parámetros de la tabla, habilita SMTP y guarda. No copies la clave a archivos del proyecto, variables `VITE_`, GitHub ni documentación.
+3. Conserva la confirmación de correo y las URLs exactas de Pages. Comprueba registro, confirmación y recuperación desde la aplicación, abriendo los enlaces en el mismo navegador para completar el intercambio PKCE.
+4. Revisa los eventos **Enviado** y **Entregado** en Brevo. La respuesta genérica de recuperación de Auditorium no demuestra por sí sola que se haya enviado un mensaje: evita revelar si existe una cuenta. Una entrega al servidor de correo tampoco acredita que el mensaje llegue a la bandeja principal.
+5. Si un enlace falla, comprueba la URL de retorno y las opciones de seguimiento o reescritura de enlaces del proveedor. Anonimizar las estadísticas de clics no equivale a desactivar esa reescritura. Revisa también la vigencia de la clave SMTP y las cuotas antes de repetir solicitudes.
+
+El plan gratuito de Brevo permite hasta 300 envíos diarios según sus condiciones consultadas el 19 de octubre de 2026. Supabase aplica además su propio límite de correo: al habilitar SMTP personalizado establece inicialmente 30 mensajes por hora, configurable en Auth. Ambos límites se aplican al mismo flujo; no se ha contratado un plan de pago. Consulta las condiciones actuales antes de modificar las cuotas. La [guía de Brevo SMTP](https://help.brevo.com/hc/en-us/articles/7924908994450-Send-transactional-emails-using-Brevo-SMTP), la [gestión de claves](https://help.brevo.com/hc/en-us/articles/7959631848850-Create-and-manage-your-SMTP-keys) y la [guía SMTP de Supabase](https://supabase.com/docs/guides/auth/auth-smtp) detallan los requisitos.
 
 ## Validación
 

@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.7 · 2026-10-18 · Estado: MVP v1.0.0, web, identidad visual y evaluación EXT-01 completados; AI-01/CAT-01/UX-01 en revisión y UX-03 en diseño.
+Versión 1.8 · 2026-10-19 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas y correo transaccional incorporados en main; refinamientos de experiencia pendientes.
 
 ## Objetivo del producto
 
@@ -10,7 +10,7 @@ El MVP completo termina en Fase 4. Autenticación, sincronización, importacione
 
 ## Método de trabajo
 
-La prioridad vigente incorpora [SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25): cuenta opcional con correo y contraseña y biblioteca privada entre dispositivos mediante Supabase gratuito. Se ejecuta antes de los refinamientos visuales pendientes, que conservan sus criterios y dependencias. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) y [ADR-011](adr/011-supabase-sincronizacion.md) concretan esta ampliación posterior al MVP. La configuración de SMTP para registro público se sigue por separado. Continúa el trabajo sobre main, sin crear un sprint o fechas comprometidas.
+[SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) incorpora cuenta opcional con correo y contraseña y biblioteca privada entre dispositivos mediante Supabase gratuito. La configuración de Brevo Free para el correo transaccional se valida en [AUTH-02 #77](https://github.com/NicoCG32/Auditorium/issues/77). Los refinamientos visuales pendientes conservan sus criterios y dependencias. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) y [ADR-011](adr/011-supabase-sincronizacion.md) concretan esta ampliación posterior al MVP. Continúa el trabajo sobre main, sin crear un sprint o fechas comprometidas.
 
 Se adopta una planificación ligera inspirada en Scrum: backlog ordenado, objetivo por sprint, incremento verificable, revisión y retrospectiva. Es una adaptación para el tamaño actual del proyecto. La referencia es la [Guía Scrum](https://scrumguides.org/scrum-guide.html).
 
