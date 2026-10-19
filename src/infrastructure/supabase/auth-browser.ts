@@ -1,4 +1,18 @@
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 type AuthStorage = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+
+const authErrors = ['error', 'error_code', 'error_description']
+
+function rejectAuthReturn(browser: Window, notify = false) {
+  const url = new URL(browser.location.href)
+  for (const key of [...authErrors, 'code', 'sb_flow_id'])
+    url.searchParams.delete(key)
+  url.hash = '#/opciones/cuenta'
+  browser.history.replaceState(browser.history.state, '', url.href)
+  if (notify) browser.dispatchEvent(new PopStateEvent('popstate'))
+  return 'El enlace de acceso ha caducado, ya fue utilizado o no es válido. Solicita uno nuevo en «Olvidé mi contraseña» y abre sólo el correo más reciente en el mismo navegador.'
+}
 
 export function cloudAuthStorage(
   project: string,
@@ -28,12 +42,23 @@ export function cloudAuthStorage(
 export function consumeAuthReturnError(browser: Window = window) {
   const url = new URL(browser.location.href)
   const fragment = new URLSearchParams(url.hash.slice(1))
-  const errors = ['error', 'error_code', 'error_description']
-  if (!errors.some((key) => url.searchParams.has(key) || fragment.has(key)))
+  if (!authErrors.some((key) => url.searchParams.has(key) || fragment.has(key)))
     return ''
-  for (const key of [...errors, 'code', 'sb_flow_id'])
-    url.searchParams.delete(key)
-  url.hash = '#/opciones/cuenta'
-  browser.history.replaceState(browser.history.state, '', url.href)
-  return 'El enlace de acceso ha caducado, ya fue utilizado o no es válido. Solicita uno nuevo en «Olvidé mi contraseña» y abre sólo el correo más reciente en el mismo navegador.'
+  return rejectAuthReturn(browser)
+}
+
+export async function consumeAuthExchangeError(
+  auth: Pick<SupabaseClient['auth'], 'initialize'>,
+  browser: Window = window,
+) {
+  const code = new URL(browser.location.href).searchParams.get('code')
+  if (!code) return ''
+  // initialize() reuses the SDK's pending result. getSession() alone does not
+  // expose exchange failures, and a missing verifier can skip the exchange.
+  await auth.initialize()
+  if (new URL(browser.location.href).searchParams.get('code') !== code)
+    return ''
+  // A successful exchange consumes its code. Never sign out or clear storage
+  // when a failed or skipped callback leaves the original code behind.
+  return rejectAuthReturn(browser, true)
 }

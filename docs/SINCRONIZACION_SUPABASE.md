@@ -14,7 +14,7 @@ Los formularios en edición retrasan la aplicación de cambios remotos. Sin cone
 
 **Olvidé mi contraseña** envía un enlace. Al abrirlo en el mismo navegador se solicita una contraseña nueva de al menos 12 caracteres. Los tokens de sesión se guardan en `sessionStorage`; sólo el verificador temporal PKCE se comparte mediante `localStorage` para permitir que el enlace se abra en otra pestaña. Las contraseñas nunca entran en IndexedDB, borradores, historial ni respaldos. El service worker no guarda respuestas de Auth o de la base remota.
 
-Los enlaces de acceso son de un solo uso: abre sólo el correo más reciente en el mismo navegador y perfil donde solicitaste la recuperación. Si Auth devuelve un error porque el enlace caducó, ya se utilizó o no es válido, Auditorium limpia los parámetros de error de la URL y abre **Cuenta y dispositivos** con una explicación para solicitar otro enlace. Una sesión válida del dispositivo se conserva.
+Los enlaces de acceso son de un solo uso: abre sólo el correo más reciente en el mismo navegador y perfil donde solicitaste la recuperación. Si Auth devuelve un error porque el enlace caducó, ya se utilizó o no es válido, Auditorium limpia los parámetros de autenticación de la URL y abre **Cuenta y dispositivos** con una explicación para solicitar otro enlace. Esto incluye los fallos durante el intercambio PKCE y los retornos sin el verificador del navegador. Una sesión válida y las bibliotecas del dispositivo se conservan; un enlace fallido no cierra otras sesiones.
 
 ## Arquitectura
 

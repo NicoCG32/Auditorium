@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.8 · 2026-10-19 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas y correo transaccional incorporados en main; refinamientos de experiencia pendientes.
+Versión 1.9 · 2026-10-19 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas y correo transaccional incorporados en main; refinamientos de experiencia pendientes.
 
 ## Objetivo del producto
 
@@ -10,7 +10,7 @@ El MVP completo termina en Fase 4. Autenticación, sincronización, importacione
 
 ## Método de trabajo
 
-[SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) incorpora cuenta opcional con correo y contraseña y biblioteca privada entre dispositivos mediante Supabase gratuito. La configuración de Brevo Free para el correo transaccional se valida en [AUTH-02 #77](https://github.com/NicoCG32/Auditorium/issues/77). Los refinamientos visuales pendientes conservan sus criterios y dependencias. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) y [ADR-011](adr/011-supabase-sincronizacion.md) concretan esta ampliación posterior al MVP. Continúa el trabajo sobre main, sin crear un sprint o fechas comprometidas.
+[SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) incorpora cuenta opcional con correo y contraseña y biblioteca privada entre dispositivos mediante Supabase gratuito. [AUTH-02 #77](https://github.com/NicoCG32/Auditorium/issues/77) completa el correo transaccional con Brevo Free y la validación real de registro, confirmación y recuperación. [AUTH-03 #78](https://github.com/NicoCG32/Auditorium/issues/78) trata los intercambios PKCE caducados y los retornos sin verificador con un aviso, limpieza de URL y reintento, conservando sesiones y bibliotecas. Los refinamientos visuales pendientes conservan sus criterios y dependencias. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) y [ADR-011](adr/011-supabase-sincronizacion.md) concretan esta ampliación posterior al MVP. Continúa el trabajo sobre main, sin crear un sprint o fechas comprometidas.
 
 Se adopta una planificación ligera inspirada en Scrum: backlog ordenado, objetivo por sprint, incremento verificable, revisión y retrospectiva. Es una adaptación para el tamaño actual del proyecto. La referencia es la [Guía Scrum](https://scrumguides.org/scrum-guide.html).
 

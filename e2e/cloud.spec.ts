@@ -101,8 +101,18 @@ async function mock(
           },
         })
       if (url.pathname.endsWith('/token')) {
-        if (url.searchParams.get('grant_type') === 'pkce')
+        if (url.searchParams.get('grant_type') === 'pkce') {
+          const input = request.postDataJSON() as { auth_code: string }
+          if (input.auth_code === 'fictitious-expired-code')
+            return reply(
+              {
+                code: 'flow_state_expired',
+                msg: 'Fictitious private error: expired flow state',
+              },
+              422,
+            )
           return reply(fakeSession())
+        }
         const input = request.postDataJSON() as {
           email: string
           password: string
@@ -160,6 +170,94 @@ async function login(page: Page, address = email) {
     page.getByRole('heading', { name: 'Tu biblioteca conectada' }),
   ).toBeVisible()
 }
+
+async function requestRecovery(page: Page) {
+  await page.goto('/#/opciones/cuenta')
+  await page
+    .getByRole('button', { name: 'Olvidé mi contraseña', exact: true })
+    .click()
+  await page.getByRole('textbox', { name: 'Correo electrónico' }).fill(email)
+  await page.getByRole('button', { name: 'Enviar enlace', exact: true }).click()
+  await expect(
+    page.getByText(
+      'Si el correo corresponde a una cuenta, recibirás un enlace de recuperación.',
+      { exact: true },
+    ),
+  ).toBeVisible()
+}
+
+test('un intercambio PKCE caducado permite solicitar otro enlace y recuperar acceso', async ({
+  page,
+  context,
+}) => {
+  await mock(context, new Map())
+  await requestRecovery(page)
+  const failedExchange = page.waitForResponse(
+    (response) =>
+      response.url().includes('/token?grant_type=pkce') &&
+      response.status() === 422,
+  )
+  await page.goto('/?entrada=prueba&code=fictitious-expired-code')
+  await failedExchange
+  await expect(
+    page.getByRole('heading', { name: 'Iniciar sesión' }),
+  ).toBeVisible()
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: 'El enlace de acceso ha caducado' }),
+  ).toBeVisible()
+  expect(new URL(page.url()).search).toBe('?entrada=prueba')
+  expect(new URL(page.url()).hash).toBe('#/opciones/cuenta')
+  await expect(
+    page.getByText('Fictitious private error', { exact: false }),
+  ).toHaveCount(0)
+  await requestRecovery(page)
+  const recovered = await context.newPage()
+  await recovered.goto('/?code=fictitious-recovery-code')
+  await expect(
+    recovered.getByRole('heading', { name: 'Elige una contraseña nueva' }),
+  ).toBeVisible()
+  expect(new URL(recovered.url()).search).toBe('')
+  await recovered.close()
+})
+
+test('un intercambio caducado conserva la sesión y su biblioteca', async ({
+  page,
+  context,
+}) => {
+  await mock(
+    context,
+    new Map([[userId, { revision: 1, snapshot: makeBackup().data }]]),
+  )
+  await login(page)
+  await page
+    .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+    .click()
+  const requestPage = await context.newPage()
+  await requestRecovery(requestPage)
+  await requestPage.close()
+  const failedExchange = page.waitForResponse(
+    (response) =>
+      response.url().includes('/token?grant_type=pkce') &&
+      response.status() === 422,
+  )
+  await page.goto('/?code=fictitious-expired-code')
+  await failedExchange
+  await expect(
+    page
+      .getByRole('status')
+      .filter({ hasText: 'El enlace de acceso ha caducado' }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Tu biblioteca conectada' }),
+  ).toBeVisible()
+  expect(new URL(page.url()).search).toBe('')
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await expect(
+    page.getByRole('button', { name: 'Eclipse', exact: true }),
+  ).toBeVisible()
+})
 
 test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar cuenta', async ({
   page,

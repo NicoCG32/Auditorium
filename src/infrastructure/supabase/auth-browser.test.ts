@@ -1,5 +1,10 @@
-import { afterEach, expect, test } from 'vitest'
-import { cloudAuthStorage, consumeAuthReturnError } from './auth-browser'
+import { AuthApiError } from '@supabase/supabase-js'
+import { afterEach, expect, test, vi } from 'vitest'
+import {
+  cloudAuthStorage,
+  consumeAuthExchangeError,
+  consumeAuthReturnError,
+} from './auth-browser'
 
 afterEach(() => {
   localStorage.clear()
@@ -44,6 +49,69 @@ test('la recuperación conserva la base y las consultas ajenas a Auth', () => {
   expect(location.pathname + location.search + location.hash).toBe(
     '/Auditorium/?entrada=prueba#/opciones/cuenta',
   )
+})
+
+test('un intercambio rechazado limpia el código, conserva datos y notifica al navegador', async () => {
+  history.replaceState(
+    { previous: 'kept' },
+    '',
+    '/Auditorium/?entrada=prueba&code=fictitious-code&sb_flow_id=fictitious-flow#/biblioteca',
+  )
+  sessionStorage.setItem('fictitious-session', 'keep-session')
+  localStorage.setItem('fictitious-library', 'keep-library')
+  const onHistory = vi.fn()
+  window.addEventListener('popstate', onHistory, { once: true })
+  const auth = {
+    initialize: vi.fn(() =>
+      Promise.resolve({
+        error: new AuthApiError(
+          'fictitious-private-error',
+          422,
+          'flow_state_expired',
+        ),
+      }),
+    ),
+  }
+  const notice = await consumeAuthExchangeError(auth)
+  expect(notice).toContain('Solicita uno nuevo')
+  expect(notice).not.toContain('fictitious-private-error')
+  expect(location.pathname + location.search + location.hash).toBe(
+    '/Auditorium/?entrada=prueba#/opciones/cuenta',
+  )
+  expect(history.state).toEqual({ previous: 'kept' })
+  expect(onHistory).toHaveBeenCalledOnce()
+  expect(sessionStorage.getItem('fictitious-session')).toBe('keep-session')
+  expect(localStorage.getItem('fictitious-library')).toBe('keep-library')
+})
+
+test('un intercambio correcto conserva su destino y no muestra un fallo', async () => {
+  history.replaceState(null, '', '/Auditorium/?code=fictitious-code')
+  const auth = {
+    initialize: () => {
+      history.replaceState(null, '', '/Auditorium/#/opciones/cuenta')
+      return Promise.resolve({ error: null })
+    },
+  }
+  expect(await consumeAuthExchangeError(auth)).toBe('')
+  expect(location.hash).toBe('#/opciones/cuenta')
+})
+
+test('un callback sin verificador ofrece pedir otro enlace', async () => {
+  history.replaceState(null, '', '/Auditorium/?code=fictitious-code')
+  expect(
+    await consumeAuthExchangeError({
+      initialize: () => Promise.resolve({ error: null }),
+    }),
+  ).toContain('Solicita uno nuevo')
+  expect(location.search).toBe('')
+})
+
+test('no interpreta ni modifica URLs ajenas a un retorno pendiente', async () => {
+  history.replaceState(null, '', '/Auditorium/?entrada=prueba#/biblioteca')
+  const initialize = vi.fn(() => Promise.resolve({ error: null }))
+  expect(await consumeAuthExchangeError({ initialize })).toBe('')
+  expect(initialize).not.toHaveBeenCalled()
+  expect(location.search + location.hash).toBe('?entrada=prueba#/biblioteca')
 })
 
 test('los verificadores de distintos flujos y su índice no se sobrescriben', () => {

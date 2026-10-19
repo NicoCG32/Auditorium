@@ -8,6 +8,7 @@ import { isEmptySnapshot } from '../domain/backup'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { SupabaseLibraryRepository } from '../infrastructure/supabase/client'
+import { consumeAuthExchangeError } from '../infrastructure/supabase/auth-browser'
 import { LibrarySync } from './library-sync'
 
 export interface AccountState {
@@ -28,6 +29,7 @@ export class CloudAccount {
   private libraryListeners = new Set<() => void>()
   private disposeAuth: (() => void) | undefined
   private earlyRecoveryUserId: string | undefined
+  private readonly authReturnNotice: Promise<string>
   private canSync: () => boolean = () => false
   private active = false
   constructor(
@@ -61,6 +63,7 @@ export class CloudAccount {
         this.earlyRecoveryUserId = session.user.id
     })
     this.disposeAuth = () => data.subscription.unsubscribe()
+    this.authReturnNotice = consumeAuthExchangeError(client.auth)
   }
   getSnapshot = () => this.state
   subscribe = (listener: () => void) => {
@@ -131,7 +134,10 @@ export class CloudAccount {
     )
     this.disposeAuth = () => data.subscription.unsubscribe()
     stopPrevious?.()
-    void this.client.auth.getSession().then(({ data: initial, error }) => {
+    void this.authReturnNotice.then(async (notice) => {
+      if (!this.active) return
+      if (notice) this.update({ notice })
+      const { data: initial, error } = await this.client.auth.getSession()
       if (!this.active || !this.state.loading) return
       if (error)
         this.update({
