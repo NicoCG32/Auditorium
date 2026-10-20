@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { readFile } from 'node:fs/promises'
 import { expect, test, type BrowserContext, type Page } from '@playwright/test'
@@ -157,6 +158,7 @@ async function mock(
   )
 }
 async function accountPage(page: Page) {
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Cuenta y dispositivos', exact: true })
     .click()
@@ -359,6 +361,7 @@ test('registro y recuperación limpian contraseñas y no guardan credenciales en
     }),
   )
   expect(storage).not.toContain(password)
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloadEvent = page.waitForEvent('download')
   await page

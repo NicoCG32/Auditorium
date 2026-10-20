@@ -16,16 +16,24 @@ export function AlbumCard({
       data-entry-id={album.id}
       className={`album-card ${view === 'list' ? 'album-row' : ''}`}
     >
-      <AlbumCover
-        title={album.title}
-        {...(album.coverUrl ? { url: album.coverUrl } : {})}
-        {...(album.coverImage ? { image: album.coverImage } : {})}
-        compact
-      />
+      <button
+        id={`album-cover-${album.id}`}
+        type="button"
+        className="album-cover-button"
+        aria-label={`Abrir ficha de ${album.title}`}
+        onClick={(event) => {
+          event.currentTarget.focus()
+          onOpen()
+        }}
+      >
+        <AlbumCover
+          title={album.title}
+          {...(album.coverUrl ? { url: album.coverUrl } : {})}
+          {...(album.coverImage ? { image: album.coverImage } : {})}
+          compact
+        />
+      </button>
       <div className="album-copy">
-        <p className="mb-3 text-xs tracking-wider text-muted">
-          {album.originalYear ?? 'Año sin registrar'}
-        </p>
         <h2 className="text-xl font-semibold leading-tight wrap-anywhere">
           <button
             id={`album-open-${album.id}`}
@@ -39,8 +47,11 @@ export function AlbumCard({
             {album.title}
           </button>
         </h2>
-        <p className="mt-2 text-sm leading-relaxed text-muted wrap-anywhere">
+        <p className="album-artist mt-2 text-sm leading-relaxed wrap-anywhere">
           {album.artist}
+        </p>
+        <p className="mt-2 text-xs tracking-wider text-muted">
+          {album.originalYear ?? 'Año sin registrar'}
         </p>
         {album.countries?.length ? (
           <p className="mt-2 text-xs text-muted wrap-anywhere">
@@ -59,23 +70,29 @@ export function AlbumCard({
             ))}
           </ul>
         ) : null}
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
-          <span className="listening-badge">
-            {listeningLabels[album.listeningStatus]}
-          </span>
-          <p className="text-sm font-semibold">
-            {album.score === undefined ? (
-              <span className="font-normal text-muted">Sin nota</span>
-            ) : (
-              <>
-                <span className="text-accent-text">
-                  {formatScore(album.score)}
-                </span>
-                <span className="text-muted"> / 10</span>
-              </>
-            )}
-          </p>
-        </div>
+        <dl className="album-personal">
+          <div>
+            <dt>Escucha</dt>
+            <dd className="listening-badge">
+              {listeningLabels[album.listeningStatus]}
+            </dd>
+          </div>
+          <div>
+            <dt>Mi nota</dt>
+            <dd className="text-sm font-semibold">
+              {album.score === undefined ? (
+                <span className="font-normal text-muted">Sin nota</span>
+              ) : (
+                <>
+                  <span className="text-accent-text">
+                    {formatScore(album.score)}
+                  </span>
+                  <span className="text-muted"> / 10</span>
+                </>
+              )}
+            </dd>
+          </div>
+        </dl>
       </div>
     </li>
   )

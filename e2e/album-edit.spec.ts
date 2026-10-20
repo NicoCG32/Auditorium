@@ -1,3 +1,7 @@
+import {
+  openLibraryOptions,
+  openLibraryFilters,
+} from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -75,6 +79,7 @@ async function ready(page: Page) {
 }
 
 async function restore(page: Page, text: string) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'biblioteca-ficticia-edicion.json',
@@ -93,6 +98,7 @@ async function seed(page: Page) {
 }
 
 async function exportBackup(page: Page) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
@@ -279,9 +285,11 @@ test('géneros y países se combinan con búsqueda, orden y vistas sin cambiar l
   await page
     .getByRole('button', { name: 'Volver a biblioteca', exact: true })
     .click()
+  await openLibraryFilters(page)
   await page
     .getByRole('combobox', { name: 'Género', exact: true })
     .selectOption('jazz')
+  await openLibraryFilters(page)
   await page
     .getByRole('combobox', { name: 'País de origen', exact: true })
     .selectOption('chile')
@@ -292,6 +300,7 @@ test('géneros y países se combinan con búsqueda, orden y vistas sin cambiar l
   await expect(
     page.getByRole('button', { name: 'Álbum De Metal Ficticio', exact: true }),
   ).toHaveCount(0)
+  await openLibraryFilters(page)
   await page
     .getByRole('combobox', { name: 'País de origen', exact: true })
     .selectOption('suecia')
@@ -299,9 +308,11 @@ test('géneros y países se combinan con búsqueda, orden y vistas sin cambiar l
     page.getByRole('heading', { name: 'No encontramos coincidencias' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Mostrar todos los álbumes' }).click()
+  await openLibraryFilters(page)
   await expect(
     page.getByRole('combobox', { name: 'Género', exact: true }),
   ).toHaveValue('')
+  await openLibraryFilters(page)
   await expect(
     page.getByRole('combobox', { name: 'País de origen', exact: true }),
   ).toHaveValue('')
@@ -426,9 +437,11 @@ test('edición y nuevos filtros son accesibles a360px en los dos temas', async (
     await accessible(page)
     await save(page)
     await back(page)
+    await openLibraryFilters(page)
     await page
       .getByRole('combobox', { name: 'Género', exact: true })
       .selectOption('metal')
+    await openLibraryFilters(page)
     await page
       .getByRole('combobox', { name: 'País de origen', exact: true })
       .selectOption('chile')

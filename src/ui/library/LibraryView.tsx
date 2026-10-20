@@ -25,6 +25,13 @@ export function LibraryView({
   onAdd: () => void
 }) {
   const visible = queryLibrary(albums, filters)
+  const narrowed = Boolean(
+    filters.search ||
+    filters.genre ||
+    filters.country ||
+    filters.listening !== 'all' ||
+    filters.rating !== 'all',
+  )
   if (!albums.length)
     return (
       <section
@@ -65,18 +72,20 @@ export function LibraryView({
         view={view}
         onViewChange={onViewChange}
       />
-      <div className="my-6 flex flex-wrap items-center justify-between gap-3">
+      <div className="library-results">
         <p role="status" className="text-sm text-muted">
           {visible.length} de {albums.length}{' '}
           {albums.length === 1 ? 'álbum' : 'álbumes'}
         </p>
-        <button
-          type="button"
-          className="text-button"
-          onClick={() => onFiltersChange(defaultLibraryFilters)}
-        >
-          Limpiar búsqueda y filtros
-        </button>
+        {narrowed ? (
+          <button
+            type="button"
+            className="text-button"
+            onClick={() => onFiltersChange(defaultLibraryFilters)}
+          >
+            Limpiar búsqueda y filtros
+          </button>
+        ) : null}
       </div>
       {!visible.length ? (
         <section className="library-empty" aria-labelledby="no-results-title">

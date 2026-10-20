@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -53,6 +54,7 @@ async function add(page: Page, title: string, artist: string) {
   ).toBeVisible()
 }
 async function fixture(page: Page) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio.json',
@@ -167,6 +169,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   ).toContainText('Segunda copia ficticia')
   await page.getByRole('button', { name: 'Quitar álbum de biblioteca' }).click()
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Álbumes retirados (1)' }).click()
   await page
     .getByRole('button', { name: /Restaurar Horizonte Ficticio, entrada/ })
@@ -179,6 +182,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   ).toBeVisible()
   await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await page.reload()
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
@@ -238,6 +242,7 @@ test('auditoría de accesibilidad en vacío, formularios, ficha y confirmaciones
   await page.getByRole('button', { name: 'Quitar álbum de biblioteca' }).click()
   await accessible(page)
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Álbumes retirados (2)' }).click()
   await accessible(page)
   await page.getByText('Aplicación y almacenamiento', { exact: true }).click()

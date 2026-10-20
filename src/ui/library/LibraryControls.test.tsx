@@ -1,3 +1,4 @@
+import { openLibraryFilters } from '../../test/library-navigation'
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import {
@@ -42,7 +43,9 @@ test('mantiene todas las opciones aunque otros filtros estén seleccionados', ()
       onViewChange={vi.fn()}
     />,
   )
+  openLibraryFilters()
   const genre = screen.getByRole('combobox', { name: 'Género' })
+  openLibraryFilters()
   const country = screen.getByRole('combobox', { name: 'País de origen' })
   expect(
     within(genre)
@@ -78,6 +81,7 @@ test('una biblioteca anterior sin metadatos permite todos los filtros y nuevos �
       onViewChange={vi.fn()}
     />,
   )
+  openLibraryFilters()
   expect(
     screen.getByRole('option', { name: 'Todos los géneros' }),
   ).toBeVisible()
@@ -99,6 +103,44 @@ test('una biblioteca anterior sin metadatos permite todos los filtros y nuevos �
   )
 })
 
+test('los filtros comienzan plegados y anuncian cuántas selecciones hay', () => {
+  const onChange = vi.fn()
+  render(
+    <LibraryControls
+      albums={albums}
+      filters={{
+        ...defaultLibraryFilters,
+        genre: 'jazz',
+        country: 'espana',
+        search: 'horizonte',
+        order: 'title',
+      }}
+      onChange={onChange}
+      view="grid"
+      onViewChange={vi.fn()}
+    />,
+  )
+  const toggle = screen.getByRole('button', { name: 'Filtros (2)' })
+  expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  expect(screen.queryByRole('combobox', { name: 'Género' })).toBeNull()
+  expect(
+    screen.getByRole('button', { name: 'Quitar filtro Género: Jazz' }),
+  ).toBeVisible()
+  fireEvent.click(toggle)
+  expect(toggle).toHaveAttribute('aria-expanded', 'true')
+  expect(screen.getByRole('combobox', { name: 'Género' })).toBeVisible()
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Quitar filtro Género: Jazz' }),
+  )
+  expect(onChange).toHaveBeenLastCalledWith({
+    ...defaultLibraryFilters,
+    country: 'espana',
+    search: 'horizonte',
+    order: 'title',
+    genre: '',
+  })
+})
+
 test('un filtro conserva su valor visible si una edición o retirada elimina su última coincidencia', () => {
   const props = {
     filters: { ...defaultLibraryFilters, genre: 'rock', country: 'chile' },
@@ -108,7 +150,9 @@ test('un filtro conserva su valor visible si una edición o retirada elimina su 
   }
   const { rerender } = render(<LibraryControls {...props} albums={albums} />)
   rerender(<LibraryControls {...props} albums={[]} />)
+  openLibraryFilters()
   expect(screen.getByRole('combobox', { name: 'Género' })).toHaveValue('rock')
+  openLibraryFilters()
   expect(screen.getByRole('combobox', { name: 'País de origen' })).toHaveValue(
     'chile',
   )

@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { serializeBackup } from '../src/domain/backup'
@@ -76,6 +77,7 @@ for (const theme of ['dark', 'light'] as const) {
       await page.getByRole('button', { name: 'Añadir tu primer álbum' }).click()
       await accessible(page)
       await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
+      await openLibraryOptions(page)
       await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
       await page.locator('#backup-file').setInputFiles({
         name: 'biblioteca-ficticia-apariencia.json',

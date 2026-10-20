@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
@@ -55,6 +56,7 @@ test('rutas de navegación y borradores conservan base Pages y query después de
   await expect(page).toHaveURL(
     /\/Auditorium\/index\.html\?contexto=prueba#\/coleccion$/,
   )
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   expect((await exportedBackup(page)).data).toEqual(fixture.data)
 })
@@ -73,6 +75,7 @@ async function openPrepared(page: Page) {
 
 async function restoreFixture(page: Page) {
   const backup = makeBackup()
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio-pages.json',
@@ -89,6 +92,7 @@ async function restoreFixture(page: Page) {
 }
 
 async function exportedBackup(page: Page) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page

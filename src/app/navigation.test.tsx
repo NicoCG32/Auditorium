@@ -1,3 +1,4 @@
+import { openLibraryOptions } from '../test/library-navigation'
 import {
   act,
   fireEvent,
@@ -47,6 +48,44 @@ async function edit() {
   fireEvent.click(screen.getByRole('button', { name: 'Eclipse' }))
   fireEvent.click(screen.getByRole('button', { name: 'Editar álbum' }))
 }
+
+test('Más opciones se cierra con Escape y al abrir una utilidad', async () => {
+  await open()
+  const summary = screen.getByText('Más opciones', { selector: 'summary' })
+  const menu = summary.closest('details')!
+  expect(menu).not.toHaveAttribute('open')
+  fireEvent.click(summary)
+  expect(menu).toHaveAttribute('open')
+  fireEvent.keyDown(summary, { key: 'Escape' })
+  expect(menu).not.toHaveAttribute('open')
+  expect(summary).toHaveFocus()
+  fireEvent.click(summary)
+  fireEvent.click(screen.getByRole('button', { name: 'Respaldos' }))
+  expect(menu).not.toHaveAttribute('open')
+  expect(location.hash).toBe('#/opciones/respaldos')
+})
+
+test('abrir desde la portada conserva búsqueda, vista y foco al regresar', async () => {
+  await open()
+  fireEvent.change(
+    screen.getByRole('searchbox', { name: 'Buscar en tu biblioteca' }),
+    { target: { value: 'eclipse' } },
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Abrir ficha de Eclipse' }),
+  )
+  expect(await screen.findByRole('heading', { name: 'Eclipse' })).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  expect(screen.getByRole('searchbox')).toHaveValue('eclipse')
+  expect(screen.getByRole('button', { name: 'Lista' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  expect(
+    screen.getByRole('button', { name: 'Abrir ficha de Eclipse' }),
+  ).toHaveFocus()
+})
 function change(name: string, value: string) {
   fireEvent.change(screen.getByRole('textbox', { name }), { target: { value } })
 }
@@ -86,15 +125,19 @@ test('editar → Recomendaciones no pierde título, cancelación devuelve el foc
   const title = screen.getByRole('textbox', { name: 'Título' })
   title.focus()
   change('Título', 'Borrador de prueba')
+  openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
   expect(
     screen.getByRole('dialog', { name: 'Cambios sin guardar' }),
   ).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Seguir editando' }))
   expect(title).toHaveValue('Borrador de prueba')
-  expect(screen.getByRole('button', { name: 'Recomendaciones' })).toHaveFocus()
+  expect(
+    screen.getByText('Más opciones', { selector: 'summary' }),
+  ).toHaveFocus()
   expect(location.hash).toMatch(/\/editar$/)
   expect(await repository.readSnapshot()).toEqual(before)
+  openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
   fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
   expect(location.hash).toBe('#/opciones/recomendaciones')
@@ -177,6 +220,7 @@ test('Mi colección separa medios sin cambiar adquisiciones ni deseos', async ()
   const medium = screen.getByRole('combobox', { name: 'Medio de la colección' })
   fireEvent.change(medium, { target: { value: 'purchased_digital' } })
   expect(screen.getByText('No hay adquisiciones en esta vista.')).toBeVisible()
+  openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Deseos de compra' }))
   expect(location.hash).toBe('#/opciones/deseos')
   expect(await repository.readSnapshot()).toEqual(before)
@@ -199,6 +243,7 @@ test('cancelar un ejemplar no descarta la experiencia pendiente del mismo álbum
   expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
     'Experiencia ficticia por conservar',
   )
+  openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
   expect(dialog).toHaveTextContent('Escucha y notas personales')
   expect(dialog).not.toHaveTextContent('Nuevo ejemplar')

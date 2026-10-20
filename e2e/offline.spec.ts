@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
@@ -33,6 +34,7 @@ async function addAlbum(page: Page, title: string) {
 }
 async function restoreFixture(page: Page) {
   const backup = makeBackup()
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio.json',
@@ -48,6 +50,7 @@ async function restoreFixture(page: Page) {
   return backup
 }
 async function exportedBackup(page: Page) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloaded = page.waitForEvent('download')
   await page
@@ -140,6 +143,7 @@ test('manifest, iconos y recursos propios disponibles tras cerrar y abrir sin re
   await expect(
     reopened.getByText(/El navegador indica que no hay conexión/),
   ).toBeVisible()
+  await openLibraryOptions(reopened)
   await reopened.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await expect(
     reopened.getByRole('heading', {
@@ -231,9 +235,11 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await page
     .getByRole('button', { name: 'Confirmar retirada', exact: true })
     .click()
+  await openLibraryOptions(page)
   await expect(
     page.getByRole('button', { name: 'Álbumes retirados (1)', exact: true }),
   ).toBeEnabled()
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Álbumes retirados (1)', exact: true })
     .click()

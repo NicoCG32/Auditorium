@@ -1,3 +1,4 @@
+import { openLibraryFilters } from '../test/library-navigation'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -74,9 +75,11 @@ test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar 
     originalYear: 2001,
   })
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
+  openLibraryFilters()
   fireEvent.change(screen.getByRole('combobox', { name: 'Género' }), {
     target: { value: 'metal' },
   })
+  openLibraryFilters()
   fireEvent.change(screen.getByRole('combobox', { name: 'País de origen' }), {
     target: { value: 'chile' },
   })

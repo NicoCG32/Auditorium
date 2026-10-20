@@ -122,8 +122,22 @@ function LibraryContent({
     useState<RecommendationProvider>('groq')
   const [recommendationKey, setRecommendationKey] = useState('')
   const content = useRef<HTMLDivElement>(null)
+  const utilities = useRef<HTMLDetailsElement>(null)
   const emptyForm = useRef<HTMLFormElement>(null)
   const library = useMemo(() => new MusicLibrary(repository), [repository])
+  useEffect(() => {
+    const dismiss = (event: PointerEvent) => {
+      const menu = utilities.current
+      if (
+        menu?.open &&
+        event.target instanceof Node &&
+        !menu.contains(event.target)
+      )
+        menu.open = false
+    }
+    document.addEventListener('pointerdown', dismiss)
+    return () => document.removeEventListener('pointerdown', dismiss)
+  }, [])
   useEffect(() => {
     if (!account) return
     const stopSync = account.startSync(
@@ -198,9 +212,17 @@ function LibraryContent({
   }, [route])
   function go(next: Route) {
     setNotice('')
+    closeUtilities()
     navigation.request(next)
   }
+  function closeUtilities() {
+    if (utilities.current?.open) {
+      utilities.current.open = false
+      utilities.current.querySelector('summary')?.focus()
+    }
+  }
   function refresh() {
+    closeUtilities()
     navigation.requestAction(() => {
       setNotice('')
       setState({ status: 'loading' })
@@ -261,61 +283,74 @@ function LibraryContent({
           </button>
         ))}
       </nav>
-      <nav className="secondary-navigation" aria-label="Más opciones">
-        <span className="text-xs text-muted">Más opciones</span>
-        {optionRoutes.map((next) => (
-          <button
-            key={routeHash(next)}
-            id={`nav-${routeHash(next).split('/').at(-1)}`}
-            type="button"
-            className="text-button"
-            disabled={!ready || blocked}
-            onClick={(event) => {
-              event.currentTarget.focus()
-              go(next)
-            }}
+      <div className="library-heading">
+        <div
+          className={`library-intro${route.kind === 'library' ? ' library-intro-home' : ''}`}
+        >
+          <p className="library-kicker">El archivo de tu música</p>
+          <h1
+            tabIndex={-1}
+            data-route-heading
+            className="library-title font-display font-black"
           >
-            {routeTitle(next)}
-            {next.kind === 'options' &&
-            next.section === 'removed' &&
-            state.status === 'ready'
-              ? ' (' +
-                state.snapshot.library.userAlbums.filter(
-                  (row) => row.deletedAt !== undefined,
-                ).length +
-                ')'
-              : ''}
-          </button>
-        ))}
-        <button
-          type="button"
-          className="text-button"
-          disabled={!ready || blocked}
-          onClick={refresh}
+            {route.kind === 'add'
+              ? 'Registrar un álbum'
+              : route.kind === 'options' && route.section === 'removed'
+                ? 'Tu archivo retirado'
+                : routeTitle(route)}
+          </h1>
+          {route.kind === 'library' ? (
+            <p className="library-description text-muted">
+              Los álbumes que te acompañan y los que te quedan por descubrir.
+            </p>
+          ) : null}
+        </div>
+        <details
+          ref={utilities}
+          className="library-utilities"
+          onKeyDown={(event) => {
+            if (event.key === 'Escape' && utilities.current?.open) {
+              event.preventDefault()
+              closeUtilities()
+            }
+          }}
         >
-          Actualizar biblioteca
-        </button>
-      </nav>
-      <div className="library-intro mb-8">
-        <p className="mb-3 text-xs font-semibold tracking-[0.2em] text-accent-text uppercase">
-          El archivo de tu música
-        </p>
-        <h1
-          tabIndex={-1}
-          data-route-heading
-          className="library-title font-display font-black"
-        >
-          {route.kind === 'add'
-            ? 'Registrar un álbum'
-            : route.kind === 'options' && route.section === 'removed'
-              ? 'Tu archivo retirado'
-              : routeTitle(route)}
-        </h1>
-        {route.kind === 'library' ? (
-          <p className="mt-4 max-w-lg text-base leading-relaxed text-muted">
-            Los álbumes que te acompañan y los que te quedan por descubrir.
-          </p>
-        ) : null}
+          <summary>Más opciones</summary>
+          <nav className="secondary-navigation" aria-label="Más opciones">
+            {optionRoutes.map((next) => (
+              <button
+                key={routeHash(next)}
+                id={`nav-${routeHash(next).split('/').at(-1)}`}
+                type="button"
+                className="text-button"
+                disabled={!ready || blocked}
+                onClick={(event) => {
+                  event.currentTarget.focus()
+                  go(next)
+                }}
+              >
+                {routeTitle(next)}
+                {next.kind === 'options' &&
+                next.section === 'removed' &&
+                state.status === 'ready'
+                  ? ' (' +
+                    state.snapshot.library.userAlbums.filter(
+                      (row) => row.deletedAt !== undefined,
+                    ).length +
+                    ')'
+                  : ''}
+              </button>
+            ))}
+            <button
+              type="button"
+              className="text-button"
+              disabled={!ready || blocked}
+              onClick={refresh}
+            >
+              Actualizar biblioteca
+            </button>
+          </nav>
+        </details>
       </div>
       {notice ? (
         <p role="status" className="mb-6 text-sm text-accent-text">

@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.9 · 2026-10-19 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas y correo transaccional incorporados en main; refinamientos de experiencia pendientes.
+Versión 1.10 · 2026-10-20 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas, correo transaccional y composición de Biblioteca incorporados en main; refinamientos de formularios pendientes.
 
 ## Objetivo del producto
 
@@ -13,6 +13,8 @@ El MVP completo termina en Fase 4. Autenticación, sincronización, importacione
 [SYNC-01 #25](https://github.com/NicoCG32/Auditorium/issues/25) incorpora cuenta opcional con correo y contraseña y biblioteca privada entre dispositivos mediante Supabase gratuito. [AUTH-02 #77](https://github.com/NicoCG32/Auditorium/issues/77) completa el correo transaccional con Brevo Free y la validación real de registro, confirmación y recuperación. [AUTH-03 #78](https://github.com/NicoCG32/Auditorium/issues/78) trata los intercambios PKCE caducados y los retornos sin verificador con un aviso, limpieza de URL y reintento, conservando sesiones y bibliotecas. Los refinamientos visuales pendientes conservan sus criterios y dependencias. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) y [ADR-011](adr/011-supabase-sincronizacion.md) concretan esta ampliación posterior al MVP. Continúa el trabajo sobre main, sin crear un sprint o fechas comprometidas.
 
 Se adopta una planificación ligera inspirada en Scrum: backlog ordenado, objetivo por sprint, incremento verificable, revisión y retrospectiva. Es una adaptación para el tamaño actual del proyecto. La referencia es la [Guía Scrum](https://scrumguides.org/scrum-guide.html).
+
+[VIS-02 #63](https://github.com/NicoCG32/Auditorium/issues/63) concreta la [Biblioteca](BIBLIOTECA.md): búsqueda y música prioritarias, utilidades y filtros plegables, selecciones extraíbles, tarjetas accesibles y regreso con contexto. LINK-01 #64 conserva el siguiente alcance de enlaces personales; no se adelantan sus cambios ni los de clasificación, valoración o adquisiciones.
 
 Una fase es un hito de producto y puede abarcar varios sprints. Se propone una duración de una semana por sprint; sus fechas y capacidad se fijan cuando comienza. El backlog inicial no representa una promesa de fechas ni autoriza ejecutar todas las fases.
 
@@ -65,7 +67,7 @@ El campo Orden expresa la secuencia inicial; las dependencias prevalecen. Refina
 4. Verificación manual pertinente de errores, estados vacíos, teclado y responsive.
 5. Sin errores críticos conocidos ni regresiones pendientes del alcance.
 6. Documentación de producto y contratos/migraciones actualizados cuando cambien.
-7. PR revisada e integrada antes de cerrar una issue de implementación.
+7. Cambio revisado e integrado en main antes de cerrar una issue de implementación; cuando se utiliza una PR, debe quedar revisada e integrada. El flujo actual trabaja directamente en main.
 8. Sin secretos, datos personales reales, rutas locales ni registros internos en artefactos públicos.
 
 Una tarea documental se valida por coherencia, enlaces y alcance; no requiere ejecutar pruebas inexistentes. Una investigación termina con evidencia y una decisión/propuesta, no con una integración implícita.

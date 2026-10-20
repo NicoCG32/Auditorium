@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -25,6 +26,7 @@ test('guardar y salir con título inválido vuelve al campo sin abandonar el edi
 
 async function seed(page: Page) {
   await page.goto('/')
+  await openLibraryOptions(page)
   await expect(
     page.getByRole('button', { name: 'Respaldos', exact: true }),
   ).toBeEnabled()
@@ -51,6 +53,7 @@ test('Atrás, Escape y un salto de varias entradas conservan o descartan sólo p
   page,
 }) => {
   await seed(page)
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Recomendaciones', exact: true })
     .click()
@@ -95,6 +98,7 @@ test('guardar y salir conserva identidad y datos ajenos, y abre el destino pedid
   await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Guardar y salir' }).click()
   await expect(page).toHaveURL(/#\/coleccion$/)
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()

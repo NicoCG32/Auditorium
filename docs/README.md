@@ -21,6 +21,8 @@ Arquitectura, dominio y datos son vistas complementarias: una relación conceptu
 
 ## Guías por capacidad
 
+La [guía de Biblioteca](BIBLIOTECA.md) explica búsqueda, orden, filtros combinados con selecciones extraíbles, Cuadrícula/Lista, acceso desde portada o título y utilidades plegables.
+
 La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contexto, índices de Calificaciones/Mi colección y protección de cambios implementados en UX-04. La [experiencia propuesta](EXPERIENCIA_USUARIO.md) sigue especificando los refinamientos pendientes de formularios y datos.
 
 | Área                     | Referencias                                                                                                                |

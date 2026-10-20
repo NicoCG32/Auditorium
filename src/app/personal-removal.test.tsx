@@ -1,3 +1,4 @@
+import { openLibraryOptions } from '../test/library-navigation'
 import {
   render,
   screen,
@@ -93,6 +94,7 @@ function removedView() {
   fireEvent.click(screen.getByRole('button', { name: /^Álbumes retirados \(/ }))
 }
 async function finished() {
+  openLibraryOptions()
   await waitFor(() =>
     expect(
       screen.getByRole('button', { name: 'Actualizar biblioteca' }),
@@ -187,6 +189,7 @@ test('cuota conserva confirmación y datos; doble envío retira una vez y bloque
   expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeDisabled()
   await finished()
   expect(remove).toHaveBeenCalledTimes(1)
+  openLibraryOptions()
   expect(
     screen.getByRole('button', { name: 'Álbumes retirados (1)' }),
   ).toBeEnabled()
@@ -225,6 +228,7 @@ test.each(['retirar', 'restaurar'])(
     expect(
       screen.getByRole('button', { name: 'Volver a biblioteca' }),
     ).toBeDisabled()
+    openLibraryOptions()
     expect(
       screen.getByRole('button', { name: 'Actualizar biblioteca' }),
     ).toBeDisabled()

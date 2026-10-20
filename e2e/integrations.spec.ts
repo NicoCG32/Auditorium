@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page, type Route } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -118,6 +119,7 @@ async function ready(page: Page) {
 }
 
 async function restore(page: Page, text: string) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio-integraciones.json',
@@ -153,6 +155,7 @@ async function searchCatalog(page: Page) {
 }
 
 async function exportText(page: Page) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloaded = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
@@ -456,6 +459,7 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
     await fulfill(route, recommendationBody('groq'))
   })
   await seed(page)
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Recomendaciones', exact: true })
     .click()
@@ -490,6 +494,7 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
   await expect(
     page.getByRole('textbox', { name: 'Notas personales', exact: true }),
   ).toHaveValue('  Comentario ficticio.\nSegunda línea.  ')
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Recomendaciones', exact: true })
     .click()
@@ -504,6 +509,7 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
     .getByLabel('Clave API de Groq', { exact: true })
     .fill(fictitiousKey)
   await page.reload()
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Recomendaciones', exact: true })
     .click()
@@ -554,6 +560,7 @@ test('Gemini permite recuperarse de cuota, referencia desconocida y cancelación
     } else await fulfill(route, recommendationBody('gemini'))
   })
   await seed(page)
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Recomendaciones', exact: true })
     .click()
@@ -632,6 +639,7 @@ test('catálogo y recomendaciones son accesibles a360px en temas oscuro y claro'
       })
       .check()
     await appearance.locator('summary').click()
+    await openLibraryOptions(page)
     await page
       .getByRole('button', { name: 'Recomendaciones', exact: true })
       .click()

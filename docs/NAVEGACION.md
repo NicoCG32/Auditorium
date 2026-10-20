@@ -4,19 +4,19 @@ Esta guía describe la implementación de UX-04. Complementa el [diseño del rec
 
 ## Destinos y rutas
 
-El menú principal sigue Biblioteca → Añadir álbum → Calificaciones → Mi colección. Recomendaciones, Respaldos, Álbumes retirados y Deseos de compra se agrupan en navegación secundaria bajo Más opciones.
+El menú principal sigue Biblioteca → Añadir álbum → Calificaciones → Mi colección. Recomendaciones, Respaldos, Álbumes retirados, Deseos de compra y Cuenta y dispositivos se agrupan en navegación secundaria bajo Más opciones. Este menú se despliega a petición y se cierra con Escape, clic fuera o navegación; Escape devuelve el foco a su control de apertura. La [guía de Biblioteca](BIBLIOTECA.md) detalla búsqueda, filtros y tarjetas.
 
-| Fragmento                               | Destino                                                     |
-| --------------------------------------- | ----------------------------------------------------------- |
-| `#/biblioteca`                          | Biblioteca, búsqueda, filtros, orden y vista                |
-| `#/anadir`                              | Registro manual y selección opcional de referencia externa  |
-| `#/album/{userAlbumId}`                 | Ficha de la entrada personal                                |
-| `#/album/{userAlbumId}/editar`          | Editor de metadatos                                         |
-| `#/album/{userAlbumId}/experiencia`     | Entrada a la ficha desde la tarea de valoración             |
-| `#/calificaciones`                      | Índice Por calificar / Calificados, con búsqueda            |
-| `#/coleccion`                           | Índice de adquisiciones y elección de álbum                 |
-| `#/coleccion/nueva?album={userAlbumId}` | Acceso contextual a la ficha y sus operaciones de colección |
-| `#/opciones/{seccion}`                  | `recomendaciones`, `respaldos`, `retirados` o `deseos`      |
+| Fragmento                               | Destino                                                          |
+| --------------------------------------- | ---------------------------------------------------------------- |
+| `#/biblioteca`                          | Biblioteca, búsqueda, filtros, orden y vista                     |
+| `#/anadir`                              | Registro manual y selección opcional de referencia externa       |
+| `#/album/{userAlbumId}`                 | Ficha de la entrada personal                                     |
+| `#/album/{userAlbumId}/editar`          | Editor de metadatos                                              |
+| `#/album/{userAlbumId}/experiencia`     | Entrada a la ficha desde la tarea de valoración                  |
+| `#/calificaciones`                      | Índice Por calificar / Calificados, con búsqueda                 |
+| `#/coleccion`                           | Índice de adquisiciones y elección de álbum                      |
+| `#/coleccion/nueva?album={userAlbumId}` | Acceso contextual a la ficha y sus operaciones de colección      |
+| `#/opciones/{seccion}`                  | `recomendaciones`, `respaldos`, `retirados`, `deseos` o `cuenta` |
 
 Las rutas identifican una entrada de esta biblioteca; no comparten datos con otro navegador. Un álbum inexistente o retirado ofrece volver a Biblioteca; una ruta no reconocida muestra una recuperación equivalente. No se borran registros ni se ejecuta una operación por abrir una URL.
 
@@ -68,6 +68,6 @@ El alta aplica la misma regla: recuerda el identificador confirmado y abre la fi
 
 Calificaciones y Mi colección son índices de navegación sobre los datos existentes. Mi colección distingue **Físico / Digital adquirido** y mantiene sus recuentos separados; los deseos conservan su destino secundario. Consultar o registrar datos sigue utilizando las operaciones actuales en la ficha. No se infiere una compra a partir de un enlace, suscripción o reproducción.
 
-Las tareas siguientes completan composición visual de Biblioteca (VIS-02), enlaces personales (LINK-01), alta/edición y clasificación musical (UX-05), experiencia conjunta y selector opcional Edición de referencia (UX-06) e inventario con su composición final (COL-05). Las URLs de experiencia/colección aún no representan esos editores finales separados. No se altera la independencia entre álbum, edición, calificación y adquisición.
+VIS-02 completa la composición de Biblioteca, con filtros plegables, selecciones visibles y apertura desde portada o título. Las tareas siguientes completan enlaces personales (LINK-01), alta/edición y clasificación musical (UX-05), experiencia conjunta y selector opcional Edición de referencia (UX-06) e inventario con su composición final (COL-05). Las URLs de experiencia/colección aún no representan esos editores finales separados. No se altera la independencia entre álbum, edición, calificación y adquisición.
 
-Esta entrega no cambia DB5/nativa50, las trece tablas ni respaldo3. Se conservan los lectores históricos y las reglas de [respaldo](RESPALDOS_JSON.md), [experiencia](EXPERIENCIA_PERSONAL.md) y [ejemplares](EJEMPLARES.md). La navegación no habilita reproducción, audio persistente, cuentas ni sincronización.
+Los refinamientos de navegación y Biblioteca no cambian los esquemas ni el formato de respaldo. Se conservan los lectores históricos y las reglas de [respaldo](RESPALDOS_JSON.md), [experiencia](EXPERIENCIA_PERSONAL.md) y [ejemplares](EJEMPLARES.md). La cuenta opcional y la sincronización se documentan en su [guía independiente](SINCRONIZACION_SUPABASE.md).

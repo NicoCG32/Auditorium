@@ -1,3 +1,4 @@
+import { openLibraryOptions } from './helpers/library-navigation'
 import { chromium, expect, test, type Page } from '@playwright/test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { basename, join, resolve, sep } from 'node:path'
@@ -39,6 +40,7 @@ async function openLibrary(page: Page) {
   ).toBeVisible()
 }
 async function downloadBackup(page: Page, path: string) {
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -135,6 +137,7 @@ for (const version of [1, 2] as const) {
       try {
         const target = await destination.newPage()
         await target.goto('/')
+        await openLibraryOptions(target)
         await expect(
           target.getByRole('button', { name: 'Respaldos', exact: true }),
         ).toBeEnabled()
@@ -146,6 +149,7 @@ for (const version of [1, 2] as const) {
         const initial = await audit(target)
         expect(initial.rows['metadata']).not.toEqual(migrated.rows['metadata'])
         await destination.setOffline(true)
+        await openLibraryOptions(target)
         await target
           .getByRole('button', { name: 'Respaldos', exact: true })
           .click()
@@ -372,10 +376,12 @@ test('cuota al restaurar revierte también identidad y conserva confirmación pa
   page,
 }) => {
   await page.goto('/')
+  await openLibraryOptions(page)
   await expect(
     page.getByRole('button', { name: 'Respaldos', exact: true }),
   ).toBeEnabled()
   const before = await audit(page)
+  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio.json',

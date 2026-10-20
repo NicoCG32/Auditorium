@@ -74,6 +74,7 @@ El [índice de documentación](docs/README.md) organiza las referencias vigentes
 - [Modelo de dominio](docs/MODELO_DOMINIO.md): entidades, cardinalidades, reglas, estados y ejemplos ficticios.
 - [Modelo de datos](docs/MODELO_DATOS.md): tablas, claves, índices, migraciones, identidad, concurrencia y respaldos.
 - [Navegación y borradores](docs/NAVEGACION.md): rutas, regreso con contexto y guardado o descarte explícito de cambios.
+- [Biblioteca](docs/BIBLIOTECA.md): búsqueda, filtros plegables, selecciones activas, tarjetas y vistas.
 
 ## Plan y seguimiento
 

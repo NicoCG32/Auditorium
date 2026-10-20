@@ -1,3 +1,4 @@
+import { openLibraryOptions } from '../test/library-navigation'
 import { StrictMode } from 'react'
 import {
   act,
@@ -851,6 +852,7 @@ test('StrictMode abre una biblioteca vacía real y la acción actualiza cambios 
   ).toBeVisible()
   expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
   await populated()
+  openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Actualizar biblioteca' }))
   await screen.findByRole('heading', { name: 'Eclipse' })
   expect(albumTitles()).toEqual(['Eclipse', 'Otra órbita'])
