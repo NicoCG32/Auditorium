@@ -115,7 +115,9 @@ test('Biblioteca vacía y poblada conserva jerarquía y legibilidad en ambos tem
         await page.locator('img').evaluateAll(async (images) => {
           await Promise.all(
             images.map((image) =>
-              image instanceof HTMLImageElement ? image.decode() : undefined,
+              image instanceof HTMLImageElement
+                ? image.decode()
+                : Promise.resolve(),
             ),
           )
         })
