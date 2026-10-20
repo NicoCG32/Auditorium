@@ -2,6 +2,11 @@ import { z } from 'zod'
 import { entityIdSchema as id, utcTimestampSchema } from '../shared/scalars'
 import { ownedItemDataSchema, ownedItemSchema } from './owned-items'
 import {
+  checkPersonalLinks,
+  personalAlbumLinkSchema,
+  MAX_PERSONAL_LINKS,
+} from './personal-links'
+import {
   purchaseWishDataSchema,
   purchaseWishSchema,
   wishStatusSchema,
@@ -30,8 +35,20 @@ export const userAlbumSchema = z
     addedAt: utcTimestampSchema,
     updatedAt: utcTimestampSchema,
     deletedAt: utcTimestampSchema.optional(),
+    links: z.array(personalAlbumLinkSchema).max(MAX_PERSONAL_LINKS).optional(),
+    preferredPlaybackLinkId: id.optional(),
   })
   .superRefine((entry, context) => {
+    checkPersonalLinks(entry, context)
+    for (const [index, link] of (entry.links ?? []).entries()) {
+      if (link.createdAt < entry.addedAt || link.updatedAt > entry.updatedAt)
+        context.addIssue({
+          code: 'custom',
+          path: ['links', index],
+          message:
+            'Las fechas del enlace deben pertenecer al periodo de la entrada personal.',
+        })
+    }
     if (entry.updatedAt < entry.addedAt) {
       context.addIssue({
         code: 'custom',

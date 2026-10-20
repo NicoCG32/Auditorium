@@ -42,6 +42,28 @@ begin
   perform set_config('request.jwt.claims', jsonb_build_object('sub', a, 'role', 'authenticated')::text, true);
   result := public.save_library_snapshot(a, 1, gen_random_uuid(), document, 3);
   if (result->>'revision')::integer <> 2 then raise exception 'Compare and swap failed'; end if;
+  operation := gen_random_uuid();
+  result := public.save_library_snapshot(a, 2, operation, document, 4);
+  if (result->>'revision')::integer <> 3 then raise exception 'Version 4 upgrade failed'; end if;
+  if (select schema_version from public.library_snapshots where owner_id = a) <> 4 then raise exception 'Stored version did not upgrade'; end if;
+  result := public.save_library_snapshot(a, 2, operation, document, 4);
+  if (result->>'revision')::integer <> 3 then raise exception 'Version 4 idempotency failed'; end if;
+  begin
+    perform public.save_library_snapshot(a, 3, gen_random_uuid(), document, 3);
+    raise exception 'Schema downgrade was accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 3, gen_random_uuid(), document, 5);
+    raise exception 'Unknown schema was accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 3, gen_random_uuid(), jsonb_set(document, '{library,userAlbums}', '[{"links":[]}]'), 3);
+    raise exception 'Version 3 accepted link fields';
+  exception when invalid_parameter_value then null;
+  end;
+  if (select revision from public.library_snapshots where owner_id = a) <> 3 then raise exception 'Rejected writes changed the revision'; end if;
   execute 'set local role anon';
   begin
     perform count(*) from public.library_snapshots;
@@ -57,4 +79,4 @@ begin
 end;
 $$;
 rollback;
-select 'RLS, account isolation, CAS, idempotency and denied anonymous/direct writes: PASS; fictional data rolled back' as validation;
+select 'RLS, account isolation, CAS, idempotency, schema 3/4, downgrade guard and denied anonymous/direct writes: PASS; fictional data rolled back' as validation;

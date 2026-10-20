@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { checkCoverFields } from '../domain/catalog/metadata'
+import { personalLinksInputSchema } from '../domain/library/personal-links'
 import { ownedItemDataSchema } from '../domain/library/owned-items'
 import { wishTargetSchema } from '../domain/library/purchase-wishes'
 import {
@@ -70,6 +71,7 @@ const artistInput = z.union([
 const albumInputSchema = albumSchema
   .omit({ id: true, catalogScope: true, createdBy: true })
   .extend({
+    personalLinks: personalLinksInputSchema.optional(),
     title: catalogNameInputSchema,
     genres: catalogGenresInputSchema.optional(),
     artists: z

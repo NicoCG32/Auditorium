@@ -40,8 +40,18 @@ export function getLibraryIssues(
   )
   const entries = new Map<string, Library['userAlbums'][number]>()
   const activeAlbums = new Set<string>()
+  const personalLinkIds = new Set<string>()
 
   library.userAlbums.forEach((entry, index) => {
+    for (const [linkIndex, link] of (entry.links ?? []).entries()) {
+      if (personalLinkIds.has(link.id))
+        report(
+          'duplicate_id',
+          ['userAlbums', index, 'links', linkIndex, 'id'],
+          'Identificador de enlace personal duplicado.',
+        )
+      personalLinkIds.add(link.id)
+    }
     if (entries.has(entry.id)) {
       report('duplicate_id', ['userAlbums', index, 'id'], 'Entrada duplicada.')
     } else {

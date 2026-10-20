@@ -5,8 +5,14 @@ import {
 import type { CatalogCandidate } from '../../application/catalog-lookup'
 import type { CatalogReference } from '../../domain/catalog/schemas'
 import { capitalizeCatalogName } from '../../application/catalog-names'
+import {
+  linksDraftFrom,
+  linksInputFrom,
+  type LinksDraft,
+} from './personal-links-values'
 
 export interface AlbumFormValues {
+  personalLinks: LinksDraft
   artist: string
   artistId: string | undefined
   title: string
@@ -22,6 +28,7 @@ export interface AlbumFormValues {
   catalogCountries: string[] | undefined
 }
 export const emptyAlbumForm: AlbumFormValues = {
+  personalLinks: linksDraftFrom(),
   artist: '',
   artistId: undefined,
   title: '',
@@ -77,6 +84,9 @@ export function parseAlbumForm(
   const year = values.originalYear.trim()
   const genres = splitGenres(values.genres)
   const parsed = manualAlbumInputSchema.safeParse({
+    ...(values.personalLinks.links.length
+      ? { personalLinks: linksInputFrom(values.personalLinks) }
+      : {}),
     title: values.title,
     releaseType: values.releaseType,
     artists: values.catalogArtists?.map((name, index) => ({
@@ -120,6 +130,8 @@ export function parseAlbumForm(
       'Usa hasta 20 géneros de 80 caracteres como máximo, separados por comas.',
     coverImage: 'Selecciona un JPG o PNG válido de hasta 2 MiB.',
     country: 'Escribe un país de hasta 100 caracteres.',
+    personalLinks:
+      'Revisa los enlaces: usa URLs HTTPS sin credenciales, evita duplicados y elige como favorito sólo un enlace de escucha.',
   }
   for (const issue of parsed.error.issues) {
     const field =

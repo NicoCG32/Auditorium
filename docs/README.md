@@ -21,6 +21,8 @@ Arquitectura, dominio y datos son vistas complementarias: una relación conceptu
 
 ## Guías por capacidad
 
+La [guía de enlaces personales](ENLACES_PERSONALES.md) documenta el modelo, los formularios, los favoritos, IndexedDB 7 y el respaldo 4.
+
 La [guía de Biblioteca](BIBLIOTECA.md) explica búsqueda, orden, filtros combinados con selecciones extraíbles, Cuadrícula/Lista, acceso desde portada o título y utilidades plegables.
 
 La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contexto, índices de Calificaciones/Mi colección y protección de cambios implementados en UX-04. La [experiencia propuesta](EXPERIENCIA_USUARIO.md) sigue especificando los refinamientos pendientes de formularios y datos.
@@ -36,7 +38,7 @@ La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contex
 | Recuperación y offline   | [Respaldos JSON](RESPALDOS_JSON.md), [PWA](PWA_OFFLINE.md), [migraciones](MIGRACIONES_RECUPERACION.md)                     |
 | Implementación y calidad | [Casos de uso](CASOS_DE_USO.md), [integridad y persistencia](VALIDACION_PERSISTENCIA.md), [diseño base](DISENO_BASE.md)    |
 
-Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4/v5/v6 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 3, con importación compatible de los formatos 1 y 2 estrictos.
+Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4/v5/v6/v7 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 4, con importación compatible de los formatos 1, 2 y 3 estrictos.
 
 La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica búsqueda Wikidata, procedencia persistente, portadas y enlaces, y recomendaciones Groq/Gemini con clave propia en memoria, datos enviados, condiciones de gratuidad y límites de validación.
 

@@ -85,7 +85,7 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(60)
+      expect(migrated.version).toBe(70)
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(rows)
       for (const store of before.stores)
@@ -189,7 +189,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 60)
+        if (name === 'auditorium' && version === 70)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -217,7 +217,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(60)
+    expect(after.version).toBe(70)
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(rows)
   })

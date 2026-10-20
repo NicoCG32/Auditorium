@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.10 · 2026-10-20 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas, correo transaccional y composición de Biblioteca incorporados en main; refinamientos de formularios pendientes.
+Versión 1.11 · 2026-10-20 · Estado: MVP v1.0.0 publicado; integraciones, navegación, cuentas, correo transaccional, composición de Biblioteca y enlaces personales incorporados en main; refinamientos de formularios pendientes.
 
 ## Objetivo del producto
 
@@ -14,7 +14,7 @@ El MVP completo termina en Fase 4. Autenticación, sincronización, importacione
 
 Se adopta una planificación ligera inspirada en Scrum: backlog ordenado, objetivo por sprint, incremento verificable, revisión y retrospectiva. Es una adaptación para el tamaño actual del proyecto. La referencia es la [Guía Scrum](https://scrumguides.org/scrum-guide.html).
 
-[VIS-02 #63](https://github.com/NicoCG32/Auditorium/issues/63) concreta la [Biblioteca](BIBLIOTECA.md): búsqueda y música prioritarias, utilidades y filtros plegables, selecciones extraíbles, tarjetas accesibles y regreso con contexto. LINK-01 #64 conserva el siguiente alcance de enlaces personales; no se adelantan sus cambios ni los de clasificación, valoración o adquisiciones.
+[VIS-02 #63](https://github.com/NicoCG32/Auditorium/issues/63) concreta la [Biblioteca](BIBLIOTECA.md): búsqueda y música prioritarias, utilidades y filtros plegables, selecciones extraíbles, tarjetas accesibles y regreso con contexto. [LINK-01 #64](https://github.com/NicoCG32/Auditorium/issues/64) incorpora los [enlaces personales](ENLACES_PERSONALES.md), favorito opcional y guardado conjunto con respaldo 4/DB7 y sincronización compatible. UX-05 #65 conserva el siguiente alcance de clasificación y formularios; no se adelantan valoración o adquisiciones.
 
 Una fase es un hito de producto y puede abarcar varios sprints. Se propone una duración de una semana por sprint; sus fechas y capacidad se fijan cuando comienza. El backlog inicial no representa una promesa de fechas ni autoriza ejecutar todas las fases.
 

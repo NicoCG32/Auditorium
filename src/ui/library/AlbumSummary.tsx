@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Album, Catalog } from '../../domain/catalog/schemas'
 import type { LibraryAlbum } from '../../application/library-query'
 import { releaseTypeLabels } from './labels'
@@ -19,6 +19,7 @@ import type { PurchaseWish } from '../../domain/library/purchase-wishes'
 import { PurchaseWishesPanel } from './PurchaseWishesPanel'
 import { RemoveAlbumPanel } from './RemoveAlbumPanel'
 import { AlbumReferenceLinks } from '../catalog/AlbumReferenceLinks'
+import { PersonalAlbumLinks } from './PersonalAlbumLinks'
 import { AlbumEditPanel } from './AlbumEditPanel'
 import { useNavigation } from '../navigation/navigation-context'
 
@@ -68,6 +69,7 @@ export function AlbumSummary({
   backLabel: string
 }) {
   const navigation = useNavigation()
+  const [focusLinks, setFocusLinks] = useState(false)
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
     heading.current?.focus()
@@ -89,6 +91,7 @@ export function AlbumSummary({
         onBusyChange={onBusyChange}
         onComplete={onEditComplete}
         onCancel={onEditCancel}
+        focusLinks={focusLinks}
       />
     )
   return (
@@ -109,6 +112,7 @@ export function AlbumSummary({
           disabled={busy}
           onClick={(event) => {
             event.currentTarget.focus()
+            setFocusLinks(false)
             onEdit()
           }}
         >
@@ -193,6 +197,14 @@ export function AlbumSummary({
             />
           </div>
         </div>
+        <PersonalAlbumLinks
+          entry={personalEntry}
+          onEdit={() => {
+            setFocusLinks(true)
+            onEdit()
+          }}
+          disabled={busy}
+        />
         <AlbumReferenceLinks album={album} artist={entry.artist} />
         <AlbumTrackLists
           albumId={album.id}

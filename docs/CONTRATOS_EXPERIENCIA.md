@@ -1,6 +1,8 @@
 # Contratos propuestos para experiencia y acceso musical
 
-Estado: **diseño lógico propuesto en UX-03**, 2026-10-18. No son schemas ejecutables ni una migración aplicada. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
+Actualización LINK-01: enlaces personales y favorito ya están implementados con almacenamiento contenido en UserAlbum, DB7 y respaldo4; la [guía vigente](ENLACES_PERSONALES.md) concreta sus contratos. Los demás refinamientos de este documento siguen siendo propuestas.
+
+Estado original: **diseño lógico propuesto en UX-03**, 2026-10-18. No son schemas ejecutables ni una migración aplicada. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
 
 ## 1. Responsabilidades y relaciones
 
@@ -241,4 +243,4 @@ Aplicar esta matriz a los [cinco escenarios de diseño](EXPERIENCIA_USUARIO.md#6
 
 Añadir casos de EP Demo inédito, full-length En vivo, Split con varios créditos y Deluxe digital sin ejemplares. Verificar la transformación de cada valor antiguo de `releaseType`, corrección posterior sin pérdida de relaciones y dos copias de una misma edición. Ningún caso debe exigir calificación, escucha o propiedad para guardar la clasificación. Comprobar nota única con/sin referencia, selección de edición no poseída, rechazo de edición ajena, retirada explícita de referencia, conservación al recalificar, eliminación de edición referenciada y migración/restauración de notas anteriores sin selección inventada.
 
-La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01/UX-05/AUDIO-02 deben aportar la evidencia real antes de declararse implementadas. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.
+La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01 aporta su evidencia en la guía de enlaces; UX-05/AUDIO-02 deben aportar la propia antes de declararse implementadas. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.

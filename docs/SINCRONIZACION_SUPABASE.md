@@ -56,7 +56,7 @@ Esta primera implementación transmite el agregado completo, con un máximo de 2
 
 ## Transacciones, reintentos y conflictos
 
-IndexedDB v6 añade sólo `syncCheckpoint`; conserva las trece tablas musicales e identidades de v1–v5. El formato de respaldo sigue en versión 3. La biblioteca local durable más su checkpoint constituyen la cola de envío: una caída de red no elimina cambios guardados. Antes de enviar se conserva un `operationId`, la revisión esperada y el documento. El acuse remoto y los datos descargados se aplican en una transacción local con comprobación de la lectura previa.
+IndexedDB v6 añade sólo `syncCheckpoint`; conserva las trece tablas musicales e identidades de v1–v5. LINK-01 usa DB7/nativa70 y respaldo4 para enlaces personales. El servidor admite 3 y 4 y actualiza la versión de la fila al guardar 4; rechaza volver a 3 para evitar pérdida de campos. La migración conserva RLS, revisión e idempotencia; [contrato de enlaces](ENLACES_PERSONALES.md). La biblioteca local durable más su checkpoint constituyen la cola de envío: una caída de red no elimina cambios guardados. Antes de enviar se conserva un `operationId`, la revisión esperada y el documento. El acuse remoto y los datos descargados se aplican en una transacción local con comprobación de la lectura previa.
 
 La RPC deriva el propietario de `auth.uid()` y comprueba también el `account_id` de la petición. Así, una petición iniciada antes de cambiar de cuenta no puede escribir en la cuenta siguiente. Postgres serializa las escrituras y exige la revisión esperada. Repetir la última operación devuelve el mismo resultado; una revisión desactualizada produce conflicto en lugar de sobrescribir datos.
 

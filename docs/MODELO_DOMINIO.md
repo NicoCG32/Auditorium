@@ -1,8 +1,10 @@
 # Modelo de dominio
 
+LINK-01 implementa los [enlaces personales](ENLACES_PERSONALES.md): valores identificados contenidos en `UserAlbum.links` y un único favorito opcional de escucha. Son independientes de catálogo, nota y adquisición; la guía enlazada incluye su diagrama e invariantes.
+
 Este documento describe los contratos de Auditorium en el incremento en revisión, basados en el MVP **v1.0.0** y ampliados por CAT-01 y UX-01. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni modifican la release publicada.
 
-UX-03 define por separado los [contratos propuestos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). Esos conceptos todavía no forman parte de los schemas ejecutables que describe este documento. En particular, el `releaseType` vigente aún mezcla tipo principal y categorías; la propuesta los separa y trata Inédito como estado de publicación, conservando ediciones en `Release` y ejemplares en `OwnedItem`.
+UX-03 define por separado los [contratos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). LINK-01 concreta enlaces y favorito; clasificación y adjuntos conservan su diseño propuesto. El `releaseType` vigente aún mezcla tipo principal y categorías; UX-05 los separará y tratará Inédito como estado de publicación, conservando ediciones en `Release` y ejemplares en `OwnedItem`.
 
 El refinamiento propuesto conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Mi colección agrupará ejemplares físicos y compras digitales con filtros diferenciados; una edición puede conocerse sin poseerse. La referencia y el cambio de navegación aún no están implementados.
 
@@ -383,7 +385,7 @@ IndexedDB no declara claves foráneas ni borrados en cascada. Los campos `albumI
 
 `StoredUserAlbum.activeAlbumKey` es un dato derivado de persistencia: usuario/álbum para una entrada activa y `null` para una retirada. Su índice único refuerza la unicidad de entradas activas. No forma parte de `UserAlbum`, del modelo musical ni del respaldo de dominio. La definición física está en [database.ts](../src/infrastructure/db/database.ts) y la traducción en [records.ts](../src/infrastructure/db/records.ts); la evolución del almacenamiento se explica en [persistencia local](PERSISTENCIA_LOCAL.md).
 
-El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 3` y `exportedAt`. Su versión es independiente de la versión 5 de la base local. Los archivos v1/v2 estrictos se aceptan mediante normalización a v3, conservando identidad y datos sin añadir metadatos. Sus contratos históricos rechazan país de artista, géneros y portada local; v1 tampoco admite referencia externa. El formato actual incluye portadas locales, entradas retiradas y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
+El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 4` y `exportedAt`. Su versión es independiente de la versión 7 de la base local. Los archivos v1/v2/v3 estrictos se aceptan mediante normalización a v4, conservando identidad y datos sin añadir metadatos. Sus contratos históricos rechazan país de artista, géneros y portada local; v1 tampoco admite referencia externa. El formato actual incluye portadas locales, entradas retiradas, enlaces personales, favorito y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
 
 ## Ejemplo de lectura del modelo
 

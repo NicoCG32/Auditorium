@@ -7,6 +7,8 @@ import {
   type Album,
 } from '../domain/catalog/schemas'
 import { checkCoverFields } from '../domain/catalog/metadata'
+import { personalLinksInputSchema } from '../domain/library/personal-links'
+import { personalLinksExpectedSchema } from './personal-links'
 import { entityIdSchema } from '../domain/shared/scalars'
 import type { LocalSnapshot } from '../domain/repositories/local-repository'
 import {
@@ -33,6 +35,8 @@ const editArtistSchema = artistSchema
 export const updateAlbumInputSchema = albumSchema
   .omit({ id: true, catalogScope: true, createdBy: true })
   .extend({
+    personalLinks: personalLinksInputSchema.optional(),
+    expectedLinks: personalLinksExpectedSchema.optional(),
     title: catalogNameInputSchema,
     genres: catalogGenresInputSchema.optional(),
     albumId: entityIdSchema,
@@ -146,7 +150,14 @@ export function editedAlbumFields(
 ): Album {
   const fields = Object.fromEntries(
     Object.entries(request).filter(
-      ([key]) => !['albumId', 'expected', 'artists'].includes(key),
+      ([key]) =>
+        ![
+          'albumId',
+          'expected',
+          'artists',
+          'personalLinks',
+          'expectedLinks',
+        ].includes(key),
     ),
   )
   const updated = albumSchema.parse({

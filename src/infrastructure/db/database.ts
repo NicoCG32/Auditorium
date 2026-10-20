@@ -18,7 +18,7 @@ import type { IdentityRecord, StoredUserAlbum } from './records'
 import type { SyncCheckpoint } from '../../domain/sync'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 6
+export const DATABASE_VERSION = 7
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -50,6 +50,7 @@ export const SCHEMA_V3 = {
 export const SCHEMA_V4 = { ...SCHEMA_V3 } as const
 export const SCHEMA_V5 = { ...SCHEMA_V4 } as const
 export const SCHEMA_V6 = { ...SCHEMA_V5, syncCheckpoint: 'key' } as const
+export const SCHEMA_V7 = { ...SCHEMA_V6 } as const
 
 async function validateBeforeSyncUpgrade(transaction: Transaction) {
   const rows = new Map<string, unknown[]>()
@@ -126,6 +127,7 @@ export class AuditoriumDatabase extends Dexie {
     this.version(4).stores(SCHEMA_V4)
     this.version(5).stores(SCHEMA_V5)
     this.version(6).stores(SCHEMA_V6).upgrade(validateBeforeSyncUpgrade)
+    this.version(7).stores(SCHEMA_V7).upgrade(validateBeforeSyncUpgrade)
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.artists = this.table<Artist, string>('artists')
     this.albums = this.table<Album, string>('albums')

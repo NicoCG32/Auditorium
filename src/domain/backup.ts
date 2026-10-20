@@ -2,14 +2,14 @@ import { z } from 'zod'
 import { catalogSchema } from './catalog/catalog'
 import { albumSchema, artistSchema, catalogDataSchema } from './catalog/schemas'
 import { localIdentitySchema } from './identity'
-import { libraryDataSchema } from './library/schemas'
+import { libraryDataSchema, userAlbumSchema } from './library/schemas'
 import { getLibraryIssues } from './library/integrity'
 import { ownedItemSchema } from './library/owned-items'
 import { purchaseWishSchema } from './library/purchase-wishes'
 import { utcTimestampSchema } from './shared/scalars'
 import type { LocalSnapshot } from './repositories/local-repository'
 
-export const BACKUP_SCHEMA_VERSION = 3
+export const BACKUP_SCHEMA_VERSION = 4
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
 
 export const localSnapshotSchema = z
@@ -44,8 +44,32 @@ export const backupSchema = z.strictObject({
 })
 
 const legacyAlbumSchema = albumSchema.omit({ genres: true, coverImage: true })
+const legacyUserAlbumSchema = z.strictObject({
+  id: userAlbumSchema.shape.id,
+  userId: userAlbumSchema.shape.userId,
+  albumId: userAlbumSchema.shape.albumId,
+  listeningStatus: userAlbumSchema.shape.listeningStatus,
+  personalNotes: userAlbumSchema.shape.personalNotes,
+  addedAt: userAlbumSchema.shape.addedAt,
+  updatedAt: userAlbumSchema.shape.updatedAt,
+  deletedAt: userAlbumSchema.shape.deletedAt,
+})
+const legacyLibrarySchema = localSnapshotSchema.shape.library.extend({
+  userAlbums: z.array(legacyUserAlbumSchema),
+})
+export const legacySnapshotV3Schema = z.strictObject({
+  ...localSnapshotSchema.shape,
+  library: legacyLibrarySchema,
+})
+const legacyBackupV3Schema = z.strictObject({
+  format: z.literal('auditorium-backup'),
+  schemaVersion: z.literal(3),
+  exportedAt: utcTimestampSchema,
+  data: legacySnapshotV3Schema,
+})
 const legacyData = z.strictObject({
   ...localSnapshotSchema.shape,
+  library: legacyLibrarySchema,
   catalog: catalogDataSchema.extend({
     artists: z.array(artistSchema.omit({ country: true })),
     albums: z.array(legacyAlbumSchema),
@@ -101,7 +125,8 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
     'schemaVersion' in input &&
     input.schemaVersion !== BACKUP_SCHEMA_VERSION &&
     input.schemaVersion !== 1 &&
-    input.schemaVersion !== 2
+    input.schemaVersion !== 2 &&
+    input.schemaVersion !== 3
   )
     throw new BackupError(
       'unsupported_version',
@@ -112,10 +137,16 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
     input &&
     typeof input === 'object' &&
     'schemaVersion' in input &&
-    (input.schemaVersion === 1 || input.schemaVersion === 2)
+    (input.schemaVersion === 1 ||
+      input.schemaVersion === 2 ||
+      input.schemaVersion === 3)
   ) {
     const legacy = (
-      input.schemaVersion === 1 ? legacyBackupV1Schema : legacyBackupV2Schema
+      input.schemaVersion === 1
+        ? legacyBackupV1Schema
+        : input.schemaVersion === 2
+          ? legacyBackupV2Schema
+          : legacyBackupV3Schema
     ).safeParse(input)
     if (!legacy.success)
       throw new BackupError(

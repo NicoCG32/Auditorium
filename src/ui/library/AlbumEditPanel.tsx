@@ -19,6 +19,10 @@ import { CoverFields } from './CoverFields'
 import { splitGenres } from './album-form-values'
 import { releaseTypeLabels } from './labels'
 import { useDraftGuard, useDraftState } from '../navigation/draft-context'
+import { personalLinksFrom } from '../../application/personal-links'
+import type { UserAlbum } from '../../domain/library/schemas'
+import { PersonalLinksEditor } from './PersonalLinksEditor'
+import { linksDraftFrom, linksInputFrom } from './personal-links-values'
 
 interface ArtistDraft {
   key: string
@@ -28,10 +32,11 @@ interface ArtistDraft {
   role: AlbumArtist['role']
   creditedAs: string
 }
-function draftFrom(expected: AlbumEditExpected) {
+function draftFrom(expected: AlbumEditExpected, entry?: UserAlbum) {
   const { album, credits, artists } = expected
   const byId = new Map(artists.map((artist) => [artist.id, artist]))
   return {
+    personalLinks: linksDraftFrom(entry),
     title: album.title,
     releaseType: album.releaseType,
     originalYear: album.originalYear?.toString() ?? '',
@@ -58,6 +63,7 @@ interface Props {
   onBusyChange: (busy: boolean) => void
   onComplete: () => void
   onCancel: () => void
+  focusLinks?: boolean
 }
 
 export function AlbumEditPanel({
@@ -68,13 +74,25 @@ export function AlbumEditPanel({
   onBusyChange,
   onComplete,
   onCancel,
+  focusLinks = false,
 }: Props) {
   const draftId = `edit:${albumId}`
+  const personalEntry = snapshot.library.userAlbums.find(
+    (row) =>
+      row.albumId === albumId &&
+      row.userId === snapshot.identity.userId &&
+      !row.deletedAt,
+  )!
   const [expected, setExpected] = useDraftState(draftId, 'expected', () =>
     buildAlbumEditExpected(snapshot, albumId),
   )
   const [draft, setDraft] = useDraftState(draftId, 'values', () =>
-    draftFrom(expected),
+    draftFrom(expected, personalEntry),
+  )
+  const [expectedLinks, setExpectedLinks] = useDraftState(
+    draftId,
+    'expected-links',
+    () => personalLinksFrom(personalEntry),
   )
   const [busy, setBusy] = useState(false)
   const [coverBusy, setCoverBusy] = useState(false)
@@ -100,7 +118,15 @@ export function AlbumEditPanel({
   useDraftGuard({
     id: draftId,
     label: 'Datos del álbum',
-    dirty: comparable(draft) !== comparable(draftFrom(expected)),
+    dirty:
+      comparable(draft) !==
+      comparable(
+        draftFrom(expected, {
+          ...personalEntry,
+          links: expectedLinks.links,
+          preferredPlaybackLinkId: expectedLinks.preferredPlaybackLinkId,
+        }),
+      ),
     busy: busy || coverBusy,
     pendingRead,
     ...(pendingRead || conflict
@@ -109,8 +135,14 @@ export function AlbumEditPanel({
     form,
   })
   useEffect(() => {
-    heading.current?.focus()
-  }, [])
+    if (focusLinks)
+      form.current
+        ?.querySelector<HTMLElement>(
+          '.personal-links-editor input[type="url"], .personal-links-editor button',
+        )
+        ?.focus()
+    else heading.current?.focus()
+  }, [focusLinks])
   useEffect(() => {
     if (!busy && (pendingRead || conflict)) readButton.current?.focus()
   }, [busy, pendingRead, conflict])
@@ -143,8 +175,12 @@ export function AlbumEditPanel({
       const current = await onCommitted()
       if (replace) {
         const nextExpected = buildAlbumEditExpected(current, albumId)
+        const nextEntry = current.library.userAlbums.find(
+          (row) => row.id === personalEntry.id,
+        )!
         setExpected(nextExpected)
-        setDraft(draftFrom(nextExpected))
+        setExpectedLinks(personalLinksFrom(nextEntry))
+        setDraft(draftFrom(nextExpected, nextEntry))
         setConflict(false)
         setFailure('')
       } else onComplete()
@@ -171,6 +207,8 @@ export function AlbumEditPanel({
       ? (expected.album.genres ?? [])
       : splitGenres(draft.genres)
     const parsed = updateAlbumInputSchema.safeParse({
+      personalLinks: linksInputFrom(draft.personalLinks),
+      expectedLinks,
       albumId,
       expected,
       title: draft.title,
@@ -207,9 +245,11 @@ export function AlbumEditPanel({
       )
       const path = parsed.error.issues[0]?.path ?? []
       const fieldName =
-        path[0] === 'artists'
-          ? `artist-${String(path[1] ?? 0)}`
-          : String(path[0] ?? 'title')
+        path[0] === 'personalLinks'
+          ? `link-url-${String(path[2] ?? 0)}`
+          : path[0] === 'artists'
+            ? `artist-${String(path[1] ?? 0)}`
+            : String(path[0] ?? 'title')
       form.current?.querySelector<HTMLElement>(`[name="${fieldName}"]`)?.focus()
       return
     }
@@ -222,11 +262,11 @@ export function AlbumEditPanel({
     } catch (error) {
       if (
         error instanceof MusicUseCaseError &&
-        error.code === 'outdated_album'
+        (error.code === 'outdated_album' || error.code === 'outdated_links')
       ) {
         setConflict(true)
         setFailure(
-          'Los datos del álbum o de sus artistas cambiaron desde que abriste el editor. Tu borrador se conserva. Cargar los datos guardados reemplazará este formulario.',
+          'Los datos del álbum, sus artistas o sus enlaces cambiaron desde que abriste el editor. Tu borrador se conserva. Cargar los datos guardados reemplazará este formulario.',
         )
       } else
         setFailure(
@@ -435,6 +475,10 @@ export function AlbumEditPanel({
             onChange={edit}
             onBusyChange={setCoverBusy}
             disabled={disabled}
+          />
+          <PersonalLinksEditor
+            value={draft.personalLinks}
+            onChange={(personalLinks) => edit({ personalLinks })}
           />
           <label>
             <span className="field-label">Descripción del álbum</span>

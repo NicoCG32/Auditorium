@@ -379,7 +379,7 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   ).toHaveCount(0)
   const text = await exportText(page)
   const backup = parseBackupText(text)
-  expect(backup.schemaVersion).toBe(3)
+  expect(backup.schemaVersion).toBe(4)
   expect(
     backup.data.catalog.artists.map((artist) => artist.name).sort(),
   ).toEqual(['Conjunto Ficticio A', 'Conjunto Ficticio B'])

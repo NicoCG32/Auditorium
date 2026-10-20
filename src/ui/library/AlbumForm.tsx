@@ -4,6 +4,10 @@ import {
   type AlbumCandidate,
 } from '../../application/album-candidates'
 import type { MusicLibrary } from '../../application/music-library'
+import { MusicUseCaseError } from '../../application/music-library'
+import { personalLinksFrom } from '../../application/personal-links'
+import { PersonalLinksEditor } from './PersonalLinksEditor'
+import { linksInputFrom } from './personal-links-values'
 import type { CatalogCandidate } from '../../application/catalog-lookup'
 import { catalogNameKey } from '../../application/catalog-names'
 import { releaseTypeSchema } from '../../domain/catalog/schemas'
@@ -41,6 +45,7 @@ export function AlbumForm({
   )
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [failure, setFailure] = useState('')
+  const [linksConflict, setLinksConflict] = useState(false)
   const [review, setReview] = useDraftState<AlbumCandidate[]>(
     'new-album',
     'review',
@@ -110,6 +115,7 @@ export function AlbumForm({
     setErrors({})
     setFailure('')
     setReview([])
+    setLinksConflict(false)
   }
   function selectCatalogCandidate(candidate: CatalogCandidate) {
     setValues((previous) =>
@@ -142,7 +148,7 @@ export function AlbumForm({
       setErrors(parsed.errors)
       const first = Object.keys(parsed.errors)[0]
       const field = formRef.current?.querySelector<HTMLElement>(
-        `[name="${first}"]`,
+        first === 'personalLinks' ? '[name^="link-url-"]' : `[name="${first}"]`,
       )
       const details = field?.closest<HTMLDetailsElement>('details')
       if (details) details.open = true
@@ -180,13 +186,30 @@ export function AlbumForm({
     setBusy(true)
     setFailure('')
     try {
-      const entry = await library.addAlbumToLibrary(candidate.album.id)
+      const parsed = parseAlbumForm(values)
+      if (!parsed.success) {
+        setErrors(parsed.errors)
+        return
+      }
+      const previous = snapshot.library.userAlbums.find(
+        (row) => row.id === candidate.activeEntryId,
+      )
+      const entry = await library.addAlbumToLibrary(
+        candidate.album.id,
+        linksInputFrom(values.personalLinks),
+        previous ? personalLinksFrom(previous) : undefined,
+      )
       const committed = { id: entry.id, existing: true }
       setPending(committed)
       await synchronize(committed)
-    } catch {
+    } catch (error) {
+      setLinksConflict(
+        error instanceof MusicUseCaseError && error.code === 'outdated_links',
+      )
       setFailure(
-        'No se pudo abrir o añadir el álbum seleccionado. Vuelve a intentar.',
+        error instanceof MusicUseCaseError && error.code === 'outdated_links'
+          ? error.message
+          : 'No se pudo abrir o añadir el álbum seleccionado. Tu formulario se conserva; vuelve a intentar.',
       )
     } finally {
       locked.current = false
@@ -196,6 +219,26 @@ export function AlbumForm({
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     void save()
+  }
+  async function refreshCandidates() {
+    if (locked.current) return
+    locked.current = true
+    setBusy(true)
+    try {
+      await onCommitted()
+      setReview([])
+      setFailure(
+        'Datos actualizados. Tu formulario se conserva; guarda para revisar de nuevo las coincidencias.',
+      )
+      setLinksConflict(false)
+    } catch {
+      setFailure(
+        'No pudimos actualizar las coincidencias. Tu formulario se conserva; vuelve a intentar.',
+      )
+    } finally {
+      locked.current = false
+      setBusy(false)
+    }
   }
   async function synchronize(committed: { id: string; existing: boolean }) {
     try {
@@ -454,6 +497,11 @@ export function AlbumForm({
             </label>
           )}
           {errorFor('country')}
+          <PersonalLinksEditor
+            value={values.personalLinks}
+            onChange={(personalLinks) => edit({ personalLinks })}
+            {...(errors.personalLinks ? { error: errors.personalLinks } : {})}
+          />
           <CoverFields
             url={values.coverUrl}
             {...(values.coverImage ? { image: values.coverImage } : {})}
@@ -519,6 +567,9 @@ export function AlbumForm({
               <p className="mt-2 text-sm text-muted" role="status">
                 Comprueba si es el mismo álbum. Ningún registro se ha creado ni
                 fusionado.
+                {values.personalLinks.links.length
+                  ? ' Al elegir una coincidencia se añadirán tus enlaces sin borrar los anteriores; el favorito elegido aquí sustituirá la preferencia anterior.'
+                  : ''}
                 {values.catalogReference
                   ? ' Abrir uno existente conservará sus datos y su referencia actual.'
                   : ''}
@@ -539,9 +590,11 @@ export function AlbumForm({
                         void chooseCandidate(candidate)
                       }}
                     >
-                      {candidate.activeEntryId
-                        ? 'Abrir álbum existente'
-                        : 'Añadir álbum del catálogo'}
+                      {values.personalLinks.links.length
+                        ? 'Usar este álbum y añadir mis enlaces'
+                        : candidate.activeEntryId
+                          ? 'Abrir álbum existente'
+                          : 'Añadir álbum del catálogo'}
                     </button>
                   </li>
                 ))}
@@ -561,6 +614,15 @@ export function AlbumForm({
             <p role="alert" className="field-error">
               {failure}
             </p>
+          ) : null}
+          {linksConflict ? (
+            <button
+              type="button"
+              className="action-button"
+              onClick={() => void refreshCandidates()}
+            >
+              Actualizar coincidencias conservando formulario
+            </button>
           ) : null}
           {Object.keys(errors).length > 0 ? (
             <p role="alert" className="field-error">

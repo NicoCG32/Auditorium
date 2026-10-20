@@ -87,6 +87,63 @@ function fillAlbum(artist = 'Umbral Ficticio', title = 'Eclipse Nuevo') {
   })
 }
 
+test('un conflicto al reutilizar un álbum permite actualizar coincidencias conservando los enlaces preparados', async () => {
+  const repository = await populated()
+  const before = await repository.readSnapshot()
+  await openAlbumForm(repository)
+  fillAlbum('UMBRAL ELECTRICO', 'ECLIPSE')
+  fireEvent.click(screen.getByRole('button', { name: 'Añadir enlace' }))
+  fireEvent.change(screen.getByRole('textbox', { name: 'URL del enlace 1' }), {
+    target: { value: 'https://servicio.example/album/nuevo' },
+  })
+  await repository.mutate((snapshot) => {
+    const entry = snapshot.library.userAlbums.find(
+      (row) => row.id === libraryIds.entry,
+    )!
+    entry.links = [
+      {
+        id: '00000000-0000-4000-8000-000000032222',
+        purpose: 'playback',
+        url: 'https://servicio.example/album/anterior',
+        createdAt: entry.addedAt,
+        updatedAt: entry.updatedAt,
+      },
+    ]
+    return { snapshot, result: undefined }
+  })
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  fireEvent.click(
+    await screen.findByRole('button', {
+      name: 'Usar este álbum y añadir mis enlaces',
+    }),
+  )
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'enlaces del álbum seleccionado cambiaron',
+  )
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: 'Actualizar coincidencias conservando formulario',
+    }),
+  )
+  await screen.findByText(/Datos actualizados. Tu formulario se conserva/)
+  expect(screen.getByRole('textbox', { name: 'URL del enlace 1' })).toHaveValue(
+    'https://servicio.example/album/nuevo',
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
+  fireEvent.click(
+    await screen.findByRole('button', {
+      name: 'Usar este álbum y añadir mis enlaces',
+    }),
+  )
+  await screen.findByRole('button', { name: 'Volver a biblioteca' })
+  const after = await repository.readSnapshot()
+  expect(after.catalog).toEqual(before.catalog)
+  expect(
+    after.library.userAlbums.find((row) => row.id === libraryIds.entry)!.links,
+  ).toHaveLength(2)
+  expect(after.library.albumRatings).toEqual(before.library.albumRatings)
+})
+
 async function openRating(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
   const button = await screen.findByRole('button', { name: 'Eclipse' })

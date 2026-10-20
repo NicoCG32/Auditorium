@@ -21,6 +21,16 @@ import {
   type UserAlbum,
 } from '../domain/library/schemas'
 import { scoreToUnits } from '../domain/library/scores'
+import {
+  personalLinksInputSchema,
+  normalizedLinkUrl,
+} from '../domain/library/personal-links'
+import {
+  personalLinksExpectedSchema,
+  personalLinksFrom,
+  samePersonalLinks,
+  updatedPersonalLinks,
+} from './personal-links'
 import type {
   LocalSnapshot,
   TransactionalLocalRepository,
@@ -58,12 +68,14 @@ export class MusicUseCaseError extends Error {
     | 'wrong_album'
     | 'outdated_experience'
     | 'outdated_album'
+    | 'outdated_links'
   constructor(
     code:
       | 'missing_reference'
       | 'wrong_album'
       | 'outdated_experience'
-      | 'outdated_album',
+      | 'outdated_album'
+      | 'outdated_links',
     message: string,
   ) {
     super(message)
@@ -161,7 +173,12 @@ export class MusicLibrary {
       snapshot.catalog.artists.push(artist)
       return artist
     })
-    const { artists: requestedArtists, addToLibrary, ...albumFields } = request
+    const {
+      artists: requestedArtists,
+      addToLibrary,
+      personalLinks,
+      ...albumFields
+    } = request
     const album = albumSchema.parse({
       ...albumFields,
       id: this.createId(),
@@ -185,7 +202,18 @@ export class MusicLibrary {
     })
     snapshot.catalog.albumArtists.push(...credits)
     const result: CreateAlbumResult = { album, artists, credits }
-    if (addToLibrary) result.userAlbum = this.addEntry(snapshot, album.id)
+    if (addToLibrary) {
+      const entry = this.addEntry(snapshot, album.id)
+      result.userAlbum = personalLinks
+        ? updatedPersonalLinks(entry, personalLinks, entry.updatedAt)
+        : entry
+      snapshot.library.userAlbums[
+        snapshot.library.userAlbums.findIndex((row) => row.id === entry.id)
+      ] = result.userAlbum
+    } else if (personalLinks?.links.length)
+      throw new Error(
+        'Los enlaces personales requieren añadir el álbum a la biblioteca.',
+      )
     return result
   }
 
@@ -212,6 +240,30 @@ export class MusicLibrary {
           'outdated_album',
           'Los datos del álbum cambiaron después de abrir el formulario. Vuelve a cargarlo antes de guardar.',
         )
+      if (request.personalLinks) {
+        const entry = snapshot.library.userAlbums.find(
+          (row) =>
+            row.albumId === album.id &&
+            row.userId === snapshot.identity.userId &&
+            !row.deletedAt,
+        )!
+        if (
+          !request.expectedLinks ||
+          !samePersonalLinks(personalLinksFrom(entry), request.expectedLinks)
+        )
+          throw new MusicUseCaseError(
+            'outdated_links',
+            'Los enlaces cambiaron después de abrir el formulario. Tu borrador se conserva; vuelve a cargar los datos guardados.',
+          )
+        const updatedEntry = updatedPersonalLinks(
+          entry,
+          request.personalLinks,
+          this.now().toISOString(),
+        )
+        snapshot.library.userAlbums[
+          snapshot.library.userAlbums.findIndex((row) => row.id === entry.id)
+        ] = updatedEntry
+      }
       const previousArtists = new Map(
         current.artists.map((artist) => [artist.id, artist]),
       )
@@ -316,12 +368,76 @@ export class MusicLibrary {
     })
   }
 
-  async addAlbumToLibrary(albumId: unknown): Promise<UserAlbum> {
+  async addAlbumToLibrary(
+    albumId: unknown,
+    linksInput?: unknown,
+    expectedInput?: unknown,
+  ): Promise<UserAlbum> {
     const id = entityIdSchema.parse(albumId)
-    return this.repository.mutate((snapshot) => ({
-      snapshot,
-      result: this.addEntry(snapshot, id),
-    }))
+    const input =
+      linksInput === undefined
+        ? undefined
+        : personalLinksInputSchema.parse(linksInput)
+    const expected =
+      expectedInput === undefined
+        ? undefined
+        : personalLinksExpectedSchema.parse(expectedInput)
+    return this.repository.mutate((snapshot) => {
+      const previous = snapshot.library.userAlbums.find(
+        (row) =>
+          row.albumId === id &&
+          row.userId === snapshot.identity.userId &&
+          !row.deletedAt,
+      )
+      if (
+        input?.links.length &&
+        previous &&
+        (!expected || !samePersonalLinks(personalLinksFrom(previous), expected))
+      )
+        throw new MusicUseCaseError(
+          'outdated_links',
+          'Los enlaces del álbum seleccionado cambiaron. Conservamos tu formulario; vuelve a revisar la coincidencia.',
+        )
+      const entry = this.addEntry(snapshot, id)
+      if (!input?.links.length) return { snapshot, result: entry }
+      const links = [...(entry.links ?? [])]
+      const mappedIds = new Map<string, string>()
+      for (const link of input.links) {
+        const duplicate = links.find(
+          (row) =>
+            row.purpose === link.purpose &&
+            normalizedLinkUrl(row.url) === link.url,
+        )
+        if (duplicate) mappedIds.set(link.id, duplicate.id)
+        else
+          links.push({
+            ...link,
+            createdAt: entry.updatedAt,
+            updatedAt: entry.updatedAt,
+          })
+      }
+      const preference = input.preferredPlaybackLinkId
+        ? (mappedIds.get(input.preferredPlaybackLinkId) ??
+          input.preferredPlaybackLinkId)
+        : entry.preferredPlaybackLinkId
+      const result = updatedPersonalLinks(
+        entry,
+        {
+          links: links.map(({ id: linkId, purpose, url, label }) => ({
+            id: linkId,
+            purpose,
+            url,
+            ...(label ? { label } : {}),
+          })),
+          ...(preference ? { preferredPlaybackLinkId: preference } : {}),
+        },
+        this.now().toISOString(),
+      )
+      snapshot.library.userAlbums[
+        snapshot.library.userAlbums.findIndex((row) => row.id === entry.id)
+      ] = result
+      return { snapshot, result }
+    })
   }
 
   async addRelease(input: unknown): Promise<Release> {

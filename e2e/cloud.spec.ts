@@ -266,8 +266,22 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   context,
   browser,
 }) => {
+  const snapshot = makeBackup().data
+  const entry = snapshot.library.userAlbums[0]!
+  const linkId = '00000000-0000-4000-8000-000000056000'
+  entry.links = [
+    {
+      id: linkId,
+      purpose: 'playback',
+      url: 'https://servicio.example/album/ficticio',
+      label: 'Escucha elegida',
+      createdAt: entry.addedAt,
+      updatedAt: entry.updatedAt,
+    },
+  ]
+  entry.preferredPlaybackLinkId = linkId
   const state = new Map<string, RemoteLibrary>([
-    [userId, { revision: 1, snapshot: makeBackup().data }],
+    [userId, { revision: 1, snapshot }],
   ])
   await mock(context, state)
   await login(page)
@@ -289,6 +303,15 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   await expect(
     other.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
+  await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await expect(
+    other
+      .getByRole('region', { name: 'Escuchar', exact: true })
+      .getByRole('link', { name: /Escucha elegida/ }),
+  ).toHaveAttribute('href', 'https://servicio.example/album/ficticio')
+  await expect(
+    other.getByRole('region', { name: 'Escuchar', exact: true }),
+  ).toContainText('Favorito de reproducción')
   await accountPage(page)
   const result = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

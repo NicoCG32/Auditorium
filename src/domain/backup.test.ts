@@ -32,7 +32,7 @@ test.each(['', '{', 'null', '[]', '   '])(
     expect(() => parseBackupText(text)).toThrow(BackupError)
   },
 )
-test.each([0, 4, 5, '1', null])(
+test.each([0, 5, 6, '1', null])(
   'versión no compatible %s se rechaza antes de interpretar sus datos',
   (schemaVersion) => {
     expect(() =>
@@ -101,7 +101,7 @@ test('respaldo v3 conserva procedencia y relaciones externas junto a identidad, 
     youtubeVideoIds: ['ficticio_01'],
   }
   const before = structuredClone(current)
-  expect(current.schemaVersion).toBe(3)
+  expect(current.schemaVersion).toBe(4)
   expect(parseBackupText(serializeBackup(current))).toEqual(current)
   expect(current).toEqual(before)
   expect(() => parseBackupDocument({ ...current, schemaVersion: 1 })).toThrow(

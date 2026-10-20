@@ -214,14 +214,14 @@ test('v5 conserva las trece tablas e índices v4 y persiste metadatos y portada 
         : album,
     ),
   })
-  expect(DATABASE_VERSION).toBe(6)
+  expect(DATABASE_VERSION).toBe(7)
   expect(SCHEMA_V4).toEqual(SCHEMA_V3)
   expect(SCHEMA_V5).toEqual(SCHEMA_V4)
   const native = await inspectNativeStorage({
     name: 'migration-recovery',
     factory,
   })
-  expect(native.version).toBe(60)
+  expect(native.version).toBe(70)
   expect(native.stores).toHaveLength(14)
   const openedAsV3 = factory.open('migration-recovery', 40)
   const failure = await new Promise<DOMException | null>((resolve) => {

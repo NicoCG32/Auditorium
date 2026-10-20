@@ -44,14 +44,16 @@ export function AlbumReferenceLinks({
     },
   ]
   return (
-    <section className="catalog-links" aria-label="Referencias y escucha">
-      <h3 className="text-lg font-semibold">Referencias y escucha</h3>
+    <section className="catalog-links" aria-label="Referencias del catálogo">
+      <h3 className="text-lg font-semibold">Referencias del catálogo</h3>
       <p className="mt-2 text-sm text-muted">
         {reference
           ? `Referencia consultada el ${reference.retrievedAt.slice(0, 10)}. Los enlaces del catálogo pueden corresponder a distintas ediciones. `
           : ''}
         «Buscar» abre una búsqueda por título y artista; sus resultados no son
-        coincidencias confirmadas.
+        coincidencias confirmadas. Estas referencias no son tus enlaces
+        personales ni un favorito de reproducción. Puedes guardar una dirección
+        elegida desde Editar enlaces.
       </p>
       <ul className="mt-3 grid gap-2">
         {links.map((link) => (

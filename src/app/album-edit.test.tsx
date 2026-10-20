@@ -147,6 +147,8 @@ test('cuota mantiene álbum y borrador, reintentar guarda una sola edición', as
 test('una lectura fallida después de commit bloquea navegación y reintenta sólo lectura', async () => {
   await edit()
   change('Título', 'Cambios confirmados')
+  fireEvent.click(screen.getByRole('button', { name: 'Añadir enlace' }))
+  change('URL del enlace 1', 'https://servicio.example/album/ficticio')
   const update = vi.spyOn(MusicLibrary.prototype, 'updateAlbum')
   vi.spyOn(repository, 'readSnapshot').mockRejectedValueOnce(
     new LocalStorageError('unexpected', 'Fallo ficticio'),
@@ -166,6 +168,11 @@ test('una lectura fallida después de commit bloquea navegación y reintenta só
   )
   await screen.findByText('Datos del álbum guardados.')
   expect(update).toHaveBeenCalledTimes(1)
+  const confirmed = await repository.readSnapshot()
+  expect(
+    confirmed.library.userAlbums.find((entry) => entry.id === libraryIds.entry)!
+      .links,
+  ).toHaveLength(1)
 })
 test('una corrección concurrente no se sobrescribe y cargar datos reemplaza el borrador explícitamente', async () => {
   await edit()

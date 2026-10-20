@@ -8,6 +8,8 @@ Auditorium permite registrar, consultar y valorar una biblioteca musical y organ
 
 La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. El modo sin cuenta conserva sus datos localmente; SYNC-01 añade una cuenta y biblioteca remota opcionales, documentadas en la guía de sincronización. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos están en revisión y no modifican la release v1.0.0. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
 
+LINK-01 añade enlaces de escucha/compra personales y favorito opcional. Alta y edición coordinan catálogo y enlaces en el mismo límite de commit; los valores se contienen en UserAlbum y se transportan en el respaldo 4 y la sincronización privada. Las URLs se abren externamente sin contactar proveedores al guardar. Véase [Enlaces personales](ENLACES_PERSONALES.md).
+
 ## 2. Contexto del sistema
 
 **Evolución posterior al MVP:** [SYNC-01](SINCRONIZACION_SUPABASE.md) incorpora Supabase Auth y una biblioteca remota privada por cuenta. Sus diagramas, límites de acceso, sincronización y conflictos se describen en esa guía y en [ADR-011](adr/011-supabase-sincronizacion.md). El uso sin cuenta mantiene el modelo local descrito aquí; la release v1.0.0 no cambia.

@@ -1,10 +1,10 @@
 # Modelo de datos y persistencia
 
-La [sincronización opcional con Supabase](SINCRONIZACION_SUPABASE.md) añade una tabla remota privada versionada y el checkpoint técnico de IndexedDB v6. No cambia las entidades musicales ni el respaldo v3. Los apartados del MVP describen su base histórica; el contrato remoto y su RLS se documentan en la guía de sincronización.
+La [sincronización opcional con Supabase](SINCRONIZACION_SUPABASE.md) añade una tabla remota privada versionada y el checkpoint técnico de IndexedDB v6. LINK-01 añade enlaces personales contenidos en UserAlbum, DB7/nativa70 y respaldo4; no añade tablas musicales. Los apartados del MVP describen su base histórica; el contrato remoto y su RLS se documentan en la guía de sincronización.
 
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta UX-01 de DB5/respaldo3, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta LINK-01 de DB7/respaldo4, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 
@@ -37,14 +37,19 @@ flowchart TD
 
 El diagrama muestra responsabilidades. La inspección precede a la apertura de Dexie; las lecturas y escrituras se ejecutan después dentro de sus respectivas transacciones.
 
+## Enlaces personales
+
+`userAlbums` guarda `links` como colección opcional de valores identificados y `preferredPlaybackLinkId` como puntero opcional. Cada enlace contiene ID, propósito, URL, etiqueta opcional y fechas. No se añade store ni índice: la pertenencia se determina por la entrada contenedora y se valida en el dominio. [Contrato y diagrama](ENLACES_PERSONALES.md). DB6 añadió `syncCheckpoint` (`key` como clave primaria, sin índices); DB7 conserva las catorce tablas totales y valida la migración sin reescribir registros.
+
 ## Esquema físico vigente
 
-La [definición de la base](../src/infrastructure/db/database.ts) declara versión lógica **5**, correspondiente a versión nativa IndexedDB **50**. Todas las claves primarias son explícitas y únicas. No se emplean claves autoincrementales ni índices `multiEntry`.
+La [definición de la base](../src/infrastructure/db/database.ts) declara versión lógica **7**, correspondiente a versión nativa IndexedDB **70**. Todas las claves primarias son explícitas y únicas. No se emplean claves autoincrementales ni índices `multiEntry`.
 
 En la tabla, los corchetes representan una clave o índice compuesto, en el orden indicado. Los índices secundarios son **no únicos**, excepto los marcados como **único**. Se enumeran los índices declarados y materializados, sin incluir las posibilidades de consulta mediante prefijos compuestos que Dexie pueda ofrecer.
 
 | Tabla            | Clave primaria                       | Índices secundarios                                                                      |
 | ---------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `syncCheckpoint` | `key`                                | Ninguno; checkpoint técnico, fuera del respaldo                                          |
 | `metadata`       | `key`                                | Ninguno                                                                                  |
 | `artists`        | `id`                                 | `name`                                                                                   |
 | `albums`         | `id`                                 | `title`, `releaseType`, `originalYear`                                                   |
@@ -72,6 +77,8 @@ La retirada de un álbum personal no elimina su catálogo ni los registros perso
 | 3             | 30                       | Añade `purchaseWishes`                                                                  |
 | 4             | 40                       | Admite `Album.catalogReference`; conserva las trece tablas y todos los índices de v3    |
 | 5             | 50                       | Admite `Artist.country`, `Album.genres` y `Album.coverImage`; conserva tablas e índices |
+| 6             | 60                       | Añade `syncCheckpoint` para la sincronización opcional                                  |
+| 7             | 70                       | Admite enlaces y favorito en `UserAlbum`; conserva tablas, índices y checkpoints        |
 
 Las migraciones mantienen claves, índices y registros históricos; v2/v3 crean las nuevas tablas vacías. v4 y v5 no crean tablas ni transforman filas: establecen barreras de compatibilidad para sus campos opcionales, evitando que una versión anterior los interprete como corrupción. No hay una conversión de notas, regeneración de identificadores ni enriquecimiento de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
 
@@ -142,7 +149,7 @@ Las reglas están en [listas](../src/application/track-lists.ts), [casos de uso 
 
 ## Apertura, errores y recuperación
 
-Antes de abrir o migrar con Dexie, [`checkNativeSchema`](../src/infrastructure/db/preflight.ts) inspecciona la estructura mediante IndexedDB nativo. Acepta las versiones 10, 20, 30, 40 y 50; verifica el conjunto exacto de tablas, rutas de claves primarias, `autoIncrement`, nombres y rutas de índices, unicidad y `multiEntry`. Espera la finalización de la transacción de inspección antes de cerrar esa conexión y continuar con la apertura. Si la base aún no existe, aborta la creación exploratoria y deja la creación real a Dexie.
+Antes de abrir o migrar con Dexie, [`checkNativeSchema`](../src/infrastructure/db/preflight.ts) inspecciona la estructura mediante IndexedDB nativo. Acepta las versiones 10, 20, 30, 40, 50, 60 y 70; verifica el conjunto exacto de tablas, rutas de claves primarias, `autoIncrement`, nombres y rutas de índices, unicidad y `multiEntry`. Espera la finalización de la transacción de inspección antes de cerrar esa conexión y continuar con la apertura. Si la base aún no existe, aborta la creación exploratoria y deja la creación real a Dexie.
 
 Una versión posterior o sin migración compatible se rechaza. Una estructura distinta se informa como corrupta; no se elimina, reconstruye ni corrige automáticamente. Después de abrir, se comprueba que la versión nativa final sea 50. Si otra conexión bloquea la actualización, la aplicación informa el bloqueo y permite reintentar después de cerrarla. Un intento nativo pendiente que termina tras solicitar el cierre se cierra sin inicializar datos.
 
@@ -165,9 +172,9 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 ## Contrato de respaldo JSON
 
-El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 3`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
+El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 4`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
 
-La versión **3 del respaldo** no equivale a la versión **3 de IndexedDB**. El formato vigente contiene el snapshot completo utilizado por la base v5, incluidas referencias de catálogo, géneros, país y portada local opcionales. Se admiten los formatos 1 y 2 mediante schemas históricos estrictos: v1 no acepta `catalogReference`, y ninguno admite `country`, `genres` o `coverImage`. Tras validarlos se normalizan a la versión 3 y se comprueba la integridad completa. No se inventan metadatos al migrar un archivo anterior. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de las tablas nativas.
+La versión **4 del respaldo** es independiente de IndexedDB **7**. El formato vigente incorpora enlaces personales y favorito al snapshot completo. Los formatos 1/2/3 mantienen sus schemas históricos estrictos antes de normalizar a 4: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y ninguno admite los campos de enlaces. No se inventan datos al migrar. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de tablas nativas.
 
 [`LibraryBackups`](../src/application/library-backups.ts) aplica un límite de **20 MiB**, medido en bytes:
 
@@ -175,7 +182,7 @@ La versión **3 del respaldo** no equivale a la versión **3 de IndexedDB**. El 
 - Comprueba el tamaño UTF-8 real del texto antes de analizar JSON; admite un BOM inicial.
 - Valida el documento y comprueba también el tamaño de su representación normalizada mediante serialización.
 
-El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v5 ni un respaldo3; conserva copias históricas antes de actualizar.
+El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v7 ni un respaldo4; conserva copias históricas antes de actualizar.
 
 La exportación parte de una lectura validada y consistente. Serializa el documento con sangría de dos espacios y un salto de línea final. La aplicación inicia su descarga, pero esa acción no demuestra que el navegador haya guardado el archivo en el equipo.
 

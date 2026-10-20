@@ -12,7 +12,7 @@ La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica me
 
 La versión de desarrollo en main incorpora [integraciones opcionales](docs/INTEGRACIONES_OPCIONALES.md): búsqueda y selección de referencias de Wikidata al añadir álbumes, y recomendaciones de escucha o revaloración mediante Groq o Gemini con clave propia conservada sólo en memoria. El registro manual sigue disponible sin servicios ni cuentas. Las recomendaciones no cambian tus valoraciones; las referencias de catálogo se incluyen en los respaldos. El mismo incremento añade [edición de álbumes](docs/EDICION_CATALOGO.md), géneros, país de origen de los artistas y portadas automáticas por URL o archivo local JPEG/PNG. Estas capacidades pertenecen al código de este incremento y no al ZIP ni al tag de la release v1.0.0; Pages publica las revisiones validadas de main.
 
-La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Mi colección. Es un diseño para revisión: enlaces personales, nueva navegación, reproducción y audio local se siguen en tareas separadas y no se declaran implementados por esta documentación.
+La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Mi colección. La navegación y los enlaces personales ya tienen implementación propia; clasificación, experiencia, reproducción y audio local conservan sus refinamientos separados.
 
 ## Desarrollo local
 
@@ -74,6 +74,7 @@ El [índice de documentación](docs/README.md) organiza las referencias vigentes
 - [Modelo de dominio](docs/MODELO_DOMINIO.md): entidades, cardinalidades, reglas, estados y ejemplos ficticios.
 - [Modelo de datos](docs/MODELO_DATOS.md): tablas, claves, índices, migraciones, identidad, concurrencia y respaldos.
 - [Navegación y borradores](docs/NAVEGACION.md): rutas, regreso con contexto y guardado o descarte explícito de cambios.
+- [Enlaces personales](docs/ENLACES_PERSONALES.md): escucha, compra, favorito opcional y guardado coordinado.
 - [Biblioteca](docs/BIBLIOTECA.md): búsqueda, filtros plegables, selecciones activas, tarjetas y vistas.
 
 ## Plan y seguimiento
