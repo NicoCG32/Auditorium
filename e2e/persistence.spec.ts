@@ -10,6 +10,7 @@ import {
   seedNativeStorage,
   inspectNativeStorage,
 } from '../src/test/historical-storage.fixture'
+import { migrateLegacyAlbum } from '../src/domain/catalog/legacy-classification'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 
@@ -85,12 +86,23 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(70)
+      expect(migrated.version).toBe(80)
       for (const [name, rows] of Object.entries(before.rows))
-        expect(migrated.rows[name]).toEqual(rows)
+        expect(migrated.rows[name]).toEqual(
+          name === 'albums' ? rows.map(migrateLegacyAlbum) : rows,
+        )
       for (const store of before.stores)
         expect(migrated.stores.find(({ name }) => name === store.name)).toEqual(
-          store,
+          store.name === 'albums'
+            ? {
+                ...store,
+                indexes: store.indexes.map((index) =>
+                  index.name === 'releaseType'
+                    ? { ...index, name: 'primaryType', keyPath: 'primaryType' }
+                    : index,
+                ),
+              }
+            : store,
         )
       expect(migrated.rows['purchaseWishes']).toEqual([])
       expect(migrated.rows['ownedItems']).toHaveLength(version === 2 ? 1 : 0)
@@ -189,7 +201,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 70)
+        if (name === 'auditorium' && version === 80)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -217,9 +229,15 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(70)
+    expect(after.version).toBe(80)
     for (const [name, rows] of Object.entries(before.rows))
-      expect(after.rows[name]).toEqual(rows)
+      expect(after.rows[name]).toEqual(
+        name === 'albums'
+          ? rows.map((row) =>
+              'releaseType' in (row as object) ? migrateLegacyAlbum(row) : row,
+            )
+          : rows,
+      )
   })
 }
 
@@ -272,7 +290,13 @@ test('otra ventana bloquea la migración; cerrarla permite reintentar sin perder
   // The original upgrade request can finish after the blocker closes.
   const after = await audit(application)
   for (const [name, rows] of Object.entries(before.rows))
-    expect(after.rows[name]).toEqual(rows)
+    expect(after.rows[name]).toEqual(
+      name === 'albums'
+        ? rows.map((row) =>
+            'releaseType' in (row as object) ? migrateLegacyAlbum(row) : row,
+          )
+        : rows,
+    )
   await application
     .getByRole('button', { name: 'Volver a intentar', exact: true })
     .click()
@@ -306,7 +330,7 @@ for (const damaged of ['index', 'future', 'identity', 'rating'] as const) {
       ]
     await page.evaluate(seedNativeStorage, {
       name: 'auditorium',
-      version: damaged === 'index' ? 20 : damaged === 'future' ? 70 : 50,
+      version: damaged === 'index' ? 20 : damaged === 'future' ? 90 : 50,
       stores,
       rows,
     })
@@ -369,7 +393,14 @@ test('cuota al reemplazar una nota revierte la escritura y conserva el borrador'
   expect(after.rows['metadata']).toEqual(before.rows['metadata'])
   expect(after.rows['albumRatings']).not.toEqual(before.rows['albumRatings'])
   for (const [name, rows] of Object.entries(before.rows))
-    if (name !== 'albumRatings') expect(after.rows[name]).toEqual(rows)
+    if (name !== 'albumRatings')
+      expect(after.rows[name]).toEqual(
+        name === 'albums'
+          ? rows.map((row) =>
+              'releaseType' in (row as object) ? migrateLegacyAlbum(row) : row,
+            )
+          : rows,
+      )
 })
 
 test('cuota al restaurar revierte también identidad y conserva confirmación para reintentar', async ({
@@ -427,6 +458,7 @@ test('cuota al restaurar revierte también identidad y conserva confirmación pa
   const after = await audit(page)
   expect(after.rows).toEqual({
     ...historicalRows(makeBackup().data, historicalStores(3)),
+    albums: makeBackup().data.catalog.albums,
     syncCheckpoint: [],
   })
   expect(after.rows['purchaseWishes']).toHaveLength(1)

@@ -1,3 +1,4 @@
+import { legacySnapshotFixture } from './legacy-backup.fixture'
 import { makeBackup } from '../domain/backup.fixture'
 import type { LocalSnapshot } from '../domain/repositories/local-repository'
 
@@ -113,6 +114,7 @@ export function historicalRows(
   const rows: Record<string, unknown[]> = {
     metadata: [{ key: 'local_identity', ...snapshot.identity }],
     ...snapshot.catalog,
+    albums: legacySnapshotFixture(snapshot).catalog.albums,
     ...snapshot.library,
     userAlbums: snapshot.library.userAlbums.map((entry) => ({
       ...entry,

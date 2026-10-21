@@ -16,7 +16,9 @@ const candidate: CatalogCandidate = {
   id: 'Q999999',
   title: 'Horizonte Ficticio',
   artists: ['Conjunto Ficticio A', 'Conjunto Ficticio B'],
-  releaseType: 'album',
+  primaryType: 'full_length',
+  categories: [],
+  publicationStatus: 'unknown' as const,
   originalYear: 1999,
   catalogReference: {
     provider: 'wikidata',
@@ -60,6 +62,7 @@ async function select() {
     .mockResolvedValue([candidate])
   await form()
   expect(search).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   fireEvent.click(
     await screen.findByRole('button', { name: 'Revisar Horizonte Ficticio' }),
@@ -92,7 +95,7 @@ test('elegir referencia prepara sin escribir; guardar conserva artistas, referen
   )
   expect(snapshot.catalog.albumArtists).toHaveLength(2)
   const { document: backup } = await new LibraryBackups(repository).export()
-  expect(backup.schemaVersion).toBe(4)
+  expect(backup.schemaVersion).toBe(5)
   expect(serializeBackup(backup)).toContain('Q999999')
 })
 test('portada requiere elección y editar identidad quita asociación y portada elegida', async () => {
@@ -143,6 +146,7 @@ test('un fallo del catálogo conserva datos manuales y permite guardar', async (
     new Error('Detalle privado ficticio'),
   )
   await form()
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await screen.findByText(/No pudimos consultar Wikidata/u)
   expect(screen.queryByText('Detalle privado ficticio')).not.toBeInTheDocument()
@@ -162,6 +166,8 @@ test('abrir duplicado existente no le aplica metadatos ni referencia externos', 
   })
   const before = await repository.readSnapshot()
   await select()
+  for (const radio of screen.queryAllByRole('radio', { name: /^Usar / }))
+    fireEvent.click(radio)
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   fireEvent.click(
     await screen.findByRole('button', { name: 'Abrir álbum existente' }),

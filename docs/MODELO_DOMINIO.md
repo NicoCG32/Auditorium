@@ -4,27 +4,27 @@ LINK-01 implementa los [enlaces personales](ENLACES_PERSONALES.md): valores iden
 
 Este documento describe los contratos de Auditorium en el incremento en revisión, basados en el MVP **v1.0.0** y ampliados por CAT-01 y UX-01. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni modifican la release publicada.
 
-UX-03 define por separado los [contratos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). LINK-01 concreta enlaces y favorito; clasificación y adjuntos conservan su diseño propuesto. El `releaseType` vigente aún mezcla tipo principal y categorías; UX-05 los separará y tratará Inédito como estado de publicación, conservando ediciones en `Release` y ejemplares en `OwnedItem`.
+UX-03 define por separado los [contratos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). LINK-01 concreta enlaces y favorito; UX-05 implementa la [clasificación independiente](CLASIFICACION_ALBUM.md). Los adjuntos y la referencia de nota a edición conservan su seguimiento posterior.
 
 El refinamiento propuesto conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Mi colección agrupará ejemplares físicos y compras digitales con filtros diferenciados; una edición puede conocerse sin poseerse. La referencia y el cambio de navegación aún no están implementados.
 
 ## Alcance y vocabulario
 
-| Concepto             | Tipo                          | Significado                                                                                                                                       |
-| -------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Artista              | `Artist`                      | Persona o agrupación acreditada en un álbum.                                                                                                      |
-| Álbum                | `Album`                       | Publicación musical conceptual, independiente de su edición, formato o propiedad. `releaseType` distingue álbum, EP y otros tipos de publicación. |
-| Crédito              | `AlbumArtist`                 | Relación ordenada entre álbum y artista, con un papel y un nombre acreditado opcional.                                                            |
-| Pista                | `Track`                       | Identidad musical dentro de un álbum. Puede reutilizarse en diferentes posiciones y ediciones.                                                    |
-| Lista original       | `CoreTrack[]` de un álbum     | Lista de referencia del álbum, independiente de cualquier edición. Cada fila es una aparición de una pista.                                       |
-| Edición              | `Release`                     | Publicación concreta de un álbum en un formato. No es una copia poseída.                                                                          |
-| Aparición en edición | `ReleaseTrack`                | Posición de una pista en una edición, con atributos propios de esa aparición.                                                                     |
-| Identidad local      | `LocalIdentity`               | UUID y fecha de creación de la biblioteca local. No es una cuenta autenticada.                                                                    |
-| Entrada personal     | `UserAlbum`                   | Relación entre la identidad local y un álbum: escucha, notas, fechas y retirada reversible.                                                       |
-| Valoración           | `AlbumRating` / `TrackRating` | Nota independiente del álbum o de una pista dentro de una entrada personal.                                                                       |
-| Ejemplar             | `OwnedItem`                   | Una copia física o una compra digital registrada individualmente.                                                                                 |
-| Deseo                | `PurchaseWish`                | Intención de compra por formato, edición o ambos, con estado propio.                                                                              |
-| Instantánea          | `LocalSnapshot`               | Estado coherente compuesto por `identity`, `catalog` y `library`.                                                                                 |
+| Concepto             | Tipo                          | Significado                                                                                                                                                               |
+| -------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Artista              | `Artist`                      | Persona o agrupación acreditada en un álbum.                                                                                                                              |
+| Álbum                | `Album`                       | Publicación musical conceptual, independiente de su edición, formato o propiedad. `primaryType`, `categories` y `publicationStatus` describen dimensiones independientes. |
+| Crédito              | `AlbumArtist`                 | Relación ordenada entre álbum y artista, con un papel y un nombre acreditado opcional.                                                                                    |
+| Pista                | `Track`                       | Identidad musical dentro de un álbum. Puede reutilizarse en diferentes posiciones y ediciones.                                                                            |
+| Lista original       | `CoreTrack[]` de un álbum     | Lista de referencia del álbum, independiente de cualquier edición. Cada fila es una aparición de una pista.                                                               |
+| Edición              | `Release`                     | Publicación concreta de un álbum en un formato. No es una copia poseída.                                                                                                  |
+| Aparición en edición | `ReleaseTrack`                | Posición de una pista en una edición, con atributos propios de esa aparición.                                                                                             |
+| Identidad local      | `LocalIdentity`               | UUID y fecha de creación de la biblioteca local. No es una cuenta autenticada.                                                                                            |
+| Entrada personal     | `UserAlbum`                   | Relación entre la identidad local y un álbum: escucha, notas, fechas y retirada reversible.                                                                               |
+| Valoración           | `AlbumRating` / `TrackRating` | Nota independiente del álbum o de una pista dentro de una entrada personal.                                                                                               |
+| Ejemplar             | `OwnedItem`                   | Una copia física o una compra digital registrada individualmente.                                                                                                         |
+| Deseo                | `PurchaseWish`                | Intención de compra por formato, edición o ambos, con estado propio.                                                                                                      |
+| Instantánea          | `LocalSnapshot`               | Estado coherente compuesto por `identity`, `catalog` y `library`.                                                                                                         |
 
 Las fuentes principales son los [esquemas de catálogo](../src/domain/catalog/schemas.ts), los [esquemas de biblioteca](../src/domain/library/schemas.ts), los contratos de [ejemplares](../src/domain/library/owned-items.ts), [deseos](../src/domain/library/purchase-wishes.ts) e [identidad](../src/domain/identity.ts).
 
@@ -51,7 +51,9 @@ erDiagram
     Album {
         UUID id
         string title
-        string releaseType
+        string primaryType
+        string[] categories
+        string publicationStatus
         string[] genres "opcional; etiquetas del álbum"
         string coverUrl "opcional; HTTPS"
         string coverImage "opcional; data URL JPEG/PNG"
@@ -92,24 +94,26 @@ El diagrama muestra relaciones conceptuales y solo los campos necesarios para en
 
 ### Contratos y atributos
 
-| Tipo           | Campos obligatorios en el modelo validado                                | Campos opcionales                                                                                                             |
-| -------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| `Artist`       | `id`, `name`, `catalogScope`                                             | `sortName`, `country`, `createdBy`                                                                                            |
-| `Album`        | `id`, `title`, `releaseType`, `catalogScope`                             | `originalYear`, `genres`, `coverUrl`, `coverImage`, `description`, `createdBy`, `catalogReference`                            |
-| `AlbumArtist`  | `albumId`, `artistId`, `role`, `position`                                | `creditedAs`                                                                                                                  |
-| `Track`        | `id`, `albumId`, `title`                                                 | `variantOfTrackId`, `versionLabel`, `referenceDurationMs`                                                                     |
-| `CoreTrack`    | `albumId`, `trackId`, `discNumber`, `trackNumber`                        | Ninguno                                                                                                                       |
-| `Release`      | `id`, `albumId`, `format`                                                | `editionLabel`, `releaseTitleOverride`, `releaseYear`, `label`, `catalogNumber`, `barcode`, `countryCode`, `mediaDescription` |
-| `ReleaseTrack` | `id`, `releaseId`, `trackId`, `discNumber`, `trackNumber`, `contentRole` | `durationMs`, `displayTitleOverride`                                                                                          |
+| Tipo           | Campos obligatorios en el modelo validado                                       | Campos opcionales                                                                                                             |
+| -------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `Artist`       | `id`, `name`, `catalogScope`                                                    | `sortName`, `country`, `createdBy`                                                                                            |
+| `Album`        | `id`, `title`, `primaryType`, `categories`, `publicationStatus`, `catalogScope` | `originalYear`, `genres`, `coverUrl`, `coverImage`, `description`, `createdBy`, `catalogReference`                            |
+| `AlbumArtist`  | `albumId`, `artistId`, `role`, `position`                                       | `creditedAs`                                                                                                                  |
+| `Track`        | `id`, `albumId`, `title`                                                        | `variantOfTrackId`, `versionLabel`, `referenceDurationMs`                                                                     |
+| `CoreTrack`    | `albumId`, `trackId`, `discNumber`, `trackNumber`                               | Ninguno                                                                                                                       |
+| `Release`      | `id`, `albumId`, `format`                                                       | `editionLabel`, `releaseTitleOverride`, `releaseYear`, `label`, `catalogNumber`, `barcode`, `countryCode`, `mediaDescription` |
+| `ReleaseTrack` | `id`, `releaseId`, `trackId`, `discNumber`, `trackNumber`, `contentRole`        | `durationMs`, `displayTitleOverride`                                                                                          |
 
-`catalogScope` tiene únicamente el valor `personal`, que se aplica por defecto. `releaseType` tiene por defecto `album`; `contentRole`, `standard`. `createdBy` registra atribución opcional en artista y álbum; los casos de uso de creación lo fijan a la identidad local. No sustituye a `UserAlbum.userId` ni constituye un mecanismo de autorización remota.
+`catalogScope` tiene únicamente el valor `personal`, que se aplica por defecto. `primaryType` tiene por defecto `unspecified`, `categories` es una lista vacía y `publicationStatus` es `unknown`; `contentRole`, `standard`. `createdBy` registra atribución opcional en artista y álbum; los casos de uso de creación lo fijan a la identidad local. No sustituye a `UserAlbum.userId` ni constituye un mecanismo de autorización remota.
 
-| Campo                      | Valores admitidos                                                             |
-| -------------------------- | ----------------------------------------------------------------------------- |
-| `Album.releaseType`        | `album`, `ep`, `single`, `live`, `demo`, `compilation`, `soundtrack`, `other` |
-| `AlbumArtist.role`         | `primary`, `collaborator`, `featured`, `other`                                |
-| `Release.format`           | `vinyl`, `cd`, `cassette`, `digital`, `other`                                 |
-| `ReleaseTrack.contentRole` | `standard`, `bonus`, `alternate`, `other`                                     |
+| Campo                      | Valores admitidos                                                        |
+| -------------------------- | ------------------------------------------------------------------------ |
+| `Album.primaryType`        | `unspecified`, `full_length`, `ep`, `single`, `other`                    |
+| `Album.categories`         | `demo`, `split`, `compilation`, `live`, `soundtrack`; selección múltiple |
+| `Album.publicationStatus`  | `unknown`, `published`, `unreleased`                                     |
+| `AlbumArtist.role`         | `primary`, `collaborator`, `featured`, `other`                           |
+| `Release.format`           | `vinyl`, `cd`, `cassette`, `digital`, `other`                            |
+| `ReleaseTrack.contentRole` | `standard`, `bonus`, `alternate`, `other`                                |
 
 Los años son enteros de 1 a 9999. Posiciones y duraciones son enteros positivos; las duraciones se guardan en milisegundos. `coverUrl` requiere HTTPS y `Release.countryCode` requiere dos letras mayúsculas; estos contratos verifican estructura, no disponibilidad de la imagen ni pertenencia a un registro de países. Los campos del contrato no implican que todos tengan un editor en la interfaz de esta versión.
 
@@ -385,7 +389,7 @@ IndexedDB no declara claves foráneas ni borrados en cascada. Los campos `albumI
 
 `StoredUserAlbum.activeAlbumKey` es un dato derivado de persistencia: usuario/álbum para una entrada activa y `null` para una retirada. Su índice único refuerza la unicidad de entradas activas. No forma parte de `UserAlbum`, del modelo musical ni del respaldo de dominio. La definición física está en [database.ts](../src/infrastructure/db/database.ts) y la traducción en [records.ts](../src/infrastructure/db/records.ts); la evolución del almacenamiento se explica en [persistencia local](PERSISTENCIA_LOCAL.md).
 
-El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 4` y `exportedAt`. Su versión es independiente de la versión 7 de la base local. Los archivos v1/v2/v3 estrictos se aceptan mediante normalización a v4, conservando identidad y datos sin añadir metadatos. Sus contratos históricos rechazan país de artista, géneros y portada local; v1 tampoco admite referencia externa. El formato actual incluye portadas locales, entradas retiradas, enlaces personales, favorito y sus relaciones; la restauración no combina bibliotecas pobladas. Véanse el [contrato de respaldo](../src/domain/backup.ts) y [respaldos JSON](RESPALDOS_JSON.md).
+El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 5` y `exportedAt`. Su versión es independiente de la versión 8 de la base local. Los archivos v1/v2/v3/v4 estrictos se normalizan al formato5. Cada versión conserva su contrato histórico: v1 no admite referencia externa; v1/v2 no admiten país, géneros ni portada local; v1/v2/v3 no admiten enlaces personales. Los álbumes de v1–v4 conservan releaseType y se transforman según la [tabla de migración](CLASIFICACION_ALBUM.md#migración-y-compatibilidad). La restauración no combina bibliotecas pobladas; véase [respaldos JSON](RESPALDOS_JSON.md).
 
 ## Ejemplo de lectura del modelo
 

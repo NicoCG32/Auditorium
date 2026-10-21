@@ -142,6 +142,9 @@ async function seed(page: Page) {
 async function addForm(page: Page) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Conjunto Ficticio A')
   await page
@@ -150,6 +153,11 @@ async function addForm(page: Page) {
 }
 
 async function searchCatalog(page: Page) {
+  const reference = page.getByText('Buscar referencia en Wikidata (opcional)', {
+    exact: true,
+  })
+  if ((await reference.locator('..').getAttribute('open')) === null)
+    await reference.click()
   await page.getByRole('button', { name: 'Buscar en Wikidata' }).click()
   await expect(page.locator('.catalog-candidate')).toHaveCount(2)
 }
@@ -354,6 +362,20 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
     page.getByRole('img', { name: 'Portada de vista previa' }),
   ).toBeVisible()
   await expect.poll(() => covers).toBeGreaterThan(0)
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: albumTitle, exact: true }),
@@ -379,7 +401,7 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   ).toHaveCount(0)
   const text = await exportText(page)
   const backup = parseBackupText(text)
-  expect(backup.schemaVersion).toBe(4)
+  expect(backup.schemaVersion).toBe(5)
   expect(
     backup.data.catalog.artists.map((artist) => artist.name).sort(),
   ).toEqual(['Conjunto Ficticio A', 'Conjunto Ficticio B'])
@@ -414,6 +436,11 @@ test('fallo del catálogo conserva el formulario y permite registrar sin conexi�
   await page.route(wikidataRoute, (route) => route.abort('failed'))
   await ready(page)
   await addForm(page)
+  const reference = page.getByText('Buscar referencia en Wikidata (opcional)', {
+    exact: true,
+  })
+  if ((await reference.locator('..').getAttribute('open')) === null)
+    await reference.click()
   await page.getByRole('button', { name: 'Buscar en Wikidata' }).click()
   await expect(
     page.getByText(
@@ -430,6 +457,20 @@ test('fallo del catálogo conserva el formulario y permite registrar sin conexi�
     .getByRole('button', { name: 'Continuar con el registro manual' })
     .click()
   await context.setOffline(true)
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: albumTitle, exact: true }),

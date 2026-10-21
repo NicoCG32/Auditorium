@@ -96,7 +96,9 @@ describe('catálogo original y Deluxe', () => {
     expect(catalog.albums[0]).toEqual({
       id: ids.album,
       title: 'Eclipse',
-      releaseType: 'album',
+      primaryType: 'unspecified',
+      categories: [],
+      publicationStatus: 'unknown' as const,
       catalogScope: 'personal',
     })
     expect(catalog.releases[0]).not.toHaveProperty('releaseYear')
@@ -552,7 +554,7 @@ describe('entradas estructurales', () => {
       albumSchema.safeParse({
         id: ids.album,
         title: 'Eclipse',
-        releaseType: 'deluxe',
+        primaryType: 'deluxe',
       }).success,
     ).toBe(false)
     expect(

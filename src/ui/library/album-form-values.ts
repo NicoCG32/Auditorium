@@ -3,6 +3,7 @@ import {
   type ManualAlbumInput,
 } from '../../application/inputs'
 import type { CatalogCandidate } from '../../application/catalog-lookup'
+import type { AlbumClassification } from '../../domain/catalog/classification'
 import type { CatalogReference } from '../../domain/catalog/schemas'
 import { capitalizeCatalogName } from '../../application/catalog-names'
 import {
@@ -11,12 +12,12 @@ import {
   type LinksDraft,
 } from './personal-links-values'
 
-export interface AlbumFormValues {
+export interface AlbumFormValues extends AlbumClassification {
   personalLinks: LinksDraft
   artist: string
   artistId: string | undefined
+  newArtistConfirmed: boolean
   title: string
-  releaseType: string
   originalYear: string
   coverUrl: string
   description: string
@@ -24,6 +25,8 @@ export interface AlbumFormValues {
   country: string
   coverImage: string | undefined
   catalogReference: CatalogReference | undefined
+  catalogArtistIds?: (string | undefined)[] | undefined
+  catalogArtistConfirmed?: boolean[] | undefined
   catalogArtists: string[] | undefined
   catalogCountries: string[] | undefined
 }
@@ -31,8 +34,11 @@ export const emptyAlbumForm: AlbumFormValues = {
   personalLinks: linksDraftFrom(),
   artist: '',
   artistId: undefined,
+  newArtistConfirmed: false,
   title: '',
-  releaseType: 'album',
+  primaryType: 'unspecified',
+  categories: [],
+  publicationStatus: 'unknown',
   originalYear: '',
   coverUrl: '',
   description: '',
@@ -68,9 +74,13 @@ export function prepareCatalogCandidate(
     artist: candidate.artists.map(capitalizeCatalogName).join(' · '),
     artistId: undefined,
     catalogArtists: candidate.artists.map(capitalizeCatalogName),
+    catalogArtistIds: candidate.artists.map(() => undefined),
+    catalogArtistConfirmed: candidate.artists.map(() => false),
     catalogCountries: candidate.artists.map(() => ''),
     country: '',
-    releaseType: candidate.releaseType,
+    primaryType: candidate.primaryType,
+    categories: candidate.categories,
+    publicationStatus: candidate.publicationStatus,
     originalYear: candidate.originalYear?.toString() ?? '',
     description: values.description || candidate.description || '',
     catalogReference: candidate.catalogReference,
@@ -88,13 +98,19 @@ export function parseAlbumForm(
       ? { personalLinks: linksInputFrom(values.personalLinks) }
       : {}),
     title: values.title,
-    releaseType: values.releaseType,
-    artists: values.catalogArtists?.map((name, index) => ({
-      name,
-      ...(values.catalogCountries?.[index]?.trim()
-        ? { country: values.catalogCountries[index].trim() }
-        : {}),
-    })) ?? [
+    primaryType: values.primaryType,
+    categories: values.categories,
+    publicationStatus: values.publicationStatus,
+    artists: values.catalogArtists?.map((name, index) =>
+      values.catalogArtistIds?.[index]
+        ? { artistId: values.catalogArtistIds[index] }
+        : {
+            name,
+            ...(values.catalogCountries?.[index]?.trim()
+              ? { country: values.catalogCountries[index].trim() }
+              : {}),
+          },
+    ) ?? [
       values.artistId === undefined
         ? {
             name: values.artist,
@@ -122,7 +138,9 @@ export function parseAlbumForm(
   const messages: Record<string, string> = {
     artist: 'Escribe el nombre del artista.',
     title: 'Escribe el título del álbum.',
-    releaseType: 'Selecciona un tipo válido.',
+    primaryType: 'Selecciona un tipo válido.',
+    categories: 'Revisa las categorías.',
+    publicationStatus: 'Selecciona un estado de publicación válido.',
     originalYear: 'Escribe un año entero entre 1 y 9999, o déjalo vacío.',
     coverUrl: 'La dirección de portada debe ser una URL HTTPS válida.',
     description: 'Revisa la descripción.',

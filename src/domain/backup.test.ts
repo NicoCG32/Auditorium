@@ -1,3 +1,4 @@
+import { legacyBackupFixture } from '../test/legacy-backup.fixture'
 import { expect, test } from 'vitest'
 import { makeBackup } from './backup.fixture'
 import {
@@ -32,7 +33,7 @@ test.each(['', '{', 'null', '[]', '   '])(
     expect(() => parseBackupText(text)).toThrow(BackupError)
   },
 )
-test.each([0, 5, 6, '1', null])(
+test.each([0, 6, 7, '1', null])(
   'versión no compatible %s se rechaza antes de interpretar sus datos',
   (schemaVersion) => {
     expect(() =>
@@ -81,7 +82,7 @@ test.each([1, 2])(
   'respaldo v%s estricto se normaliza a v3 conservando todos los datos',
   (schemaVersion) => {
     const current = makeBackup()
-    const legacy = { ...current, schemaVersion }
+    const legacy = legacyBackupFixture(current, schemaVersion)
     const before = structuredClone(legacy)
     expect(parseBackupDocument(legacy)).toEqual(current)
     expect(parseBackupText(JSON.stringify(legacy))).toEqual(current)
@@ -101,7 +102,7 @@ test('respaldo v3 conserva procedencia y relaciones externas junto a identidad, 
     youtubeVideoIds: ['ficticio_01'],
   }
   const before = structuredClone(current)
-  expect(current.schemaVersion).toBe(4)
+  expect(current.schemaVersion).toBe(5)
   expect(parseBackupText(serializeBackup(current))).toEqual(current)
   expect(current).toEqual(before)
   expect(() => parseBackupDocument({ ...current, schemaVersion: 1 })).toThrow(
@@ -170,7 +171,7 @@ test('respaldo v2 histórico conserva referencias externas y se normaliza a v3',
     retrievedAt: '2026-10-16T12:00:00.000Z',
   }
   expect(
-    parseBackupText(JSON.stringify({ ...backup, schemaVersion: 2 })),
+    parseBackupText(JSON.stringify(legacyBackupFixture(backup, 2))),
   ).toEqual(backup)
 })
 test.each(['owner', 'duplicate', 'edition', 'track', 'date'])(

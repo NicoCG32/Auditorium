@@ -1,10 +1,10 @@
 # Editar álbumes, géneros y países
 
-UX-01 refina el incremento de catálogo y recomendaciones antes de su publicación. Se sigue en la [issue #59](https://github.com/NicoCG32/Auditorium/issues/59) y la [PR #58](https://github.com/NicoCG32/Auditorium/pull/58). El contrato y los recorridos descritos aquí están en desarrollo y revisión; no cambian el tag ni los archivos de la release v1.0.0.
+La edición de metadatos y los formularios de UX-05 están integrados en main. La [clasificación del álbum](CLASIFICACION_ALBUM.md) documenta tipo, categorías y publicación independientes; la release v1.0.0 conserva sus archivos.
 
 ## Corregir un álbum guardado
 
-Desde la ficha, «Editar álbum» abre los metadatos actuales: título, artistas acreditados, tipo, año original, géneros, país de origen de cada artista, portada y descripción. Cancelar descarta el borrador. Guardar valida y confirma una sola escritura local; no crea otra entrada de biblioteca ni cambia el ID del álbum.
+Desde la ficha, «Editar álbum» abre los metadatos actuales: título, artistas acreditados, tipo principal, categorías, publicación, año original, géneros, país de origen de cada artista, portada y descripción. Cancelar descarta el borrador. Guardar valida y confirma una sola escritura local; no crea otra entrada de biblioteca ni cambia el ID del álbum.
 
 Se mantienen listas, pistas, ediciones, escucha, notas personales, valoraciones, ejemplares, deseos y retirada. Cambiar el nombre de un artista crea un registro de artista para ese crédito del álbum; no renombra al artista usado por otros álbumes. Si se conserva su identidad y se corrige su país, el dato cambia también donde se acredita ese mismo artista. El editor informa de ese alcance antes de guardar. No hay fusión automática por nombre.
 
@@ -60,8 +60,8 @@ Una portada local confirmada pertenece a IndexedDB y al respaldo, por lo que pue
 
 Al guardar, álbumes, nombres/alias de artistas y géneros adoptan mayúscula inicial por palabra, con las [excepciones de siglas del registro](REGISTRO_MANUAL.md#posibles-duplicados). Cambiar sólo mayúsculas o espacios mantiene la identidad del artista y la referencia externa del álbum. Una corrección real de nombre conserva las reglas de creación de identidad de este documento. Los textos históricos no se reescriben al leer o importar respaldos; se uniforman al editarlos.
 
-El incremento utiliza DB5/nativa50, sin añadir tablas ni índices, y exporta respaldo3. Las bases v1 a v4 se actualizan conservando identidad y filas; los respaldos1/2 se aceptan con sus contratos históricos estrictos y se normalizan al formato actual. No se completan metadatos durante la migración. Una aplicación anterior no puede abrir la base nueva ni leer el archivo nuevo; conserva respaldos previos al actualizar.
+El incremento vigente utiliza DB8/nativa80 y respaldo5. Valida los contratos históricos antes de migrar su clasificación y preserva identidad, metadatos y relaciones; los documentos del checkpoint se convierten en la misma transacción. Véase [clasificación y compatibilidad](CLASIFICACION_ALBUM.md#migración-y-compatibilidad). Una aplicación anterior no puede abrir la base ni leer el archivo nuevos.
 
 El contexto de recomendaciones mantiene la lista permitida anterior. No se envían géneros, países, URL de portada ni imágenes locales al modelo. La edición no genera solicitudes de IA. Consulta [respaldos](RESPALDOS_JSON.md), [integraciones](INTEGRACIONES_OPCIONALES.md) y [ADR-009](adr/009-edicion-metadatos-portadas.md).
 
-La aceptación debe comprobar alta y edición, cancelación, conflictos, conservación de relaciones y recarga; combinación de filtros y orden sin datos; archivos válidos e inválidos, cambio de portada y fallos de red; respaldo3 y versiones previas; reapertura offline de imágenes locales; teclado, foco, errores y pantallas pequeñas. La validación de UX-01 está en curso y se registrará en la PR antes de integrar.
+La aceptación debe comprobar alta y edición, cancelación, conflictos, conservación de relaciones y recarga; combinación de filtros y orden sin datos; archivos válidos e inválidos, cambio de portada y fallos de red; respaldo5 y versiones previas; reapertura offline de imágenes locales; teclado, foco, errores y pantallas pequeñas. La issue de cada incremento registra su evidencia de validación.

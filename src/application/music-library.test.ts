@@ -84,8 +84,14 @@ describe('ejemplares físicos y compras digitales', () => {
     const digital = await service.addRelease({
       albumId: created.album.id,
       format: 'digital',
+      editionLabel: 'Deluxe',
     })
     const before = await repository.readSnapshot()
+    expect(before.library.ownedItems).toEqual([])
+    expect(before.catalog.albums).toHaveLength(1)
+    expect(
+      before.catalog.releases.find((release) => release.id === digital.id),
+    ).toMatchObject({ format: 'digital', editionLabel: 'Deluxe' })
     await expect(
       service.addOwnedItem(created.userAlbum!.id, {
         medium: 'purchased_digital',
@@ -588,7 +594,7 @@ describe('registro manual con revisión de coincidencias', () => {
     const result = await service.registerAlbum(albumInput)
     expect(result.status).toBe('created')
     if (result.status !== 'created') throw new Error('Falta alta ficticia.')
-    expect(result.album.releaseType).toBe('album')
+    expect(result.album.primaryType).toBe('unspecified')
     expect(result.album).not.toHaveProperty('originalYear')
     expect((await repository.readSnapshot()).library.userAlbums).toEqual([
       result.userAlbum,

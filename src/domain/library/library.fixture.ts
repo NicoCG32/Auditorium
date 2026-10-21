@@ -20,7 +20,11 @@ export const times = {
 
 export function makeContext(): LibraryContext {
   const input = makeCatalog()
-  input.albums.push({ id: ids.otherAlbum, title: 'Otra órbita' })
+  input.albums.push({
+    id: ids.otherAlbum,
+    title: 'Otra órbita',
+    primaryType: 'full_length',
+  })
   input.albumArtists.push({
     albumId: ids.otherAlbum,
     artistId: ids.artist,

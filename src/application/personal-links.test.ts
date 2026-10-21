@@ -1,5 +1,9 @@
 // @vitest-environment node
 import Dexie from 'dexie'
+import {
+  legacyBackupFixture,
+  legacySnapshotFixture,
+} from '../test/legacy-backup.fixture'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, expect, test } from 'vitest'
 import { MusicLibrary } from './music-library'
@@ -136,7 +140,7 @@ test('alta atómica persiste enlaces, favorito e identidad sin inferir nota, esc
   const backup = parseBackupText(
     serializeBackup({
       format: 'auditorium-backup',
-      schemaVersion: 4,
+      schemaVersion: 5,
       exportedAt: '2026-10-20T00:00:00.000Z',
       data: before,
     }),
@@ -276,10 +280,14 @@ test('retirar y restaurar conserva enlaces y favorito; mezcla entre dispositivos
 test('v1/v2/v3 estrictos se convierten a v4 sin inventar enlaces ni aceptar campos futuros', () => {
   const backup = makeBackup()
   for (const schemaVersion of [1, 2, 3]) {
-    expect(parseBackupDocument({ ...backup, schemaVersion })).toEqual(backup)
+    expect(
+      parseBackupDocument(legacyBackupFixture(backup, schemaVersion)),
+    ).toEqual(backup)
     const withLinks = structuredClone(backup)
     withLinks.data.library.userAlbums[0]!.links = []
-    expect(() => parseBackupDocument({ ...withLinks, schemaVersion })).toThrow()
+    expect(() =>
+      parseBackupDocument(legacyBackupFixture(withLinks, schemaVersion)),
+    ).toThrow()
   }
 })
 test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la identidad', async () => {
@@ -296,7 +304,9 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
     await historical
       .table('metadata')
       .put({ key: 'local_identity', ...snapshot.identity })
-    for (const [name, rows] of Object.entries(snapshot.catalog))
+    for (const [name, rows] of Object.entries(
+      legacySnapshotFixture(snapshot).catalog,
+    ))
       await historical.table(name).bulkPut(rows)
     for (const [name, rows] of Object.entries(snapshot.library))
       await historical
@@ -304,7 +314,7 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
         .bulkPut(name === 'userAlbums' ? rows.map(toStoredUserAlbum) : rows)
     await historical
       .table('syncCheckpoint')
-      .put({ key: 'cloud', revision: 2, base: snapshot })
+      .put({ key: 'cloud', revision: 2, base: legacySnapshotFixture(snapshot) })
   })
   historical.close()
   const current = setup(factory, 'links-migration')
@@ -314,5 +324,5 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
     revision: 2,
     base: snapshot,
   })
-  expect(current.database.verno).toBe(7)
+  expect(current.database.verno).toBe(8)
 })

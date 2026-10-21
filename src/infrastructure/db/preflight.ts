@@ -1,3 +1,4 @@
+import Dexie from 'dexie'
 import {
   AuditoriumDatabase,
   DATABASE_VERSION,
@@ -8,6 +9,7 @@ import {
   SCHEMA_V5,
   SCHEMA_V6,
   SCHEMA_V7,
+  SCHEMA_V8,
 } from './database'
 import { LocalStorageError } from './errors'
 
@@ -62,6 +64,7 @@ export function checkNativeSchema(
           50: SCHEMA_V5,
           60: SCHEMA_V6,
           70: SCHEMA_V7,
+          80: SCHEMA_V8,
         }
         const schema = schemas[native.version]
         if (!schema)
@@ -70,8 +73,12 @@ export function checkNativeSchema(
             'La versión de la base no tiene una migración compatible.',
           )
         {
-          // Todas las migraciones actuales son aditivas: los índices históricos permanecen iguales.
-          const tables = database.tables.filter((table) => table.name in schema)
+          // Inspect the declared historical version, including indexes replaced in v8.
+          const declared = new Dexie(database.name, {
+            indexedDB: database.nativeFactory!,
+          })
+          declared.version(1).stores(schema)
+          const tables = declared.tables
           const names = Array.from(native.objectStoreNames).sort()
           const expected = tables.map((table) => table.name).sort()
           if (JSON.stringify(names) !== JSON.stringify(expected)) {

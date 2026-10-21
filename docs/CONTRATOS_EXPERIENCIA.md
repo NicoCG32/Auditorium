@@ -1,6 +1,6 @@
 # Contratos propuestos para experiencia y acceso musical
 
-Actualización LINK-01: enlaces personales y favorito ya están implementados con almacenamiento contenido en UserAlbum, DB7 y respaldo4; la [guía vigente](ENLACES_PERSONALES.md) concreta sus contratos. Los demás refinamientos de este documento siguen siendo propuestas.
+Actualización LINK-01: enlaces personales y favorito ya están implementados con almacenamiento contenido en UserAlbum, DB7 y respaldo4; la [guía vigente](ENLACES_PERSONALES.md) concreta sus contratos. UX-05 implementa clasificación y formularios con DB8/respaldo5; véase la [guía vigente](CLASIFICACION_ALBUM.md). Los refinamientos posteriores mantienen su seguimiento.
 
 Estado original: **diseño lógico propuesto en UX-03**, 2026-10-18. No son schemas ejecutables ni una migración aplicada. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
 
@@ -82,7 +82,7 @@ La separación de tipo principal y categorías toma como referencia [MusicBrainz
 
 #### Transición desde la clasificación vigente
 
-El `Album.releaseType` actual mezcla tipo y categoría en un único enum. UX-05 debe separar esos datos, versionar persistencia/respaldo y adaptar formularios, consultas y consumidores antes de publicar el cambio. El nombre de los campos futuros se fija al implementar; esta tabla define la transformación lógica:
+El antiguo Album.releaseType mezclaba tipo y categoría. UX-05 lo sustituye por primaryType, categories y publicationStatus; la [guía ejecutable](CLASIFICACION_ALBUM.md) concreta campos, formularios y compatibilidad. La transformación conserva la tabla lógica siguiente:
 
 | Valor anterior                                 | Tipo propuesto  | Categoría conservada                                          |
 | ---------------------------------------------- | --------------- | ------------------------------------------------------------- |
@@ -91,7 +91,7 @@ El `Album.releaseType` actual mezcla tipo y categoría en un único enum. UX-05 
 | `live` / `demo` / `compilation` / `soundtrack` | Sin especificar | En vivo / Demo / Recopilación / Banda sonora, respectivamente |
 | `other`                                        | Otro            | Ninguna registrada                                            |
 
-La migración conserva la clasificación heredada, incluidos antiguos valores por defecto, sin atribuirles verificación externa. No adivina duración/tipo desde Demo o En vivo, ni inventa Split; el estado de publicación anterior queda Desconocido. La persona puede completar esos datos después. `Release.editionLabel`, formatos, listas, IDs y ejemplares no se trasladan a `Album` ni se pierden. Los lectores de respaldos 1/2/3 mantienen sus enums históricos estrictos antes de normalizar a la versión futura.
+La migración conserva la clasificación heredada, incluidos antiguos valores por defecto, sin atribuirles verificación externa. No adivina duración/tipo desde Demo o En vivo, ni inventa Split; el estado de publicación anterior queda Desconocido. La persona puede completar esos datos después. `Release.editionLabel`, formatos, listas, IDs y ejemplares no se trasladan a `Album` ni se pierden. Los lectores de respaldos1/2/3/4 mantienen enums históricos estrictos antes de normalizar al formato5.
 
 ### Calificación única y edición de referencia
 
@@ -209,7 +209,7 @@ Las mutaciones no cambian la identidad local. Editar un artista conserva la regl
 
 ## 4. Compatibilidad y transición
 
-**Esta entrega mantiene DB5/nativa50, trece tablas y respaldo3 exactamente como están.** Los contratos ejecutables siguen en [schemas de catálogo](../src/domain/catalog/schemas.ts), [biblioteca](../src/domain/library/schemas.ts), [ejemplares](../src/domain/library/owned-items.ts) y [respaldo](../src/domain/backup.ts).
+**La propuesta inicial conservaba DB5/respaldo3; la implementación vigente de UX-05 usa DB8/nativa80 y respaldo5, documentados en [clasificación](CLASIFICACION_ALBUM.md).** Los contratos ejecutables siguen en [schemas de catálogo](../src/domain/catalog/schemas.ts), [biblioteca](../src/domain/library/schemas.ts), [ejemplares](../src/domain/library/owned-items.ts) y [respaldo](../src/domain/backup.ts).
 
 | Momento        | Requisito                                                                                                                  |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------- |

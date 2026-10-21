@@ -18,9 +18,26 @@ async function openPrepared(page: Page) {
 async function addAlbum(page: Page, title: string) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Artista ficticio offline')
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: title, exact: true }),

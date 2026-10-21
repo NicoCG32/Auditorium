@@ -5,6 +5,7 @@ import {
   type CatalogLookupClient,
   type CatalogSearchInput,
 } from '../../application/catalog-lookup'
+import type { AlbumClassification } from '../../domain/catalog/classification'
 import { catalogReferenceSchema } from '../../domain/catalog/schemas'
 
 const endpoint = 'https://www.wikidata.org/w/api.php'
@@ -17,13 +18,16 @@ const maxBytes = 1_000_000
 const maxCandidates = 8
 const maxArtists = 32
 
-const musicalTypes: Record<string, CatalogCandidate['releaseType']> = {
-  Q482994: 'album',
-  Q208569: 'album',
-  Q209939: 'live',
-  Q222910: 'compilation',
-  Q169930: 'ep',
-  Q134556: 'single',
+const musicalTypes: Record<string, Partial<AlbumClassification>> = {
+  Q482994: { primaryType: 'unspecified' },
+  Q208569: { primaryType: 'full_length' },
+  Q209939: { categories: ['live'] },
+  Q222910: { categories: ['compilation'] },
+  Q169930: { primaryType: 'ep' },
+  Q134556: { primaryType: 'single' },
+  Q220935: { categories: ['demo'] },
+  Q368281: { categories: ['split'] },
+  Q4176708: { categories: ['soundtrack'] },
 }
 
 type JsonObject = Record<string, unknown>
@@ -92,9 +96,7 @@ function externalIds(
   ]
 }
 
-function musicalType(
-  entity: JsonObject,
-): CatalogCandidate['releaseType'] | undefined {
+function musicalType(entity: JsonObject): AlbumClassification | undefined {
   const types = ids(entity, 'P31').flatMap((id) =>
     musicalTypes[id] ? [musicalTypes[id]] : [],
   )
@@ -102,11 +104,21 @@ function musicalType(
   const forms = ids(entity, 'P7937').flatMap((id) =>
     musicalTypes[id] ? [musicalTypes[id]] : [],
   )
-  const specific = [...new Set([...types, ...forms])].filter(
-    (type) => type !== 'album',
-  )
-  if (specific.length === 1) return specific[0]
-  return types.includes('album') ? 'album' : specific[0]
+  const all = [...types, ...forms]
+  const primary = [
+    ...new Set(
+      all.flatMap((type) =>
+        type.primaryType && type.primaryType !== 'unspecified'
+          ? [type.primaryType]
+          : [],
+      ),
+    ),
+  ]
+  return {
+    primaryType: primary.length === 1 ? primary[0]! : 'unspecified',
+    categories: [...new Set(all.flatMap((type) => type.categories ?? []))],
+    publicationStatus: 'unknown',
+  }
 }
 
 function publicationYear(entity: JsonObject): number | undefined {
@@ -337,11 +349,11 @@ export function createWikidataClient(
       const musical = candidateIds.flatMap((id) => {
         const entity = getEntity(details, id)
         if (!entity) return []
-        const releaseType = musicalType(entity)
+        const primaryType = musicalType(entity)
         const name = label(entity)
         const artistIds = ids(entity, 'P175')
-        return releaseType && name && artistIds.length
-          ? [{ id, entity, releaseType, name, artistIds }]
+        return primaryType && name && artistIds.length
+          ? [{ id, entity, primaryType, name, artistIds }]
           : []
       })
       const artistIds = [...new Set(musical.flatMap((item) => item.artistIds))]
@@ -406,7 +418,7 @@ export function createWikidataClient(
             id: item.id,
             title: item.name,
             artists: names,
-            releaseType: item.releaseType,
+            ...item.primaryType,
             catalogReference: reference,
             ...(originalYear === undefined ? {} : { originalYear }),
             ...(description ? { description } : {}),

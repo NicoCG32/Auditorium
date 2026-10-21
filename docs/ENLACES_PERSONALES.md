@@ -1,5 +1,7 @@
 # Enlaces personales de reproducción y compra
 
+UX-05 incorpora la [clasificación independiente y sus migraciones](CLASIFICACION_ALBUM.md): DB8/nativa80 y respaldo5. Album describe la obra; Release conserva las ediciones; UserAlbum, la experiencia y los enlaces personales.
+
 Cada entrada personal de un álbum puede guardar hasta **20 enlaces HTTPS**, repartidos entre **Escuchar** y **Comprar**. Se añaden al registrar el álbum y se corrigen desde **Editar álbum** o **Editar enlaces** en la ficha. Una etiqueta opcional permite distinguir versiones; el proveedor se obtiene del dominio de la URL.
 
 Escuchar admite un **favorito de reproducción opcional**. Cambiarlo conserva las alternativas. Quitar el enlace favorito, o cambiar su propósito a compra, elimina esa preferencia; no se elige otro automáticamente. Con un único enlace tampoco se guarda una preferencia implícita. Todos los enlaces abren el servicio en otra pestaña, con `noopener noreferrer` y sin enviar el referente. Este incremento no incorpora reproductores ni descarga audio.

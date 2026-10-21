@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { migrateLegacyAlbum } from '../../domain/catalog/legacy-classification'
 import { LibraryBackups } from '../../application/library-backups'
 import { parseBackupText } from '../../domain/backup'
 import {
@@ -113,10 +114,21 @@ test.each([1, 2, 3, 4, 5] as const)(
     })
     expect(after.version).toBe(DATABASE_VERSION * 10)
     for (const [name, rows] of Object.entries(before.rows))
-      expect(after.rows[name]).toEqual(rows)
+      expect(after.rows[name]).toEqual(
+        name === 'albums' ? rows.map(migrateLegacyAlbum) : rows,
+      )
     for (const definition of before.stores)
       expect(after.stores.find(({ name }) => name === definition.name)).toEqual(
-        definition,
+        definition.name === 'albums'
+          ? {
+              ...definition,
+              indexes: definition.indexes.map((index) =>
+                index.name === 'releaseType'
+                  ? { ...index, name: 'primaryType', keyPath: 'primaryType' }
+                  : index,
+              ),
+            }
+          : definition,
       )
     expect(migrated.identity).toEqual(snapshot.identity)
     expect(
@@ -214,14 +226,14 @@ test('v5 conserva las trece tablas e índices v4 y persiste metadatos y portada 
         : album,
     ),
   })
-  expect(DATABASE_VERSION).toBe(7)
+  expect(DATABASE_VERSION).toBe(8)
   expect(SCHEMA_V4).toEqual(SCHEMA_V3)
   expect(SCHEMA_V5).toEqual(SCHEMA_V4)
   const native = await inspectNativeStorage({
     name: 'migration-recovery',
     factory,
   })
-  expect(native.version).toBe(70)
+  expect(native.version).toBe(80)
   expect(native.stores).toHaveLength(14)
   const openedAsV3 = factory.open('migration-recovery', 40)
   const failure = await new Promise<DOMException | null>((resolve) => {

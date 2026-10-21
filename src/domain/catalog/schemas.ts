@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { classificationFields } from './classification'
+export { primaryTypeSchema } from './classification'
 import { entityIdSchema as id } from '../shared/scalars'
 import { catalogReferenceSchema } from './catalog-reference'
 import { countrySchema, coverImageSchema, genresSchema } from './metadata'
@@ -17,16 +19,6 @@ const personalCatalog = {
   createdBy: id.optional(),
 }
 
-export const releaseTypeSchema = z.enum([
-  'album',
-  'ep',
-  'single',
-  'live',
-  'demo',
-  'compilation',
-  'soundtrack',
-  'other',
-])
 export const artistRoleSchema = z.enum([
   'primary',
   'collaborator',
@@ -57,7 +49,7 @@ export const artistSchema = z.strictObject({
 export const albumSchema = z.strictObject({
   id,
   title: text,
-  releaseType: releaseTypeSchema.default('album'),
+  ...classificationFields,
   originalYear: year.optional(),
   coverUrl: z.url({ protocol: /^https$/ }).optional(),
   coverImage: coverImageSchema.optional(),

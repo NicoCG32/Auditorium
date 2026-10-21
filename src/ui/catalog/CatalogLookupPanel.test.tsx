@@ -11,7 +11,9 @@ const candidate: CatalogCandidate = {
   id: 'Q900000001',
   title: 'Horizonte ficticio',
   artists: ['Artista ficticio', 'Colaborador ficticio'],
-  releaseType: 'album',
+  primaryType: 'full_length',
+  categories: [],
+  publicationStatus: 'unknown' as const,
   catalogReference: {
     provider: 'wikidata',
     entityId: 'Q900000001',
@@ -53,7 +55,8 @@ test('consulta explícita y revisión seleccionan sin guardar ni cargar portadas
     />,
   )
   expect(search).not.toHaveBeenCalled()
-  expect(screen.getByText(/se envía el título/u)).toBeVisible()
+  expect(screen.getByText(/se envía el título/u)).not.toBeVisible()
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await screen.findByRole('button', { name: 'Revisar Horizonte ficticio' })
   expect(onSelect).not.toHaveBeenCalled()
@@ -80,6 +83,7 @@ test('cero coincidencias no declara inexistencia y conserva la opción manual', 
       onSelect={vi.fn()}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await waitFor(() =>
     expect(screen.getByRole('status')).toHaveTextContent(
@@ -103,6 +107,7 @@ test('una caída del catálogo no bloquea continuar sin referencia ni expone tex
       onSelect={vi.fn()}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await waitFor(() =>
     expect(screen.getByRole('status')).toHaveTextContent(
@@ -133,6 +138,7 @@ test('muestra la espera del proveedor y permite reintentar explícitamente', asy
       onSelect={vi.fn()}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await waitFor(() =>
     expect(screen.getByRole('status')).toHaveTextContent(
@@ -140,6 +146,7 @@ test('muestra la espera del proveedor y permite reintentar explícitamente', asy
     ),
   )
   expect(search).toHaveBeenCalledTimes(1)
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await screen.findByRole('button', { name: 'Revisar Horizonte ficticio' })
   expect(search).toHaveBeenCalledTimes(2)
@@ -156,6 +163,7 @@ test('cancelar invalida una respuesta tardía de un transporte que ignore abort'
       onSelect={onSelect}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar búsqueda' }))
   expect(search.mock.calls[0]?.[0].signal?.aborted).toBe(true)
@@ -177,6 +185,7 @@ test('cambiar título o artista descarta resultados anteriores y permite una nue
       onSelect={onSelect}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   view.rerender(
     <CatalogLookupPanel
@@ -187,6 +196,7 @@ test('cambiar título o artista descarta resultados anteriores y permite una nue
     />,
   )
   expect(search.mock.calls[0]?.[0].signal?.aborted).toBe(true)
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await resolvePending(pending[0], [candidate])
   expect(
@@ -210,6 +220,7 @@ test('desmontar cancela la consulta y no selecciona su respuesta tardía', async
       onSelect={onSelect}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   view.unmount()
   expect(search.mock.calls[0]?.[0].signal?.aborted).toBe(true)
@@ -231,6 +242,7 @@ test('artista discordante y advertencias requieren revisión visible', async () 
       onSelect={vi.fn()}
     />,
   )
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await screen.findByRole('button', { name: 'Revisar Horizonte ficticio' })
   expect(screen.getByText(/El artista no coincide/u)).toBeVisible()
@@ -246,6 +258,7 @@ test('deshabilitar cancela una búsqueda y al habilitar se puede consultar de nu
     onSelect: vi.fn(),
   }
   const view = render(<CatalogLookupPanel {...props} />)
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   view.rerender(<CatalogLookupPanel {...props} disabled />)
   expect(search.mock.calls[0]?.[0].signal?.aborted).toBe(true)
@@ -257,6 +270,7 @@ test('deshabilitar cancela una búsqueda y al habilitar se puede consultar de nu
   expect(
     screen.getByRole('button', { name: 'Buscar en Wikidata' }),
   ).toBeEnabled()
+  fireEvent.click(screen.getByText('Buscar referencia en Wikidata (opcional)'))
   fireEvent.click(screen.getByRole('button', { name: 'Buscar en Wikidata' }))
   await resolvePending(pending[1], [])
   expect(search).toHaveBeenCalledTimes(2)

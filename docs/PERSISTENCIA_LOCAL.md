@@ -1,6 +1,6 @@
-# Persistencia local — esquemas v1 a v6
+# Persistencia local — esquemas v1 a v8
 
-El esquema vigente es v6, versión nativa 60: añade la tabla técnica `syncCheckpoint`, vacía para el uso sin cuenta, sin transformar las trece tablas e identidades musicales de v1–v5. Las cachés conectadas se separan por proyecto y cuenta. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) documenta los checkpoints y la [ADR-011](adr/011-supabase-sincronizacion.md) justifica esta evolución. Los apartados v5 siguientes conservan la descripción de sus tablas musicales.
+El esquema vigente es v8, versión nativa80: separa clasificación e índice de álbum y convierte todos los documentos del checkpoint. [Compatibilidad y reversión](CLASIFICACION_ALBUM.md#migración-y-compatibilidad). La evolución v6 añade la tabla técnica `syncCheckpoint`, vacía para el uso sin cuenta, sin transformar las trece tablas e identidades musicales de v1–v5. Las cachés conectadas se separan por proyecto y cuenta. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) documenta los checkpoints y la [ADR-011](adr/011-supabase-sincronizacion.md) justifica esta evolución. Los apartados v5 siguientes conservan la descripción de sus tablas musicales.
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
@@ -24,7 +24,7 @@ Nombre predeterminado: `auditorium`. La versión v5 usaba la versión nativa 50;
 | ------------- | ----------------------------------------------------------------------- |
 | metadata      | key                                                                     |
 | artists       | id; name no único                                                       |
-| albums        | id; title no único, releaseType, originalYear                           |
+| albums        | id; title no único, primaryType, originalYear                           |
 | albumArtists  | álbum/artista/rol; posición única por álbum; artista                    |
 | tracks        | id; álbum, título y variante original                                   |
 | coreTracks    | álbum/disco/posición; álbum/pista                                       |
@@ -69,7 +69,7 @@ Referencias: [ADR-001](adr/001-mvp-local.md), [transacciones y errores en Dexie]
 
 ## Retirada reversible
 
-La [baja personal](ELIMINACIONES_PERSONALES.md) conserva todas las filas dependientes y solo cambia `userAlbums`: fija `deletedAt`/`updatedAt` y deriva `activeAlbumKey=null`. Restaurar elimina el marcador, actualiza la fecha y deriva el índice activo, exigiendo que no exista otra entrada activa del mismo álbum. Se conservan IDs y fecha de alta; una referencia obsoleta se rechaza antes de escribir. Esta operación no añade tablas ni exige una migración propia; opera en el esquema vigente v5. Ver [ADR-004](adr/004-retirada-personal.md).
+La [baja personal](ELIMINACIONES_PERSONALES.md) conserva todas las filas dependientes y solo cambia `userAlbums`: fija `deletedAt`/`updatedAt` y deriva `activeAlbumKey=null`. Restaurar elimina el marcador, actualiza la fecha y deriva el índice activo, exigiendo que no exista otra entrada activa del mismo álbum. Se conservan IDs y fecha de alta; una referencia obsoleta se rechaza antes de escribir. Esta operación no añade tablas ni exige una migración propia; opera también en el esquema vigente v8. Ver [ADR-004](adr/004-retirada-personal.md).
 
 ## Restauración vacía
 

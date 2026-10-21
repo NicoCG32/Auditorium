@@ -86,7 +86,9 @@ test('consulta identificada y acotada devuelve créditos completos y referencias
     id: albumId,
     title: 'Horizonte ficticio',
     artists: ['Artista ficticio', 'Colaborador ficticio'],
-    releaseType: 'album',
+    primaryType: 'unspecified',
+    categories: [],
+    publicationStatus: 'unknown' as const,
     originalYear: 2001,
     catalogReference: {
       provider: 'wikidata',
@@ -211,7 +213,7 @@ test('fechas discordantes no se convierten silenciosamente en año original', as
     fetch: fetcher,
     minIntervalMs: 0,
   }).search({ title: 'Horizonte ficticio', artist: '' })
-  expect(result?.releaseType).toBe('ep')
+  expect(result?.primaryType).toBe('ep')
   expect(result).not.toHaveProperty('originalYear')
   expect(result?.warnings).toContain(
     'La fecha de publicación necesita revisión manual.',
@@ -460,18 +462,21 @@ test('UTF-8 inválido se clasifica como respuesta inválida sin mostrar bytes re
 })
 
 test.each([
-  ['Q208569', 'album'],
-  ['Q209939', 'live'],
-  ['Q222910', 'compilation'],
+  ['Q208569', 'full_length'],
+  ['Q209939', 'unspecified'],
+  ['Q222910', 'unspecified'],
   ['Q169930', 'ep'],
   ['Q134556', 'single'],
-])('acepta la clase musical %s como %s', async (id, releaseType) => {
+  ['Q220935', 'unspecified'],
+  ['Q368281', 'unspecified'],
+  ['Q4176708', 'unspecified'],
+])('acepta la clase musical %s como %s', async (id, primaryType) => {
   const fetcher = fixtureFetch(album({ P31: [entityValue(id)] }))
   const [result] = await createWikidataClient({
     fetch: fetcher,
     minIntervalMs: 0,
   }).search({ title: 'Horizonte ficticio', artist: '' })
-  expect(result?.releaseType).toBe(releaseType)
+  expect(result?.primaryType).toBe(primaryType)
 })
 
 test('una forma musical no convierte una película en álbum', async () => {
@@ -484,4 +489,26 @@ test('una forma musical no convierte una película en álbum', async () => {
   }).search({ title: 'Horizonte ficticio', artist: '' })
   expect(result).toEqual([])
   expect(fetcher).toHaveBeenCalledTimes(2)
+})
+
+test('EP, Demo y Split externos se preparan juntos sin inferir publicación', async () => {
+  const fetcher = fixtureFetch(
+    album({
+      P31: [entityValue('Q482994')],
+      P7937: [
+        entityValue('Q169930'),
+        entityValue('Q220935'),
+        entityValue('Q368281'),
+      ],
+    }),
+  )
+  const [result] = await createWikidataClient({
+    fetch: fetcher,
+    minIntervalMs: 0,
+  }).search({ title: 'Horizonte ficticio', artist: '' })
+  expect(result).toMatchObject({
+    primaryType: 'ep',
+    categories: ['demo', 'split'],
+    publicationStatus: 'unknown',
+  })
 })

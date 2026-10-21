@@ -54,7 +54,7 @@ begin
   exception when invalid_parameter_value then null;
   end;
   begin
-    perform public.save_library_snapshot(a, 3, gen_random_uuid(), document, 5);
+    perform public.save_library_snapshot(a, 3, gen_random_uuid(), document, 6);
     raise exception 'Unknown schema was accepted';
   exception when invalid_parameter_value then null;
   end;
@@ -64,6 +64,34 @@ begin
   exception when invalid_parameter_value then null;
   end;
   if (select revision from public.library_snapshots where owner_id = a) <> 3 then raise exception 'Rejected writes changed the revision'; end if;
+  operation := gen_random_uuid();
+  document := jsonb_set(document, '{catalog,albums}', '[{"id":"00000000-0000-4000-8000-000000000002","title":"Demo Ficticia","primaryType":"ep","categories":["demo","split"],"publicationStatus":"unreleased"}]');
+  result := public.save_library_snapshot(a, 3, operation, document, 5);
+  if (result->>'revision')::integer <> 4 then raise exception 'Version 5 upgrade failed'; end if;
+  if (select schema_version from public.library_snapshots where owner_id = a) <> 5 then raise exception 'Stored version 5 missing'; end if;
+  result := public.save_library_snapshot(a, 3, operation, document, 5);
+  if (result->>'revision')::integer <> 4 then raise exception 'Version 5 idempotency failed'; end if;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), document, 4);
+    raise exception 'Version 4 accepted classification or downgraded';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{catalog,albums,0,primaryType}', '"demo"'), 5);
+    raise exception 'Mixed primary type was accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{catalog,albums,0,categories}', '["demo","demo"]'), 5);
+    raise exception 'Duplicate categories were accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{catalog,albums}', '[{"releaseType":"demo"}]'), 5);
+    raise exception 'Version 5 accepted historical album shape';
+  exception when invalid_parameter_value then null;
+  end;
+  if (select revision from public.library_snapshots where owner_id = a) <> 4 then raise exception 'Rejected classifications changed the revision'; end if;
   execute 'set local role anon';
   begin
     perform count(*) from public.library_snapshots;
@@ -79,4 +107,4 @@ begin
 end;
 $$;
 rollback;
-select 'RLS, account isolation, CAS, idempotency, schema 3/4, downgrade guard and denied anonymous/direct writes: PASS; fictional data rolled back' as validation;
+select 'RLS, account isolation, CAS, idempotency, schema 3/4/5, classification, downgrade guard and denied anonymous/direct writes: PASS; fictional data rolled back' as validation;

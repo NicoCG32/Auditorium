@@ -1,5 +1,7 @@
 // @vitest-environment node
 import Dexie from 'dexie'
+import { legacySnapshotFixture } from '../../test/legacy-backup.fixture'
+import { migrateLegacyAlbum } from '../../domain/catalog/legacy-classification'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { beforeEach, afterEach, expect, test } from 'vitest'
 import {
@@ -65,7 +67,11 @@ test.each([false, true])(
       const catalog = makeContext().catalog,
         library = makeLibrary()
       await old.transaction('rw', old.tables, async () => {
-        for (const [name, data] of Object.entries(catalog))
+        for (const [name, data] of Object.entries(
+          legacySnapshotFixture({ catalog } as Parameters<
+            typeof legacySnapshotFixture
+          >[0]).catalog,
+        ))
           await old.table(name).bulkAdd(data)
         await old
           .table('userAlbums')
@@ -82,7 +88,10 @@ test.each([false, true])(
     expect(next.database.backendDB().version).toBe(DATABASE_VERSION * 10)
     expect(snapshot.identity.userId).toBe(libraryIds.user)
     expect(snapshot.library.ownedItems).toEqual([])
-    expect(await rows(next.database, names)).toEqual(before)
+    expect(await rows(next.database, names)).toEqual({
+      ...before,
+      albums: before['albums']!.map(migrateLegacyAlbum),
+    })
   },
 )
 test('apertura concurrente desde v1 conserva la misma identidad y esquema actual', async () => {

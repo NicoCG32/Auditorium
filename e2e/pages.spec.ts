@@ -265,11 +265,28 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
   const source = await restoreFixture(page)
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Artista Ficticio Pages')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Horizonte Ficticio Pages')
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', {

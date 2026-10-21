@@ -279,7 +279,9 @@ describe('índices y snapshots', () => {
           await database.albums.add({
             id: ids.album,
             title: 'Eclipse',
-            releaseType: 'album',
+            primaryType: 'full_length',
+            categories: [],
+            publicationStatus: 'unknown' as const,
             catalogScope: 'personal',
           })
           await database.artists.add(artist)

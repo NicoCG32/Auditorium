@@ -6,12 +6,13 @@ import {
   type CatalogLookupClient,
 } from '../../application/catalog-lookup'
 import { wikidataCatalogClient } from '../../infrastructure/catalog/wikidata-client'
-import { releaseTypeLabels } from '../library/labels'
+import { classificationLabel } from '../../domain/catalog/classification'
 
 export interface CatalogLookupPanelProps {
   title: string
   artist: string
   onSelect: (candidate: CatalogCandidate) => void
+  onManual?: () => void
   disabled?: boolean
   client?: CatalogLookupClient
 }
@@ -37,10 +38,12 @@ function CatalogSearchSession({
   title,
   artist,
   onSelect,
+  onManual,
   disabled = false,
   client = wikidataCatalogClient,
 }: CatalogLookupPanelProps) {
   const headingId = useId()
+  const details = useRef<HTMLDetailsElement>(null)
   const [state, setState] = useState<SearchState>(initial)
   const controller = useRef<AbortController | null>(null)
   const generation = useRef(0)
@@ -61,6 +64,7 @@ function CatalogSearchSession({
       candidates: [],
       message: 'Puedes continuar con el registro manual.',
     })
+    onManual?.()
   }
 
   async function search() {
@@ -108,90 +112,99 @@ function CatalogSearchSession({
 
   return (
     <section className="catalog-lookup" aria-labelledby={headingId}>
-      <h3 id={headingId}>Buscar referencia de catálogo</h3>
-      <p className="muted">
-        Consulta opcional a Wikidata: se envía el título a ese servicio. Su
-        catálogo puede estar incompleto; el guardado manual siempre está
-        disponible.
-      </p>
-      <div className="form-actions">
-        <button
-          type="button"
-          disabled={disabled || state.status === 'loading' || !title.trim()}
-          onClick={() => void search()}
-        >
-          Buscar en Wikidata
-        </button>
-        {state.status === 'loading' ? (
-          <button type="button" disabled={disabled} onClick={manual}>
-            Cancelar búsqueda
+      <details ref={details} className="optional-fields">
+        <summary id={headingId}>
+          Buscar referencia en Wikidata (opcional)
+        </summary>
+        <p className="muted">
+          Consulta opcional a Wikidata: se envía el título a ese servicio. Su
+          catálogo puede estar incompleto; el guardado manual siempre está
+          disponible.
+        </p>
+        <div className="form-actions">
+          <button
+            type="button"
+            disabled={disabled || state.status === 'loading' || !title.trim()}
+            onClick={() => void search()}
+          >
+            Buscar en Wikidata
           </button>
-        ) : null}
-        <button type="button" disabled={disabled} onClick={manual}>
-          Continuar con el registro manual
-        </button>
-      </div>
-      <p
-        role="status"
-        className={state.status === 'error' ? 'field-error' : 'muted'}
-      >
-        {state.message}
-      </p>
-      {state.candidates.length ? (
-        <ul className="catalog-candidates">
-          {state.candidates.map((candidate) => {
-            const artistMatches = candidate.artists.some(
-              (name) =>
-                normalizeCatalogText(name) === normalizeCatalogText(artist),
-            )
-            return (
-              <li key={candidate.id} className="catalog-candidate">
-                <h4>{candidate.title}</h4>
-                <p>{candidate.artists.join(' · ')}</p>
-                <p className="muted">
-                  {releaseTypeLabels[candidate.releaseType]}
-                  {candidate.originalYear ? ` · ${candidate.originalYear}` : ''}
-                </p>
-                {candidate.description ? <p>{candidate.description}</p> : null}
-                {artist.trim() && !artistMatches ? (
-                  <p>
-                    El artista no coincide con el texto escrito. Revisa esta
-                    referencia.
+          {state.status === 'loading' ? (
+            <button type="button" disabled={disabled} onClick={manual}>
+              Cancelar búsqueda
+            </button>
+          ) : null}
+        </div>
+        <p
+          role="status"
+          className={state.status === 'error' ? 'field-error' : 'muted'}
+        >
+          {state.message}
+        </p>
+        {state.candidates.length ? (
+          <ul className="catalog-candidates">
+            {state.candidates.map((candidate) => {
+              const artistMatches = candidate.artists.some(
+                (name) =>
+                  normalizeCatalogText(name) === normalizeCatalogText(artist),
+              )
+              return (
+                <li key={candidate.id} className="catalog-candidate">
+                  <h4>{candidate.title}</h4>
+                  <p>{candidate.artists.join(' · ')}</p>
+                  <p className="muted">
+                    {classificationLabel(candidate)}
+                    {candidate.originalYear
+                      ? ` · ${candidate.originalYear}`
+                      : ''}
                   </p>
-                ) : null}
-                {candidate.warnings?.map((warning) => (
-                  <p key={warning}>{warning}</p>
-                ))}
-                <p>
-                  <a
-                    href={`https://www.wikidata.org/wiki/${encodeURIComponent(candidate.catalogReference.entityId)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    referrerPolicy="no-referrer"
+                  {candidate.description ? (
+                    <p>{candidate.description}</p>
+                  ) : null}
+                  {artist.trim() && !artistMatches ? (
+                    <p>
+                      El artista no coincide con el texto escrito. Revisa esta
+                      referencia.
+                    </p>
+                  ) : null}
+                  {candidate.warnings?.map((warning) => (
+                    <p key={warning}>{warning}</p>
+                  ))}
+                  <p>
+                    <a
+                      href={`https://www.wikidata.org/wiki/${encodeURIComponent(candidate.catalogReference.entityId)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      referrerPolicy="no-referrer"
+                    >
+                      Ver fuente Wikidata · {candidate.id}
+                    </a>
+                  </p>
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => {
+                      setState({
+                        status: 'done',
+                        candidates: [],
+                        message:
+                          'Referencia seleccionada. Revisa el borrador antes de guardar.',
+                      })
+                      if (details.current) details.current.open = false
+                      onSelect(candidate)
+                    }}
                   >
-                    Ver fuente Wikidata · {candidate.id}
-                  </a>
-                </p>
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => {
-                    setState({
-                      status: 'done',
-                      candidates: [],
-                      message:
-                        'Referencia seleccionada. Revisa el borrador antes de guardar.',
-                    })
-                    onSelect(candidate)
-                  }}
-                >
-                  Revisar {candidate.title}
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      ) : null}
+                    Revisar {candidate.title}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        ) : null}
+      </details>
+      <button type="button" disabled={disabled} onClick={manual}>
+        Continuar con el registro manual
+      </button>
     </section>
   )
 }

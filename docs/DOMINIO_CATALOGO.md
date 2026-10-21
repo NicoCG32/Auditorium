@@ -1,5 +1,7 @@
 # Dominio del catálogo
 
+UX-05 incorpora la [clasificación independiente y sus migraciones](CLASIFICACION_ALBUM.md): DB8/nativa80 y respaldo5. Album describe la obra; Release conserva las ediciones; UserAlbum, la experiencia y los enlaces personales.
+
 DOM-01 implementa los modelos y validadores del catálogo en `src/domain/catalog/`. No incluye almacenamiento, altas de interfaz ni la relación personal de biblioteca. El módulo no importa React ni Dexie y sus reglas no realizan llamadas remotas.
 
 ## Entidades y relaciones
@@ -7,7 +9,7 @@ DOM-01 implementa los modelos y validadores del catálogo en `src/domain/catalog
 | Entidad      | Identidad y función                                                              |
 | ------------ | -------------------------------------------------------------------------------- |
 | Artist       | UUID, nombre y metadatos opcionales                                              |
-| Album        | UUID y obra conceptual; tipo predeterminado `album`                              |
+| Album        | UUID y obra conceptual; tipo principal, categorías y publicación independientes  |
 | AlbumArtist  | Crédito de artista, rol y posición en un álbum                                   |
 | Track        | UUID y pista dentro de un álbum; variante opcional de otra pista del mismo álbum |
 | CoreTrack    | Aparición y posición en la lista original de referencia                          |

@@ -1,12 +1,16 @@
+import { z } from 'zod'
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import { cloudAuthStorage } from './auth-browser'
 import {
   BACKUP_SCHEMA_VERSION,
   MAX_BACKUP_BYTES,
   localSnapshotSchema,
+  migrateLegacySnapshot,
+  legacySnapshotV3Schema,
 } from '../../domain/backup'
 import {
   remoteLibrarySchema,
+  sameSnapshot,
   SyncConflict,
   type PendingSync,
   type RemoteLibrary,
@@ -79,11 +83,32 @@ export class SupabaseLibraryRepository implements RemoteLibraryRepository {
     }
     const { data, error } = await this.client
       .from('library_snapshots')
-      .select('revision,snapshot')
+      .select('revision,snapshot,schema_version')
       .eq('owner_id', this.accountId)
       .maybeSingle()
     if (error) throw error
-    this.cached = data === null ? null : remoteLibrarySchema.parse(data)
+    if (data === null) this.cached = null
+    else {
+      const wire = z
+        .strictObject({
+          revision: remoteLibrarySchema.shape.revision,
+          schema_version: z.union([z.literal(3), z.literal(4), z.literal(5)]),
+          snapshot: z.unknown(),
+        })
+        .parse(data)
+      const snapshot =
+        wire.schema_version === 5
+          ? localSnapshotSchema.parse(wire.snapshot)
+          : migrateLegacySnapshot(
+              wire.schema_version === 3
+                ? legacySnapshotV3Schema.parse(wire.snapshot)
+                : wire.snapshot,
+            )
+      this.cached = remoteLibrarySchema.parse({
+        revision: wire.revision,
+        snapshot,
+      })
+    }
     return this.cached
   }
   async save(pending: PendingSync) {
@@ -104,7 +129,17 @@ export class SupabaseLibraryRepository implements RemoteLibraryRepository {
     })
     const data: unknown = response.data
     const error = response.error
-    if (error?.code === '40001') throw new SyncConflict()
+    if (error?.code === '40001') {
+      // An old pending request may already have committed before its local v8 migration.
+      const latest = await this.load()
+      if (
+        latest &&
+        latest.revision === pending.expectedRevision + 1 &&
+        sameSnapshot(latest.snapshot, snapshot)
+      )
+        return latest
+      throw new SyncConflict()
+    }
     if (error) throw error
     this.cached = remoteLibrarySchema.parse(data)
     return this.cached

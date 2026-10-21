@@ -4,7 +4,9 @@ export interface CatalogCandidate {
   id: string
   title: string
   artists: string[]
-  releaseType: Album['releaseType']
+  primaryType: Album['primaryType']
+  categories: Album['categories']
+  publicationStatus: Album['publicationStatus']
   originalYear?: number
   description?: string
   catalogReference: CatalogReference

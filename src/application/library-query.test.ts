@@ -30,6 +30,25 @@ function snapshot(): LocalSnapshot {
   }
 }
 
+test('clasificación y publicación se buscan sin convertir géneros ni adquisiciones', () => {
+  const data = snapshot()
+  data.catalog.albums[0] = {
+    ...data.catalog.albums[0]!,
+    primaryType: 'ep',
+    categories: ['demo', 'split'],
+    publicationStatus: 'unreleased',
+  }
+  const projected = projectLibrary(data)
+  for (const search of ['EP', 'Demo', 'Split', 'Inédito'])
+    expect(
+      queryLibrary(projected, { ...defaultLibraryFilters, search }).map(
+        (row) => row.id,
+      ),
+    ).toEqual([libraryIds.entry])
+  expect(data.catalog.albums[0].genres).toBeUndefined()
+  expect(data.library.ownedItems).toEqual([])
+})
+
 describe('proyección de biblioteca', () => {
   test('solo entradas activas; catálogo y históricos no se convierten en biblioteca', () => {
     const data = snapshot()
@@ -37,7 +56,9 @@ describe('proyección de biblioteca', () => {
       id: fixtureId(800),
       title: 'Solo catálogo',
       catalogScope: 'personal',
-      releaseType: 'album',
+      primaryType: 'full_length',
+      categories: [],
+      publicationStatus: 'unknown' as const,
     })
     data.catalog.albumArtists.push({
       albumId: fixtureId(800),

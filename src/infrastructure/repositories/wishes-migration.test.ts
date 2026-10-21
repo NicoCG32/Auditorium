@@ -1,5 +1,7 @@
 // @vitest-environment node
 import Dexie from 'dexie'
+import { legacySnapshotFixture } from '../../test/legacy-backup.fixture'
+import { migrateLegacyAlbum } from '../../domain/catalog/legacy-classification'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { beforeEach, afterEach, expect, test } from 'vitest'
 import {
@@ -69,7 +71,11 @@ test.each([
       old = await legacy(version, schema)
     if (populated)
       await old.transaction('rw', old.tables, async () => {
-        for (const [name, data] of Object.entries(makeContext().catalog))
+        for (const [name, data] of Object.entries(
+          legacySnapshotFixture({
+            catalog: makeContext().catalog,
+          } as Parameters<typeof legacySnapshotFixture>[0]).catalog,
+        ))
           await old.table(name).bulkAdd(data)
         const library = makeLibrary()
         await old
@@ -96,7 +102,10 @@ test.each([
     expect(next.database.backendDB().version).toBe(DATABASE_VERSION * 10)
     expect(snapshot.library.purchaseWishes).toEqual([])
     expect(snapshot.identity.userId).toBe(libraryIds.user)
-    expect(await rows(next.database, names)).toEqual(before)
+    expect(await rows(next.database, names)).toEqual({
+      ...before,
+      albums: before['albums']!.map(migrateLegacyAlbum),
+    })
     expect(next.database.tables.map((table) => table.name).sort()).toEqual(
       Object.keys(SCHEMA_V6).sort(),
     )

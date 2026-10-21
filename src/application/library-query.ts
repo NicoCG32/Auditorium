@@ -1,4 +1,5 @@
 import type { ListeningStatus } from '../domain/library/schemas'
+import { classificationLabel } from '../domain/catalog/classification'
 import { unitsToScore } from '../domain/library/scores'
 import type { LocalSnapshot } from '../domain/repositories/local-repository'
 
@@ -143,6 +144,7 @@ function projectEntries(
         searchText: normalized(
           [
             album.title,
+            classificationLabel(album),
             ...names.flatMap((name) => [name.display, name.canonical]),
             ...genres,
             ...countries,

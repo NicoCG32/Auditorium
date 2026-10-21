@@ -1485,3 +1485,16 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+.classification-fields {
+  min-inline-size: 0;
+}
+.classification-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+.classification-options .checkbox-option {
+  margin: 0;
+  min-block-size: 2.75rem;
+}

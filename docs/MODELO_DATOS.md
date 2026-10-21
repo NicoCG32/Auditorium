@@ -2,9 +2,11 @@
 
 La [sincronización opcional con Supabase](SINCRONIZACION_SUPABASE.md) añade una tabla remota privada versionada y el checkpoint técnico de IndexedDB v6. LINK-01 añade enlaces personales contenidos en UserAlbum, DB7/nativa70 y respaldo4; no añade tablas musicales. Los apartados del MVP describen su base histórica; el contrato remoto y su RLS se documentan en la guía de sincronización.
 
+UX-05 separa la clasificación en Album y migra las filas y los documentos del checkpoint de forma atómica. DB8 sustituye el índice releaseType por primaryType; el respaldo5 y el servidor versionado conservan lectores históricos estrictos. Véase [clasificación y migración](CLASIFICACION_ALBUM.md).
+
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta LINK-01 de DB7/respaldo4, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta UX-05 de DB8/respaldo5, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 
@@ -52,7 +54,7 @@ En la tabla, los corchetes representan una clave o índice compuesto, en el orde
 | `syncCheckpoint` | `key`                                | Ninguno; checkpoint técnico, fuera del respaldo                                          |
 | `metadata`       | `key`                                | Ninguno                                                                                  |
 | `artists`        | `id`                                 | `name`                                                                                   |
-| `albums`         | `id`                                 | `title`, `releaseType`, `originalYear`                                                   |
+| `albums`         | `id`                                 | `title`, `primaryType`, `originalYear`                                                   |
 | `albumArtists`   | `[albumId, artistId, role]`          | `[albumId, position]` **único**; `artistId`                                              |
 | `tracks`         | `id`                                 | `albumId`, `title`, `variantOfTrackId`                                                   |
 | `coreTracks`     | `[albumId, discNumber, trackNumber]` | `[albumId, trackId]`                                                                     |
@@ -172,7 +174,7 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 ## Contrato de respaldo JSON
 
-El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 4`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
+El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 5`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
 
 La versión **4 del respaldo** es independiente de IndexedDB **7**. El formato vigente incorpora enlaces personales y favorito al snapshot completo. Los formatos 1/2/3 mantienen sus schemas históricos estrictos antes de normalizar a 4: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y ninguno admite los campos de enlaces. No se inventan datos al migrar. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de tablas nativas.
 
@@ -182,7 +184,7 @@ La versión **4 del respaldo** es independiente de IndexedDB **7**. El formato v
 - Comprueba el tamaño UTF-8 real del texto antes de analizar JSON; admite un BOM inicial.
 - Valida el documento y comprueba también el tamaño de su representación normalizada mediante serialización.
 
-El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v7 ni un respaldo4; conserva copias históricas antes de actualizar.
+El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v8 ni un respaldo5; conserva copias históricas antes de actualizar.
 
 La exportación parte de una lectura validada y consistente. Serializa el documento con sangría de dos espacios y un salto de línea final. La aplicación inicia su descarga, pero esa acción no demuestra que el navegador haya guardado el archivo en el equipo.
 

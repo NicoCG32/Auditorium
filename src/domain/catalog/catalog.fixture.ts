@@ -22,7 +22,14 @@ export function makeCatalog(): CatalogInput {
   const originals = [ids.overture, ids.eclipse, ids.ashes]
   return {
     artists: [{ id: ids.artist, name: 'Umbral Eléctrico' }],
-    albums: [{ id: ids.album, title: 'Eclipse', originalYear: 1998 }],
+    albums: [
+      {
+        id: ids.album,
+        title: 'Eclipse',
+        primaryType: 'full_length',
+        originalYear: 1998,
+      },
+    ],
     albumArtists: [
       {
         albumId: ids.album,

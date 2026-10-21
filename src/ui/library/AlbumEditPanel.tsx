@@ -10,14 +10,14 @@ import {
 } from '../../application/music-library'
 import {
   artistRoleSchema,
-  releaseTypeSchema,
   type AlbumArtist,
 } from '../../domain/catalog/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
+import { focusFormField } from './form-focus'
 import { CoverFields } from './CoverFields'
 import { splitGenres } from './album-form-values'
-import { releaseTypeLabels } from './labels'
+import { AlbumClassificationFields } from './AlbumClassificationFields'
 import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 import { personalLinksFrom } from '../../application/personal-links'
 import type { UserAlbum } from '../../domain/library/schemas'
@@ -38,7 +38,9 @@ function draftFrom(expected: AlbumEditExpected, entry?: UserAlbum) {
   return {
     personalLinks: linksDraftFrom(entry),
     title: album.title,
-    releaseType: album.releaseType,
+    primaryType: album.primaryType,
+    categories: album.categories,
+    publicationStatus: album.publicationStatus,
     originalYear: album.originalYear?.toString() ?? '',
     genres: album.genres?.join(', ') ?? '',
     description: album.description ?? '',
@@ -212,7 +214,9 @@ export function AlbumEditPanel({
       albumId,
       expected,
       title: draft.title,
-      releaseType: draft.releaseType,
+      primaryType: draft.primaryType,
+      categories: draft.categories,
+      publicationStatus: draft.publicationStatus,
       ...(year
         ? { originalYear: /^\d{1,4}$/u.test(year) ? Number(year) : Number.NaN }
         : {}),
@@ -250,7 +254,10 @@ export function AlbumEditPanel({
           : path[0] === 'artists'
             ? `artist-${String(path[1] ?? 0)}`
             : String(path[0] ?? 'title')
-      form.current?.querySelector<HTMLElement>(`[name="${fieldName}"]`)?.focus()
+      const field = form.current?.querySelector<HTMLElement>(
+        `[name="${fieldName}"]`,
+      )
+      focusFormField(field)
       return
     }
     locked.current = true
@@ -327,24 +334,7 @@ export function AlbumEditPanel({
             />
           </label>
           <div className="form-grid">
-            <label>
-              <span className="field-label">Tipo</span>
-              <select
-                value={draft.releaseType}
-                name="releaseType"
-                onChange={(event) =>
-                  edit({
-                    releaseType: releaseTypeSchema.parse(event.target.value),
-                  })
-                }
-              >
-                {releaseTypeSchema.options.map((value) => (
-                  <option key={value} value={value}>
-                    {releaseTypeLabels[value]}
-                  </option>
-                ))}
-              </select>
-            </label>
+            <AlbumClassificationFields value={draft} onChange={edit} />
             <label>
               <span className="field-label">Año original</span>
               <input

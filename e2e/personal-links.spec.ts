@@ -33,6 +33,9 @@ async function addAlbum(page: Page) {
   await page.goto('/')
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Banda Ficticia')
   await page
@@ -44,6 +47,20 @@ async function addAlbum(page: Page) {
   await page
     .getByRole('combobox', { name: 'Enlace favorito de reproducción' })
     .selectOption({ label: 'Mi versión original' })
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Umbral Ficticio', exact: true }),
@@ -85,7 +102,7 @@ test('alta, edición coordinada, favoritos, cancelación y proveedor genérico c
     page.getByRole('region', { name: 'Referencias del catálogo' }),
   ).not.toContainText('Favorito de reproducción')
   const before = await backup(page)
-  expect(before.schemaVersion).toBe(4)
+  expect(before.schemaVersion).toBe(5)
   expect(before.data.library.albumRatings).toEqual([])
   expect(before.data.library.ownedItems).toEqual([])
   expect(before.data.library.userAlbums[0]!.listeningStatus).toBe('untracked')

@@ -6,11 +6,12 @@ import {
 import type { MusicLibrary } from '../../application/music-library'
 import { MusicUseCaseError } from '../../application/music-library'
 import { personalLinksFrom } from '../../application/personal-links'
+import { ArtistReuseChoice } from './ArtistReuseChoice'
 import { PersonalLinksEditor } from './PersonalLinksEditor'
 import { linksInputFrom } from './personal-links-values'
 import type { CatalogCandidate } from '../../application/catalog-lookup'
 import { catalogNameKey } from '../../application/catalog-names'
-import { releaseTypeSchema } from '../../domain/catalog/schemas'
+import { AlbumClassificationFields } from './AlbumClassificationFields'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { CatalogLookupPanel } from '../catalog/CatalogLookupPanel'
@@ -20,7 +21,8 @@ import {
   prepareCatalogCandidate,
   type AlbumFormValues,
 } from './album-form-values'
-import { releaseTypeLabels } from './labels'
+import { classificationLabel } from '../../domain/catalog/classification'
+import { focusFormField } from './form-focus'
 import { CoverFields } from './CoverFields'
 import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 
@@ -64,6 +66,7 @@ export function AlbumForm({
   const artistRef = useRef<HTMLInputElement>(null)
   const reviewHeading = useRef<HTMLHeadingElement>(null)
   const selectionHeading = useRef<HTMLHeadingElement>(null)
+  const saveHeading = useRef<HTMLHeadingElement>(null)
   const retry = useRef<HTMLButtonElement>(null)
   useDraftGuard({
     id: 'new-album',
@@ -91,7 +94,9 @@ export function AlbumForm({
     const changesArtists =
       ('artist' in change &&
         catalogNameKey(change.artist ?? '') !==
-          catalogNameKey(values.artist)) ||
+          catalogNameKey(
+            values.catalogArtists?.join(' · ') ?? values.artist,
+          )) ||
       ('artistId' in change && change.artistId !== values.artistId)
     const changesIdentity =
       changesArtists ||
@@ -105,6 +110,12 @@ export function AlbumForm({
             catalogReference: undefined,
             ...(changesArtists ? { catalogArtists: undefined } : {}),
             ...(changesArtists ? { catalogCountries: undefined } : {}),
+            ...(changesArtists
+              ? {
+                  catalogArtistIds: undefined,
+                  catalogArtistConfirmed: undefined,
+                }
+              : {}),
             ...(offeredCover && previous.coverUrl === offeredCover
               ? { coverUrl: '' }
               : {}),
@@ -143,6 +154,42 @@ export function AlbumForm({
   }
   async function save(acknowledge = false) {
     if (locked.current || coverBusy || pending) return
+    if (
+      artists.length &&
+      !values.catalogArtists &&
+      !values.artistId &&
+      !values.newArtistConfirmed
+    ) {
+      setErrors({
+        artist:
+          'Elige el artista existente o confirma que es otro artista con el mismo nombre.',
+      })
+      formRef.current
+        ?.querySelector<HTMLInputElement>('[name^="artist-choice-"]')
+        ?.focus()
+      return
+    }
+    if (
+      values.catalogArtists?.some(
+        (name, index) =>
+          matchingArtists(snapshot.catalog.artists, name).length &&
+          !values.catalogArtistIds?.[index] &&
+          !values.catalogArtistConfirmed?.[index],
+      )
+    ) {
+      setErrors({
+        artist:
+          'Revisa los artistas de los créditos y elige una coincidencia o confirma un homónimo.',
+      })
+      const details = formRef.current?.querySelector<HTMLDetailsElement>(
+        'details.album-details',
+      )
+      if (details) details.open = true
+      formRef.current
+        ?.querySelector<HTMLInputElement>('[name^="artist-choice-"]')
+        ?.focus()
+      return
+    }
     const parsed = parseAlbumForm(values)
     if (!parsed.success) {
       setErrors(parsed.errors)
@@ -150,9 +197,7 @@ export function AlbumForm({
       const field = formRef.current?.querySelector<HTMLElement>(
         first === 'personalLinks' ? '[name^="link-url-"]' : `[name="${first}"]`,
       )
-      const details = field?.closest<HTMLDetailsElement>('details')
-      if (details) details.open = true
-      field?.focus()
+      focusFormField(field)
       return
     }
     locked.current = true
@@ -284,11 +329,15 @@ export function AlbumForm({
                 name="artist"
                 aria-labelledby="form-artist-label"
                 required
-                value={values.artist}
+                value={values.catalogArtists?.join(' · ') ?? values.artist}
                 aria-invalid={Boolean(errors.artist)}
                 aria-describedby={errors.artist ? 'error-artist' : undefined}
                 onChange={(event) =>
-                  edit({ artist: event.target.value, artistId: undefined })
+                  edit({
+                    artist: event.target.value,
+                    artistId: undefined,
+                    newArtistConfirmed: false,
+                  })
                 }
               />
               {errorFor('artist')}
@@ -318,8 +367,9 @@ export function AlbumForm({
           ) : null}
           <CatalogLookupPanel
             title={values.title}
-            artist={values.artist}
+            artist={values.catalogArtists?.join(' · ') ?? values.artist}
             onSelect={selectCatalogCandidate}
+            onManual={() => saveHeading.current?.focus()}
             disabled={busy}
           />
           {values.catalogReference ? (
@@ -372,185 +422,287 @@ export function AlbumForm({
               </button>
             </section>
           ) : null}
-          {artists.length > 0 && !values.catalogArtists ? (
-            <fieldset className="artist-options">
-              <legend className="text-sm font-semibold">
-                Hay artistas con este nombre
-              </legend>
-              <p className="my-3 text-sm text-muted">
-                Elige uno para reutilizarlo o continúa con un artista nuevo.
-              </p>
-              <label className="radio-option">
-                <input
-                  type="radio"
-                  name="artist-choice"
-                  checked={values.artistId === undefined}
-                  onChange={() => edit({ artistId: undefined })}
-                />
-                Crear un artista nuevo con este nombre
-              </label>
-              {artists.map((artist) => {
-                const albumIds = new Set(
-                  snapshot.catalog.albumArtists
-                    .filter((credit) => credit.artistId === artist.id)
-                    .map((credit) => credit.albumId),
+          {!values.catalogArtists ? (
+            <ArtistReuseChoice
+              snapshot={snapshot}
+              name={values.artist}
+              selectedId={values.artistId}
+              confirmedNew={values.newArtistConfirmed}
+              onChange={(id) => {
+                const artist = snapshot.catalog.artists.find(
+                  (row) => row.id === id,
                 )
-                const titles = snapshot.catalog.albums
-                  .filter((album) => albumIds.has(album.id))
-                  .slice(0, 3)
-                  .map((album) => album.title)
-                  .join(', ')
-                return (
-                  <label key={artist.id} className="radio-option">
-                    <input
-                      type="radio"
-                      name="artist-choice"
-                      checked={values.artistId === artist.id}
-                      onChange={() =>
+                edit({
+                  artistId: id,
+                  newArtistConfirmed: !id,
+                  ...(artist
+                    ? { artist: artist.name, country: artist.country ?? '' }
+                    : {}),
+                })
+              }}
+            />
+          ) : null}
+          <button
+            type="button"
+            className="text-button"
+            disabled={(values.catalogArtists?.length ?? 1) >= 50}
+            onClick={() => {
+              const credits = values.catalogArtists ?? [values.artist]
+              edit({
+                catalogArtists: [...credits, ''],
+                catalogArtistIds: [
+                  ...(values.catalogArtistIds ?? [values.artistId]),
+                  undefined,
+                ],
+                catalogArtistConfirmed: [
+                  ...(values.catalogArtistConfirmed ?? [
+                    values.newArtistConfirmed,
+                  ]),
+                  false,
+                ],
+                catalogCountries: [
+                  ...(values.catalogCountries ?? [values.country]),
+                  '',
+                ],
+                catalogReference: undefined,
+              })
+              const details =
+                formRef.current?.querySelector<HTMLDetailsElement>(
+                  'details.album-details',
+                )
+              if (details) details.open = true
+              requestAnimationFrame(() =>
+                formRef.current
+                  ?.querySelector<HTMLInputElement>(
+                    `[name="credit-name-${credits.length}"]`,
+                  )
+                  ?.focus(),
+              )
+            }}
+          >
+            Añadir otro artista
+          </button>
+          <details className="optional-fields album-details">
+            <summary>Detalles del álbum (opcionales)</summary>
+            <div className="mt-5 grid gap-5">
+              <AlbumClassificationFields value={values} onChange={edit} />
+              <label>
+                <span className="field-label">
+                  Géneros (separados por comas)
+                </span>
+                <input
+                  name="genres"
+                  value={values.genres}
+                  onChange={(event) => edit({ genres: event.target.value })}
+                  aria-invalid={Boolean(errors.genres)}
+                  aria-describedby={errors.genres ? 'error-genres' : undefined}
+                  placeholder="Rock, jazz, metal…"
+                />
+                {errorFor('genres')}
+              </label>
+              {values.catalogArtists ? (
+                values.catalogArtists.map((name, index) => (
+                  <div key={index}>
+                    <label>
+                      <span className="field-label">
+                        Nombre del artista {index + 1}
+                      </span>
+                      <input
+                        name={`credit-name-${index}`}
+                        value={name}
+                        onChange={(event) => {
+                          const names = [...values.catalogArtists!]
+                          names[index] = event.target.value
+                          const ids = [
+                            ...(values.catalogArtistIds ??
+                              names.map(() => undefined)),
+                          ]
+                          ids[index] = undefined
+                          const confirmations = [
+                            ...(values.catalogArtistConfirmed ??
+                              names.map(() => false)),
+                          ]
+                          confirmations[index] = false
+                          edit({
+                            catalogArtists: names,
+                            catalogArtistIds: ids,
+                            catalogArtistConfirmed: confirmations,
+                            catalogReference: undefined,
+                          })
+                        }}
+                      />
+                    </label>
+                    <ArtistReuseChoice
+                      snapshot={snapshot}
+                      name={name}
+                      selectedId={values.catalogArtistIds?.[index]}
+                      confirmedNew={
+                        values.catalogArtistConfirmed?.[index] ?? false
+                      }
+                      onChange={(id) => {
+                        const ids = [
+                          ...(values.catalogArtistIds ??
+                            values.catalogArtists!.map(() => undefined)),
+                        ]
+                        ids[index] = id
+                        const confirmations = [
+                          ...(values.catalogArtistConfirmed ??
+                            values.catalogArtists!.map(() => false)),
+                        ]
+                        confirmations[index] = !id
                         edit({
-                          artistId: artist.id,
-                          artist: artist.name,
-                          country: artist.country ?? '',
+                          catalogArtistIds: ids,
+                          catalogArtistConfirmed: confirmations,
+                        })
+                      }}
+                    />
+                    <label>
+                      <span className="field-label">
+                        País de origen de {name}
+                      </span>
+                      <input
+                        name={`country-${index}`}
+                        disabled={Boolean(values.catalogArtistIds?.[index])}
+                        maxLength={100}
+                        value={
+                          snapshot.catalog.artists.find(
+                            (artist) =>
+                              artist.id === values.catalogArtistIds?.[index],
+                          )?.country ??
+                          values.catalogCountries?.[index] ??
+                          ''
+                        }
+                        onChange={(event) => {
+                          const countries = [
+                            ...(values.catalogCountries ??
+                              values.catalogArtists!.map(() => '')),
+                          ]
+                          countries[index] = event.target.value
+                          edit({ catalogCountries: countries })
+                        }}
+                      />
+                    </label>
+                    <button
+                      type="button"
+                      className="text-button"
+                      disabled={values.catalogArtists!.length < 2}
+                      onClick={() =>
+                        edit({
+                          catalogArtists: values.catalogArtists!.filter(
+                            (_, row) => row !== index,
+                          ),
+                          catalogArtistIds: values.catalogArtistIds?.filter(
+                            (_, row) => row !== index,
+                          ),
+                          catalogArtistConfirmed:
+                            values.catalogArtistConfirmed?.filter(
+                              (_, row) => row !== index,
+                            ),
+                          catalogCountries: (
+                            values.catalogCountries ??
+                            values.catalogArtists!.map(() => '')
+                          ).filter((_, row) => row !== index),
+                          catalogReference: undefined,
                         })
                       }
-                    />
-                    <span>
-                      Usar {artist.name}
-                      <small className="mt-1 block text-muted">
-                        {titles || 'Sin álbumes registrados'}
-                      </small>
+                    >
+                      Quitar artista {index + 1}
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <label>
+                  <span className="field-label">
+                    País de origen de la banda o artista
+                  </span>
+                  <input
+                    name="country"
+                    maxLength={100}
+                    value={values.country}
+                    disabled={values.artistId !== undefined}
+                    onChange={(event) => edit({ country: event.target.value })}
+                    aria-invalid={Boolean(errors.country)}
+                    aria-describedby={
+                      errors.country ? 'error-country' : undefined
+                    }
+                  />
+                  {values.artistId ? (
+                    <span className="mt-2 block text-xs text-muted">
+                      País del artista seleccionado. Puedes corregirlo desde la
+                      edición de una ficha.
                     </span>
-                  </label>
-                )
-              })}
-            </fieldset>
-          ) : null}
-          <label>
-            <span id="form-type-label" className="field-label">
-              Tipo
-            </span>
-            <select
-              name="releaseType"
-              aria-labelledby="form-type-label"
-              value={values.releaseType}
-              onChange={(event) => edit({ releaseType: event.target.value })}
-            >
-              {releaseTypeSchema.options.map((type) => (
-                <option key={type} value={type}>
-                  {releaseTypeLabels[type]}
-                </option>
-              ))}
-            </select>
-            {errorFor('releaseType')}
-          </label>
-          <label>
-            <span className="field-label">Géneros (separados por comas)</span>
-            <input
-              name="genres"
-              value={values.genres}
-              onChange={(event) => edit({ genres: event.target.value })}
-              aria-invalid={Boolean(errors.genres)}
-              aria-describedby={errors.genres ? 'error-genres' : undefined}
-              placeholder="Rock, jazz, metal…"
-            />
-            {errorFor('genres')}
-          </label>
-          {values.catalogArtists ? (
-            values.catalogArtists.map((name, index) => (
-              <label key={`${index}-${name}`}>
-                <span className="field-label">País de origen de {name}</span>
-                <input
-                  name={`country-${index}`}
-                  maxLength={100}
-                  value={values.catalogCountries?.[index] ?? ''}
-                  onChange={(event) => {
-                    const countries = [
-                      ...(values.catalogCountries ??
-                        values.catalogArtists!.map(() => '')),
-                    ]
-                    countries[index] = event.target.value
-                    edit({ catalogCountries: countries })
-                  }}
-                />
-              </label>
-            ))
-          ) : (
-            <label>
-              <span className="field-label">
-                País de origen de la banda o artista
-              </span>
-              <input
-                name="country"
-                maxLength={100}
-                value={values.country}
-                disabled={values.artistId !== undefined}
-                onChange={(event) => edit({ country: event.target.value })}
-                aria-invalid={Boolean(errors.country)}
-                aria-describedby={errors.country ? 'error-country' : undefined}
+                  ) : null}
+                </label>
+              )}
+              {errorFor('country')}
+              <PersonalLinksEditor
+                value={values.personalLinks}
+                onChange={(personalLinks) => edit({ personalLinks })}
+                {...(errors.personalLinks
+                  ? { error: errors.personalLinks }
+                  : {})}
               />
-              {values.artistId ? (
-                <span className="mt-2 block text-xs text-muted">
-                  País del artista seleccionado. Puedes corregirlo desde la
-                  edición de una ficha.
-                </span>
-              ) : null}
-            </label>
-          )}
-          {errorFor('country')}
-          <PersonalLinksEditor
-            value={values.personalLinks}
-            onChange={(personalLinks) => edit({ personalLinks })}
-            {...(errors.personalLinks ? { error: errors.personalLinks } : {})}
-          />
-          <CoverFields
-            url={values.coverUrl}
-            {...(values.coverImage ? { image: values.coverImage } : {})}
-            onChange={edit}
-            disabled={busy}
-            onBusyChange={setCoverBusy}
-            {...(errors.coverUrl || errors.coverImage
-              ? { error: errors.coverUrl ?? errors.coverImage }
-              : {})}
-          />
-          <details className="optional-fields">
-            <summary>Más datos (opcionales)</summary>
-            <div className="mt-5 grid gap-5">
-              <label>
-                <span id="form-year-label" className="field-label">
-                  Año original
-                </span>
-                <input
-                  name="originalYear"
-                  aria-labelledby="form-year-label"
-                  inputMode="numeric"
-                  value={values.originalYear}
-                  aria-invalid={Boolean(errors.originalYear)}
-                  aria-describedby={
-                    errors.originalYear ? 'error-originalYear' : undefined
-                  }
-                  onChange={(event) =>
-                    edit({ originalYear: event.target.value })
-                  }
-                />
-                {errorFor('originalYear')}
-              </label>
-              <label>
-                <span id="form-description-label" className="field-label">
-                  Descripción del álbum
-                </span>
-                <textarea
-                  name="description"
-                  aria-labelledby="form-description-label"
-                  rows={3}
-                  value={values.description}
-                  onChange={(event) =>
-                    edit({ description: event.target.value })
-                  }
-                />
-                {errorFor('description')}
-              </label>
+              <CoverFields
+                url={values.coverUrl}
+                {...(values.coverImage ? { image: values.coverImage } : {})}
+                onChange={edit}
+                disabled={busy}
+                onBusyChange={setCoverBusy}
+                {...(errors.coverUrl || errors.coverImage
+                  ? { error: errors.coverUrl ?? errors.coverImage }
+                  : {})}
+              />
+              <details className="optional-fields">
+                <summary>Más datos (opcionales)</summary>
+                <div className="mt-5 grid gap-5">
+                  <label>
+                    <span id="form-year-label" className="field-label">
+                      Año original
+                    </span>
+                    <input
+                      name="originalYear"
+                      aria-labelledby="form-year-label"
+                      inputMode="numeric"
+                      value={values.originalYear}
+                      aria-invalid={Boolean(errors.originalYear)}
+                      aria-describedby={
+                        errors.originalYear ? 'error-originalYear' : undefined
+                      }
+                      onChange={(event) =>
+                        edit({ originalYear: event.target.value })
+                      }
+                    />
+                    {errorFor('originalYear')}
+                  </label>
+                  <label>
+                    <span id="form-description-label" className="field-label">
+                      Descripción del álbum
+                    </span>
+                    <textarea
+                      name="description"
+                      aria-labelledby="form-description-label"
+                      rows={3}
+                      value={values.description}
+                      onChange={(event) =>
+                        edit({ description: event.target.value })
+                      }
+                    />
+                    {errorFor('description')}
+                  </label>
+                </div>
+              </details>
             </div>
           </details>
+          <h3 ref={saveHeading} tabIndex={-1} className="font-semibold">
+            Revisar y guardar
+          </h3>
+          <p className="text-sm text-muted">
+            {(values.catalogArtists?.join(' · ') ?? values.artist) ||
+              'Artista pendiente'}{' '}
+            · {values.title || 'Título pendiente'} ·{' '}
+            {classificationLabel(values)}. Podrás calificarlo y añadir ediciones
+            desde su ficha.
+          </p>
           {review.length > 0 ? (
             <section
               className="duplicate-review"
@@ -562,7 +714,7 @@ export function AlbumForm({
                 tabIndex={-1}
                 className="text-lg font-semibold"
               >
-                Encontramos registros parecidos
+                Coincidencias en tu catálogo local
               </h3>
               <p className="mt-2 text-sm text-muted" role="status">
                 Comprueba si es el mismo álbum. Ningún registro se ha creado ni
@@ -580,7 +732,7 @@ export function AlbumForm({
                     <p className="font-semibold">{candidate.album.title}</p>
                     <p className="mt-1 text-sm text-muted">
                       {candidate.artist} ·{' '}
-                      {releaseTypeLabels[candidate.album.releaseType]} ·{' '}
+                      {classificationLabel(candidate.album)} ·{' '}
                       {candidate.album.originalYear ?? 'Sin año'}
                     </p>
                     <button

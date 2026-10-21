@@ -1,5 +1,7 @@
 # Auditorium
 
+[Clasificación y alta de álbumes](docs/CLASIFICACION_ALBUM.md) describe tipo, categorías, publicación, créditos y compatibilidad DB8/respaldo5.
+
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.
 
 El MVP local `1.0.0` completa las Fases 0–4: persistencia, búsqueda, registro manual con revisión de duplicados, ficha, valoración del álbum, escucha y notas personales. La colección incluye listas originales, ediciones, calificaciones de pistas, ejemplares físicos o compras digitales y deseos por formato o edición. Incorpora retirada reversible, confirmaciones, respaldos JSON con restauración en biblioteca vacía y PWA para reabrir y gestionar la biblioteca sin conexión tras prepararse. Las migraciones y la recuperación se verifican también con reinicio de un navegador real. Las cuentas y la sincronización quedan fuera de esa release original.

@@ -77,6 +77,7 @@ async function openAlbumForm(repository: IndexedDbRepository) {
     expect(screen.getByRole('button', { name: 'Añadir álbum' })).toBeEnabled(),
   )
   fireEvent.click(screen.getByRole('button', { name: 'Añadir álbum' }))
+  fireEvent.click(screen.getByText('Detalles del álbum (opcionales)'))
 }
 function fillAlbum(artist = 'Umbral Ficticio', title = 'Eclipse Nuevo') {
   fireEvent.change(screen.getByRole('textbox', { name: 'Artista' }), {
@@ -85,6 +86,10 @@ function fillAlbum(artist = 'Umbral Ficticio', title = 'Eclipse Nuevo') {
   fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
     target: { value: title },
   })
+  const homonym = screen.queryByRole('radio', {
+    name: 'Es otro artista con este nombre (crear uno nuevo)',
+  })
+  if (homonym) fireEvent.click(homonym)
 }
 
 test('un conflicto al reutilizar un álbum permite actualizar coincidencias conservando los enlaces preparados', async () => {
@@ -709,7 +714,7 @@ test('registro mínimo aparece sin recarga y permite abrir su ficha básica', as
     await screen.findByRole('heading', { name: 'Eclipse Nuevo' }),
   ).toHaveFocus()
   const snapshot = await repository.readSnapshot()
-  expect(snapshot.catalog.albums[0]?.releaseType).toBe('album')
+  expect(snapshot.catalog.albums[0]?.primaryType).toBe('unspecified')
   expect(snapshot.catalog.albums[0]).not.toHaveProperty('originalYear')
   expect(snapshot.library.userAlbums).toHaveLength(1)
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
@@ -734,7 +739,9 @@ test('tipo y metadatos opcionales se guardan; año inválido conserva el formula
   const repository = connect()
   await openAlbumForm(repository)
   fillAlbum()
-  fireEvent.change(screen.getByLabelText('Tipo'), { target: { value: 'ep' } })
+  fireEvent.change(screen.getByLabelText('Tipo principal'), {
+    target: { value: 'ep' },
+  })
   fireEvent.click(screen.getByText('Más datos (opcionales)'))
   fireEvent.change(screen.getByLabelText('Año original'), {
     target: { value: '1998.5' },
@@ -758,7 +765,9 @@ test('tipo y metadatos opcionales se guardan; año inválido conserva el formula
   fireEvent.click(screen.getByRole('button', { name: 'Volver a biblioteca' }))
   await screen.findByRole('button', { name: 'Eclipse Nuevo' })
   expect((await repository.readSnapshot()).catalog.albums[0]).toMatchObject({
-    releaseType: 'ep',
+    primaryType: 'ep',
+    categories: [],
+    publicationStatus: 'unknown' as const,
     originalYear: 1998,
     description: 'Descripción ficticia',
   })
@@ -771,11 +780,13 @@ test('registro activo sugerido abre su ficha sin duplicar ni alterar valoracione
   fillAlbum('UMBRAL ELECTRICO', 'ECLIPSE')
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   await screen.findByRole('heading', {
-    name: 'Encontramos registros parecidos',
+    name: 'Coincidencias en tu catálogo local',
   })
   await waitFor(() =>
     expect(
-      screen.getByRole('heading', { name: 'Encontramos registros parecidos' }),
+      screen.getByRole('heading', {
+        name: 'Coincidencias en tu catálogo local',
+      }),
     ).toHaveFocus(),
   )
   fireEvent.click(screen.getByRole('button', { name: 'Abrir álbum existente' }))

@@ -40,8 +40,25 @@ async function noOverflow(page: Page) {
 }
 async function add(page: Page, title: string, artist: string) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
+  await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
   await page.getByRole('textbox', { name: 'Artista', exact: true }).fill(artist)
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: title, exact: true }),
@@ -208,7 +225,24 @@ test('auditoría de accesibilidad en vacío, formularios, ficha y confirmaciones
   await ready(page)
   await accessible(page)
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
+  await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
   await accessible(page)
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await accessible(page)
   await page.getByRole('button', { name: 'Cancelar', exact: true }).click()

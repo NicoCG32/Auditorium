@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Album, Catalog } from '../../domain/catalog/schemas'
 import type { LibraryAlbum } from '../../application/library-query'
-import { releaseTypeLabels } from './labels'
+import {
+  classificationLabel,
+  publicationLabels,
+} from '../../domain/catalog/classification'
 import type { MusicLibrary } from '../../application/music-library'
 import { AlbumCover } from './AlbumCover'
 import { AlbumRatingForm } from './AlbumRatingForm'
@@ -141,8 +144,10 @@ export function AlbumSummary({
             </p>
             <dl className="mt-6 grid gap-4 text-sm">
               <div>
-                <dt className="text-muted">Tipo</dt>
-                <dd>{releaseTypeLabels[album.releaseType]}</dd>
+                <dt className="text-muted">Clasificación</dt>
+                <dd>{classificationLabel(album)}</dd>
+                <dt className="text-muted mt-3">Publicación</dt>
+                <dd>{publicationLabels[album.publicationStatus]}</dd>
               </div>
               <div>
                 <dt className="text-muted">Año original</dt>

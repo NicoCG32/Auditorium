@@ -24,6 +24,9 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
   await ready(page)
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('conjunto del sur')
   await page
@@ -32,6 +35,20 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
   await page
     .getByRole('textbox', { name: 'Géneros (separados por comas)' })
     .fill('metal progresivo, METAL   PROGRESIVO, EDM')
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Canción Del Océano', exact: true }),
@@ -58,11 +75,28 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
   ).toBeVisible()
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Conjunto del SUR')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('CANCIÓN DEL OCÉANO')
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await page
     .getByRole('button', { name: 'Abrir álbum existente', exact: true })
@@ -139,6 +173,9 @@ async function add(
   country: string,
 ) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
+  await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
   await page.getByRole('textbox', { name: 'Artista', exact: true }).fill(artist)
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   await page
@@ -150,6 +187,20 @@ async function add(
       exact: true,
     })
     .fill(country)
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: title, exact: true }),
@@ -195,7 +246,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Eclipse Corregido Ficticio')
   await page
-    .getByRole('combobox', { name: 'Tipo', exact: true })
+    .getByRole('combobox', { name: 'Tipo principal', exact: true })
     .selectOption('ep')
   await page
     .getByRole('textbox', { name: 'Año original', exact: true })
@@ -230,7 +281,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     page.getByText('Umbral Eléctrico: Chile', { exact: true }),
   ).toBeVisible()
   const after = await exportBackup(page)
-  expect(after.schemaVersion).toBe(4)
+  expect(after.schemaVersion).toBe(5)
   expect(after.data.identity).toEqual(before.data.identity)
   expect(after.data.library).toEqual(before.data.library)
   for (const key of [
@@ -247,7 +298,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     id: ids.album,
     title: 'Eclipse Corregido Ficticio',
     originalYear: 2001,
-    releaseType: 'ep',
+    primaryType: 'ep',
     genres: ['Metal Progresivo', 'Jazz'],
   })
   expect(
@@ -386,7 +437,7 @@ test('PNG local se valida, carga automáticamente, persiste al recargar y restau
   await expect(cover).toBeVisible()
   await context.setOffline(true)
   const backup = await exportBackup(page)
-  expect(backup.schemaVersion).toBe(4)
+  expect(backup.schemaVersion).toBe(5)
   expect(
     backup.data.catalog.albums.find((album) => album.id === ids.album)
       ?.coverImage,

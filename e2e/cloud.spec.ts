@@ -135,7 +135,13 @@ async function mock(
       if (url.pathname.endsWith('/library_snapshots')) {
         const id = url.searchParams.get('owner_id')?.slice(3) ?? ''
         const value = state.get(id) ?? null
-        return reply(value)
+        return reply(
+          value
+            ? url.searchParams.get('select') === 'revision'
+              ? { revision: value.revision }
+              : { ...value, schema_version: 5 }
+            : null,
+        )
       }
       if (url.pathname.endsWith('/save_library_snapshot')) {
         const input = request.postDataJSON() as {
@@ -407,11 +413,28 @@ test('incorporar la biblioteca sin cuenta conserva el original y comparte cambio
   await page.goto('/')
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Artista Ficticio')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Biblioteca Original')
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Biblioteca Original', exact: true }),
@@ -438,11 +461,28 @@ test('incorporar la biblioteca sin cuenta conserva el original y comparte cambio
   await context.setOffline(true)
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  await page
     .getByRole('textbox', { name: 'Artista', exact: true })
     .fill('Otro Artista')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Añadido Sin Conexión')
+  if (
+    (await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .count()) === 1
+  )
+    await page
+      .getByRole('radio', {
+        name: 'Es otro artista con este nombre (crear uno nuevo)',
+        exact: true,
+      })
+      .check()
   await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Añadido Sin Conexión', exact: true }),
