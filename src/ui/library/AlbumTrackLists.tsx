@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ZodError } from 'zod'
-import type { MusicLibrary } from '../../application/music-library'
+import {
+  MusicUseCaseError,
+  type MusicLibrary,
+} from '../../application/music-library'
 import {
   TrackListConflictError,
   trackListRows,
   trackListToken,
+  releaseRemovalToken,
 } from '../../application/track-lists'
 import { addReleaseInputSchema } from '../../application/inputs'
 import { saveTrackListInputSchema } from '../../application/track-lists'
@@ -78,6 +82,7 @@ export function AlbumTrackLists({
   const [conflict, setConflict] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
+  const [removing, setRemoving] = useState<{ id: string; expected: string }>()
   const lock = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
   const alert = useRef<HTMLParagraphElement>(null)
@@ -197,12 +202,14 @@ export function AlbumTrackLists({
         )
       } else
         setError(
-          failure instanceof ZodError
-            ? 'Revisa los títulos, las posiciones positivas y únicas por disco y las referencias al mismo álbum. El borrador se conserva.'
-            : failure instanceof LocalStorageError &&
-                failure.code === 'quota_exceeded'
-              ? 'No hay espacio para guardar. La lista anterior y tu borrador se conservan; libera espacio y vuelve a intentar.'
-              : 'No se pudo guardar. La lista anterior y tu borrador se conservan; vuelve a intentar.',
+          failure instanceof MusicUseCaseError
+            ? failure.message
+            : failure instanceof ZodError
+              ? 'Revisa los títulos, las posiciones positivas y únicas por disco y las referencias al mismo álbum. El borrador se conserva.'
+              : failure instanceof LocalStorageError &&
+                  failure.code === 'quota_exceeded'
+                ? 'No hay espacio para guardar. La lista anterior y tu borrador se conservan; libera espacio y vuelve a intentar.'
+                : 'No se pudo guardar. La lista anterior y tu borrador se conservan; vuelve a intentar.',
         )
       setBusy(false)
       onBusyChange(false)
@@ -292,6 +299,7 @@ export function AlbumTrackLists({
               const next = event.target.value
               withTrackClosed(() => {
                 setTarget(next)
+                setRemoving(undefined)
                 setRatedTrackId(undefined)
                 setNotice('')
                 setError('')
@@ -424,6 +432,60 @@ export function AlbumTrackLists({
           >
             {releaseId ? 'Editar lista de edición' : 'Editar lista original'}
           </button>
+          {selected ? (
+            <div className="mt-5">
+              {removing ? (
+                <div role="group" aria-label="Confirmar eliminación de edición">
+                  <p>
+                    Se eliminarán esta edición y su lista. El álbum, las pistas
+                    y sus notas se conservan. Los vínculos personales deben
+                    resolverse antes.
+                  </p>
+                  <button
+                    type="button"
+                    className="action-button mt-3"
+                    disabled={blocked}
+                    onClick={() =>
+                      void commit(async () => {
+                        await library.removeRelease(
+                          removing.id,
+                          removing.expected,
+                        )
+                        setRemoving(undefined)
+                        setTarget('core')
+                      }, 'Edición eliminada.')
+                    }
+                  >
+                    Confirmar eliminar edición
+                  </button>
+                  <button
+                    type="button"
+                    className="text-button ml-3"
+                    disabled={blocked}
+                    onClick={() => setRemoving(undefined)}
+                  >
+                    Conservar edición
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  className="text-button"
+                  disabled={blocked}
+                  onClick={() =>
+                    withTrackClosed(() =>
+                      setRemoving({
+                        id: selected.id,
+                        expected: releaseRemovalToken(catalog, selected.id),
+                      }),
+                    )
+                  }
+                >
+                  Eliminar edición
+                </button>
+              )}
+            </div>
+          ) : null}
           {ratedTrack ? (
             <TrackRatingForm
               key={ratedTrack.id}

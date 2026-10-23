@@ -95,7 +95,7 @@ test('elegir referencia prepara sin escribir; guardar conserva artistas, referen
   )
   expect(snapshot.catalog.albumArtists).toHaveLength(2)
   const { document: backup } = await new LibraryBackups(repository).export()
-  expect(backup.schemaVersion).toBe(5)
+  expect(backup.schemaVersion).toBe(6)
   expect(serializeBackup(backup)).toContain('Q999999')
 })
 test('portada requiere elección y editar identidad quita asociación y portada elegida', async () => {

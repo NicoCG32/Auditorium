@@ -4,7 +4,62 @@ import { expect, test, vi } from 'vitest'
 import { SupabaseLibraryRepository } from './client'
 import { makeBackup } from '../../domain/backup.fixture'
 import { legacySnapshotFixture } from '../../test/legacy-backup.fixture'
-import { fixtureId } from '../../domain/catalog/catalog.fixture'
+import { fixtureId, ids } from '../../domain/catalog/catalog.fixture'
+
+test.each([5, 6])(
+  'lector remoto v%s conserva el contrato de referencia correspondiente',
+  async (schema_version) => {
+    const snapshot = makeBackup().data
+    if (schema_version === 6)
+      snapshot.library.albumRatings[0]!.referenceReleaseId = ids.deluxe
+    const client = createClient(
+      'https://cloud.example',
+      'fictitious-public-key',
+      {
+        global: {
+          fetch: () =>
+            Promise.resolve(
+              Response.json({ revision: 5, schema_version, snapshot }),
+            ),
+        },
+        auth: { persistSession: false },
+      },
+    )
+    expect(
+      await new SupabaseLibraryRepository(client, fixtureId(900)).load(),
+    ).toEqual({ revision: 5, snapshot })
+  },
+)
+test.each([3, 4, 5])(
+  'lector remoto histórico v%s rechaza una referencia futura sin ignorarla',
+  async (schema_version) => {
+    const snapshot = makeBackup().data
+    snapshot.library.albumRatings[0]!.referenceReleaseId = ids.deluxe
+    const client = createClient(
+      'https://cloud.example',
+      'fictitious-public-key',
+      {
+        global: {
+          fetch: () =>
+            Promise.resolve(
+              Response.json({
+                revision: 5,
+                schema_version,
+                snapshot:
+                  schema_version === 5
+                    ? snapshot
+                    : legacySnapshotFixture(snapshot),
+              }),
+            ),
+        },
+        auth: { persistSession: false },
+      },
+    )
+    await expect(
+      new SupabaseLibraryRepository(client, fixtureId(900)).load(),
+    ).rejects.toThrow()
+  },
+)
 
 test.each([3, 4])(
   'lector remoto v%s normaliza sin cambiar revisión ni perder relaciones',
@@ -72,7 +127,7 @@ test('un envío histórico ya confirmado se reconoce después de migrar sin dupl
   expect(requests).toEqual([
     expect.objectContaining({
       operation_id: operationId,
-      schema_version: 5,
+      schema_version: 6,
       document: snapshot,
     }),
   ])
@@ -87,7 +142,7 @@ test('una versión remota futura se rechaza sin convertirla en una biblioteca va
           Promise.resolve(
             Response.json({
               revision: 3,
-              schema_version: 6,
+              schema_version: 7,
               snapshot: makeBackup().data,
             }),
           ),

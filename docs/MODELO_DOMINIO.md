@@ -1,5 +1,7 @@
 # Modelo de dominio
 
+UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
+
 LINK-01 implementa los [enlaces personales](ENLACES_PERSONALES.md): valores identificados contenidos en `UserAlbum.links` y un único favorito opcional de escucha. Son independientes de catálogo, nota y adquisición; la guía enlazada incluye su diagrama e invariantes.
 
 Este documento describe los contratos de Auditorium en el incremento en revisión, basados en el MVP **v1.0.0** y ampliados por CAT-01 y UX-01. El modelo separa la descripción musical del catálogo de la relación personal con esa música. Las entidades, cardinalidades y reglas se contrastan con los esquemas y casos de uso del código; no representan servicios externos ni modifican la release publicada.
@@ -209,6 +211,7 @@ erDiagram
     LocalIdentity ||--o{ UserAlbum : posee
     Album ||--o{ UserAlbum : referencia
     UserAlbum ||--o| AlbumRating : valora
+    Release o|--o{ AlbumRating : contextualiza
     UserAlbum ||--o{ TrackRating : registra
     Track ||--o{ TrackRating : recibe
     UserAlbum ||--o{ OwnedItem : conserva
@@ -242,6 +245,7 @@ erDiagram
     AlbumRating {
         UUID userAlbumId
         integer scoreUnits
+        UUID referenceReleaseId "opcional, mismo álbum"
     }
     TrackRating {
         UUID userAlbumId
@@ -272,7 +276,7 @@ erDiagram
 | --------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
 | `LocalIdentity` | `userId`, `createdAt`                                                | Ninguno                                                                                      |
 | `UserAlbum`     | `id`, `userId`, `albumId`, `listeningStatus`, `addedAt`, `updatedAt` | `personalNotes`, `deletedAt`                                                                 |
-| `AlbumRating`   | `userAlbumId`, `scoreUnits`, `updatedAt`                             | Ninguno                                                                                      |
+| `AlbumRating`   | `userAlbumId`, `scoreUnits`, `updatedAt`                             | `referenceReleaseId`                                                                         |
 | `TrackRating`   | `userAlbumId`, `trackId`, `scoreUnits`, `updatedAt`                  | Ninguno                                                                                      |
 | `OwnedItem`     | `id`, `userAlbumId`, `medium`, `format`, `createdAt`                 | `releaseId`, `mediaCondition`, `sleeveCondition`, `acquiredAt`, `notes`                      |
 | `PurchaseWish`  | `id`, `userAlbumId`, `status`, `createdAt`                           | `targetReleaseId`, `targetFormat`, `notes`; al menos uno de los dos objetivos es obligatorio |
@@ -390,6 +394,8 @@ IndexedDB no declara claves foráneas ni borrados en cascada. Los campos `albumI
 `StoredUserAlbum.activeAlbumKey` es un dato derivado de persistencia: usuario/álbum para una entrada activa y `null` para una retirada. Su índice único refuerza la unicidad de entradas activas. No forma parte de `UserAlbum`, del modelo musical ni del respaldo de dominio. La definición física está en [database.ts](../src/infrastructure/db/database.ts) y la traducción en [records.ts](../src/infrastructure/db/records.ts); la evolución del almacenamiento se explica en [persistencia local](PERSISTENCIA_LOCAL.md).
 
 El respaldo `LibraryBackup` envuelve el snapshot con `format = auditorium-backup`, `schemaVersion = 5` y `exportedAt`. Su versión es independiente de la versión 8 de la base local. Los archivos v1/v2/v3/v4 estrictos se normalizan al formato5. Cada versión conserva su contrato histórico: v1 no admite referencia externa; v1/v2 no admiten país, géneros ni portada local; v1/v2/v3 no admiten enlaces personales. Los álbumes de v1–v4 conservan releaseType y se transforman según la [tabla de migración](CLASIFICACION_ALBUM.md#migración-y-compatibilidad). La restauración no combina bibliotecas pobladas; véase [respaldos JSON](RESPALDOS_JSON.md).
+
+La referencia opcional de una nota exige una edición existente del mismo álbum; no exige adquisición. Cambiarla conserva la cifra y quitar la nota elimina su referencia. Antes de eliminar una edición hay que resolver explícitamente esta relación.
 
 ## Ejemplo de lectura del modelo
 

@@ -65,6 +65,16 @@ export function trackListToken(
   })
 }
 
+export function releaseRemovalToken(catalog: Catalog, releaseId: string) {
+  const release = catalog.releases.find((row) => row.id === releaseId)
+  return JSON.stringify({
+    release,
+    tracks: release
+      ? trackListToken(catalog, release.albumId, releaseId)
+      : null,
+  })
+}
+
 export function saveTrackList(
   catalog: Catalog,
   input: z.output<typeof saveTrackListInputSchema>,

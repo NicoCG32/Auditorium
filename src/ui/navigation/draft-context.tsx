@@ -10,6 +10,7 @@ import {
   type RefObject,
   type SetStateAction,
 } from 'react'
+import { focusFormField } from '../library/form-focus'
 import { DraftRegistry, type DraftEditor } from './drafts'
 
 export const DraftContext = createContext<DraftRegistry | undefined>(undefined)
@@ -74,7 +75,7 @@ export function useDraftGuard({
               '[aria-invalid="true"], input:invalid, select:invalid, textarea:invalid',
             ) ??
             form.current?.querySelector<HTMLElement>('input, select, textarea')
-          target?.focus()
+          focusFormField(target)
         }),
     })
   })

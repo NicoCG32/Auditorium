@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import {
   render,
   screen,
@@ -56,6 +57,9 @@ async function setup() {
 async function open(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
+  openAlbumArea('collection')
+  openAlbumArea('actions')
+  openExperience()
 }
 function change(label: string, value: string) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })
@@ -249,7 +253,7 @@ test.each(['registrar', 'cumplir'])(
       ),
     ).toBeVisible()
     for (const name of [
-      'Guardar nota',
+      'Guardar experiencia',
       'Registrar ejemplar',
       'Volver a biblioteca',
     ])

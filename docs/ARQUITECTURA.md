@@ -1,5 +1,7 @@
 # Arquitectura del sistema
 
+UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
+
 UX-05 incorpora la [clasificación independiente y sus migraciones](CLASIFICACION_ALBUM.md): DB8/nativa80 y respaldo5. Album describe la obra; Release conserva las ediciones; UserAlbum, la experiencia y los enlaces personales.
 
 Referencia: MVP **Auditorium v1.0.0** e incrementos posteriores de web, identidad visual e integraciones opcionales. Este documento describe la implementación vigente y sus límites; las decisiones históricas se conservan en los [ADR](README.md#decisiones-de-arquitectura). Los modelos de [dominio](MODELO_DOMINIO.md) y [datos](MODELO_DATOS.md) completan esta vista.

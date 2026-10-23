@@ -140,7 +140,7 @@ test('alta atómica persiste enlaces, favorito e identidad sin inferir nota, esc
   const backup = parseBackupText(
     serializeBackup({
       format: 'auditorium-backup',
-      schemaVersion: 5,
+      schemaVersion: 6,
       exportedAt: '2026-10-20T00:00:00.000Z',
       data: before,
     }),
@@ -324,5 +324,5 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
     revision: 2,
     base: snapshot,
   })
-  expect(current.database.verno).toBe(8)
+  expect(current.database.verno).toBe(9)
 })

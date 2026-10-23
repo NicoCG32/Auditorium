@@ -70,6 +70,7 @@ export const userAlbumSchema = z
 
 export const albumRatingSchema = z.strictObject({
   userAlbumId: id,
+  referenceReleaseId: id.optional(),
   scoreUnits: scoreUnitsSchema,
   updatedAt: utcTimestampSchema,
 })
@@ -134,7 +135,11 @@ export const libraryChangeSchema = z.discriminatedUnion('type', [
     ...target,
     ownedItemId: id,
   }),
-  z.strictObject({ type: z.literal('set_album_rating'), ...rating }),
+  z.strictObject({
+    type: z.literal('set_album_rating'),
+    ...rating,
+    referenceReleaseId: id.nullable().optional(),
+  }),
   z.strictObject({
     type: z.literal('set_track_rating'),
     ...rating,

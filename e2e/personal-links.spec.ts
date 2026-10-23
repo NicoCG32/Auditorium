@@ -1,3 +1,4 @@
+import { openAlbumArea } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -99,10 +100,13 @@ test('alta, edición coordinada, favoritos, cancelación y proveedor genérico c
     'noopener noreferrer',
   )
   await expect(
-    page.getByRole('region', { name: 'Referencias del catálogo' }),
+    page.getByRole('region', {
+      name: 'Referencias del catálogo',
+      includeHidden: true,
+    }),
   ).not.toContainText('Favorito de reproducción')
   const before = await backup(page)
-  expect(before.schemaVersion).toBe(5)
+  expect(before.schemaVersion).toBe(6)
   expect(before.data.library.albumRatings).toEqual([])
   expect(before.data.library.ownedItems).toEqual([])
   expect(before.data.library.userAlbums[0]!.listeningStatus).toBe('untracked')
@@ -178,6 +182,7 @@ test('retirada, restauración y respaldo transportan enlaces y favorito sin comp
   await addAlbum(page)
   const original = await backup(page)
   await openAlbum(page)
+  await openAlbumArea(page, 'actions')
   await page
     .getByRole('button', { name: 'Quitar álbum de biblioteca', exact: true })
     .click()

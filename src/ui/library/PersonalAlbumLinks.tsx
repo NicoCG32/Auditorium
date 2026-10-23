@@ -10,6 +10,7 @@ export function PersonalAlbumLinks({
   onEdit: () => void
   disabled: boolean
 }) {
+  const hasLinks = Boolean(entry.links?.length)
   return (
     <section
       className="catalog-links personal-album-links"
@@ -30,64 +31,72 @@ export function PersonalAlbumLinks({
           Editar enlaces
         </button>
       </div>
-      <div className="personal-links-groups">
-        {(['playback', 'purchase'] as const).map((purpose) => {
-          const links = (entry.links ?? [])
-            .filter((link) => link.purpose === purpose)
-            .toSorted(
-              (a, b) =>
-                Number(b.id === entry.preferredPlaybackLinkId) -
-                Number(a.id === entry.preferredPlaybackLinkId),
-            )
-          return (
-            <section
-              key={purpose}
-              aria-label={purpose === 'playback' ? 'Escuchar' : 'Comprar'}
-            >
-              <h4 className="font-semibold">
-                {purpose === 'playback' ? 'Escuchar' : 'Comprar'}
-              </h4>
-              {links.length ? (
-                <ul className="mt-3 grid gap-3">
-                  {links.map((link) => (
-                    <li key={link.id}>
-                      <a
-                        className="text-button inline-flex min-h-11 items-center gap-2"
-                        href={link.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        referrerPolicy="no-referrer"
-                      >
-                        {link.label ?? `Abrir en ${linkProvider(link.url)}`}
-                        {link.id === entry.preferredPlaybackLinkId ? (
-                          <span className="personal-link-favorite">
-                            Favorito de reproducción
-                          </span>
+      {hasLinks ? (
+        <div className="personal-links-groups">
+          {(['playback', 'purchase'] as const).map((purpose) => {
+            const links = (entry.links ?? [])
+              .filter((link) => link.purpose === purpose)
+              .toSorted(
+                (a, b) =>
+                  Number(b.id === entry.preferredPlaybackLinkId) -
+                  Number(a.id === entry.preferredPlaybackLinkId),
+              )
+            return (
+              <section
+                key={purpose}
+                aria-label={purpose === 'playback' ? 'Escuchar' : 'Comprar'}
+              >
+                <h4 className="font-semibold">
+                  {purpose === 'playback' ? 'Escuchar' : 'Comprar'}
+                </h4>
+                {links.length ? (
+                  <ul className="mt-3 grid gap-3">
+                    {links.map((link) => (
+                      <li key={link.id}>
+                        <a
+                          className="text-button inline-flex min-h-11 items-center gap-2"
+                          href={link.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          referrerPolicy="no-referrer"
+                        >
+                          {link.label ?? `Abrir en ${linkProvider(link.url)}`}
+                          {link.id === entry.preferredPlaybackLinkId ? (
+                            <span className="personal-link-favorite">
+                              Favorito de reproducción
+                            </span>
+                          ) : null}
+                        </a>
+                        {link.label ? (
+                          <p className="text-xs text-muted wrap-anywhere">
+                            {linkProvider(link.url)}
+                          </p>
                         ) : null}
-                      </a>
-                      {link.label ? (
-                        <p className="text-xs text-muted wrap-anywhere">
-                          {linkProvider(link.url)}
-                        </p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-2 text-sm text-muted">
-                  {purpose === 'playback'
-                    ? 'Aún no has guardado enlaces de escucha.'
-                    : 'Aún no has guardado enlaces de compra.'}
-                </p>
-              )}
-            </section>
-          )
-        })}
-      </div>
-      <p className="mt-4 text-xs text-muted">
-        Abren el servicio en otra pestaña. Guardar o abrir un enlace no cambia
-        tu nota, estado de escucha ni adquisiciones.
-      </p>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="mt-2 text-sm text-muted">
+                    {purpose === 'playback'
+                      ? 'Aún no has guardado enlaces de escucha.'
+                      : 'Aún no has guardado enlaces de compra.'}
+                  </p>
+                )}
+              </section>
+            )
+          })}
+        </div>
+      ) : (
+        <p className="mt-3 text-sm text-muted">
+          Añade tus enlaces para escuchar o comprar este álbum.
+        </p>
+      )}
+      {hasLinks ? (
+        <p className="mt-4 text-xs text-muted">
+          Abren el servicio en otra pestaña. Guardar o abrir un enlace no cambia
+          tu nota, estado de escucha ni adquisiciones.
+        </p>
+      ) : null}
     </section>
   )
 }

@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page, type Route } from '@playwright/test'
@@ -384,6 +385,7 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   await expect(
     page.getByRole('heading', { name: albumTitle, exact: true }),
   ).toBeVisible()
+  await openAlbumArea(page, 'data')
   await expect(
     page.getByRole('link', { name: `Wikidata · ${albumId}` }),
   ).toHaveAttribute('href', `https://www.wikidata.org/wiki/${albumId}`)
@@ -401,7 +403,7 @@ test('catálogo conserva selección, créditos y respaldo3; la portada elegida c
   ).toHaveCount(0)
   const text = await exportText(page)
   const backup = parseBackupText(text)
-  expect(backup.schemaVersion).toBe(5)
+  expect(backup.schemaVersion).toBe(6)
   expect(
     backup.data.catalog.artists.map((artist) => artist.name).sort(),
   ).toEqual(['Conjunto Ficticio A', 'Conjunto Ficticio B'])
@@ -529,9 +531,11 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
   await page
     .getByRole('button', { name: 'Abrir álbum Eclipse', exact: true })
     .click()
+  await openExperience(page)
   await expect(
     page.getByRole('textbox', { name: 'Nota del álbum', exact: true }),
   ).toHaveValue('9,5')
+  await openExperience(page)
   await expect(
     page.getByRole('textbox', { name: 'Notas personales', exact: true }),
   ).toHaveValue('  Comentario ficticio.\nSegunda línea.  ')

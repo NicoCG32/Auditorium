@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import { openLibraryFilters } from '../test/library-navigation'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
@@ -61,6 +62,7 @@ test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar 
   expect(
     screen.getByRole('heading', { name: 'Eclipse Corregido' }),
   ).toBeVisible()
+  openAlbumArea('data')
   expect(screen.getByText('Metal · Progresivo')).toBeVisible()
   const after = await repository.readSnapshot()
   expect(after.library).toEqual(before.library)
@@ -91,6 +93,7 @@ test('cambiar de editor permite conservar el borrador o guardarlo antes de edita
   const before = await repository.readSnapshot()
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
+  openExperience()
   change('Notas personales', 'Borrador ficticio por guardar')
   fireEvent.click(screen.getByRole('button', { name: 'Editar álbum' }))
   expect(
@@ -108,10 +111,8 @@ test('cambiar de editor permite conservar el borrador o guardarlo antes de edita
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar edición' }))
   fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
   expect(screen.getByRole('heading', { name: 'Eclipse' })).toBeVisible()
-  expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
-    'Borrador ficticio por guardar',
-  )
-  expect(screen.getByRole('button', { name: 'Editar álbum' })).toHaveFocus()
+  expect(screen.getByText('Borrador ficticio por guardar')).toBeVisible()
+  expect(screen.getByRole('heading', { name: 'Eclipse' })).toHaveFocus()
   const after = await repository.readSnapshot()
   expect(after.catalog).toEqual(before.catalog)
   expect(after.library.userAlbums[0]?.personalNotes).toBe(

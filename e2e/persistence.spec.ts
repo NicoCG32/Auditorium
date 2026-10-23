@@ -1,3 +1,4 @@
+import { openExperience } from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import { chromium, expect, test, type Page } from '@playwright/test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
@@ -86,7 +87,7 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(80)
+      expect(migrated.version).toBe(90)
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(
           name === 'albums' ? rows.map(migrateLegacyAlbum) : rows,
@@ -122,12 +123,14 @@ for (const version of [1, 2] as const) {
       await reopened
         .getByRole('button', { name: 'Eclipse', exact: true })
         .click()
+      await openExperience(reopened)
       await expect(
         reopened.getByRole('textbox', {
           name: 'Notas personales',
           exact: true,
         }),
       ).toHaveValue(source.library.userAlbums[0]?.personalNotes ?? '')
+      await openExperience(reopened)
       await expect(
         reopened.getByRole('textbox', { name: 'Nota del álbum', exact: true }),
       ).toHaveValue('9,5')
@@ -201,7 +204,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 80)
+        if (name === 'auditorium' && version === 90)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -229,7 +232,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(80)
+    expect(after.version).toBe(90)
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(
         name === 'albums'
@@ -330,7 +333,7 @@ for (const damaged of ['index', 'future', 'identity', 'rating'] as const) {
       ]
     await page.evaluate(seedNativeStorage, {
       name: 'auditorium',
-      version: damaged === 'index' ? 20 : damaged === 'future' ? 90 : 50,
+      version: damaged === 'index' ? 20 : damaged === 'future' ? 100 : 50,
       stores,
       rows,
     })
@@ -376,19 +379,28 @@ test('cuota al reemplazar una nota revierte la escritura y conserva el borrador'
         : original.call(this, value, key)
     }
   })
+  await openExperience(page)
   const input = page.getByRole('textbox', {
     name: 'Nota del álbum',
     exact: true,
   })
   await input.fill('8,5')
-  await page.getByRole('button', { name: 'Guardar nota', exact: true }).click()
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
   await expect(page.getByRole('alert')).toContainText(
-    'No hay espacio para guardar la nota',
+    'No hay espacio para guardar la experiencia',
   )
   await expect(input).toHaveValue('8,5')
   expect(await audit(page)).toEqual(before)
-  await page.getByRole('button', { name: 'Guardar nota', exact: true }).click()
-  await expect(page.getByText('Nota guardada.', { exact: true })).toBeVisible()
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
+  await expect(
+    page.getByText('Experiencia guardada.', { exact: true }),
+  ).toBeVisible()
   const after = await audit(page)
   expect(after.rows['metadata']).toEqual(before.rows['metadata'])
   expect(after.rows['albumRatings']).not.toEqual(before.rows['albumRatings'])

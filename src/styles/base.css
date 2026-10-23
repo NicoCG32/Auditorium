@@ -1498,3 +1498,46 @@
   margin: 0;
   min-block-size: 2.75rem;
 }
+.album-area {
+  margin-block-start: 1.25rem;
+  padding: 1.25rem;
+  border: 1px solid var(--color-border);
+  border-radius: 1rem;
+  min-inline-size: 0;
+}
+.album-area > summary {
+  cursor: pointer;
+  font-weight: 600;
+  min-block-size: 2.75rem;
+  align-content: center;
+}
+.album-area[open] > summary {
+  margin-block-end: 1rem;
+}
+.experience-summary-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 2rem;
+  margin-block-start: 1rem;
+}
+.album-task-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-block-end: 1.5rem;
+}
+@media (max-width: 39.99rem) {
+  .album-summary-grid {
+    grid-template-columns: minmax(4.5rem, 0.7fr) minmax(0, 1.3fr);
+    align-items: start;
+    gap: 1rem;
+  }
+  .album-summary-grid h2 {
+    font-size: 1.5rem;
+  }
+  .album-summary-grid .album-art {
+    max-inline-size: 9rem;
+  }
+}

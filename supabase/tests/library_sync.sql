@@ -54,7 +54,7 @@ begin
   exception when invalid_parameter_value then null;
   end;
   begin
-    perform public.save_library_snapshot(a, 3, gen_random_uuid(), document, 6);
+    perform public.save_library_snapshot(a, 3, gen_random_uuid(), document, 7);
     raise exception 'Unknown schema was accepted';
   exception when invalid_parameter_value then null;
   end;
@@ -92,6 +92,48 @@ begin
   exception when invalid_parameter_value then null;
   end;
   if (select revision from public.library_snapshots where owner_id = a) <> 4 then raise exception 'Rejected classifications changed the revision'; end if;
+  document := jsonb_set(document, '{library,userAlbums}', '[{"id":"00000000-0000-4000-8000-000000000003","albumId":"00000000-0000-4000-8000-000000000002"}]');
+  document := jsonb_set(document, '{catalog,releases}', '[{"id":"00000000-0000-4000-8000-000000000004","albumId":"00000000-0000-4000-8000-000000000002","format":"digital"}]');
+  document := jsonb_set(document, '{library,albumRatings}', '[{"userAlbumId":"00000000-0000-4000-8000-000000000003","scoreUnits":19,"updatedAt":"2026-01-01T00:00:00.000Z","referenceReleaseId":"00000000-0000-4000-8000-000000000004"}]');
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), document, 5);
+    raise exception 'Historical reader accepted a rating reference';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{library,albumRatings,0,referenceReleaseId}', 'null'), 6);
+    raise exception 'Null reference accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{library,albumRatings,0,referenceReleaseId}', '"missing"'), 6);
+    raise exception 'Invalid reference accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{catalog,releases,0,albumId}', '"00000000-0000-4000-8000-000000000099"'), 6);
+    raise exception 'Foreign album reference accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  begin
+    perform public.save_library_snapshot(a, 4, gen_random_uuid(), jsonb_set(document, '{catalog,releases}', '[]'), 6);
+    raise exception 'Missing edition accepted';
+  exception when invalid_parameter_value then null;
+  end;
+  if (select revision from public.library_snapshots where owner_id = a) <> 4 then raise exception 'Rejected references changed revision'; end if;
+  operation := gen_random_uuid();
+  result := public.save_library_snapshot(a, 4, operation, document, 6);
+  if (result->>'revision')::integer <> 5 then raise exception 'Version 6 upgrade failed'; end if;
+  if (select schema_version from public.library_snapshots where owner_id = a) <> 6 then raise exception 'Stored version 6 missing'; end if;
+  result := public.save_library_snapshot(a, 4, operation, document, 6);
+  if (result->>'revision')::integer <> 5 then raise exception 'Version 6 idempotency failed'; end if;
+  begin
+    perform public.save_library_snapshot(a, 5, gen_random_uuid(), document #- '{library,albumRatings,0,referenceReleaseId}', 5);
+    raise exception 'Version 6 downgraded';
+  exception when invalid_parameter_value then null;
+  end;
+  result := public.save_library_snapshot(a, 5, gen_random_uuid(), document #- '{library,albumRatings,0,referenceReleaseId}', 6);
+  if (result #>> '{snapshot,library,albumRatings,0,scoreUnits}')::integer <> 19 then raise exception 'Clearing reference changed score'; end if;
   execute 'set local role anon';
   begin
     perform count(*) from public.library_snapshots;
@@ -107,4 +149,4 @@ begin
 end;
 $$;
 rollback;
-select 'RLS, account isolation, CAS, idempotency, schema 3/4/5, classification, downgrade guard and denied anonymous/direct writes: PASS; fictional data rolled back' as validation;
+select 'RLS, account isolation, CAS, idempotency, schema 3/4/5/6, classification, rating references, downgrade guard and denied anonymous/direct writes: PASS; fictional data rolled back' as validation;

@@ -1,6 +1,8 @@
 import Dexie, { type Table, type Transaction } from 'dexie'
 import {
   legacySnapshotV4Schema,
+  legacySnapshotV5Schema,
+  localSnapshotSchema,
   migrateLegacySnapshot,
 } from '../../domain/backup'
 import { fromStoredUserAlbum, identityRecordSchema } from './records'
@@ -18,11 +20,12 @@ import type { AlbumRating, TrackRating } from '../../domain/library/schemas'
 import type { OwnedItem } from '../../domain/library/owned-items'
 import type { PurchaseWish } from '../../domain/library/purchase-wishes'
 import type { IdentityRecord, StoredUserAlbum } from './records'
+import { validateRatingUpgradeCheckpoint } from './validate-rating-upgrade'
 import { migrateLegacyCheckpoint } from './migrate-classification'
 import type { SyncCheckpoint } from '../../domain/sync'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 8
+export const DATABASE_VERSION = 9
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -60,7 +63,9 @@ export const SCHEMA_V8 = {
   albums: 'id, title, primaryType, originalYear',
 } as const
 
-async function validateBeforeSyncUpgrade(transaction: Transaction) {
+export const SCHEMA_V9 = { ...SCHEMA_V8 } as const
+
+async function readUpgradeSnapshot(transaction: Transaction) {
   const rows = new Map<string, unknown[]>()
   for (const name of Object.keys(SCHEMA_V5)) {
     const values: unknown[] = await transaction.table(name).toArray()
@@ -104,10 +109,28 @@ async function validateBeforeSyncUpgrade(transaction: Transaction) {
       userAlbums: rows.get('userAlbums')!.map(fromStoredUserAlbum),
     },
   }
-  legacySnapshotV4Schema.parse(snapshot)
   return snapshot
 }
 
+async function validateBeforeSyncUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction)
+  if (snapshot) legacySnapshotV4Schema.parse(snapshot)
+  return snapshot
+}
+async function validateBeforeRatingUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local del checkpoint. Los datos se conservan.',
+    )
+  if (snapshot)
+    localSnapshotSchema.parse(legacySnapshotV5Schema.parse(snapshot))
+  checkpoints.forEach(validateRatingUpgradeCheckpoint)
+}
 async function migrateClassification(transaction: Transaction) {
   const legacy = await validateBeforeSyncUpgrade(transaction)
   const checkpoints: unknown[] = await transaction
@@ -162,6 +185,7 @@ export class AuditoriumDatabase extends Dexie {
       })
     this.version(7).stores(SCHEMA_V7).upgrade(validateBeforeSyncUpgrade)
     this.version(8).stores(SCHEMA_V8).upgrade(migrateClassification)
+    this.version(9).stores(SCHEMA_V9).upgrade(validateBeforeRatingUpgrade)
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.artists = this.table<Artist, string>('artists')
     this.albums = this.table<Album, string>('albums')

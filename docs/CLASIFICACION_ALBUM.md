@@ -1,5 +1,7 @@
 # Clasificación del álbum y alta guiada
 
+UX-06 conserva esta clasificación en DB9/respaldo6 y añade la [edición de referencia de la nota](MI_EXPERIENCIA.md). Las versiones8/5 siguientes describen la migración que introdujo la clasificación.
+
 UX-05 ([#65](https://github.com/NicoCG32/Auditorium/issues/65)) implementa tres dimensiones independientes del álbum conceptual. El contrato ejecutable está en [classification.ts](../src/domain/catalog/classification.ts); los formularios de alta y edición usan las mismas opciones.
 
 ## Modelo y responsabilidades

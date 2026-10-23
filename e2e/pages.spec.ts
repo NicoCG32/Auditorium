@@ -1,3 +1,4 @@
+import { openExperience } from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -294,23 +295,32 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
       exact: true,
     }),
   ).toBeVisible()
+  await openExperience(page)
   await page
     .getByRole('textbox', { name: 'Notas personales', exact: true })
     .fill('Notas ficticias guardadas sin conexión desde Pages.')
+  await openExperience(page)
   await page
     .getByRole('combobox', { name: 'Estado de escucha', exact: true })
     .selectOption('completed')
+  await openExperience(page)
   await page
     .getByRole('button', { name: 'Guardar experiencia', exact: true })
     .click()
   await expect(
-    page.getByText('Escucha y notas guardadas.', { exact: true }),
+    page.getByText('Experiencia guardada.', { exact: true }),
   ).toBeVisible()
+  await openExperience(page)
   await page
     .getByRole('textbox', { name: 'Nota del álbum', exact: true })
     .fill('9,5')
-  await page.getByRole('button', { name: 'Guardar nota', exact: true }).click()
-  await expect(page.getByText('Nota guardada.', { exact: true })).toBeVisible()
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
+  await expect(
+    page.getByText('Experiencia guardada.', { exact: true }),
+  ).toBeVisible()
   const before = await rawDatabase(page)
   expect(Object.keys(before)).toHaveLength(14)
   expect(before['syncCheckpoint']).toEqual([])
@@ -434,6 +444,7 @@ test('Pages espera a las dos ventanas para actualizar y conserva las tablas y la
   const other = await context.newPage()
   await openPrepared(other)
   await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await openExperience(other)
   const notes = other.getByRole('textbox', {
     name: 'Notas personales',
     exact: true,

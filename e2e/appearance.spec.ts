@@ -1,3 +1,4 @@
+import { openExperience } from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
@@ -96,6 +97,7 @@ for (const theme of ['dark', 'light'] as const) {
       await accessible(page)
       await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
       await accessible(page)
+      await openExperience(page)
       await page
         .getByRole('textbox', { name: 'Notas personales', exact: true })
         .fill('Borrador ficticio conservado')
@@ -109,6 +111,7 @@ for (const theme of ['dark', 'light'] as const) {
           exact: true,
         })
         .check()
+      await openExperience(page)
       await expect(
         page.getByRole('textbox', { name: 'Notas personales', exact: true }),
       ).toHaveValue('Borrador ficticio conservado')

@@ -104,7 +104,9 @@ test('la clave de sesión permanece al cerrar el panel, visitar respaldos y abri
     screen.getByRole('button', { name: 'Volver a la biblioteca' }),
   )
   fireEvent.click(screen.getByRole('button', { name: 'Eclipse' }))
-  expect(screen.getByRole('textbox', { name: 'Nota del álbum' })).toBeVisible()
+  expect(
+    screen.getByRole('button', { name: 'Recalificar álbum' }),
+  ).toBeVisible()
   openRecommendations()
   expect(screen.getByLabelText('Clave API de Groq')).toHaveValue(fictitiousKey)
   expect(request).not.toHaveBeenCalled()
@@ -236,7 +238,9 @@ test('generar abre un álbum existente sin mutar datos y el respaldo excluye cla
   expect(JSON.stringify(storage.mock.calls)).not.toContain(reason)
 
   fireEvent.click(screen.getByRole('button', { name: 'Abrir álbum Eclipse' }))
-  expect(screen.getByRole('textbox', { name: 'Nota del álbum' })).toBeVisible()
+  expect(
+    screen.getByRole('button', { name: 'Recalificar álbum' }),
+  ).toBeVisible()
   expect(await repository.readSnapshot()).toEqual(before)
   openRecommendations()
   expect(screen.getByLabelText('Clave API de Groq')).toHaveValue(fictitiousKey)

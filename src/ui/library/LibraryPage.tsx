@@ -393,9 +393,6 @@ function LibraryContent({
             album={selectedAlbum}
             entry={selected}
             library={library}
-            onRatingCommitted={async () => {
-              await synchronizeDetail()
-            }}
             busy={detailBusy}
             onBusyChange={setDetailBusy}
             personalEntry={personalEntry}
@@ -406,6 +403,19 @@ function LibraryContent({
             personalLibrary={state.snapshot.library}
             onExperienceCommitted={synchronizeDetail}
             editing={route.editor === 'edit'}
+            experienceEditing={route.editor === 'experience'}
+            collectionEditing={route.editor === 'collection'}
+            onExperienceOpen={() =>
+              go({ kind: 'album', id: selected.id, editor: 'experience' })
+            }
+            onExperienceComplete={() => {
+              setNotice('Experiencia guardada.')
+              navigation.completed(
+                { kind: 'album', id: selected.id },
+                `experience:${selected.id}`,
+              )
+            }}
+            onExperienceCancel={() => go({ kind: 'album', id: selected.id })}
             onEdit={() =>
               go({ kind: 'album', id: selected.id, editor: 'edit' })
             }

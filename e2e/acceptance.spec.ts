@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
@@ -106,27 +107,38 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await page
     .getByRole('button', { name: 'Horizonte Ficticio', exact: true })
     .click()
+  await openExperience(page)
   await page
     .getByRole('textbox', { name: 'Nota del álbum', exact: true })
     .fill('9,5')
-  await page.getByRole('button', { name: 'Guardar nota', exact: true }).click()
-  await expect(page.getByText('Nota guardada.', { exact: true })).toBeVisible()
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
+  await expect(
+    page.getByText('Experiencia guardada.', { exact: true }),
+  ).toBeVisible()
+  await openExperience(page)
   await page
     .getByRole('combobox', { name: 'Estado de escucha' })
     .selectOption('completed')
+  await openExperience(page)
   await page
     .getByRole('textbox', { name: 'Notas personales' })
     .fill('Comentario ficticio de aceptación.')
+  await openExperience(page)
   await page.getByRole('button', { name: 'Guardar experiencia' }).click()
   await expect(
-    page.getByText('Escucha y notas guardadas.', { exact: true }),
+    page.getByText('Experiencia guardada.', { exact: true }),
   ).toBeVisible()
+  await openAlbumArea(page, 'tracks')
   await page.getByRole('button', { name: 'Editar lista original' }).click()
   await page.getByRole('button', { name: 'Añadir aparición' }).click()
   await page
     .getByRole('textbox', { name: 'Título nuevo 1' })
     .fill('Pista ficticia')
   await page.getByRole('button', { name: 'Guardar lista', exact: true }).click()
+  await openAlbumArea(page, 'tracks')
   await page
     .getByRole('button', { name: 'Valorar pista Pista ficticia', exact: true })
     .click()
@@ -140,6 +152,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
     page.getByText('Nota de pista guardada.', { exact: true }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Cerrar valoración de pista' }).click()
+  await openAlbumArea(page, 'tracks')
   await page.getByRole('button', { name: 'Nueva edición', exact: true }).click()
   await page
     .getByRole('textbox', { name: 'Nombre de edición' })
@@ -150,6 +163,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await expect(page.getByRole('list', { name: /CD ficticio/ })).toContainText(
     '8,5',
   )
+  await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Registrar deseo' }).click()
   await page
     .getByRole('combobox', { name: 'Formato deseado', exact: true })
@@ -159,19 +173,23 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
     .fill('Deseo ficticio de CD')
   await page.getByRole('button', { name: 'Guardar deseo', exact: true }).click()
   for (const note of ['Primera copia ficticia', 'Segunda copia ficticia']) {
+    await openAlbumArea(page, 'collection')
     await page.getByRole('button', { name: 'Registrar ejemplar' }).click()
     await page.getByRole('textbox', { name: 'Notas del ejemplar' }).fill(note)
     await page
       .getByRole('button', { name: 'Guardar ejemplar', exact: true })
       .click()
+    await openAlbumArea(page, 'collection')
     await expect(
       page.getByRole('list', { name: 'Ejemplares de este álbum' }),
     ).toContainText(note)
   }
   await page.getByRole('button', { name: /Marcar cumplido Deseo/ }).click()
+  await openAlbumArea(page, 'actions')
   await expect(
     page.getByRole('list', { name: 'Deseos de este álbum' }),
   ).toContainText('Cumplido')
+  await openAlbumArea(page, 'collection')
   const firstCopy = page
     .getByRole('list', { name: 'Ejemplares de este álbum' })
     .getByRole('listitem')
@@ -181,9 +199,11 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
     .getByRole('button', { name: 'Confirmar eliminación', exact: true })
     .click()
   await expect(firstCopy).toHaveCount(0)
+  await openAlbumArea(page, 'collection')
   await expect(
     page.getByRole('list', { name: 'Ejemplares de este álbum' }),
   ).toContainText('Segunda copia ficticia')
+  await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Quitar álbum de biblioteca' }).click()
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
   await openLibraryOptions(page)
@@ -191,6 +211,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await page
     .getByRole('button', { name: /Restaurar Horizonte Ficticio, entrada/ })
     .click()
+  await openExperience(page)
   await expect(
     page.getByRole('textbox', { name: 'Nota del álbum' }),
   ).toHaveValue('9,5')
@@ -253,26 +274,36 @@ test('auditoría de accesibilidad en vacío, formularios, ficha y confirmaciones
     .click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await accessible(page)
-  await page.getByRole('button', { name: 'Quitar nota', exact: true }).click()
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Quitar nota del borrador', exact: true })
+    .click()
   await accessible(page)
   await page
-    .getByRole('button', { name: 'Conservar nota', exact: true })
+    .getByRole('button', { name: 'Cancelar experiencia', exact: true })
     .click()
+  await page
+    .getByRole('button', { name: 'Descartar cambios', exact: true })
+    .click()
+  await openAlbumArea(page, 'tracks')
   await page.getByRole('button', { name: 'Editar lista original' }).click()
   await accessible(page)
   await page
     .getByRole('button', { name: 'Descartar borrador', exact: true })
     .click()
+  await openAlbumArea(page, 'collection')
   await page.getByRole('button', { name: 'Registrar ejemplar' }).click()
   await accessible(page)
   await page
     .getByRole('button', { name: 'Cancelar registro', exact: true })
     .click()
+  await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Registrar deseo' }).click()
   await accessible(page)
   await page
     .getByRole('button', { name: 'Cancelar formulario de deseo', exact: true })
     .click()
+  await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Quitar álbum de biblioteca' }).click()
   await accessible(page)
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
@@ -330,13 +361,31 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
   await expect(
     page.getByRole('heading', { name: 'Eclipse', exact: true }),
   ).toBeFocused()
-  await page.getByRole('button', { name: 'Quitar nota', exact: true }).click()
-  const keep = page.getByRole('button', { name: 'Conservar nota', exact: true })
+  await page
+    .getByRole('button', { name: 'Editar experiencia', exact: true })
+    .click()
+  await openExperience(page)
+  await page
+    .getByRole('textbox', { name: 'Nota del álbum', exact: true })
+    .fill('8')
+  await page
+    .getByRole('button', { name: 'Cancelar experiencia', exact: true })
+    .click()
+  const keep = page.getByRole('button', {
+    name: 'Seguir editando',
+    exact: true,
+  })
   await expect(keep).toBeFocused()
   await keep.press('Escape')
   await expect(
-    page.getByRole('button', { name: 'Quitar nota', exact: true }),
+    page.getByRole('button', { name: 'Cancelar experiencia', exact: true }),
   ).toBeFocused()
+  await page
+    .getByRole('button', { name: 'Cancelar experiencia', exact: true })
+    .click()
+  await page
+    .getByRole('button', { name: 'Descartar cambios', exact: true })
+    .click()
   const summary = page.getByText('Aplicación y almacenamiento', { exact: true })
   await summary.focus()
   await summary.press('Enter')
@@ -362,6 +411,7 @@ test('pantallas a 320, 768 y 1280 px y texto al 200 % permiten operar sin desbor
     await noOverflow(page)
     await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
     await noOverflow(page)
+    await openAlbumArea(page, 'collection')
     await page.getByRole('button', { name: 'Registrar ejemplar' }).click()
     await noOverflow(page)
     await page

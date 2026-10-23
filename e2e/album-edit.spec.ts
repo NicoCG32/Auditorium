@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from './helpers/library-navigation'
 import {
   openLibraryOptions,
   openLibraryFilters,
@@ -261,9 +262,11 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     .getByRole('textbox', { name: 'Descripción del álbum', exact: true })
     .fill('Descripción corregida ficticia.')
   await save(page)
+  await openExperience(page)
   await expect(
     page.getByRole('textbox', { name: 'Nota del álbum', exact: true }),
   ).toHaveValue('9,5')
+  await openExperience(page)
   await expect(
     page.getByRole('textbox', { name: 'Notas personales', exact: true }),
   ).toHaveValue('  Comentario ficticio.\nSegunda línea.  ')
@@ -274,6 +277,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
       exact: true,
     }),
   ).toBeVisible()
+  await openAlbumArea(page, 'data')
   await expect(
     page.getByText('Metal Progresivo · Jazz', { exact: true }),
   ).toBeVisible()
@@ -281,7 +285,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     page.getByText('Umbral Eléctrico: Chile', { exact: true }),
   ).toBeVisible()
   const after = await exportBackup(page)
-  expect(after.schemaVersion).toBe(5)
+  expect(after.schemaVersion).toBe(6)
   expect(after.data.identity).toEqual(before.data.identity)
   expect(after.data.library).toEqual(before.data.library)
   for (const key of [
@@ -437,7 +441,7 @@ test('PNG local se valida, carga automáticamente, persiste al recargar y restau
   await expect(cover).toBeVisible()
   await context.setOffline(true)
   const backup = await exportBackup(page)
-  expect(backup.schemaVersion).toBe(5)
+  expect(backup.schemaVersion).toBe(6)
   expect(
     backup.data.catalog.albums.find((album) => album.id === ids.album)
       ?.coverImage,

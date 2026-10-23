@@ -1,6 +1,8 @@
 # Documentación de Auditorium
 
-[Clasificación y alta de álbumes](CLASIFICACION_ALBUM.md) describe tipo, categorías, publicación, créditos y compatibilidad DB8/respaldo5.
+UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
+
+[Clasificación y alta de álbumes](CLASIFICACION_ALBUM.md) describe tipo, categorías, publicación, créditos y su migración inicial DB8/respaldo5.
 
 Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e incrementos de integraciones, edición y cuenta opcional. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. La sincronización y sus requisitos de activación se documentan por separado. Las capacidades futuras aparecen como propuestas separadas.
 

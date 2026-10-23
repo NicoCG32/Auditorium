@@ -297,16 +297,25 @@ export function applyLibraryChange(
           : row,
       )
       break
-    case 'set_album_rating':
+    case 'set_album_rating': {
+      const previous = library.albumRatings.find(
+        (row) => row.userAlbumId === entry.id,
+      )
+      const referenceReleaseId =
+        change.referenceReleaseId === undefined
+          ? previous?.referenceReleaseId
+          : (change.referenceReleaseId ?? undefined)
       library.albumRatings = [
         ...library.albumRatings.filter((row) => row.userAlbumId !== entry.id),
         {
           userAlbumId: entry.id,
           scoreUnits: change.scoreUnits,
           updatedAt: change.updatedAt,
+          ...(referenceReleaseId ? { referenceReleaseId } : {}),
         },
       ]
       break
+    }
     case 'set_track_rating':
       library.trackRatings = [
         ...library.trackRatings.filter(

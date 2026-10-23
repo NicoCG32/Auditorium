@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -187,23 +188,33 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await page
     .getByRole('button', { name: 'Horizonte Ficticio Offline', exact: true })
     .click()
+  await openExperience(page)
   await page
     .getByRole('textbox', { name: 'Notas personales', exact: true })
     .fill('Notas ficticias creadas sin red.')
+  await openExperience(page)
   await page
     .getByRole('combobox', { name: 'Estado de escucha', exact: true })
     .selectOption('completed')
+  await openExperience(page)
   await page
     .getByRole('button', { name: 'Guardar experiencia', exact: true })
     .click()
   await expect(
-    page.getByText('Escucha y notas guardadas.', { exact: true }),
+    page.getByText('Experiencia guardada.', { exact: true }),
   ).toBeVisible()
+  await openExperience(page)
   await page
     .getByRole('textbox', { name: 'Nota del álbum', exact: true })
     .fill('9,5')
-  await page.getByRole('button', { name: 'Guardar nota', exact: true }).click()
-  await expect(page.getByText('Nota guardada.', { exact: true })).toBeVisible()
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
+  await expect(
+    page.getByText('Experiencia guardada.', { exact: true }),
+  ).toBeVisible()
+  await openAlbumArea(page, 'tracks')
   await page
     .getByRole('button', { name: 'Editar lista original', exact: true })
     .click()
@@ -217,6 +228,7 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await expect(
     page.getByText('Pista ficticia offline', { exact: true }),
   ).toBeVisible()
+  await openAlbumArea(page, 'tracks')
   await page.getByRole('button', { name: 'Nueva edición', exact: true }).click()
   await page
     .getByRole('textbox', { name: 'Nombre de edición', exact: true })
@@ -224,18 +236,22 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await page
     .getByRole('button', { name: 'Guardar edición', exact: true })
     .click()
+  await openAlbumArea(page, 'tracks')
   await expect(
     page.getByRole('combobox', { name: 'Lista que quieres consultar' }),
   ).toContainText('CD ficticio offline')
+  await openAlbumArea(page, 'collection')
   await page
     .getByRole('button', { name: 'Registrar ejemplar', exact: true })
     .click()
   await page
     .getByRole('button', { name: 'Guardar ejemplar', exact: true })
     .click()
+  await openAlbumArea(page, 'collection')
   await expect(
     page.getByRole('list', { name: 'Ejemplares de este álbum' }),
   ).toContainText('CD')
+  await openAlbumArea(page, 'actions')
   await page
     .getByRole('button', { name: 'Registrar deseo', exact: true })
     .click()
@@ -243,9 +259,11 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
     .getByRole('combobox', { name: 'Formato deseado', exact: true })
     .selectOption('vinyl')
   await page.getByRole('button', { name: 'Guardar deseo', exact: true }).click()
+  await openAlbumArea(page, 'actions')
   await expect(
     page.getByRole('list', { name: 'Deseos de este álbum' }),
   ).toContainText('Vinilo')
+  await openAlbumArea(page, 'actions')
   await page
     .getByRole('button', { name: 'Quitar álbum de biblioteca', exact: true })
     .click()
@@ -332,6 +350,7 @@ test('actualización espera a todas las ventanas y conserva identidad y todas la
   })
   await openPrepared(other)
   await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await openExperience(other)
   await other
     .getByRole('textbox', { name: 'Notas personales', exact: true })
     .fill('Borrador ficticio pendiente de guardar')
@@ -353,6 +372,7 @@ test('actualización espera a todas las ventanas y conserva identidad y todas la
   ).toBeVisible()
   expect(await page.locator('html').getAttribute('data-test-build')).toBe('a')
   await page.close()
+  await openExperience(other)
   await expect(
     other.getByRole('textbox', { name: 'Notas personales', exact: true }),
   ).toHaveValue('Borrador ficticio pendiente de guardar')

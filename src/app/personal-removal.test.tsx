@@ -1,11 +1,6 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import { openLibraryOptions } from '../test/library-navigation'
-import {
-  render,
-  screen,
-  fireEvent,
-  within,
-  waitFor,
-} from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import {
@@ -81,6 +76,10 @@ async function setup(onlyOne = false) {
 async function open(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
+  openAlbumArea('tracks')
+  openAlbumArea('collection')
+  openAlbumArea('actions')
+  openExperience()
 }
 function begin() {
   fireEvent.click(
@@ -154,9 +153,14 @@ test.each([false, true])(
     fireEvent.click(screen.getByRole('button', { name: /^Restaurar Eclipse/ }))
     await finished()
     expect(screen.getByRole('heading', { name: 'Eclipse' })).toHaveFocus()
-    expect(screen.getByLabelText('Notas personales')).toHaveValue(
-      before.library.userAlbums[0]!.personalNotes,
-    )
+    expect(
+      screen.getByText(
+        before.library.userAlbums[0]!.personalNotes!.trim().replace(
+          /\s+/g,
+          ' ',
+        ),
+      ),
+    ).toBeVisible()
     const after = await repository.readSnapshot()
     expect(after.catalog).toEqual(before.catalog)
     expect(after.identity).toEqual(before.identity)
@@ -186,7 +190,9 @@ test('cuota conserva confirmación y datos; doble envío retira una vez y bloque
   const remove = vi.spyOn(MusicLibrary.prototype, 'removePersonalAlbum')
   confirm()
   confirm()
-  expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeDisabled()
+  expect(
+    screen.getByRole('button', { name: 'Guardar experiencia' }),
+  ).toBeDisabled()
   await finished()
   expect(remove).toHaveBeenCalledTimes(1)
   openLibraryOptions()
@@ -295,9 +301,10 @@ test('entrada activa distinta impide restaurar y permite abrirla sin fusionar da
       (row) => row.id === active.id,
     )?.deletedAt,
   ).toBeUndefined()
+  openAlbumArea('collection')
   expect(screen.getByText('0 ejemplares registrados')).toBeVisible()
 })
-test.each(['album', 'track'])(
+test.each(['track'])(
   'quitar nota %s exige confirmación; Conservar/Escape mantiene nota y borrador',
   async (kind) => {
     const { repository } = await setup(),
@@ -327,19 +334,18 @@ test.each(['album', 'track'])(
     }
   },
 )
-test('confirmación de nota obsoleta no quita la nueva valoración', async () => {
+test('una nota nueva de otra pestaña impide quitar la anterior desde el borrador', async () => {
   const { repository, service } = await setup()
   await open(repository)
-  fireEvent.click(screen.getByRole('button', { name: 'Quitar nota' }))
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Quitar nota del borrador' }),
+  )
   await service.rateAlbum(libraryIds.entry, 10)
-  fireEvent.click(screen.getByRole('button', { name: 'Confirmar quitar nota' }))
-  await screen.findByRole('alert')
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
+  expect(await screen.findByRole('alert')).toHaveTextContent('cambió')
   expect(
     (await repository.readSnapshot()).library.albumRatings.find(
       (row) => row.userAlbumId === libraryIds.entry,
     )?.scoreUnits,
   ).toBe(20)
-  expect(
-    within(screen.getByRole('dialog')).getByText(/Se quitará la nota 9,5/),
-  ).toBeVisible()
 })

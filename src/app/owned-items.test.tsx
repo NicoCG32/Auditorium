@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import {
   render,
   screen,
@@ -56,6 +57,8 @@ async function populated() {
 async function open(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
+  openAlbumArea('collection')
+  openExperience()
 }
 function begin() {
   fireEvent.click(screen.getByRole('button', { name: 'Registrar ejemplar' }))
@@ -275,7 +278,7 @@ test.each(['registrar', 'eliminar'])(
       ),
     ).toBeVisible()
     for (const name of [
-      'Guardar nota',
+      'Guardar experiencia',
       'Guardar experiencia',
       'Volver a biblioteca',
       'Editar lista original',
@@ -301,7 +304,7 @@ test('doble envío registra una vez y bloquea escrituras de otros editores', asy
     .closest('form')!
   fireEvent.submit(form)
   fireEvent.submit(form)
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
   expect(add).toHaveBeenCalledTimes(1)
   expect(rate).not.toHaveBeenCalled()
   await finished()
@@ -313,9 +316,11 @@ test('actualizar una valoración conserva el borrador de registro de propiedad',
   begin()
   change('Notas del ejemplar', 'Borrador ficticio')
   change('Nota del álbum', '8')
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeEnabled(),
+    expect(
+      screen.getByRole('button', { name: 'Guardar experiencia' }),
+    ).toBeEnabled(),
   )
   expect(screen.getByLabelText('Notas del ejemplar')).toHaveValue(
     'Borrador ficticio',

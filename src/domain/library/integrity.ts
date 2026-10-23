@@ -107,7 +107,24 @@ export function getLibraryIssues(
 
   const ratedAlbums = new Set<string>()
   library.albumRatings.forEach((row, index) => {
-    checkRatingReference(row, ['albumRatings', index])
+    const entry = checkRatingReference(row, ['albumRatings', index])
+    if (row.referenceReleaseId) {
+      const release = catalog.releases.find(
+        (release) => release.id === row.referenceReleaseId,
+      )
+      if (!release)
+        report(
+          'missing_reference',
+          ['albumRatings', index, 'referenceReleaseId'],
+          'No existe la edición de referencia.',
+        )
+      else if (entry && release.albumId !== entry.albumId)
+        report(
+          'wrong_album',
+          ['albumRatings', index, 'referenceReleaseId'],
+          'La edición de referencia pertenece a otro álbum.',
+        )
+    }
     if (ratedAlbums.has(row.userAlbumId)) {
       report(
         'duplicate_rating',

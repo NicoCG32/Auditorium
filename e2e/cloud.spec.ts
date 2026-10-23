@@ -139,7 +139,7 @@ async function mock(
           value
             ? url.searchParams.get('select') === 'revision'
               ? { revision: value.revision }
-              : { ...value, schema_version: 5 }
+              : { ...value, schema_version: 6 }
             : null,
         )
       }

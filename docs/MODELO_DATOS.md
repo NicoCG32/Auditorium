@@ -1,12 +1,14 @@
 # Modelo de datos y persistencia
 
+UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
+
 La [sincronización opcional con Supabase](SINCRONIZACION_SUPABASE.md) añade una tabla remota privada versionada y el checkpoint técnico de IndexedDB v6. LINK-01 añade enlaces personales contenidos en UserAlbum, DB7/nativa70 y respaldo4; no añade tablas musicales. Los apartados del MVP describen su base histórica; el contrato remoto y su RLS se documentan en la guía de sincronización.
 
 UX-05 separa la clasificación en Album y migra las filas y los documentos del checkpoint de forma atómica. DB8 sustituye el índice releaseType por primaryType; el respaldo5 y el servidor versionado conservan lectores históricos estrictos. Véase [clasificación y migración](CLASIFICACION_ALBUM.md).
 
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta UX-05 de DB8/respaldo5, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta UX-06 de DB9/respaldo6, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 
@@ -81,6 +83,8 @@ La retirada de un álbum personal no elimina su catálogo ni los registros perso
 | 5             | 50                       | Admite `Artist.country`, `Album.genres` y `Album.coverImage`; conserva tablas e índices |
 | 6             | 60                       | Añade `syncCheckpoint` para la sincronización opcional                                  |
 | 7             | 70                       | Admite enlaces y favorito en `UserAlbum`; conserva tablas, índices y checkpoints        |
+| 8             | 80                       | Clasificación independiente de Album e índice primaryType; migra filas y checkpoint     |
+| 9             | 90                       | Referencia opcional de AlbumRating; valida filas y todos los documentos del checkpoint  |
 
 Las migraciones mantienen claves, índices y registros históricos; v2/v3 crean las nuevas tablas vacías. v4 y v5 no crean tablas ni transforman filas: establecen barreras de compatibilidad para sus campos opcionales, evitando que una versión anterior los interprete como corrupción. No hay una conversión de notas, regeneración de identificadores ni enriquecimiento de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
 
@@ -174,9 +178,9 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 ## Contrato de respaldo JSON
 
-El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 5`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
+El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 6`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
 
-La versión **4 del respaldo** es independiente de IndexedDB **7**. El formato vigente incorpora enlaces personales y favorito al snapshot completo. Los formatos 1/2/3 mantienen sus schemas históricos estrictos antes de normalizar a 4: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y ninguno admite los campos de enlaces. No se inventan datos al migrar. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de tablas nativas.
+La versión **6 del respaldo** es independiente de IndexedDB **9**. El formato vigente incorpora la referencia opcional de la nota al snapshot completo. El formato4 incorporó enlaces personales y favorito; el5 separó la clasificación del álbum. Los formatos 1/2/3 mantienen sus schemas históricos estrictos antes de normalizar al formato vigente: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y ninguno admite los campos de enlaces. No se inventan datos al migrar. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de tablas nativas.
 
 [`LibraryBackups`](../src/application/library-backups.ts) aplica un límite de **20 MiB**, medido en bytes:
 
@@ -184,7 +188,7 @@ La versión **4 del respaldo** es independiente de IndexedDB **7**. El formato v
 - Comprueba el tamaño UTF-8 real del texto antes de analizar JSON; admite un BOM inicial.
 - Valida el documento y comprueba también el tamaño de su representación normalizada mediante serialización.
 
-El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v8 ni un respaldo5; conserva copias históricas antes de actualizar.
+El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v9 ni un respaldo6; conserva copias históricas antes de actualizar.
 
 La exportación parte de una lectura validada y consistente. Serializa el documento con sangría de dos espacios y un salto de línea final. La aplicación inicia su descarga, pero esa acción no demuestra que el navegador haya guardado el archivo en el equipo.
 

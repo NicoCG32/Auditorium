@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import { openLibraryOptions } from '../test/library-navigation'
 import {
   act,
@@ -230,13 +231,15 @@ test('cancelar un ejemplar no descarta la experiencia pendiente del mismo álbum
   const before = await repository.readSnapshot()
   await open()
   fireEvent.click(screen.getByRole('button', { name: 'Eclipse' }))
+  openExperience()
   change('Notas personales', 'Experiencia ficticia por conservar')
+  openAlbumArea('collection')
   fireEvent.click(screen.getByRole('button', { name: 'Registrar ejemplar' }))
   change('Notas del ejemplar', 'Ejemplar ficticio descartable')
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar registro' }))
   const dialog = screen.getByRole('dialog', { name: 'Cambios sin guardar' })
   expect(dialog).toHaveTextContent('Nuevo ejemplar')
-  expect(dialog).not.toHaveTextContent('Escucha y notas personales')
+  expect(dialog).not.toHaveTextContent('Mi experiencia')
   fireEvent.click(
     within(dialog).getByRole('button', { name: 'Descartar cambios' }),
   )
@@ -245,7 +248,7 @@ test('cancelar un ejemplar no descarta la experiencia pendiente del mismo álbum
   )
   openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
-  expect(dialog).toHaveTextContent('Escucha y notas personales')
+  expect(dialog).toHaveTextContent('Mi experiencia')
   expect(dialog).not.toHaveTextContent('Nuevo ejemplar')
   fireEvent.click(
     within(dialog).getByRole('button', { name: 'Seguir editando' }),

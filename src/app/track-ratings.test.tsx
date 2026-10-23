@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import {
   fireEvent,
   render,
@@ -59,6 +60,8 @@ async function populated() {
 async function open(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
+  openAlbumArea('tracks')
+  openExperience()
 }
 function choose(value: string) {
   fireEvent.change(
@@ -288,7 +291,7 @@ test.each(['guardar', 'quitar'])(
       ).getByText(action === 'guardar' ? '8,5 / 10' : 'Sin nota'),
     ).toBeVisible()
     for (const name of [
-      'Guardar nota',
+      'Guardar experiencia',
       'Guardar experiencia',
       'Volver a biblioteca',
       'Editar lista original',
@@ -320,7 +323,7 @@ test('doble envío escribe una vez y excluye escrituras de álbum y listas', asy
     .closest('form')!
   fireEvent.submit(form)
   fireEvent.submit(form)
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
   expect(rate).toHaveBeenCalledTimes(1)
   expect(album).not.toHaveBeenCalled()
   expect(
@@ -371,9 +374,11 @@ test('actualizar nota de álbum conserva borrador de pista y no recalcula ningun
   fireEvent.change(screen.getByLabelText('Nota del álbum'), {
     target: { value: '10' },
   })
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeEnabled(),
+    expect(
+      screen.getByRole('button', { name: 'Guardar experiencia' }),
+    ).toBeEnabled(),
   )
   expect(input).toHaveValue('8,5')
   expect((await repository.readSnapshot()).library.trackRatings).toEqual(

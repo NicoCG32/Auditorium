@@ -7,7 +7,9 @@ import {
 } from '../../domain/catalog/classification'
 import type { MusicLibrary } from '../../application/music-library'
 import { AlbumCover } from './AlbumCover'
-import { AlbumRatingForm } from './AlbumRatingForm'
+import { formatScore, listeningLabels } from './labels'
+import { unitsToScore } from '../../domain/library/scores'
+import { releaseLabels } from './release-labels'
 import { AlbumExperienceForm } from './AlbumExperienceForm'
 import type {
   UserAlbum,
@@ -32,7 +34,6 @@ export function AlbumSummary({
   entry,
   onBack,
   library,
-  onRatingCommitted,
   busy,
   onBusyChange,
   personalEntry,
@@ -48,13 +49,22 @@ export function AlbumSummary({
   onEditComplete,
   onEditCancel,
   backLabel,
+  experienceEditing,
+  collectionEditing,
+  onExperienceOpen,
+  onExperienceComplete,
+  onExperienceCancel,
 }: {
+  experienceEditing: boolean
+  collectionEditing: boolean
+  onExperienceOpen: () => void
+  onExperienceComplete: () => void
+  onExperienceCancel: () => void
   snapshot: LocalSnapshot
   album: Album
   entry: LibraryAlbum
   onBack: () => void
   library: MusicLibrary
-  onRatingCommitted: () => Promise<void>
   busy: boolean
   onBusyChange: (busy: boolean) => void
   personalEntry: UserAlbum
@@ -75,8 +85,8 @@ export function AlbumSummary({
   const [focusLinks, setFocusLinks] = useState(false)
   const heading = useRef<HTMLHeadingElement>(null)
   useEffect(() => {
-    heading.current?.focus()
-  }, [entry.id])
+    if (!experienceEditing) heading.current?.focus()
+  }, [entry.id, experienceEditing])
   const creditedArtists = catalog.albumArtists
     .filter((credit) => credit.albumId === album.id)
     .toSorted((a, b) => a.position - b.position)
@@ -84,6 +94,12 @@ export function AlbumSummary({
       catalog.artists.find((artist) => artist.id === credit.artistId),
     )
     .filter((artist) => artist !== undefined)
+  const rating = personalLibrary.albumRatings.find(
+    (row) => row.userAlbumId === personalEntry.id,
+  )
+  const releaseNames = releaseLabels(
+    catalog.releases.filter((release) => release.albumId === album.id),
+  )
   if (editing)
     return (
       <AlbumEditPanel
@@ -98,11 +114,11 @@ export function AlbumSummary({
       />
     )
   return (
-    <>
-      <section className="album-summary" aria-labelledby="album-summary-title">
+    <section className="album-summary" aria-labelledby="album-summary-title">
+      <div className="album-task-actions">
         <button
           type="button"
-          className="text-button mb-6"
+          className="text-button"
           disabled={busy}
           onClick={onBack}
         >
@@ -111,7 +127,7 @@ export function AlbumSummary({
         <button
           id="album-edit-button"
           type="button"
-          className="action-button mb-6 ml-3"
+          className="action-button"
           disabled={busy}
           onClick={(event) => {
             event.currentTarget.focus()
@@ -121,96 +137,158 @@ export function AlbumSummary({
         >
           Editar álbum
         </button>
-        <div className="album-summary-grid">
-          <AlbumCover
-            title={album.title}
-            {...(album.coverUrl ? { url: album.coverUrl } : {})}
-            {...(album.coverImage ? { image: album.coverImage } : {})}
-          />
-          <div className="min-w-0">
-            <p className="mb-4 text-xs tracking-widest text-accent-text uppercase">
-              En tu biblioteca
-            </p>
-            <h2
-              id="album-summary-title"
-              ref={heading}
-              tabIndex={-1}
-              className="text-3xl font-semibold wrap-anywhere"
-            >
-              {album.title}
-            </h2>
-            <p className="mt-3 text-lg text-muted wrap-anywhere">
-              {entry.artist}
-            </p>
-            <dl className="mt-6 grid gap-4 text-sm">
-              <div>
-                <dt className="text-muted">Clasificación</dt>
-                <dd>{classificationLabel(album)}</dd>
-                <dt className="text-muted mt-3">Publicación</dt>
-                <dd>{publicationLabels[album.publicationStatus]}</dd>
-              </div>
-              <div>
-                <dt className="text-muted">Año original</dt>
-                <dd>{album.originalYear ?? 'Sin registrar'}</dd>
-              </div>
-              <div>
-                <dt className="text-muted">Géneros</dt>
-                <dd>
-                  {album.genres?.length
-                    ? album.genres.join(' · ')
-                    : 'Sin registrar'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-muted">País de origen</dt>
-                <dd>
-                  {creditedArtists.some((artist) => artist.country)
-                    ? creditedArtists
-                        .map(
-                          (artist) =>
-                            `${artist.name}: ${artist.country ?? 'Sin registrar'}`,
-                        )
-                        .join(' · ')
-                    : 'Sin registrar'}
-                </dd>
-              </div>
-            </dl>
-            {album.description ? (
-              <p className="mt-6 whitespace-pre-wrap text-sm leading-relaxed wrap-anywhere">
-                {album.description}
-              </p>
-            ) : null}
-            {album.coverUrl ? (
-              <a
-                className="text-button mt-5 inline-flex items-center"
-                href={album.coverUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                referrerPolicy="no-referrer"
-              >
-                Abrir enlace de portada
-              </a>
-            ) : null}
-            <AlbumRatingForm
-              key={entry.id}
-              entryId={entry.id}
-              score={entry.score}
-              library={library}
-              onCommitted={onRatingCommitted}
-              onBusyChange={onBusyChange}
-              blocked={busy}
-            />
-          </div>
-        </div>
-        <PersonalAlbumLinks
-          entry={personalEntry}
-          onEdit={() => {
-            setFocusLinks(true)
-            onEdit()
-          }}
-          disabled={busy}
+      </div>
+      <div className="album-summary-grid">
+        <AlbumCover
+          title={album.title}
+          {...(album.coverUrl ? { url: album.coverUrl } : {})}
+          {...(album.coverImage ? { image: album.coverImage } : {})}
         />
+        <div className="min-w-0">
+          <p className="mb-4 text-xs tracking-widest text-accent-text uppercase">
+            En tu biblioteca
+          </p>
+          <h2
+            id="album-summary-title"
+            ref={heading}
+            tabIndex={-1}
+            className="text-3xl font-semibold wrap-anywhere"
+          >
+            {album.title}
+          </h2>
+          <p className="mt-3 text-lg text-muted wrap-anywhere">
+            {entry.artist}
+          </p>
+          <p className="mt-4 text-sm">{classificationLabel(album)}</p>
+          <p className="mt-2 text-sm text-muted">
+            Año original: {album.originalYear ?? 'Sin registrar'}
+          </p>
+        </div>
+      </div>
+      <PersonalAlbumLinks
+        entry={personalEntry}
+        onEdit={() => {
+          setFocusLinks(true)
+          onEdit()
+        }}
+        disabled={busy}
+      />
+      {experienceEditing ? (
+        <AlbumExperienceForm
+          key={personalEntry.id}
+          snapshot={snapshot}
+          entryId={personalEntry.id}
+          library={library}
+          blocked={busy}
+          onCommitted={onExperienceCommitted}
+          onBusyChange={onBusyChange}
+          onComplete={onExperienceComplete}
+          onCancel={onExperienceCancel}
+        />
+      ) : (
+        <section
+          className="experience-panel experience-summary"
+          aria-labelledby="experience-summary-title"
+        >
+          <h3 id="experience-summary-title" className="text-xl font-semibold">
+            Mi experiencia
+          </h3>
+          <div className="experience-summary-values">
+            <p>
+              Escucha guardada:{' '}
+              <strong>{listeningLabels[personalEntry.listeningStatus]}</strong>
+            </p>
+            <p>
+              Nota guardada:{' '}
+              <strong className="text-accent-text">
+                {rating
+                  ? formatScore(unitsToScore(rating.scoreUnits)) + ' / 10'
+                  : 'Sin nota'}
+              </strong>
+            </p>
+          </div>
+          <p className="mt-3 text-sm text-muted">
+            Edición de referencia:{' '}
+            {rating?.referenceReleaseId
+              ? releaseNames.get(rating.referenceReleaseId)
+              : 'Sin edición de referencia'}
+          </p>
+          {personalEntry.personalNotes ? (
+            <p className="mt-4 whitespace-pre-wrap wrap-anywhere">
+              {personalEntry.personalNotes}
+            </p>
+          ) : (
+            <p className="mt-3 text-sm text-muted">
+              Aún no has escrito un comentario.
+            </p>
+          )}
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button
+              type="button"
+              className="primary-button"
+              disabled={busy}
+              onClick={onExperienceOpen}
+            >
+              {rating ? 'Recalificar álbum' : 'Calificar álbum'}
+            </button>
+            <button
+              type="button"
+              className="action-button"
+              disabled={busy}
+              onClick={onExperienceOpen}
+            >
+              Editar experiencia
+            </button>
+          </div>
+        </section>
+      )}
+      <details className="album-area" data-album-area="data">
+        <summary>Datos del álbum</summary>
+        <dl className="mt-5 grid gap-4 text-sm">
+          <div>
+            <dt className="text-muted">Publicación</dt>
+            <dd>{publicationLabels[album.publicationStatus]}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">Géneros</dt>
+            <dd>{album.genres?.join(' · ') || 'Sin registrar'}</dd>
+          </div>
+          <div>
+            <dt className="text-muted">País de origen</dt>
+            <dd>
+              {creditedArtists.some((artist) => artist.country)
+                ? creditedArtists
+                    .map(
+                      (artist) =>
+                        artist.name +
+                        ': ' +
+                        (artist.country ?? 'Sin registrar'),
+                    )
+                    .join(' · ')
+                : 'Sin registrar'}
+            </dd>
+          </div>
+        </dl>
+        {album.description ? (
+          <p className="mt-5 whitespace-pre-wrap wrap-anywhere">
+            {album.description}
+          </p>
+        ) : null}
+        {album.coverUrl ? (
+          <a
+            className="text-button mt-4 inline-block"
+            href={album.coverUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            referrerPolicy="no-referrer"
+          >
+            Abrir enlace de portada
+          </a>
+        ) : null}
         <AlbumReferenceLinks album={album} artist={entry.artist} />
+      </details>
+      <details className="album-area" data-album-area="tracks">
+        <summary>Pistas y ediciones</summary>
         <AlbumTrackLists
           albumId={album.id}
           catalog={catalog}
@@ -221,14 +299,13 @@ export function AlbumSummary({
           onBusyChange={onBusyChange}
           onCommitted={onExperienceCommitted}
         />
-        <AlbumExperienceForm
-          key={personalEntry.id}
-          entry={personalEntry}
-          library={library}
-          blocked={busy}
-          onCommitted={onExperienceCommitted}
-          onBusyChange={onBusyChange}
-        />
+      </details>
+      <details
+        className="album-area"
+        data-album-area="collection"
+        open={collectionEditing || undefined}
+      >
+        <summary>Mi colección</summary>
         <OwnedItemsPanel
           entryId={personalEntry.id}
           items={ownedItems}
@@ -240,6 +317,9 @@ export function AlbumSummary({
           onBusyChange={onBusyChange}
           onCommitted={onExperienceCommitted}
         />
+      </details>
+      <details className="album-area" data-album-area="actions">
+        <summary>Más acciones: deseos y retirada</summary>
         <PurchaseWishesPanel
           entryId={personalEntry.id}
           wishes={purchaseWishes}
@@ -262,7 +342,7 @@ export function AlbumSummary({
           onCommitted={onExperienceCommitted}
           onRemoved={onRemoved}
         />
-      </section>
-    </>
+      </details>
+    </section>
   )
 }

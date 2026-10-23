@@ -14,6 +14,12 @@ import {
   type ReleaseTrack,
   type Track,
 } from '../domain/catalog/schemas'
+import {
+  experienceExpected,
+  sameExperience,
+  saveAlbumExperienceSchema,
+  type ExperienceExpected,
+} from './album-experience'
 import { applyLibraryChange } from '../domain/library/library'
 import {
   userAlbumSchema,
@@ -46,7 +52,12 @@ import {
   type CreateAlbumInput,
 } from './inputs'
 import { albumCandidates, type AlbumCandidate } from './album-candidates'
-import { saveTrackList, saveTrackListInputSchema } from './track-lists'
+import {
+  saveTrackList,
+  saveTrackListInputSchema,
+  releaseRemovalToken,
+  TrackListConflictError,
+} from './track-lists'
 import { addOwnedItemInputSchema } from './inputs'
 import { ownedItemSchema, type OwnedItem } from '../domain/library/owned-items'
 import {
@@ -69,13 +80,15 @@ export class MusicUseCaseError extends Error {
     | 'outdated_experience'
     | 'outdated_album'
     | 'outdated_links'
+    | 'referenced_release'
   constructor(
     code:
       | 'missing_reference'
       | 'wrong_album'
       | 'outdated_experience'
       | 'outdated_album'
-      | 'outdated_links',
+      | 'outdated_links'
+      | 'referenced_release',
     message: string,
   ) {
     super(message)
@@ -471,6 +484,46 @@ export class MusicLibrary {
     })
   }
 
+  async removeRelease(releaseId: unknown, expected: string): Promise<void> {
+    const id = entityIdSchema.parse(releaseId)
+    await this.repository.mutate((snapshot) => {
+      const release = snapshot.catalog.releases.find((row) => row.id === id)
+      if (!release)
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'La edición ya no existe.',
+        )
+      if (releaseRemovalToken(snapshot.catalog, id) !== expected)
+        throw new TrackListConflictError()
+      if (
+        snapshot.library.albumRatings.some(
+          (row) => row.referenceReleaseId === id,
+        )
+      )
+        throw new MusicUseCaseError(
+          'referenced_release',
+          'Cambia o quita la edición de referencia en Mi experiencia antes de eliminar esta edición. La nota se conserva.',
+        )
+      if (
+        snapshot.library.ownedItems.some((row) => row.releaseId === id) ||
+        snapshot.library.purchaseWishes.some(
+          (row) => row.targetReleaseId === id,
+        )
+      )
+        throw new MusicUseCaseError(
+          'referenced_release',
+          'Esta edición está vinculada a tu colección o a un deseo. Revisa esos vínculos antes de eliminarla.',
+        )
+      snapshot.catalog.releases = snapshot.catalog.releases.filter(
+        (row) => row.id !== id,
+      )
+      snapshot.catalog.releaseTracks = snapshot.catalog.releaseTracks.filter(
+        (row) => row.releaseId !== id,
+      )
+      return { snapshot, result: undefined }
+    })
+  }
+
   async addTrackToRelease(input: unknown): Promise<AddTrackResult> {
     const request = addTrackInputSchema.parse(input)
     return this.repository.mutate((snapshot) => {
@@ -594,6 +647,67 @@ export class MusicLibrary {
           'No existe la entrada personal.',
         )
       return { snapshot, result: updated }
+    })
+  }
+
+  async saveAlbumExperience(
+    userAlbumId: unknown,
+    input: unknown,
+  ): Promise<ExperienceExpected> {
+    const id = entityIdSchema.parse(userAlbumId)
+    const request = saveAlbumExperienceSchema.parse(input)
+    const updatedAt = this.now().toISOString()
+    return this.repository.mutate((snapshot) => {
+      if (
+        !snapshot.library.userAlbums.some(
+          (entry) => entry.id === id && !entry.deletedAt,
+        )
+      )
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'El álbum ya no está activo en tu biblioteca.',
+        )
+      const previous = experienceExpected(snapshot, id)
+      if (!sameExperience(previous, request.expected))
+        throw new MusicUseCaseError(
+          'outdated_experience',
+          'Tu experiencia cambió después de leerla.',
+        )
+      const context = {
+        catalog: snapshot.catalog,
+        localUserId: snapshot.identity.userId,
+      }
+      if (
+        previous.listeningStatus !== request.listeningStatus ||
+        previous.personalNotes !== request.personalNotes
+      )
+        snapshot.library = applyLibraryChange(context, snapshot.library, {
+          type: 'set_personal_experience',
+          userAlbumId: id,
+          listeningStatus: request.listeningStatus,
+          personalNotes: request.personalNotes,
+          updatedAt,
+        })
+      if (
+        previous.rating?.scoreUnits !==
+          (request.rating ? scoreToUnits(request.rating.score) : undefined) ||
+        previous.rating?.referenceReleaseId !==
+          request.rating?.referenceReleaseId
+      )
+        snapshot.library = applyLibraryChange(
+          context,
+          snapshot.library,
+          request.rating
+            ? {
+                type: 'set_album_rating',
+                userAlbumId: id,
+                scoreUnits: scoreToUnits(request.rating.score),
+                referenceReleaseId: request.rating.referenceReleaseId ?? null,
+                updatedAt,
+              }
+            : { type: 'remove_album_rating', userAlbumId: id },
+        )
+      return { snapshot, result: experienceExpected(snapshot, id) }
     })
   }
 

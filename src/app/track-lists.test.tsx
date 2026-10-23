@@ -1,3 +1,4 @@
+import { openAlbumArea, openExperience } from '../test/library-navigation'
 import {
   fireEvent,
   render,
@@ -57,6 +58,8 @@ async function open() {
   }))
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
+  openAlbumArea('tracks')
+  openExperience()
   return repository
 }
 function chooseDeluxe() {
@@ -362,8 +365,10 @@ test('doble envío escribe una vez; valoración no puede escribir simultáneamen
   fireEvent.submit(form)
   fireEvent.submit(form)
   expect(save).toHaveBeenCalledTimes(1)
-  expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeDisabled()
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  expect(
+    screen.getByRole('button', { name: 'Guardar experiencia' }),
+  ).toBeDisabled()
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
   expect(rate).not.toHaveBeenCalled()
   await saved()
   expect(
@@ -387,9 +392,11 @@ test('quitar aparición y descartar borrador no escriben; refresco de rating pre
   editEdition()
   change('Título en esta edición 1', 'Borrador ficticio')
   change('Nota del álbum', '8')
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar nota' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Guardar experiencia' }))
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'Guardar nota' })).toBeEnabled(),
+    expect(
+      screen.getByRole('button', { name: 'Guardar experiencia' }),
+    ).toBeEnabled(),
   )
   expect(screen.getByLabelText('Título en esta edición 1')).toHaveValue(
     'Borrador ficticio',

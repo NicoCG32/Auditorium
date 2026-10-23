@@ -1,8 +1,10 @@
-# Contratos propuestos para experiencia y acceso musical
+# Contratos de experiencia y acceso musical
 
 Actualización LINK-01: enlaces personales y favorito ya están implementados con almacenamiento contenido en UserAlbum, DB7 y respaldo4; la [guía vigente](ENLACES_PERSONALES.md) concreta sus contratos. UX-05 implementa clasificación y formularios con DB8/respaldo5; véase la [guía vigente](CLASIFICACION_ALBUM.md). Los refinamientos posteriores mantienen su seguimiento.
 
-Estado original: **diseño lógico propuesto en UX-03**, 2026-10-18. No son schemas ejecutables ni una migración aplicada. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
+UX-06 implementa la [experiencia conjunta y edición de referencia](MI_EXPERIENCIA.md), con DB9/respaldo6. Los apartados de audio adjunto y reproducción integrada siguen propuestos.
+
+Estado original: **diseño lógico propuesto en UX-03**, 2026-10-18. Los apartados que siguen propuestos no son schemas ejecutables ni migraciones aplicadas. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
 
 ## 1. Responsabilidades y relaciones
 
@@ -97,7 +99,7 @@ La migración conserva la clasificación heredada, incluidos antiguos valores po
 
 La valoración personal pertenece al álbum conceptual a través de `AlbumRating`, no a cada `Release`. Una nueva escucha de una edición Deluxe, remasterizada o con bonus puede motivar recalificar ese mismo álbum; no crea otra nota, otro álbum ni un promedio entre versiones o pistas.
 
-UX-06 propone un campo opcional `AlbumRating.referenceReleaseId`, contexto de la valoración actual. Se elige mediante un selector simple **Edición de referencia**:
+UX-06 implementa un campo opcional `AlbumRating.referenceReleaseId`, contexto de la valoración actual. Se elige mediante un selector simple **Edición de referencia**:
 
 - Primera opción **Sin edición de referencia**, predeterminada para datos anteriores y nuevas notas.
 - Sólo ediciones ya añadidas a ese álbum (`Release.albumId` coincide), incluidas físicas o digitales que no se posean. Las adquisiciones no son las opciones del selector.
@@ -107,7 +109,7 @@ UX-06 propone un campo opcional `AlbumRating.referenceReleaseId`, contexto de la
 - Guardar nota y referencia es atómico dentro de Mi experiencia, junto al resto de ese ámbito. La referencia sólo se guarda cuando existe nota; quitar la nota también retira su referencia y conserva escucha/comentario.
 - Recalificar conserva la referencia vigente salvo cambio explícito. No se permite eliminar una edición y dejar una referencia huérfana: antes de eliminarla debe resolverse explícitamente esa referencia, conservando la nota.
 
-No es la edición favorita de reproducción ni una prueba de adquisición. El cambio requiere versionar schema, persistencia y respaldo en UX-06, con comparación concurrente del valor esperado y validación de pertenencia al mismo álbum. Las calificaciones anteriores llegan sin referencia y no se deduce una desde la primera edición, un enlace o un ejemplar.
+No es la edición favorita de reproducción ni una prueba de adquisición. El cambio usa DB9, respaldo6 y sincronización3/4/5/6, con comparación concurrente del valor esperado y validación de pertenencia al mismo álbum. Las calificaciones anteriores llegan sin referencia y no se deduce una desde la primera edición, un enlace o un ejemplar.
 
 ### Mi colección: adquisiciones físicas y digitales
 
