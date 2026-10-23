@@ -4,6 +4,37 @@ import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
+import {
+  mockStreaming,
+  restorePlayback,
+  playbackBackup,
+} from './helpers/streaming-fixture'
+
+test('reproductor explícito en Pages conserva origen, ruta y datos personales', async ({
+  page,
+}) => {
+  const network = await mockStreaming(page)
+  const fixture = await restorePlayback(page, '/Auditorium/')
+  await expect(page.locator('iframe')).toHaveCount(0)
+  expect(network.requests).toEqual([])
+  await page
+    .getByRole('combobox', { name: 'Enlace para escuchar' })
+    .selectOption(fixture.data.library.userAlbums[0]!.links![1]!.id)
+  await page
+    .getByRole('button', { name: 'Cargar reproductor de YouTube' })
+    .click()
+  await expect(
+    page.getByText('YouTube está listo. Pulsa reproducir en sus controles.'),
+  ).toBeVisible()
+  const url = new URL((await page.locator('iframe').getAttribute('src'))!)
+  expect(url.searchParams.get('origin')).toBe('http://127.0.0.1:4179')
+  await expect(page).toHaveURL(/\/Auditorium\/#\/album\//)
+  await expect.poll(() => network.referrers.length).toBeGreaterThan(0)
+  expect(network.referrers).toEqual(['http://127.0.0.1:4179/'])
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await expect(page.locator('iframe')).toHaveCount(0)
+  expect((await playbackBackup(page)).data).toEqual(fixture.data)
+})
 
 const base = '/Auditorium/'
 const origin = 'http://127.0.0.1:4179'

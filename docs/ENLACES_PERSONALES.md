@@ -1,12 +1,12 @@
 # Enlaces personales de reproducción y compra
 
-MEDIA-01 documenta la [evaluación de metadatos y reproductores](PROVEEDORES_STREAMING.md) y su prototipo aislado. La integración en la ficha se sigue en PLAY-01; la aplicación conserva su comportamiento actual.
+La [reproducción desde enlaces](REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 
 UX-05 incorpora la [clasificación independiente y sus migraciones](CLASIFICACION_ALBUM.md): DB8/nativa80 y respaldo5. Album describe la obra; Release conserva las ediciones; UserAlbum, la experiencia y los enlaces personales.
 
 Cada entrada personal de un álbum puede guardar hasta **20 enlaces HTTPS**, repartidos entre **Escuchar** y **Comprar**. Se añaden al registrar el álbum y se corrigen desde **Editar álbum** o **Editar enlaces** en la ficha. Una etiqueta opcional permite distinguir versiones; el proveedor se obtiene del dominio de la URL.
 
-Escuchar admite un **favorito de reproducción opcional**. Cambiarlo conserva las alternativas. Quitar el enlace favorito, o cambiar su propósito a compra, elimina esa preferencia; no se elige otro automáticamente. Con un único enlace tampoco se guarda una preferencia implícita. Todos los enlaces abren el servicio en otra pestaña, con `noopener noreferrer` y sin enviar el referente. Este incremento no incorpora reproductores ni descarga audio.
+Escuchar admite un **favorito de reproducción opcional**. Cambiarlo conserva las alternativas. Quitar el enlace favorito, o cambiar su propósito a compra, elimina esa preferencia; no se elige otro automáticamente. Con un único enlace tampoco se guarda una preferencia implícita. Todos los enlaces abren el servicio en otra pestaña, con `noopener noreferrer` y sin enviar el referente. LINK-01 introdujo estos enlaces; PLAY-01 añade el reproductor opcional descrito en la guía de reproducción.
 
 ## Modelo de dominio
 
@@ -61,4 +61,4 @@ Supabase admite documentos 3 y 4. Una escritura nueva envía 4; después de actu
 
 [LINK-01 #64](https://github.com/NicoCG32/Auditorium/issues/64) cubre contratos, protocolos, duplicados, pertenencia del favorito, guardado conjunto, conflictos, reapertura, migración DB6→DB7, respaldo/restauración y retirada/restauración. Los recorridos de navegador comprueban varios servicios, un proveedor genérico, cancelación, URL inválida, cambio y retirada del favorito y accesibilidad. Las pruebas SQL comprueban aislamiento, revisiones, reintentos, versiones 3/4 y rechazo de downgrade con cuentas ficticias revertidas íntegramente.
 
-La clasificación del álbum, el selector de edición de referencia, los reproductores y los adjuntos de audio conservan sus tareas independientes.
+Clasificación (UX-05), edición de referencia (UX-06) y reproductores (PLAY-01) tienen sus propias guías y contratos. Los adjuntos de audio conservan la investigación AUDIO-01 y posterior implementación AUDIO-02.

@@ -1,6 +1,6 @@
 # Auditorium
 
-MEDIA-01 documenta la [evaluación de metadatos y reproductores](docs/PROVEEDORES_STREAMING.md) y su prototipo aislado. La integración en la ficha se sigue en PLAY-01; la aplicación conserva su comportamiento actual.
+La [reproducción desde enlaces](docs/REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](docs/PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 
 [Mi experiencia](docs/MI_EXPERIENCIA.md) describe la ficha, el guardado conjunto y la edición de referencia opcional, con compatibilidad DB9/respaldo6. [Clasificación y alta de álbumes](docs/CLASIFICACION_ALBUM.md) documenta tipo, categorías, publicación y créditos.
 
@@ -16,7 +16,7 @@ La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica me
 
 La versión de desarrollo en main incorpora [integraciones opcionales](docs/INTEGRACIONES_OPCIONALES.md): búsqueda y selección de referencias de Wikidata al añadir álbumes, y recomendaciones de escucha o revaloración mediante Groq o Gemini con clave propia conservada sólo en memoria. El registro manual sigue disponible sin servicios ni cuentas. Las recomendaciones no cambian tus valoraciones; las referencias de catálogo se incluyen en los respaldos. El mismo incremento añade [edición de álbumes](docs/EDICION_CATALOGO.md), géneros, país de origen de los artistas y portadas automáticas por URL o archivo local JPEG/PNG. Estas capacidades pertenecen al código de este incremento y no al ZIP ni al tag de la release v1.0.0; Pages publica las revisiones validadas de main.
 
-La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Mi colección. La navegación y los enlaces personales ya tienen implementación propia; clasificación, experiencia, reproducción y audio local conservan sus refinamientos separados.
+La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Mi colección. Navegación, enlaces personales, clasificación, experiencia y reproducción tienen implementación y guías propias. El audio local conserva su evaluación e implementación separadas.
 
 ## Desarrollo local
 

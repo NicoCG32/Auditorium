@@ -1470,6 +1470,63 @@
   gap: 1.5rem;
   margin-block-start: 1rem;
 }
+
+.playback-choice {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--color-border);
+  min-width: 0;
+}
+.playback-choice select {
+  width: 100%;
+  max-width: 100%;
+}
+.streaming-player,
+.streaming-active {
+  margin-top: 1rem;
+  min-width: 0;
+}
+.streaming-policy-links a {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+.streaming-frame {
+  width: 100%;
+  border: 0;
+  border-radius: 0.75rem;
+  display: block;
+}
+.streaming-frame-spotify {
+  height: 352px;
+}
+.streaming-frame-youtube {
+  aspect-ratio: 16 / 9;
+  min-height: 200px;
+  min-width: 200px;
+}
+.streaming-reference {
+  margin-top: 1rem;
+}
+.streaming-reference summary {
+  cursor: pointer;
+  padding-block: 0.75rem;
+}
+.streaming-resource {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 1rem;
+}
+.streaming-resource > div {
+  min-width: 0;
+  flex: 1 1 160px;
+}
+.streaming-resource-image {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+}
 .personal-album-links a {
   flex-wrap: wrap;
   overflow-wrap: anywhere;

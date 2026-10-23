@@ -166,6 +166,11 @@ export function AlbumSummary({
         </div>
       </div>
       <PersonalAlbumLinks
+        key={JSON.stringify([
+          personalEntry.id,
+          personalEntry.links,
+          personalEntry.preferredPlaybackLinkId,
+        ])}
         entry={personalEntry}
         onEdit={() => {
           setFocusLinks(true)

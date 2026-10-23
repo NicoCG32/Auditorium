@@ -1,6 +1,6 @@
 # Metadatos y reproducción desde enlaces
 
-Decisión MEDIA-01 #67 · 22 de octubre de 2026. Evaluación para una web estática con coste obligatorio de USD 0. La integración en la ficha corresponde a PLAY-01 #68; el [prototipo aislado](../prototypes/media-01/README.md) permite reproducir esta evaluación sin acceder a una biblioteca.
+Decisión MEDIA-01 #67 · 22 de octubre de 2026. Evaluación para una web estática con coste obligatorio de USD 0. La [integración en la ficha](REPRODUCCION.md) corresponde a PLAY-01 #68; el [prototipo aislado](../prototypes/media-01/README.md) permite reproducir esta evaluación sin acceder a una biblioteca.
 
 ## Decisión de soporte
 
