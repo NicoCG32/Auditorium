@@ -41,6 +41,10 @@ jobs:
         run: |
           node --test prototypes/media-01/media.test.mjs
           node prototypes/media-01/probe.mjs --mock --browser all
+      - name: Verificar evaluación aislada de audio local
+        run: |
+          node --test prototypes/audio-01/audio.test.mjs
+          node prototypes/audio-01/probe.mjs --browser all
       - name: Preparar paquete de entrega
         run: npm run package
       - name: Conservar paquete para revisión

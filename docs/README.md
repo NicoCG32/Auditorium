@@ -1,5 +1,7 @@
 # Documentación de Auditorium
 
+La [evaluación de audio local](AUDIO_LOCAL.md) concreta la conservación en este dispositivo, los formatos probados y el respaldo completo propuesto para AUDIO-02. Su prototipo es aislado; los adjuntos todavía no están incorporados a la aplicación.
+
 La [reproducción desde enlaces](REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 
 UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.

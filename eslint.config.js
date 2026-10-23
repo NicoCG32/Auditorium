@@ -36,8 +36,15 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
-    files: ['prototypes/media-01/{app,probe}.mjs'],
+    files: [
+      'prototypes/media-01/{app,probe}.mjs',
+      'prototypes/audio-01/{app,audio,storage,probe}.mjs',
+    ],
     languageOptions: { globals: globals.browser },
+  },
+  {
+    files: ['prototypes/audio-01/sw.mjs'],
+    languageOptions: { globals: globals.serviceworker },
   },
   {
     files: ['src/**/*.tsx'],

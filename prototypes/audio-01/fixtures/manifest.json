@@ -1,0 +1,143 @@
+{
+  "source": "Synthetic sine, 440 Hz, 48000 Hz mono, 1.2 s, volume factor 0.03. No recordings or musical works.",
+  "license": "CC0-1.0",
+  "generator": "ffmpeg version n9.0.2-33-g4cf298e66a-20261022 Copyright (c) 2000-2026 the FFmpeg developers",
+  "files": [
+    {
+      "id": "wav-pcm",
+      "file": "tone-wav-pcm.wav",
+      "mime": "audio/wav",
+      "bytes": 115278,
+      "sha256": "9884cabd642cfb58f194178c43e8258052ff455ca955ae3591a6fce7c160f9d7",
+      "streams": [
+        {
+          "codec_name": "pcm_s16le",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "wav",
+      "duration": 1.2
+    },
+    {
+      "id": "mp3",
+      "file": "tone-mp3.mp3",
+      "mime": "audio/mpeg",
+      "bytes": 20012,
+      "sha256": "795878c0634743810d36bbab0235586f3ce195a36c6d81c8386be952f673461c",
+      "streams": [
+        {
+          "codec_name": "mp3",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "mp3",
+      "duration": 1.2
+    },
+    {
+      "id": "flac",
+      "file": "tone-flac.flac",
+      "mime": "audio/flac",
+      "bytes": 46924,
+      "sha256": "2bfa17cd4e2f6734b6dbf333494b5ff6bc9ae8c58188208764e6609bf1713679",
+      "streams": [
+        {
+          "codec_name": "flac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "flac",
+      "duration": 1.2
+    },
+    {
+      "id": "ogg-vorbis",
+      "file": "tone-ogg-vorbis.ogg",
+      "mime": "audio/ogg; codecs=\"vorbis\"",
+      "bytes": 5792,
+      "sha256": "dc584938b472b8afd5297c3699b2f1ab6647afd982a6f9ce2ed4d36d726f1888",
+      "streams": [
+        {
+          "codec_name": "vorbis",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "ogg",
+      "duration": 1.2
+    },
+    {
+      "id": "ogg-opus",
+      "file": "tone-ogg-opus.opus",
+      "mime": "audio/ogg; codecs=\"opus\"",
+      "bytes": 11066,
+      "sha256": "f72da1a794a072d4b82c0b41fff5acf05135ff559f9fbfc13756c5b62e88ec76",
+      "streams": [
+        {
+          "codec_name": "opus",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "ogg",
+      "duration": 1.2065
+    },
+    {
+      "id": "webm-opus",
+      "file": "tone-webm-opus.webm",
+      "mime": "audio/webm; codecs=\"opus\"",
+      "bytes": 11793,
+      "sha256": "209d2b06a30f7832799e31289b5839bbffe18474eeb77ec2a9bf76a39feb7fa3",
+      "streams": [
+        {
+          "codec_name": "opus",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "matroska,webm",
+      "duration": 1.208
+    },
+    {
+      "id": "mp4-aac",
+      "file": "tone-mp4-aac.m4a",
+      "mime": "audio/mp4; codecs=\"mp4a.40.2\"",
+      "bytes": 8715,
+      "sha256": "f94b3dcec1496fd48c509d137b616652f616fc246ab478868fe367aaa10abd7a",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "mov,mp4,m4a,3gp,3g2,mj2",
+      "duration": 1.2
+    },
+    {
+      "id": "adts-aac",
+      "file": "tone-adts-aac.aac",
+      "mime": "audio/aac",
+      "bytes": 8083,
+      "sha256": "a6ade8e8c14666ab317699a7efb31c82dc0328921cdf7b01e5aa6b0fed95eb08",
+      "streams": [
+        {
+          "codec_name": "aac",
+          "codec_type": "audio",
+          "sample_rate": "48000",
+          "channels": 1
+        }
+      ],
+      "container": "aac",
+      "duration": 1.357717
+    }
+  ]
+}

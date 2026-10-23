@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Laboratorio de audio local — AUDIO-01</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+        background: #131116;
+        color: #f5eeee;
+      }
+      body {
+        max-width: 960px;
+        margin: 2rem auto;
+        padding: 0 1rem 3rem;
+      }
+      section {
+        border: 1px solid #796570;
+        border-radius: 12px;
+        margin-top: 1.5rem;
+        padding: 1.25rem;
+        min-width: 0;
+      }
+      label {
+        display: block;
+        margin-top: 1rem;
+      }
+      select,
+      input,
+      button {
+        font: inherit;
+        max-width: 100%;
+        box-sizing: border-box;
+        min-height: 44px;
+        padding: 0.6rem;
+      }
+      select,
+      input {
+        width: 100%;
+      }
+      button {
+        margin: 0.4rem 0.4rem 0.4rem 0;
+        cursor: pointer;
+      }
+      :focus-visible {
+        outline: 3px solid #edacbe;
+        outline-offset: 3px;
+      }
+      audio {
+        width: 100%;
+        margin-top: 1rem;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 0.85rem;
+      }
+      li,
+      p {
+        overflow-wrap: anywhere;
+      }
+      .notice {
+        border-left: 4px solid #edacbe;
+        padding-left: 1rem;
+      }
+      [data-state='error'] {
+        color: #ffb9b9;
+      }
+    </style>
+    <script type="module" src="./app.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <h1>Laboratorio de audio local</h1>
+      <p>
+        Prototipo aislado AUDIO-01. Trabaja con entradas ficticias, sin conectar
+        con una biblioteca de Auditorium, cuentas o servicios externos.
+      </p>
+      <p class="notice">
+        Los adjuntos son <strong>temporales</strong>: al recargar, cerrar o
+        salir de esta página se pierden. No forman parte de respaldos ni se
+        trasladan a otro dispositivo. Conserva tus originales.
+      </p>
+      <section aria-labelledby="selection-title">
+        <h2 id="selection-title">Seleccionar y probar</h2>
+        <p>
+          Hasta cuatro archivos, 16 MiB por archivo y 32 MiB en total. Un solo
+          reproductor activo. La firma del contenedor y la decodificación se
+          comprueban; el nombre y MIME no garantizan compatibilidad.
+        </p>
+        <label for="entry">Entrada personal ficticia</label
+        ><select id="entry"></select>
+        <label for="track">Pista del mismo álbum (opcional)</label
+        ><select id="track"></select>
+        <label for="replacement">Destino del archivo elegido</label
+        ><select id="replacement">
+          <option value="">Añadir archivo temporal</option>
+        </select>
+        <label for="file">Archivo de audio local</label
+        ><input
+          id="file"
+          type="file"
+          accept="audio/*,.wav,.mp3,.flac,.ogg,.opus,.webm,.m4a,.aac"
+        />
+        <p>
+          Elegir un archivo no crea una adquisición ni modifica una nota o
+          escucha. Reemplazar requiere que el candidato sea válido; un fallo o
+          cancelación conserva el anterior.
+        </p>
+        <button id="cancel" type="button" disabled>
+          Cancelar selección en curso
+        </button>
+        <button id="play" type="button" disabled>Probar reproducción</button>
+        <button id="clear" type="button">
+          Cerrar y retirar archivos temporales
+        </button>
+        <p id="status" role="status" data-state="idle">
+          Sin archivos temporales.
+        </p>
+        <div id="player"></div>
+        <h3>Archivos de esta sesión</h3>
+        <ul id="items"></ul>
+      </section>
+      <section aria-labelledby="storage-title">
+        <h2 id="storage-title">Comparar almacenamiento ficticio</h2>
+        <p>
+          Este experimento escribe bloques sintéticos de 1 y 16 MiB en una base
+          y directorio exclusivos del laboratorio. Comprueba lectura y reversión
+          ante un fallo de cuota simulado. No copia el audio seleccionado ni
+          solicita permisos de almacenamiento persistente.
+        </p>
+        <button id="benchmark" type="button">Medir IndexedDB y OPFS</button>
+        <button id="read-storage" type="button">
+          Leer muestras tras recargar
+        </button>
+        <button id="clear-storage" type="button">
+          Eliminar sólo las muestras del laboratorio
+        </button>
+        <p id="storage-status" role="status"></p>
+        <pre id="storage-results"></pre>
+      </section>
+      <p id="offline-status" role="status">
+        Preparando shell offline exclusivo del laboratorio…
+      </p>
+    </main>
+  </body>
+</html>
