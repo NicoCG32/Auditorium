@@ -37,6 +37,10 @@ jobs:
         run: npx playwright install --with-deps chromium firefox webkit
       - name: Verificar aceptación, accesibilidad y PWA
         run: npm run test:e2e
+      - name: Verificar prototipo aislado de proveedores sin red externa
+        run: |
+          node --test prototypes/media-01/media.test.mjs
+          node prototypes/media-01/probe.mjs --mock --browser all
       - name: Preparar paquete de entrega
         run: npm run package
       - name: Conservar paquete para revisión

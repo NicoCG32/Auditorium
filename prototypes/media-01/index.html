@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>Evaluación de proveedores · Auditorium</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font: 1rem/1.6 system-ui;
+        background: #151219;
+        color: #f8f1e9;
+      }
+      body {
+        max-width: 56rem;
+        margin: auto;
+        padding: 1.5rem;
+      }
+      section {
+        border: 1px solid #6f596b;
+        border-radius: 0.6rem;
+        padding: 1.2rem;
+        margin-block: 1.5rem;
+      }
+      input,
+      button {
+        font: inherit;
+        padding: 0.7rem;
+        min-height: 2.75rem;
+        box-sizing: border-box;
+      }
+      input {
+        width: 100%;
+        margin-block: 0.4rem 1rem;
+      }
+      button {
+        margin: 0.3rem;
+        cursor: pointer;
+      }
+      a {
+        color: #ffb6c2;
+      }
+      label {
+        display: block;
+      }
+      img {
+        max-width: 12rem;
+        display: block;
+        margin-block: 1rem;
+      }
+      iframe {
+        border: 0;
+        width: 100%;
+        min-height: 352px;
+        display: block;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+      }
+      :focus-visible {
+        outline: 3px solid #ffc477;
+        outline-offset: 3px;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Evaluación de metadatos y reproductores</h1>
+    <p>
+      Prototipo aislado MEDIA-01. No conecta con tu biblioteca. Sólo los botones
+      de consulta, imagen y reproductor contactan al proveedor. Un título o
+      miniatura de vídeo, pista o lista no identifica por sí solo un álbum.
+    </p>
+    <form id="inspect">
+      <label for="source">Enlace público HTTPS</label>
+      <input
+        id="source"
+        type="url"
+        required
+        maxlength="2048"
+        autocomplete="off"
+      />
+      <button>Revisar enlace</button>
+    </form>
+    <p id="classification" role="status"></p>
+    <section aria-labelledby="review-heading">
+      <h2 id="review-heading">Borrador manual de revisión</h2>
+      <label for="album-title">Título del álbum (manual)</label
+      ><input id="album-title" maxlength="300" />
+      <label for="artist">Artista (manual)</label
+      ><input id="artist" maxlength="200" />
+      <p>
+        El nombre del canal o autor del enlace no se asigna como banda. Este
+        borrador no se persiste.
+      </p>
+    </section>
+    <section id="actions" hidden aria-labelledby="actions-heading">
+      <h2 id="actions-heading">Acciones independientes</h2>
+      <p>
+        Al solicitar una consulta o reproductor, el proveedor recibe el enlace
+        elegido, tu dirección IP y datos técnicos; su marco puede usar cookies.
+        Revisa las
+        <a
+          href="https://www.youtube.com/t/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          >condiciones de YouTube</a
+        >, la
+        <a
+          href="https://policies.google.com/privacy"
+          target="_blank"
+          rel="noopener noreferrer"
+          >privacidad de Google</a
+        >
+        y las
+        <a
+          href="https://developer.spotify.com/documentation/embeds/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          >condiciones del widget Spotify</a
+        >
+        antes de continuar. Tu borrador manual no se envía.
+      </p>
+      <p>
+        <a
+          id="external"
+          target="_blank"
+          rel="noopener noreferrer"
+          referrerpolicy="no-referrer"
+          >Abrir en el servicio externo</a
+        >
+      </p>
+      <button id="metadata" type="button">Consultar metadatos públicos</button>
+      <button id="cancel" type="button" disabled>Cancelar consulta</button>
+      <p id="metadata-status" role="status" data-state="idle"></p>
+      <pre id="result"></pre>
+      <button id="apply" type="button" hidden>
+        Usar título recibido en el borrador (reemplaza el texto)
+      </button>
+      <button id="cover" type="button" hidden>Mostrar miniatura remota</button>
+      <div id="image"></div>
+      <p>
+        La miniatura pertenece al proveedor o sus titulares; no acredita una
+        portada ni se copia como recurso del proyecto.
+      </p>
+      <button id="embed" type="button">Cargar reproductor oficial</button>
+      <button id="close-player" type="button" disabled>
+        Cerrar reproductor
+      </button>
+      <button id="play" type="button" disabled>
+        Probar reproducción de YouTube
+      </button>
+      <p id="player-status" role="status" data-state="idle"></p>
+      <div id="player"></div>
+      <p>
+        El marco puede cargar sin que se permita reproducir. Spotify puede
+        limitarse a muestras; el contenido completo depende del servicio,
+        cuenta, región y navegador. YouTube conserva su vídeo y controles, sin
+        extracción de audio. El enlace externo permanece disponible.
+      </p>
+    </section>
+    <script type="module" src="./app.mjs"></script>
+  </body>
+</html>

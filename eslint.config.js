@@ -36,6 +36,10 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
+    files: ['prototypes/media-01/{app,probe}.mjs'],
+    languageOptions: { globals: globals.browser },
+  },
+  {
     files: ['src/**/*.tsx'],
     extends: [reactHooks.configs.flat.recommended, reactRefresh.configs.vite],
   },

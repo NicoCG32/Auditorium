@@ -1,5 +1,7 @@
 # Auditorium
 
+MEDIA-01 documenta la [evaluación de metadatos y reproductores](docs/PROVEEDORES_STREAMING.md) y su prototipo aislado. La integración en la ficha se sigue en PLAY-01; la aplicación conserva su comportamiento actual.
+
 [Mi experiencia](docs/MI_EXPERIENCIA.md) describe la ficha, el guardado conjunto y la edición de referencia opcional, con compatibilidad DB9/respaldo6. [Clasificación y alta de álbumes](docs/CLASIFICACION_ALBUM.md) documenta tipo, categorías, publicación y créditos.
 
 Auditórium es una biblioteca musical personal, multiplataforma e híbrida, donde una persona registra qué álbumes conoce, escucha, posee, califica y desea adquirir, independientemente del formato y de las plataformas de streaming.

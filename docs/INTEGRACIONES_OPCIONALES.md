@@ -1,5 +1,7 @@
 # Recomendaciones y referencias externas
 
+MEDIA-01 documenta la [evaluación de metadatos y reproductores](PROVEEDORES_STREAMING.md) y su prototipo aislado. La integración en la ficha se sigue en PLAY-01; la aplicación conserva su comportamiento actual.
+
 Auditorium mantiene la biblioteca local y permite dos acciones opcionales con conexión: buscar referencias al registrar un álbum y pedir un orden de escucha o revaloración. Ninguna es necesaria para guardar música, abrir la biblioteca, valorar o restaurar un respaldo. El incremento se sigue en [CAT-01](https://github.com/NicoCG32/Auditorium/issues/57) y [AI-01](https://github.com/NicoCG32/Auditorium/issues/56); la [ADR-008](adr/008-integraciones-opcionales.md) explica sus límites.
 
 ## Buscar un álbum

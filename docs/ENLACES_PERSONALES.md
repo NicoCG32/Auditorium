@@ -1,5 +1,7 @@
 # Enlaces personales de reproducción y compra
 
+MEDIA-01 documenta la [evaluación de metadatos y reproductores](PROVEEDORES_STREAMING.md) y su prototipo aislado. La integración en la ficha se sigue en PLAY-01; la aplicación conserva su comportamiento actual.
+
 UX-05 incorpora la [clasificación independiente y sus migraciones](CLASIFICACION_ALBUM.md): DB8/nativa80 y respaldo5. Album describe la obra; Release conserva las ediciones; UserAlbum, la experiencia y los enlaces personales.
 
 Cada entrada personal de un álbum puede guardar hasta **20 enlaces HTTPS**, repartidos entre **Escuchar** y **Comprar**. Se añaden al registrar el álbum y se corrigen desde **Editar álbum** o **Editar enlaces** en la ficha. Una etiqueta opcional permite distinguir versiones; el proveedor se obtiene del dominio de la URL.

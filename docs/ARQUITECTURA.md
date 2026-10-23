@@ -1,5 +1,7 @@
 # Arquitectura del sistema
 
+MEDIA-01 documenta la [evaluación de metadatos y reproductores](PROVEEDORES_STREAMING.md) y su prototipo aislado. La integración en la ficha se sigue en PLAY-01; la aplicación conserva su comportamiento actual.
+
 UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
 
 UX-05 incorpora la [clasificación independiente y sus migraciones](CLASIFICACION_ALBUM.md): DB8/nativa80 y respaldo5. Album describe la obra; Release conserva las ediciones; UserAlbum, la experiencia y los enlaces personales.
