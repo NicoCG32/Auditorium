@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { catalogSuggestions } from '../../application/catalog-suggestions'
+import { CatalogNameInput } from './CatalogNameInput'
 import {
   buildAlbumEditExpected,
   updateAlbumInputSchema,
@@ -11,6 +13,7 @@ import {
 import {
   artistRoleSchema,
   type AlbumArtist,
+  type Artist,
 } from '../../domain/catalog/schemas'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
@@ -29,7 +32,8 @@ import { linksDraftFrom, linksInputFrom } from './personal-links-values'
 
 interface ArtistDraft {
   key: string
-  artistId?: string
+  artistId?: string | undefined
+  reuseExpected?: Artist | undefined
   name: string
   country: string
   role: AlbumArtist['role']
@@ -159,6 +163,10 @@ export function AlbumEditPanel({
     if (!busy && (pendingRead || conflict)) readButton.current?.focus()
   }, [busy, pendingRead, conflict])
   const disabled = busy || pendingRead
+  const suggestions = useMemo(
+    () => catalogSuggestions(snapshot.catalog),
+    [snapshot.catalog],
+  )
   function edit(change: Partial<typeof draft>) {
     setDraft((previous) => ({ ...previous, ...change }))
     setInvalid(false)
@@ -251,6 +259,15 @@ export function AlbumEditPanel({
           ? { creditedAs: artist.creditedAs.trim() }
           : {}),
       })),
+      reuseArtists: [
+        ...new Map(
+          draft.artists.flatMap((artist) =>
+            artist.reuseExpected
+              ? [[artist.reuseExpected.id, artist.reuseExpected] as const]
+              : [],
+          ),
+        ).values(),
+      ],
     })
     if (!parsed.success) {
       setInvalid(true)
@@ -368,12 +385,18 @@ export function AlbumEditPanel({
             </label>
           </div>
           <label>
-            <span className="field-label">Géneros (separados por comas)</span>
-            <input
+            <span id="edit-genres-label" className="field-label">
+              Géneros (separados por comas)
+            </span>
+            <CatalogNameInput
               name="genres"
+              aria-labelledby="edit-genres-label"
+              genres
+              options={suggestions.genres}
+              suggestionsLabel="Géneros del catálogo local"
               value={draft.genres}
               placeholder="Rock, jazz, metal…"
-              onChange={(event) => edit({ genres: event.target.value })}
+              onChange={(genres) => edit({ genres })}
             />
           </label>
           <fieldset className="edit-artists">
@@ -386,13 +409,41 @@ export function AlbumEditPanel({
             {draft.artists.map((artist, index) => (
               <div key={artist.key} className="edit-artist-row">
                 <label>
-                  <span className="field-label">Artista {index + 1}</span>
-                  <input
+                  <span
+                    id={`edit-artist-label-${artist.key}`}
+                    className="field-label"
+                  >
+                    Artista {index + 1}
+                  </span>
+                  <CatalogNameInput
                     name={`artist-${index}`}
+                    aria-labelledby={`edit-artist-label-${artist.key}`}
+                    options={suggestions.artists}
+                    suggestionsLabel={`Artistas del catálogo local ${index + 1}`}
                     value={artist.name}
-                    onChange={(event) =>
-                      editArtist(artist.key, { name: event.target.value })
+                    onChange={(name) =>
+                      editArtist(artist.key, {
+                        name,
+                        ...(artist.reuseExpected
+                          ? { artistId: undefined, reuseExpected: undefined }
+                          : {}),
+                      })
                     }
+                    onChoose={(option) => {
+                      const selected = snapshot.catalog.artists.find(
+                        (row) => row.id === option.id,
+                      )!
+                      editArtist(artist.key, {
+                        name: selected.name,
+                        artistId: selected.id,
+                        country: selected.country ?? '',
+                        reuseExpected: expected.artists.some(
+                          (row) => row.id === selected.id,
+                        )
+                          ? undefined
+                          : structuredClone(selected),
+                      })
+                    }}
                     required
                   />
                 </label>
@@ -402,6 +453,7 @@ export function AlbumEditPanel({
                   </span>
                   <input
                     value={artist.country}
+                    disabled={Boolean(artist.reuseExpected)}
                     maxLength={100}
                     onChange={(event) =>
                       editArtist(artist.key, { country: event.target.value })

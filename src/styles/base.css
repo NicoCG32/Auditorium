@@ -1,5 +1,42 @@
 @import 'tailwindcss';
 
+.catalog-name-input {
+  display: block;
+  position: relative;
+  min-inline-size: 0;
+}
+.catalog-suggestions {
+  display: block;
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  z-index: 30;
+  max-block-size: 18rem;
+  overflow-y: auto;
+  background: var(--surface);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.5rem 1.5rem rgb(0 0 0 / 25%);
+}
+.catalog-suggestion {
+  display: block;
+  min-block-size: 2.75rem;
+  padding: 0.65rem 0.8rem;
+  cursor: pointer;
+  border-inline-start: 3px solid transparent;
+}
+.catalog-suggestion small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+.catalog-suggestion:hover,
+.catalog-suggestion[aria-selected='true'] {
+  background: var(--surface-raised);
+  border-inline-start-color: var(--focus);
+}
+
 :root {
   color-scheme: dark;
   --background: #0a0a0d;

@@ -341,7 +341,7 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Artista Ficticio Pages')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })

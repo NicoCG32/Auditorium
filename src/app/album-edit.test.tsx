@@ -44,7 +44,7 @@ async function edit() {
   expect(screen.getByRole('heading', { name: 'Editar álbum' })).toHaveFocus()
 }
 function change(label: string, value: string) {
-  fireEvent.change(screen.getByRole('textbox', { name: label }), {
+  fireEvent.change(screen.getByLabelText(label, { exact: true }), {
     target: { value },
   })
 }

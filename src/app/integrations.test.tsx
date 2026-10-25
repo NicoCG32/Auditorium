@@ -49,7 +49,7 @@ async function form() {
     expect(screen.getByRole('button', { name: 'Añadir álbum' })).toBeEnabled(),
   )
   fireEvent.click(screen.getByRole('button', { name: 'Añadir álbum' }))
-  fireEvent.change(screen.getByRole('textbox', { name: 'Artista' }), {
+  fireEvent.change(screen.getByRole('combobox', { name: 'Artista' }), {
     target: { value: 'Conjunto ficticio' },
   })
   fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {

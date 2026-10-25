@@ -38,7 +38,7 @@ test('alta con audio conserva archivos al recargar, sin autoplay ni cambios auto
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('álbum sintético')
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Banda Ficticia')
   await page
     .getByText('Archivos de audio propios (opcional)', { exact: true })

@@ -16,7 +16,7 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
     page.getByRole('combobox', { name: 'Tipo principal' }),
   ).toBeHidden()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Umbral Ficticio')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
@@ -37,20 +37,20 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
     .screenshot({ path: info.outputPath('alta-formulario.png') })
   await page.getByRole('button', { name: 'Añadir otro artista' }).click()
   await expect(
-    page.getByRole('textbox', { name: 'Nombre del artista 2', exact: true }),
+    page.getByRole('combobox', { name: 'Nombre del artista 2', exact: true }),
   ).toBeFocused()
   await page
-    .getByRole('textbox', { name: 'Nombre del artista 2', exact: true })
+    .getByRole('combobox', { name: 'Nombre del artista 2', exact: true })
     .fill('Otra Banda Ficticia')
   await expect(
-    page.getByRole('textbox', { name: 'Artista', exact: true }),
+    page.getByRole('combobox', { name: 'Artista', exact: true }),
   ).toHaveValue('Umbral Ficticio · Otra Banda Ficticia')
   await page.getByRole('button', { name: 'Añadir otro artista' }).click()
   await page
     .getByRole('button', { name: 'Quitar artista 3', exact: true })
     .click()
   await expect(
-    page.getByRole('textbox', { name: 'Nombre del artista 3', exact: true }),
+    page.getByRole('combobox', { name: 'Nombre del artista 3', exact: true }),
   ).toHaveCount(0)
   await page
     .getByRole('combobox', { name: 'Tipo principal' })
@@ -112,7 +112,7 @@ test('reutilizar artista requiere elección y una coincidencia local vuelve a su
   await page.goto('/')
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Banda Ficticia')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
@@ -123,7 +123,7 @@ test('reutilizar artista requiere elección y una coincidencia local vuelve a su
   ).toBeVisible()
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('banda ficticia')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })

@@ -6,6 +6,14 @@ El formulario permite uno o varios artistas principales. Si hay artistas con el 
 
 La [clasificación musical](CLASIFICACION_ALBUM.md) separa tipo, categorías y publicación y documenta la migración histórica.
 
+## Sugerencias del catálogo local
+
+Al escribir una banda o artista, el formulario ofrece hasta ocho coincidencias por prefijo del catálogo de esta biblioteca. La búsqueda ignora mayúsculas, acentos y espacios repetidos: `Ban` puede ofrecer `Banda Delta`. Las opciones muestran país y álbumes conocidos para distinguir homónimos. Elegir una opción reutiliza su identidad y país; escribir un nombre completo permite seguir eligiendo un registro existente o un artista nuevo mediante las opciones de coincidencia.
+
+Los géneros también ofrecen sugerencias: `De` puede ofrecer `Death Metal` si ya se ha registrado. Se completa sólo el fragmento donde está el cursor, incluso entre otras etiquetas separadas por comas. Los géneros ya incluidos en otro fragmento no se sugieren de nuevo. Se pueden escribir etiquetas nuevas; elegir una banda no asigna sus géneros a otro álbum.
+
+Las sugerencias funcionan sin conexión, en alta simple, créditos múltiples y [edición](EDICION_CATALOGO.md). No consultan servicios externos ni guardan nada hasta confirmar el formulario. Flechas arriba/abajo recorren opciones y Enter elige; Escape cierra la lista conservando el texto, Tab continúa sin aceptar una opción. También se puede elegir con ratón o pantalla táctil. La interacción sigue el patrón de [combobox editable con selección manual](https://www.w3.org/WAI/ARIA/apg/patterns/combobox/).
+
 ## Posibles duplicados
 
 Los nombres de álbumes, artistas y alias acreditados, y las etiquetas de género, se guardan con mayúscula inicial por palabra: `System Of A Down` y `Metal Progresivo`. Se compactan espacios y se conservan acentos y signos. Se mantienen siglas reconocibles como `AC/DC`, `R.E.M.` y `U2`, numerales romanos habituales y una lista explícita de siglas musicales. La convención se aplica tanto al alta manual como al catálogo seleccionado y al alta directa; no pretende certificar la grafía oficial de una obra. Las palabras sin una excepción se capitalizan aunque el proveedor use otra estilización.

@@ -10,6 +10,8 @@ Se mantienen listas, pistas, ediciones, escucha, notas personales, valoraciones,
 
 Título, nombre, alias o papel de los créditos forman parte de la identidad musical que ampara la referencia externa. Cambiarlos descarta `catalogReference` para evitar atribuir una coincidencia anterior al nuevo contenido. Corregir año, descripción, géneros, país o portada conserva la referencia. La edición no inicia consultas ni enriquecimiento automático en Wikidata.
 
+Los campos de artista y género incluyen las [sugerencias del catálogo local](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local). Elegir un artista que todavía no participa en este álbum reutiliza su UUID y sus datos guardados; su país se muestra sin edición durante esa selección. No se renombra ni se modifica el artista de otros álbumes. Si sus datos cambian entre la selección y el guardado, la operación se rechaza y el borrador se conserva para revisar los datos actuales. La selección y el resto de cambios se confirman juntos; cancelar permite descartarlos mediante el aviso de cambios sin guardar.
+
 ```mermaid
 sequenceDiagram
     actor Persona

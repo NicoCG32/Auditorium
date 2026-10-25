@@ -41,6 +41,7 @@ export const updateAlbumInputSchema = albumSchema
     genres: catalogGenresInputSchema.optional(),
     albumId: entityIdSchema,
     expected: albumEditExpectedSchema,
+    reuseArtists: z.array(artistSchema).max(50).optional(),
     artists: z
       .array(editArtistSchema)
       .min(1)
@@ -154,6 +155,7 @@ export function editedAlbumFields(
         ![
           'albumId',
           'expected',
+          'reuseArtists',
           'artists',
           'personalLinks',
           'expectedLinks',

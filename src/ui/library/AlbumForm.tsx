@@ -1,4 +1,6 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { catalogSuggestions } from '../../application/catalog-suggestions'
+import { CatalogNameInput } from './CatalogNameInput'
 import {
   matchingArtists,
   type AlbumCandidate,
@@ -96,6 +98,10 @@ export function AlbumForm({
     if (values.catalogReference) selectionHeading.current?.focus()
   }, [values.catalogReference])
   const artists = matchingArtists(snapshot.catalog.artists, values.artist)
+  const suggestions = useMemo(
+    () => catalogSuggestions(snapshot.catalog),
+    [snapshot.catalog],
+  )
   function edit(change: Partial<AlbumFormValues>) {
     const changesArtists =
       ('artist' in change &&
@@ -340,21 +346,34 @@ export function AlbumForm({
               <span id="form-artist-label" className="field-label">
                 Artista <span aria-hidden="true">*</span>
               </span>
-              <input
+              <CatalogNameInput
                 ref={artistRef}
                 name="artist"
+                options={values.catalogArtists ? [] : suggestions.artists}
+                suggestionsLabel="Artistas del catálogo local"
                 aria-labelledby="form-artist-label"
                 required
                 value={values.catalogArtists?.join(' · ') ?? values.artist}
                 aria-invalid={Boolean(errors.artist)}
                 aria-describedby={errors.artist ? 'error-artist' : undefined}
-                onChange={(event) =>
+                onChange={(name) =>
                   edit({
-                    artist: event.target.value,
+                    artist: name,
                     artistId: undefined,
                     newArtistConfirmed: false,
                   })
                 }
+                onChoose={(option) => {
+                  const artist = snapshot.catalog.artists.find(
+                    (row) => row.id === option.id,
+                  )!
+                  edit({
+                    artist: artist.name,
+                    artistId: artist.id,
+                    newArtistConfirmed: false,
+                    country: artist.country ?? '',
+                  })
+                }}
               />
               {errorFor('artist')}
             </label>
@@ -503,13 +522,17 @@ export function AlbumForm({
             <div className="mt-5 grid gap-5">
               <AlbumClassificationFields value={values} onChange={edit} />
               <label>
-                <span className="field-label">
+                <span id="form-genres-label" className="field-label">
                   Géneros (separados por comas)
                 </span>
-                <input
+                <CatalogNameInput
                   name="genres"
+                  aria-labelledby="form-genres-label"
+                  genres
+                  options={suggestions.genres}
+                  suggestionsLabel="Géneros del catálogo local"
                   value={values.genres}
-                  onChange={(event) => edit({ genres: event.target.value })}
+                  onChange={(genres) => edit({ genres })}
                   aria-invalid={Boolean(errors.genres)}
                   aria-describedby={errors.genres ? 'error-genres' : undefined}
                   placeholder="Rock, jazz, metal…"
@@ -520,15 +543,21 @@ export function AlbumForm({
                 values.catalogArtists.map((name, index) => (
                   <div key={index}>
                     <label>
-                      <span className="field-label">
+                      <span
+                        id={`credit-label-${index}`}
+                        className="field-label"
+                      >
                         Nombre del artista {index + 1}
                       </span>
-                      <input
+                      <CatalogNameInput
                         name={`credit-name-${index}`}
+                        aria-labelledby={`credit-label-${index}`}
+                        options={suggestions.artists}
+                        suggestionsLabel={`Artistas del catálogo local ${index + 1}`}
                         value={name}
-                        onChange={(event) => {
+                        onChange={(name) => {
                           const names = [...values.catalogArtists!]
-                          names[index] = event.target.value
+                          names[index] = name
                           const ids = [
                             ...(values.catalogArtistIds ??
                               names.map(() => undefined)),
@@ -543,6 +572,34 @@ export function AlbumForm({
                             catalogArtists: names,
                             catalogArtistIds: ids,
                             catalogArtistConfirmed: confirmations,
+                            catalogReference: undefined,
+                          })
+                        }}
+                        onChoose={(option) => {
+                          const artist = snapshot.catalog.artists.find(
+                            (row) => row.id === option.id,
+                          )!
+                          const names = [...values.catalogArtists!]
+                          const ids = [
+                            ...(values.catalogArtistIds ??
+                              names.map(() => undefined)),
+                          ]
+                          const confirmations = [
+                            ...(values.catalogArtistConfirmed ??
+                              names.map(() => false)),
+                          ]
+                          const countries = [
+                            ...(values.catalogCountries ?? names.map(() => '')),
+                          ]
+                          names[index] = artist.name
+                          ids[index] = artist.id
+                          confirmations[index] = false
+                          countries[index] = artist.country ?? ''
+                          edit({
+                            catalogArtists: names,
+                            catalogArtistIds: ids,
+                            catalogArtistConfirmed: confirmations,
+                            catalogCountries: countries,
                             catalogReference: undefined,
                           })
                         }}

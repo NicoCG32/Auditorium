@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Sugerencias locales de géneros y artistas por prefijo en alta, créditos múltiples y edición, también offline. Selección manual con teclado, ratón o toque; géneros por fragmento sin duplicados y nombres nuevos permitidos. Reutilización explícita de bandas con control concurrente, identidad y datos conservados, sin migración ni nuevo servicio.
+
 - Audio propio persistente por dispositivo en alta, edición y ficha, con asociación opcional a una pista del mismo álbum. Conserva experiencia y adquisiciones independientes; comparte un único reproductor explícito con streaming y libera sus URLs al salir.
 - IndexedDB v10/nativa100 añade dos tablas de audio con guardado atómico, control concurrente y límites de 16 MiB por archivo, 128 MiB y 128 adjuntos por biblioteca. JSON y sincronización permanecen en formato6, sin binarios ni descriptores de audio.
 - Respaldo completo ZIP1 con manifiesto, JSON musical y archivos, validación estructural/CRC/SHA y restauración atómica sólo en destino vacío. Borrado explícito de las copias locales, recuperación offline, guía de uso, modelos y ADR-012.

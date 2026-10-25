@@ -84,7 +84,7 @@ async function openAlbumForm(repository: IndexedDbRepository) {
   fireEvent.click(screen.getByText('Detalles del álbum (opcionales)'))
 }
 function fillAlbum(artist = 'Umbral Ficticio', title = 'Eclipse Nuevo') {
-  fireEvent.change(screen.getByRole('textbox', { name: 'Artista' }), {
+  fireEvent.change(screen.getByRole('combobox', { name: 'Artista' }), {
     target: { value: artist },
   })
   fireEvent.change(screen.getByRole('textbox', { name: 'Título' }), {
@@ -419,7 +419,7 @@ test('registro mínimo aparece sin recarga y permite abrir su ficha básica', as
   fireEvent.click(
     screen.getByRole('button', { name: 'Añadir tu primer álbum' }),
   )
-  expect(screen.getByRole('textbox', { name: 'Artista' })).toHaveFocus()
+  expect(screen.getByRole('combobox', { name: 'Artista' })).toHaveFocus()
   fillAlbum()
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
   expect(

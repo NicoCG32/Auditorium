@@ -511,7 +511,7 @@ test('incorporar la biblioteca sin cuenta conserva el original y comparte cambio
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Artista Ficticio')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
@@ -559,7 +559,7 @@ test('incorporar la biblioteca sin cuenta conserva el original y comparte cambio
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Otro Artista')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })

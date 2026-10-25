@@ -88,7 +88,12 @@ test('abrir desde la portada conserva búsqueda, vista y foco al regresar', asyn
   ).toHaveFocus()
 })
 function change(name: string, value: string) {
-  fireEvent.change(screen.getByRole('textbox', { name }), { target: { value } })
+  fireEvent.change(
+    screen.getByRole(name === 'Artista' ? 'combobox' : 'textbox', { name }),
+    {
+      target: { value },
+    },
+  )
 }
 
 test('menú principal ordenado, rutas y contexto propio de calificaciones', async () => {

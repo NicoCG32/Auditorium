@@ -146,7 +146,7 @@ async function addForm(page: Page) {
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Conjunto Ficticio A')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
@@ -455,7 +455,7 @@ test('fallo del catálogo conserva el formulario y permite registrar sin conexi�
     page.getByRole('textbox', { name: 'Título', exact: true }),
   ).toHaveValue(albumTitle)
   await expect(
-    page.getByRole('textbox', { name: 'Artista', exact: true }),
+    page.getByRole('combobox', { name: 'Artista', exact: true }),
   ).toHaveValue('Conjunto Ficticio A')
   await page
     .getByRole('button', { name: 'Continuar con el registro manual' })

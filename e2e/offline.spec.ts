@@ -22,7 +22,7 @@ async function addAlbum(page: Page, title: string) {
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Artista ficticio offline')
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   if (

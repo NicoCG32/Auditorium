@@ -72,6 +72,103 @@ const input = {
   },
 }
 
+test('reutiliza otro artista explícito conservando UUID, datos, álbum ajeno y experiencia', async () => {
+  const { repository, service } = setup()
+  const first = await service.createAlbum(input)
+  const other = await service.createAlbum({
+    title: 'Otro Disco',
+    artists: [{ name: 'Otra Banda', country: 'Perú' }],
+  })
+  await service.rateAlbum(first.userAlbum!.id, 1)
+  const before = await repository.readSnapshot()
+  const selected = other.artists[0]!
+  await service.updateAlbum({
+    ...request(before, first.album.id),
+    artists: [
+      {
+        artistId: selected.id,
+        name: selected.name,
+        country: selected.country,
+        role: 'primary',
+      },
+    ],
+    reuseArtists: [selected],
+  })
+  const after = await repository.readSnapshot()
+  expect(after.catalog.artists).toEqual(before.catalog.artists)
+  expect(
+    after.catalog.albumArtists.filter((row) => row.albumId === other.album.id),
+  ).toEqual(
+    before.catalog.albumArtists.filter((row) => row.albumId === other.album.id),
+  )
+  expect(
+    after.catalog.albumArtists.find((row) => row.albumId === first.album.id)
+      ?.artistId,
+  ).toBe(selected.id)
+  expect(after.library).toEqual(before.library)
+  expect(after.catalog.albums[0]).not.toHaveProperty('reuseArtists')
+})
+
+test('un artista sugerido cambiado entre ventanas impide sobrescribir o guardar parcialmente', async () => {
+  const { repository, service } = setup()
+  const first = await service.createAlbum(input)
+  const other = await service.createAlbum({
+    title: 'Otro Disco',
+    artists: [{ name: 'Otra Banda', country: 'Perú' }],
+  })
+  const selected = other.artists[0]!,
+    before = await repository.readSnapshot()
+  await repository.mutate((snapshot) => {
+    snapshot.catalog.artists.find((row) => row.id === selected.id)!.country =
+      'Chile'
+    return { snapshot, result: undefined }
+  })
+  const concurrent = await repository.readSnapshot()
+  await expect(
+    service.updateAlbum({
+      ...request(before, first.album.id),
+      title: 'No Guardar',
+      artists: [
+        {
+          artistId: selected.id,
+          name: selected.name,
+          country: selected.country,
+        },
+      ],
+      reuseArtists: [selected],
+    }),
+  ).rejects.toMatchObject({ code: 'outdated_album' })
+  expect(await repository.readSnapshot()).toEqual(concurrent)
+})
+
+test('sin selección comprobable no se puede reutilizar ni modificar un artista ajeno', async () => {
+  const { repository, service } = setup()
+  const first = await service.createAlbum(input)
+  const other = await service.createAlbum({
+    title: 'Otro Disco',
+    artists: [{ name: 'Otra Banda', country: 'Perú' }],
+  })
+  const selected = other.artists[0]!,
+    before = await repository.readSnapshot()
+  const edited = {
+    ...request(before, first.album.id),
+    artists: [
+      { artistId: selected.id, name: selected.name, country: selected.country },
+    ],
+  }
+  await expect(service.updateAlbum(edited)).rejects.toMatchObject({
+    code: 'missing_reference',
+  })
+  await expect(
+    service.updateAlbum({
+      ...edited,
+      artists: [{ ...edited.artists[0]!, country: 'Argentina' }],
+      reuseArtists: [selected],
+    }),
+  ).rejects.toMatchObject({ code: 'outdated_album' })
+  expect(await repository.readSnapshot()).toEqual(before)
+})
+
 test('capitalizar metadatos históricos conserva identidad, referencia externa y experiencia', async () => {
   const { repository, service } = setup()
   const created = await service.createAlbum(input)

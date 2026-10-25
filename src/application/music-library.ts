@@ -303,7 +303,45 @@ export class MusicLibrary {
         current.artists.map((artist) => [artist.id, artist]),
       )
       const renamedArtists = new Map<string, Artist>()
+      const reuseArtists = new Map(
+        (request.reuseArtists ?? []).map((artist) => [artist.id, artist]),
+      )
       const artists = request.artists.map((credit) => {
+        if (credit.artistId && !previousArtists.has(credit.artistId)) {
+          const expectedArtist = reuseArtists.get(credit.artistId)
+          const selected = snapshot.catalog.artists.find(
+            (artist) => artist.id === credit.artistId,
+          )
+          if (!expectedArtist || !selected)
+            throw new MusicUseCaseError(
+              'missing_reference',
+              'El artista seleccionado ya no está disponible en el catálogo.',
+            )
+          if (
+            JSON.stringify([
+              selected.name,
+              selected.country,
+              selected.sortName,
+              selected.catalogScope,
+              selected.createdBy,
+            ]) !==
+              JSON.stringify([
+                expectedArtist.name,
+                expectedArtist.country,
+                expectedArtist.sortName,
+                expectedArtist.catalogScope,
+                expectedArtist.createdBy,
+              ]) ||
+            catalogNameKey(credit.name) !==
+              catalogNameKey(expectedArtist.name) ||
+            credit.country !== expectedArtist.country
+          )
+            throw new MusicUseCaseError(
+              'outdated_album',
+              'El artista seleccionado cambió. Tu borrador se conserva; carga los datos guardados antes de continuar.',
+            )
+          return selected
+        }
         const existing = credit.artistId
           ? previousArtists.get(credit.artistId)
           : undefined

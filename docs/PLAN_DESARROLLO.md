@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.17 · 2026-10-24 · Estado: MVP v1.0.0 publicado; reproducción desde enlaces y audio personal persistente con respaldo completo incorporados.
+Versión 1.18 · 2026-10-25 · Estado: MVP v1.0.0 publicado; reproducción, audio persistente y sugerencias del catálogo local incorporados.
 
 ## Objetivo del producto
 
@@ -25,6 +25,10 @@ Una fase es un hito de producto y puede abarcar varios sprints. Se propone una d
 No se asignan personas ni calendarios hasta acordar disponibilidad.
 
 ## Fuente de seguimiento
+
+El refinamiento actual sigue [CAT-02 #79](https://github.com/NicoCG32/Auditorium/issues/79), sugerencias locales en alta y edición; [RATE-01 #80](https://github.com/NicoCG32/Auditorium/issues/80), modelo y compatibilidad de valoraciones por género; y [RATE-02 #81](https://github.com/NicoCG32/Auditorium/issues/81), experiencia y filtros contextuales. CAT-02 se entrega primero; RATE-01 y RATE-02 conservan su implementación pendiente. La [guía de registro](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local) concreta el autocompletado sin servicios nuevos ni migración. COL-05 y UX-07 mantienen su alcance pendiente.
+
+Las valoraciones son personales y comparativas dentro de la biblioteca: incorporar un álbum expresa valor y una nota mínima no implica rechazo. RATE-01/02 ampliarán la nota general con notas opcionales por género, independientes y sin promedios; no están implementadas todavía. Mantener ausencia explícita y una base de comparación visible en filtros forma parte de sus criterios.
 
 [GitHub Projects — Auditorium](https://github.com/users/NicoCG32/projects/4) organiza el backlog; las issues contienen alcance, criterios de aceptación y dependencias. Los milestones representan fases. Este documento conserva el método y los criterios generales, mientras el estado de ejecución se mantiene en el Project.
 

@@ -44,7 +44,9 @@ async function add(page: Page, title: string, artist: string) {
   await page
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
-  await page.getByRole('textbox', { name: 'Artista', exact: true }).fill(artist)
+  await page
+    .getByRole('combobox', { name: 'Artista', exact: true })
+    .fill(artist)
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   if (
     (await page
@@ -349,7 +351,7 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
   await expect(addButton).toBeFocused()
   await addButton.press('Enter')
   await expect(
-    page.getByRole('textbox', { name: 'Artista', exact: true }),
+    page.getByRole('combobox', { name: 'Artista', exact: true }),
   ).toBeFocused()
   await page.getByRole('button', { name: 'Cancelar', exact: true }).focus()
   await page.keyboard.press('Enter')

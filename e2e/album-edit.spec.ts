@@ -8,7 +8,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 import { makeBackup } from '../src/domain/backup.fixture'
-import { ids } from '../src/domain/catalog/catalog.fixture'
+import { fixtureId, ids } from '../src/domain/catalog/catalog.fixture'
 
 // These flows use isolated, fictitious libraries. Real service-worker offline
 // reloads remain covered by persistence.spec.ts and pwa.spec.ts.
@@ -19,6 +19,247 @@ const png = Buffer.from(
   'base64',
 )
 
+async function suggestionSeed(page: Page) {
+  const backup = makeBackup()
+  backup.data.catalog.albums[0]!.genres = ['Death Metal', 'Power Metal']
+  backup.data.catalog.artists[0]!.name = 'Banda Delta'
+  backup.data.catalog.artists[0]!.country = 'Chile'
+  backup.data.catalog.artists.push({
+    id: fixtureId(15000),
+    name: 'Banda Delta',
+    country: 'Perú',
+    catalogScope: 'personal',
+  })
+  backup.data.catalog.albums.push({
+    ...backup.data.catalog.albums[0]!,
+    id: fixtureId(15001),
+    title: 'Disco Del Norte',
+  })
+  backup.data.catalog.albumArtists.push({
+    albumId: fixtureId(15001),
+    artistId: fixtureId(15000),
+    position: 1,
+    role: 'primary',
+  })
+  await ready(page)
+  await restore(page, serializeBackup(backup))
+  return backup
+}
+
+test('autocompleta bandas y géneros offline, edita el fragmento central y conserva identidad al recargar', async ({
+  page,
+  context,
+}) => {
+  await suggestionSeed(page)
+  await context.setOffline(true)
+  await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
+  const artist = page.getByRole('combobox', { name: 'Artista', exact: true })
+  await artist.fill('ban')
+  await expect(
+    page
+      .getByRole('listbox', { name: 'Artistas del catálogo local' })
+      .getByRole('option'),
+  ).toHaveCount(2)
+  await artist.press('ArrowUp')
+  await artist.press('Enter')
+  await expect(artist).toHaveValue('Banda Delta')
+  await expect(
+    page.getByRole('heading', { name: 'Añadir álbum', exact: true }),
+  ).toBeVisible()
+  await page
+    .getByRole('textbox', { name: 'Título', exact: true })
+    .fill('Disco Con Sugerencias')
+  await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
+  const genres = page.getByRole('combobox', {
+    name: 'Géneros (separados por comas)',
+  })
+  await genres.fill('Rock, De, Power Metal')
+  await genres.press('Home')
+  for (let step = 0; step < 8; step++) await genres.press('ArrowRight')
+  await genres.press('ArrowDown')
+  await genres.press('Enter')
+  await expect(genres).toHaveValue('Rock, Death Metal, Power Metal')
+  await genres.fill('Death Metal, De')
+  await expect(genres).toHaveAttribute('aria-expanded', 'false')
+  await genres.fill('Death Metal, Po')
+  await genres.press('ArrowDown')
+  await genres.press('Escape')
+  await expect(genres).toHaveValue('Death Metal, Po')
+  await genres.press('ArrowDown')
+  await genres.press('Tab')
+  await expect(genres).toHaveValue('Death Metal, Po')
+  await genres.fill('Death Metal, Po')
+  await genres.press('End')
+  await genres.press('ArrowDown')
+  await expect(genres).toHaveAttribute('aria-activedescendant', /option/u)
+  await genres.press('Enter')
+  await expect(
+    page.getByRole('heading', { name: 'Añadir álbum', exact: true }),
+  ).toBeVisible()
+  await page.getByRole('button', { name: 'Guardar álbum', exact: true }).click()
+  await expect(
+    page.getByRole('heading', { name: 'Disco Con Sugerencias', exact: true }),
+  ).toBeVisible()
+  await context.setOffline(false)
+  await page.reload()
+  await expect(
+    page.getByRole('heading', { name: 'Disco Con Sugerencias', exact: true }),
+  ).toBeVisible()
+  const backup = await exportBackup(page)
+  const album = backup.data.catalog.albums.find(
+    (row) => row.title === 'Disco Con Sugerencias',
+  )!
+  expect(album.genres).toEqual(['Death Metal', 'Power Metal'])
+  expect(backup.data.catalog.artists).toHaveLength(2)
+  expect(
+    backup.data.catalog.albumArtists.find((row) => row.albumId === album.id)
+      ?.artistId,
+  ).toBe(fixtureId(15000))
+})
+
+test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugerencias', async ({
+  page,
+}) => {
+  const original = await suggestionSeed(page)
+  await editor(page)
+  const artist = page.getByRole('combobox', { name: 'Artista 1', exact: true })
+  await artist.fill('Ban')
+  await page
+    .getByRole('listbox', { name: 'Artistas del catálogo local 1' })
+    .getByRole('option', { name: /Perú/u })
+    .click()
+  await expect(
+    page.getByRole('textbox', { name: 'País de origen 1', exact: true }),
+  ).toHaveValue('Perú')
+  await expect(
+    page.getByRole('textbox', { name: 'País de origen 1', exact: true }),
+  ).toBeDisabled()
+  await page
+    .getByRole('button', { name: 'Cancelar edición', exact: true })
+    .click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Descartar cambios', exact: true })
+    .click()
+  expect((await exportBackup(page)).data).toEqual(original.data)
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await editor(page)
+  await artist.fill('Ban')
+  await page
+    .getByRole('listbox', { name: 'Artistas del catálogo local 1' })
+    .getByRole('option', { name: /Perú/u })
+    .click()
+  const genres = page.getByRole('combobox', {
+    name: 'Géneros (separados por comas)',
+  })
+  await genres.fill('De')
+  await genres.press('ArrowDown')
+  await expect(genres).toHaveAttribute('aria-activedescendant', /option/u)
+  await genres.press('Enter')
+  await expect(
+    page.getByRole('heading', { name: 'Editar álbum', exact: true }),
+  ).toBeVisible()
+  await save(page)
+  const after = await exportBackup(page)
+  expect(after.data.catalog.artists).toEqual(original.data.catalog.artists)
+  expect(after.data.library).toEqual(original.data.library)
+  expect(
+    after.data.catalog.albumArtists.find((row) => row.albumId === ids.album)
+      ?.artistId,
+  ).toBe(fixtureId(15000))
+  expect(
+    after.data.catalog.albumArtists.filter((row) => row.albumId !== ids.album),
+  ).toEqual(
+    original.data.catalog.albumArtists.filter(
+      (row) => row.albumId !== ids.album,
+    ),
+  )
+})
+
+test('sugerencias accesibles a320px en ambos temas y créditos múltiples con selección táctil', async ({
+  page,
+  browser,
+  browserName,
+}, info) => {
+  await page.setViewportSize({ width: 320, height: 850 })
+  await suggestionSeed(page)
+  for (const theme of ['dark', 'light'] as const) {
+    const appearance = page.locator('details.appearance-panel')
+    await appearance.locator('summary').click()
+    await appearance
+      .getByRole('radio', {
+        name: theme === 'dark' ? 'Oscuro' : 'Claro',
+        exact: true,
+      })
+      .check()
+    await appearance.locator('summary').click()
+    await page
+      .getByRole('button', { name: 'Añadir álbum', exact: true })
+      .click()
+    const artist = page.getByRole('combobox', { name: 'Artista', exact: true })
+    await artist.fill('Ban')
+    await accessible(page)
+    await page.screenshot({
+      path: info.outputPath(`sugerencias-${theme}-320.png`),
+      fullPage: true,
+    })
+    await artist.press('Escape')
+    await page.getByRole('button', { name: 'Añadir otro artista' }).click()
+    const credit = page.getByRole('combobox', {
+      name: 'Nombre del artista 2',
+      exact: true,
+    })
+    await credit.fill('ban')
+    const option = page
+      .getByRole('listbox', { name: 'Artistas del catálogo local 2' })
+      .getByRole('option', { name: /Perú/u })
+    await option.click()
+    await expect(credit).toHaveValue('Banda Delta')
+    await expect(
+      page.getByRole('radio', { name: /Usar Banda Delta Perú/u }),
+    ).toBeChecked()
+    await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
+    const dialog = page.getByRole('dialog')
+    if (await dialog.isVisible())
+      await dialog
+        .getByRole('button', { name: 'Descartar cambios', exact: true })
+        .click()
+    await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  }
+  if (browserName === 'chromium') {
+    const touch = await browser.newContext({
+      baseURL: new URL(page.url()).origin,
+      hasTouch: true,
+      viewport: { width: 320, height: 850 },
+      serviceWorkers: 'block',
+    })
+    try {
+      const mobile = await touch.newPage()
+      await suggestionSeed(mobile)
+      await mobile
+        .getByRole('button', { name: 'Añadir álbum', exact: true })
+        .tap()
+      const artist = mobile.getByRole('combobox', {
+        name: 'Artista',
+        exact: true,
+      })
+      await artist.fill('Ban')
+      await mobile
+        .getByRole('listbox', { name: 'Artistas del catálogo local' })
+        .getByRole('option', { name: /Perú/u })
+        .tap()
+      await expect(artist).toHaveValue('Banda Delta')
+      await expect(
+        mobile.getByRole('radio', { name: /Usar Banda Delta Perú/u }),
+      ).toBeChecked()
+    } finally {
+      await touch.close()
+    }
+  }
+})
+
 test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencias de mayúsculas', async ({
   page,
 }) => {
@@ -28,13 +269,13 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('conjunto del sur')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('canción del océano')
   await page
-    .getByRole('textbox', { name: 'Géneros (separados por comas)' })
+    .getByRole('combobox', { name: 'Géneros (separados por comas)' })
     .fill('metal progresivo, METAL   PROGRESIVO, EDM')
   if (
     (await page
@@ -79,7 +320,7 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
-    .getByRole('textbox', { name: 'Artista', exact: true })
+    .getByRole('combobox', { name: 'Artista', exact: true })
     .fill('Conjunto del SUR')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
@@ -179,10 +420,12 @@ async function add(
   await page
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
-  await page.getByRole('textbox', { name: 'Artista', exact: true }).fill(artist)
+  await page
+    .getByRole('combobox', { name: 'Artista', exact: true })
+    .fill(artist)
   await page.getByRole('textbox', { name: 'Título', exact: true }).fill(title)
   await page
-    .getByRole('textbox', { name: 'Géneros (separados por comas)' })
+    .getByRole('combobox', { name: 'Géneros (separados por comas)' })
     .fill(genres)
   await page
     .getByRole('textbox', {
@@ -255,7 +498,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     .getByRole('textbox', { name: 'Año original', exact: true })
     .fill('2001')
   await page
-    .getByRole('textbox', { name: 'Géneros (separados por comas)' })
+    .getByRole('combobox', { name: 'Géneros (separados por comas)' })
     .fill('Metal Progresivo, Jazz')
   await page
     .getByRole('textbox', { name: 'País de origen 1', exact: true })
@@ -486,7 +729,7 @@ test('edición y nuevos filtros son accesibles a360px en los dos temas', async (
     await appearance.locator('summary').click()
     await editor(page)
     await page
-      .getByRole('textbox', { name: 'Géneros (separados por comas)' })
+      .getByRole('combobox', { name: 'Géneros (separados por comas)' })
       .fill('Rock, Metal')
     await page
       .getByRole('textbox', { name: 'País de origen 1', exact: true })
