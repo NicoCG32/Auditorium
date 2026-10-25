@@ -394,7 +394,7 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
     page.getByText('Experiencia guardada.', { exact: true }),
   ).toBeVisible()
   const before = await rawDatabase(page)
-  expect(Object.keys(before)).toHaveLength(14)
+  expect(Object.keys(before)).toHaveLength(16)
   expect(before['syncCheckpoint']).toEqual([])
   await page.close()
   for (const path of [
@@ -511,7 +511,7 @@ test('Pages espera a las dos ventanas para actualizar y conserva las tablas y la
   await openPrepared(page)
   const source = await restoreFixture(page)
   const before = await rawDatabase(page)
-  expect(Object.keys(before)).toHaveLength(14)
+  expect(Object.keys(before)).toHaveLength(16)
   expect(before['syncCheckpoint']).toEqual([])
   const other = await context.newPage()
   await openPrepared(other)

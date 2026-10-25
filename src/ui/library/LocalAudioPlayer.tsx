@@ -7,6 +7,11 @@ interface Session {
   release?: () => void
   timer?: ReturnType<typeof setTimeout>
 }
+function playbackTime(seconds: number) {
+  return `${Math.floor(seconds / 60)}:${Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, '0')}`
+}
 export function LocalAudioPlayer({
   name,
   load,
@@ -21,6 +26,8 @@ export function LocalAudioPlayer({
     url?: string
     message?: string
     playing?: boolean
+    position?: number
+    duration?: number
   }>({ status: 'closed' })
   const active = useRef<Session | undefined>(undefined)
   const player = useRef<HTMLAudioElement>(null)
@@ -106,6 +113,27 @@ export function LocalAudioPlayer({
         }))
     }
   }
+  function seek(position: number) {
+    const element = player.current
+    if (
+      !element ||
+      !active.current ||
+      !Number.isFinite(position) ||
+      !Number.isFinite(element.duration)
+    )
+      return
+    const next = Math.min(element.duration, Math.max(0, position))
+    try {
+      element.currentTime = next
+      setState((previous) => ({ ...previous, position: next }))
+    } catch {
+      setState((previous) => ({
+        ...previous,
+        message:
+          'No se pudo cambiar la posición. Puedes usar los controles nativos o volver a cargar el audio.',
+      }))
+    }
+  }
   return (
     <div className="local-audio-player">
       <div className="flex flex-wrap gap-3">
@@ -149,6 +177,12 @@ export function LocalAudioPlayer({
           preload="auto"
           src={state.url}
           aria-label={`Audio personal: ${name}`}
+          onTimeUpdate={(event) => {
+            const element = event.currentTarget
+            if (active.current?.url !== element.src) return
+            const position = element.currentTime
+            setState((previous) => ({ ...previous, position }))
+          }}
           onPlay={(event) => {
             if (active.current?.url === event.currentTarget.src)
               setState((previous) => ({
@@ -189,9 +223,13 @@ export function LocalAudioPlayer({
               return
             }
             clearTimeout(session.timer)
+            const duration = event.currentTarget.duration,
+              position = event.currentTarget.currentTime
             setState((previous) => ({
               ...previous,
               status: 'ready',
+              duration,
+              position,
               message: 'Audio listo. Pulsa reproducir en sus controles.',
             }))
           }}
@@ -205,6 +243,26 @@ export function LocalAudioPlayer({
             })
           }}
         />
+      ) : null}
+      {state.status === 'ready' && state.duration ? (
+        <label className="mt-3 block">
+          <span className="field-label">
+            Posición · {playbackTime(state.position ?? 0)} de{' '}
+            {playbackTime(state.duration)}
+          </span>
+          <input
+            className="w-full"
+            type="range"
+            min={0}
+            max={state.duration}
+            step={Math.min(0.1, state.duration / 100)}
+            value={Math.min(state.duration, Math.max(0, state.position ?? 0))}
+            aria-label={`Posición del audio: ${name}`}
+            aria-valuetext={`${playbackTime(state.position ?? 0)} de ${playbackTime(state.duration)}`}
+            disabled={disabled}
+            onChange={(event) => seek(event.currentTarget.valueAsNumber)}
+          />
+        </label>
       ) : null}
       {state.message ? (
         <p

@@ -1,24 +1,23 @@
 import { expect, type Page } from '@playwright/test'
-import { readFile } from 'node:fs/promises'
 import { createHash } from 'node:crypto'
 import { serializeBackup } from '../../src/domain/backup'
 import { fixtureId } from '../../src/domain/catalog/catalog.fixture'
 import { createStoredZip } from '../../src/infrastructure/browser/stored-zip'
 import { playbackFixture } from './streaming-fixture'
 import { openLibraryOptions } from './library-navigation'
+import { syntheticWav } from '../../src/test/audio.fixture'
 
 export const audioName = 'audio-ficticio.wav'
-export async function audioPayload(name = audioName) {
-  return {
+export function audioPayload(name = audioName) {
+  const bytes = syntheticWav(44 + 48000 * 6 * 2),
+    view = new DataView(bytes.buffer)
+  view.setUint32(24, 48000, true)
+  view.setUint32(28, 96000, true)
+  return Promise.resolve({
     name,
     mimeType: 'audio/wav',
-    buffer: await readFile(
-      new URL(
-        '../../prototypes/audio-01/fixtures/tone-wav-pcm.wav',
-        import.meta.url,
-      ),
-    ),
-  }
+    buffer: Buffer.from(bytes),
+  })
 }
 export async function audioBackup() {
   const fixture = playbackFixture(),
@@ -37,7 +36,7 @@ export async function audioBackup() {
         size: payload.buffer.length,
         container: 'WAV',
         mime: 'audio/wav',
-        duration: 1.2,
+        duration: 6,
         sha256: createHash('sha256').update(payload.buffer).digest('hex'),
         path: `audio/${fixtureId(99001)}.bin`,
       },
@@ -154,40 +153,48 @@ export async function playPersonalAudio(page: Page, unsupported = false) {
       (audio: HTMLAudioElement) => audio.paused && audio.currentTime === 0,
     ),
   ).toBe(true)
-  await player.evaluate((audio: HTMLAudioElement) => {
-    audio.loop = true
-  })
   const play = page.getByRole('button', {
     name: 'Reproducir audio',
     exact: true,
   })
   await play.focus()
   await play.press('Enter')
-  await expect
-    .poll(() => player.evaluate((audio: HTMLAudioElement) => audio.currentTime))
-    .toBeGreaterThan(0.05)
+  try {
+    await expect
+      .poll(() =>
+        player.evaluate((audio: HTMLAudioElement) => audio.currentTime),
+      )
+      .toBeGreaterThan(0.05)
+  } catch (error) {
+    const diagnostic = await player.evaluate((audio: HTMLAudioElement) => ({
+      time: audio.currentTime,
+      duration: audio.duration,
+      paused: audio.paused,
+      ended: audio.ended,
+      ready: audio.readyState,
+      network: audio.networkState,
+      error: audio.error?.code,
+      visible: document.visibilityState,
+    }))
+    throw new Error(
+      'Native playback did not advance: ' + JSON.stringify(diagnostic),
+      { cause: error },
+    )
+  }
   const pause = page.getByRole('button', { name: 'Pausar audio', exact: true })
   await pause.focus()
   await pause.press('Space')
   await expect
     .poll(() => player.evaluate((audio: HTMLAudioElement) => audio.paused))
     .toBe(true)
-  await player.focus()
-  const initialPosition = await player.evaluate(
-    (audio: HTMLAudioElement) => audio.currentTime,
-  )
-  let position = initialPosition
-  for (
-    let control = 0;
-    control < 8 && Math.abs(position - initialPosition) < 0.001;
-    control++
-  ) {
-    await page.keyboard.press('ArrowLeft')
-    position = await player.evaluate(
-      (audio: HTMLAudioElement) => audio.currentTime,
-    )
-    if (Math.abs(position - initialPosition) < 0.001)
-      await page.keyboard.press('Tab')
-  }
-  expect(Math.abs(position - initialPosition)).toBeGreaterThan(0.001)
+  const position = page.getByRole('slider', { name: /^Posición del audio:/ })
+  await position.focus()
+  await position.press('Home')
+  await expect
+    .poll(() => player.evaluate((audio: HTMLAudioElement) => audio.currentTime))
+    .toBe(0)
+  await position.press('ArrowRight')
+  await expect
+    .poll(() => player.evaluate((audio: HTMLAudioElement) => audio.currentTime))
+    .toBeGreaterThan(0)
 }

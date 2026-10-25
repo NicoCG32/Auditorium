@@ -625,6 +625,8 @@ test('cuota al restaurar revierte también identidad y conserva confirmación pa
     ...historicalRows(makeBackup().data, historicalStores(3)),
     albums: makeBackup().data.catalog.albums,
     syncCheckpoint: [],
+    audioAttachments: [],
+    audioFiles: [],
   })
   expect(after.rows['purchaseWishes']).toHaveLength(1)
 })
