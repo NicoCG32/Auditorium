@@ -79,6 +79,11 @@ export function AccountPanel({ account }: { account: CloudAccount }) {
             Los cambios guardados se sincronizan con conexión cuando terminas de
             editar. Puedes continuar sin conexión en este dispositivo.
           </p>
+          <p className="mt-3 text-sm text-muted">
+            Los archivos de audio permanecen sólo en este dispositivo. Para
+            conservarlos o trasladarlos, utiliza el respaldo completo ZIP en
+            Respaldos.
+          </p>
           {state.engine ? (
             <SyncControls
               engine={state.engine}

@@ -2,7 +2,7 @@
 
 Actualización LINK-01: enlaces personales y favorito ya están implementados con almacenamiento contenido en UserAlbum, DB7 y respaldo4; la [guía vigente](ENLACES_PERSONALES.md) concreta sus contratos. UX-05 implementa clasificación y formularios con DB8/respaldo5; véase la [guía vigente](CLASIFICACION_ALBUM.md). Los refinamientos posteriores mantienen su seguimiento.
 
-UX-06 implementa la [experiencia conjunta y edición de referencia](MI_EXPERIENCIA.md), con DB9/respaldo6. Los apartados de audio adjunto y reproducción integrada siguen propuestos.
+UX-06 implementa la [experiencia conjunta y edición de referencia](MI_EXPERIENCIA.md), con DB9/respaldo6. PLAY-01 implementa la reproducción desde enlaces; AUDIO-02 implementa los adjuntos persistentes y el respaldo ZIP completo con DB10/respaldo6. Sus guías precisan los contratos vigentes.
 
 Estado original: **diseño lógico propuesto en UX-03**, 2026-10-18. Los apartados que siguen propuestos no son schemas ejecutables ni migraciones aplicadas. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
 
@@ -157,13 +157,13 @@ Una referencia externa invalidada por corregir identidad musical no borra los en
 
 ### Audio personal
 
-El descriptor lógico del futuro adjunto incluye identidad propia, `userAlbumId`, `trackId` opcional, nombre mostrado, tamaño, tipo observado y estado de disponibilidad. La referencia al almacenamiento binario es opaca y local; nunca es una ruta absoluta del equipo ni una URL temporal exportable.
+El descriptor local del adjunto incluye identidad propia, `userAlbumId`, `trackId` opcional, nombre mostrado, tamaño, tipo observado y estado de disponibilidad. La referencia al almacenamiento binario es opaca y local; nunca es una ruta absoluta del equipo ni una URL temporal exportable.
 
 El binario se mantiene fuera de `Album` y fuera de la precaché del producto. Una URL `blob:` sólo sirve al reproductor durante su uso y debe revocarse; no identifica un archivo recuperable tras reiniciar. Cambiar de álbum o pantalla libera la reproducción. Eliminar un adjunto requiere una acción independiente de retirar el álbum; esta última conserva los datos personales hasta que se concrete una política de eliminación explícita.
 
 La asociación opcional a una pista sólo es válida cuando `Track.albumId` coincide con el álbum de la entrada. No se crean pistas automáticamente al elegir un archivo. La pertenencia a una edición concreta o múltiples archivos por pista no son requisitos iniciales de esta propuesta.
 
-AUDIO-01 debe decidir antes de AUDIO-02: temporal o persistente, soporte real por códec/contenedor, número/tamaño, atomicidad de metadatos y binario, cuota, eliminación de huérfanos, respaldo de medios y recuperación sin el archivo. Hasta entonces el descriptor es una responsabilidad definida, no un contrato serializado. No reutilizar base64 de portada para introducir audio en el JSON actual de 20 MiB.
+AUDIO-01 eligió persistencia en este dispositivo. AUDIO-02 implementa DB10/nativa100 con bytes IndexedDB, 16 MiB por archivo, 128 MiB y 128 adjuntos por biblioteca, un reproductor activo y guardado atómico. El [contrato serializado de audio y ZIP1](AUDIO_LOCAL.md) mantiene los adjuntos fuera del JSON6 de 20 MiB y de los documentos remotos. Los binarios no se convierten a base64 de portada.
 
 ## 3. Operaciones y concurrencia
 
@@ -220,14 +220,14 @@ Las mutaciones no cambian la identidad local. Editar un artista conserva la regl
 | UX-05          | Separar tipo/categorías/publicación con migración y respaldo versionados; mantener IDs y reglas previas                    |
 | UX-06          | Versionar referencia opcional de edición en la nota; escritura coordinada de experiencia y compatibilidad de notas previas |
 | AUDIO-01       | Resolver almacenamiento y recuperación con evidencia, sin afirmar que JSON contiene el audio                               |
-| AUDIO-02       | Aplicar la decisión anterior con su versión y pruebas, si se acepta persistencia                                           |
+| AUDIO-02       | Persistencia DB10, ZIP1 y restauración atómica implementados según el contrato de audio local                              |
 | COL-05         | Presentar Mi colección con adquisiciones físicas/digitales separables, conservando registros y acceso a deseos             |
 
 Los archivos de respaldo1/2/3 mantienen validadores históricos estrictos. Un importador futuro normaliza desde cada contrato validado, sin aceptar campos nuevos en versiones antiguas. Los registros anteriores llegan sin enlaces personales ni favorito; no se inventan a partir de referencias de catálogo. La identidad, UUID, fechas, texto de notas, ratings, pistas, ediciones, copias, deseos y retirada se conservan.
 
 Una versión antigua debe rechazar esquemas y respaldos futuros con mensaje recuperable. La migración es atómica, conserva la barrera de versión existente y nunca elimina filas por cambiar la vista de Mi colección. No se fija ahora un número de versión futuro ni se cambia el tag publicado.
 
-La restauración continúa limitada al destino vacío, con adopción atómica de identidad y datos; el rediseño no introduce fusiones de bibliotecas. Si el futuro respaldo de audio es separado, debe poder distinguir metadatos recuperados de archivos pendientes de volver a adjuntar y explicar los límites antes de exportar. Un archivo JSON de 20 MiB no equivale a un paquete de medios completo.
+La restauración continúa limitada al destino vacío, con adopción atómica de identidad y datos; el rediseño no introduce fusiones de bibliotecas. El respaldo completo ZIP1 incluye JSON musical6, manifiesto y binarios; el JSON separado excluye los adjuntos. La interfaz explica esta diferencia antes de exportar. Un archivo JSON de 20 MiB no equivale a un paquete de medios completo.
 
 ## 5. Matriz de independencia y comprobación
 
@@ -245,4 +245,4 @@ Aplicar esta matriz a los [cinco escenarios de diseño](EXPERIENCIA_USUARIO.md#6
 
 Añadir casos de EP Demo inédito, full-length En vivo, Split con varios créditos y Deluxe digital sin ejemplares. Verificar la transformación de cada valor antiguo de `releaseType`, corrección posterior sin pérdida de relaciones y dos copias de una misma edición. Ningún caso debe exigir calificación, escucha o propiedad para guardar la clasificación. Comprobar nota única con/sin referencia, selección de edición no poseída, rechazo de edición ajena, retirada explícita de referencia, conservación al recalificar, eliminación de edición referenciada y migración/restauración de notas anteriores sin selección inventada.
 
-La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01 aporta su evidencia en la guía de enlaces; UX-05/AUDIO-02 deben aportar la propia antes de declararse implementadas. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.
+La arquitectura de información de UX-03 puede revisarse sin ejecutar esas migraciones todavía inexistentes. LINK-01 aporta su evidencia en la guía de enlaces; UX-05 y AUDIO-02 aportan sus contratos y validación en las guías de clasificación y audio local. La [validación de persistencia actual](VALIDACION_PERSISTENCIA.md) y las [reglas de respaldo](RESPALDOS_JSON.md) siguen siendo referencias de comportamiento vigente.

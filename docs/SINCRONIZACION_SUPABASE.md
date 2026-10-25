@@ -1,5 +1,7 @@
 # Cuenta y biblioteca entre dispositivos
 
+AUDIO-02 conserva archivos y descriptores de audio en dos tablas locales de DB10, separados por proyecto, cuenta e identidad musical. No se envían en snapshots, RPC, checkpoints ni Storage; no requieren tablas SQL o buckets nuevos. El contrato remoto continúa en versión6. En otro dispositivo hay que volver a adjuntar los originales o restaurar el ZIP completo en un destino vacío antes de poblarlo con la biblioteca sincronizada. [Límites y traslado](AUDIO_LOCAL.md).
+
 Supabase añade una cuenta opcional con correo y contraseña a la biblioteca local. Sin cuenta, Auditorium sigue funcionando con IndexedDB y respaldos JSON. Al iniciar sesión, la aplicación abre una caché distinta para esa cuenta; nunca mezcla automáticamente bibliotecas de usuarios diferentes.
 
 ## Uso

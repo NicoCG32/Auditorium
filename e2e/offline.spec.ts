@@ -72,7 +72,10 @@ async function exportedBackup(page: Page) {
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloaded = page.waitForEvent('download')
   await page
-    .getByRole('button', { name: 'Descargar respaldo JSON', exact: true })
+    .getByRole('button', {
+      name: 'Descargar respaldo JSON sin audio',
+      exact: true,
+    })
     .click()
   const path = await (await downloaded).path()
   if (!path) throw new Error('Missing fictitious backup download')

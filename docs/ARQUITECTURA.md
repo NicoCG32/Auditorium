@@ -1,6 +1,6 @@
 # Arquitectura del sistema
 
-La [evaluación de audio local](AUDIO_LOCAL.md) concreta la conservación en este dispositivo, los formatos probados y el respaldo completo propuesto para AUDIO-02. Su prototipo es aislado; los adjuntos todavía no están incorporados a la aplicación.
+El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
 
 La [reproducción desde enlaces](REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](PROVEEDORES_STREAMING.md) conserva sus fuentes y límites. Los adaptadores de streaming son servicios de navegador opcionales; no acceden a los repositorios de dominio ni modifican persistencia.
 
@@ -14,7 +14,7 @@ Referencia: MVP **Auditorium v1.0.0** e incrementos posteriores de web, identida
 
 Auditorium permite registrar, consultar y valorar una biblioteca musical y organizar ediciones, ejemplares y deseos de compra. La versión 1.0.0 es una aplicación web de una sola página, instalable como PWA donde el navegador lo admita. Ejecuta sus casos de uso y conserva la biblioteca en el dispositivo, por origen y perfil del navegador.
 
-La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. El modo sin cuenta conserva sus datos localmente; SYNC-01 añade una cuenta y biblioteca remota opcionales, documentadas en la guía de sincronización. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos están en revisión y no modifican la release v1.0.0. Las plataformas musicales se enlazan como referencias; no se reproducen ni sincronizan sus catálogos.
+La estructura distingue datos musicales de catálogo, experiencia personal y recursos de la aplicación. El modo sin cuenta conserva sus datos localmente; SYNC-01 añade una cuenta y biblioteca remota opcionales, documentadas en la guía de sincronización. CAT-01 añade búsqueda opcional de referencias de álbumes en Wikidata y AI-01 permite solicitar un orden de escucha mediante Gemini o Groq con clave propia de sesión. UX-01 permite corregir álbumes guardados, registrar géneros y país de artista y conservar una portada local o su URL. Estos incrementos posteriores conservan los contratos de la release v1.0.0. La ficha puede insertar reproductores oficiales de Spotify y YouTube mediante una acción explícita, sin sincronizar sus catálogos; los archivos propios se reproducen desde almacenamiento local.
 
 LINK-01 añade enlaces de escucha/compra personales y favorito opcional. Alta y edición coordinan catálogo y enlaces en el mismo límite de commit; los valores se contienen en UserAlbum y se transportan en el respaldo 4 y la sincronización privada. Las URLs se abren externamente sin contactar proveedores al guardar. Véase [Enlaces personales](ENLACES_PERSONALES.md).
 
@@ -82,13 +82,13 @@ flowchart TB
     HTTP <-->|Solicitud explícita y respuesta validada| Proveedores
 ```
 
-IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v5/nativa50 conserva los registros musicales, su identidad y las portadas locales de los álbumes. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
+IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v10/nativa100 conserva los registros musicales, su identidad, las portadas locales y dos tablas separadas de audio. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
 
 Las referencias de catálogo seleccionadas pertenecen a `Album` y se guardan con el alta local. Las claves y recomendaciones viven sólo en memoria, sin tablas, respaldo o caché. Las consultas se realizan fuera de cualquier transacción IndexedDB; el modelo no recibe un repositorio ni ejecuta escrituras.
 
 La navegación entre biblioteca, ficha, registro, retirados y respaldos depende del estado de React. Las aperturas de la PWA admiten la base del build, `index.html` y sus variantes con query o fragmento; no existe un router de fichas por URL o por ID. La distribución local utiliza `/`; el modo Pages utiliza `/Auditorium/`, con manifest, recursos, fallback y alcance verificados para esa base.
 
-UX-03 propone una [arquitectura de información por tareas](EXPERIENCIA_USUARIO.md), rutas por fragmentos, contexto de regreso y borradores independientes del montaje de pantallas. La [ADR-010](adr/010-navegacion-experiencia.md) y los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) corresponden a trabajo futuro; no sustituyen esta descripción de componentes y persistencia actuales.
+UX-04 implementa la [navegación por tareas](NAVEGACION.md), rutas por fragmentos, contexto de regreso y borradores independientes del montaje. La [ADR-010](adr/010-navegacion-experiencia.md) y los [contratos de experiencia](CONTRATOS_EXPERIENCIA.md) documentan su evolución; AUDIO-02 extiende esos borradores con archivos en memoria hasta confirmar.
 
 ## 4. Organización del código y dependencias
 

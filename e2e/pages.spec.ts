@@ -5,6 +5,44 @@ import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 import {
+  audioInventory,
+  playPersonalAudio,
+  restoreAudio,
+} from './helpers/audio-fixture'
+
+test('audio persistente en Pages funciona offline y queda fuera de JSON y de Cache Storage', async ({
+  page,
+  context,
+}) => {
+  const source = await restoreAudio(page, '/Auditorium/')
+  await expect(
+    page.getByText('Aplicación preparada para usar sin conexión.', {
+      exact: true,
+    }),
+  ).toBeVisible()
+  const before = await audioInventory(page)
+  await playPersonalAudio(page)
+  await context.setOffline(true)
+  await page.reload()
+  await expect(page).toHaveURL(/\/Auditorium\/#\/album\//)
+  await expect(page.locator('audio')).toHaveCount(0)
+  expect(await audioInventory(page)).toEqual(before)
+  await playPersonalAudio(page)
+  const paths = await page.evaluate(async () => {
+    const result: string[] = []
+    for (const name of await caches.keys())
+      for (const request of await (await caches.open(name)).keys())
+        result.push(request.url)
+    return result
+  })
+  expect(
+    paths.some((path) =>
+      /\.wav$|\.bin$|\.zip$|audio-manifest\.json$|^blob:/u.test(path),
+    ),
+  ).toBe(false)
+  expect((await playbackBackup(page)).data).toEqual(source.fixture.data)
+})
+import {
   mockStreaming,
   restorePlayback,
   playbackBackup,
@@ -128,7 +166,10 @@ async function exportedBackup(page: Page) {
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
-    .getByRole('button', { name: 'Descargar respaldo JSON', exact: true })
+    .getByRole('button', {
+      name: 'Descargar respaldo JSON sin audio',
+      exact: true,
+    })
     .click()
   const path = await (await downloading).path()
   if (!path) throw new Error('Missing fictitious Pages backup download')

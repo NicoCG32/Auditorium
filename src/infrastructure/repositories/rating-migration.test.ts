@@ -75,7 +75,7 @@ test.each([
         const frame = await repository.readSyncFrame()
         expect(frame.snapshot).toEqual(snapshot)
         expect(frame.checkpoint).toEqual(checkpoint)
-        expect(database.verno).toBe(9)
+        expect(database.verno).toBe(10)
         expect(frame.snapshot.library.albumRatings[0]).not.toHaveProperty(
           'referenceReleaseId',
         )

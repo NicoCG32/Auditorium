@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ZodError } from 'zod'
+import { AudioError } from '../../domain/audio'
 import {
   MusicUseCaseError,
   type MusicLibrary,
@@ -202,7 +203,7 @@ export function AlbumTrackLists({
         )
       } else
         setError(
-          failure instanceof MusicUseCaseError
+          failure instanceof MusicUseCaseError || failure instanceof AudioError
             ? failure.message
             : failure instanceof ZodError
               ? 'Revisa los títulos, las posiciones positivas y únicas por disco y las referencias al mismo álbum. El borrador se conserva.'

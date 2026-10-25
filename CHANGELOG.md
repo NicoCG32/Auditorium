@@ -2,6 +2,10 @@
 
 ## Sin publicar
 
+- Audio propio persistente por dispositivo en alta, edición y ficha, con asociación opcional a una pista del mismo álbum. Conserva experiencia y adquisiciones independientes; comparte un único reproductor explícito con streaming y libera sus URLs al salir.
+- IndexedDB v10/nativa100 añade dos tablas de audio con guardado atómico, control concurrente y límites de 16 MiB por archivo, 128 MiB y 128 adjuntos por biblioteca. JSON y sincronización permanecen en formato6, sin binarios ni descriptores de audio.
+- Respaldo completo ZIP1 con manifiesto, JSON musical y archivos, validación estructural/CRC/SHA y restauración atómica sólo en destino vacío. Borrado explícito de las copias locales, recuperación offline, guía de uso, modelos y ADR-012.
+
 - Cuenta opcional con correo y contraseña mediante Supabase, cachés por cuenta y copia explícita de la biblioteca sin cuenta. Conserva el uso local y sin conexión; el registro público por correo queda pendiente de configurar SMTP.
 - Sincronización privada versionada, permisos RLS, escritura con revisión e idempotencia, combinación de cambios independientes y resolución de conflictos con conservación de ambas copias. IndexedDB v6 añade sólo el checkpoint técnico; el respaldo sigue en formato v3.
 - Guía de instalación y operación, modelos remoto/local y diagramas de sincronización, ADR-011 y pruebas de permisos en Postgres y del recorrido de cuenta en navegador.

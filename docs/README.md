@@ -1,6 +1,6 @@
 # Documentación de Auditorium
 
-La [evaluación de audio local](AUDIO_LOCAL.md) concreta la conservación en este dispositivo, los formatos probados y el respaldo completo propuesto para AUDIO-02. Su prototipo es aislado; los adjuntos todavía no están incorporados a la aplicación.
+El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
 
 La [reproducción desde enlaces](REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 
@@ -62,18 +62,20 @@ La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica bús
 
 [ADR-011: cuenta opcional con Supabase](adr/011-supabase-sincronizacion.md) amplía las decisiones del MVP para acceder a una biblioteca privada desde varios dispositivos.
 
-| Decisión                                                                 | Justificación                                                                                       |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| [ADR-001: MVP local](adr/001-mvp-local.md)                               | Biblioteca ejecutada y guardada en el navegador                                                     |
-| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)        | Identidades musicales y apariciones diferenciadas                                                   |
-| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                 | Servicios opcionales evaluados antes de incorporarlos                                               |
-| [ADR-004: retirada personal](adr/004-retirada-personal.md)               | Restauración de la misma entrada sin borrar catálogo o datos relacionados                           |
-| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)         | Adopción atómica de identidad y datos en un destino vacío                                           |
-| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)             | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                             |
-| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)        | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                  |
-| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md) | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local  |
-| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)    | Edición con identidad estable, géneros, país y portada automática local o remota                    |
-| [ADR-010: navegación por tareas](adr/010-navegacion-experiencia.md)      | Navegación y borradores en UX-04; enlaces, experiencia conjunta y contratos de colección por tareas |
+| Decisión                                                                              | Justificación                                                                                       |
+| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| [ADR-001: MVP local](adr/001-mvp-local.md)                                            | Biblioteca ejecutada y guardada en el navegador                                                     |
+| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)                     | Identidades musicales y apariciones diferenciadas                                                   |
+| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                              | Servicios opcionales evaluados antes de incorporarlos                                               |
+| [ADR-004: retirada personal](adr/004-retirada-personal.md)                            | Restauración de la misma entrada sin borrar catálogo o datos relacionados                           |
+| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)                      | Adopción atómica de identidad y datos en un destino vacío                                           |
+| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)                          | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                             |
+| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)                     | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                  |
+| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md)              | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local  |
+| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)                 | Edición con identidad estable, géneros, país y portada automática local o remota                    |
+| [ADR-010: navegación por tareas](adr/010-navegacion-experiencia.md)                   | Navegación y borradores en UX-04; enlaces, experiencia conjunta y contratos de colección por tareas |
+| [ADR-011: sincronización opcional](adr/011-supabase-sincronizacion.md)                | Bibliotecas privadas, cachés por cuenta, revisiones y conflictos con Supabase                       |
+| [ADR-012: audio por dispositivo y respaldo completo](adr/012-audio-local-respaldo.md) | Adjuntos locales, aislamiento, ZIP1 y restauración atómica, independientes del JSON6 y la cuenta    |
 
 Los ADR conservan la fecha y el contexto de la decisión. El estado de ejecución actual se consulta en la [arquitectura](ARQUITECTURA.md), el [Project](https://github.com/users/NicoCG32/projects/4) y los [hitos](https://github.com/NicoCG32/Auditorium/milestones).
 

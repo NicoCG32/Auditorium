@@ -71,7 +71,9 @@ async function backup(page: Page) {
   await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
+  await page
+    .getByRole('button', { name: 'Descargar respaldo JSON sin audio' })
+    .click()
   const path = await (await downloading).path()
   expect(path).toBeTruthy()
   return parseBackupText(await readFile(path, 'utf8'))

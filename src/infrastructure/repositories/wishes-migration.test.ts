@@ -10,7 +10,7 @@ import {
   SCHEMA_V1,
   SCHEMA_V2,
   SCHEMA_V3,
-  SCHEMA_V6,
+  SCHEMA_V10,
 } from '../db/database'
 import { IndexedDbRepository } from './indexeddb-repository'
 import { IDENTITY_KEY, toStoredUserAlbum } from '../db/records'
@@ -107,7 +107,7 @@ test.each([
       albums: before['albums']!.map(migrateLegacyAlbum),
     })
     expect(next.database.tables.map((table) => table.name).sort()).toEqual(
-      Object.keys(SCHEMA_V6).sort(),
+      Object.keys(SCHEMA_V10).sort(),
     )
   },
 )

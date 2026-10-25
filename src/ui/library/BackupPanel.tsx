@@ -13,6 +13,8 @@ import type {
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { downloadBackup } from '../../infrastructure/browser/backup-download'
 import { formatCount } from './labels'
+import { hasAudioRepository } from '../../domain/audio'
+import { CompleteAudioBackupPanel } from './CompleteAudioBackupPanel'
 
 function Counts({ snapshot }: { snapshot: LocalSnapshot }) {
   const library = snapshot.library
@@ -244,22 +246,27 @@ export function BackupPanel({
         Respaldos de tu biblioteca
       </h2>
       <p className="mt-3 text-sm text-muted">
-        Descarga una copia completa para recuperar o trasladar tu biblioteca. El
-        archivo incluye tus notas y valoraciones; se procesa en tu equipo, sin
-        enviarlo a servicios externos.
+        Descarga tu biblioteca con notas y valoraciones. El JSON excluye el
+        audio local; el ZIP completo lo incluye. Los archivos se procesan en tu
+        equipo, sin enviarlos a servicios externos.
       </p>
       <section className="owned-panel" aria-labelledby="backup-export-title">
         <h3 id="backup-export-title" className="text-xl font-semibold">
           Exportar respaldo
         </h3>
         <Counts snapshot={pending ?? snapshot} />
+        <p className="mt-3 text-sm text-muted">
+          El JSON incluye los datos de biblioteca y portadas locales. Excluye
+          archivos y nombres de audio; utiliza el ZIP completo para conservarlos
+          o trasladarlos.
+        </p>
         <button
           type="button"
           className="primary-button mt-4"
           disabled={disabled || Boolean(prepared)}
           onClick={() => void download()}
         >
-          Descargar respaldo JSON
+          Descargar respaldo JSON sin audio
         </button>
       </section>
       <section className="owned-panel" aria-labelledby="backup-import-title">
@@ -268,8 +275,9 @@ export function BackupPanel({
         </h3>
         <p className="mt-3 text-sm text-muted" id="backup-import-help">
           Archivo JSON de hasta 20 MiB. La restauración requiere una biblioteca
-          completamente vacía, incluidos catálogo y álbumes retirados, y
-          recupera la identidad local del archivo para conservar sus relaciones.
+          completamente vacía, incluidos catálogo, álbumes retirados y audio
+          local, y recupera la identidad local del archivo para conservar sus
+          relaciones.
         </p>
         {!empty && !pending ? (
           <p className="mt-3 text-sm">
@@ -349,6 +357,16 @@ export function BackupPanel({
           </div>
         ) : null}
       </section>
+      {hasAudioRepository(repository) ? (
+        <CompleteAudioBackupPanel
+          repository={repository}
+          snapshot={snapshot}
+          blocked={disabled || Boolean(prepared)}
+          onBusyChange={onBusyChange}
+          onCommitted={onCommitted}
+          onRestored={onRestored}
+        />
+      ) : null}
       {busy ? (
         <p role="status" className="mt-4 text-sm">
           {phase}

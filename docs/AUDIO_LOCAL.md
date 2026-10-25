@@ -1,6 +1,67 @@
-# Audio personal: evaluación y propuesta
+# Audio personal persistente y respaldo completo
 
-AUDIO-01 #69 · 23 de octubre de 2026. Investigación y [prototipo aislado](../prototypes/audio-01/README.md). La aplicación publicada todavía no incorpora adjuntos de audio. AUDIO-02 #70 implementará el contrato de conservación local y respaldo propio acordado aquí.
+AUDIO-02 #70 · 24 de octubre de 2026. Implementación de audio por dispositivo con respaldo completo propio. La investigación AUDIO-01 #69 y su [prototipo aislado](../prototypes/audio-01/README.md) conservan la evidencia previa de formatos y almacenamiento.
+
+## Recorrido implementado
+
+1. En **Añadir álbum**, abre **Archivos de audio propios (opcional)**. En **Editar álbum** también puedes añadir, retirar o reemplazar archivos. La selección valida los bytes que se decodificarán; sólo queda guardada cuando confirmas el formulario. Cancelar conserva los datos anteriores.
+2. En la ficha, **Audio en este dispositivo** aparece después de **Mi experiencia**. **Gestionar audio** permite elegir opcionalmente una pista del mismo álbum. Guardar audio no cambia el álbum abstracto, sus notas, la escucha, las ediciones ni las adquisiciones.
+3. **Cargar audio** comprueba el archivo guardado y prepara el control nativo sin autoplay. **Reproducir audio** requiere una acción propia. Al cargar otro audio o un reproductor de streaming se libera el anterior; cerrar o salir de la ficha retira su origen y revoca la URL.
+4. En **Más opciones → Respaldos**, el JSON conserva la biblioteca musical y sus portadas, sin audio. **Descargar respaldo completo con audio (ZIP)** incluye ambos. El ZIP no está cifrado: consérvalo como un archivo personal y mantén tus originales.
+5. **Seleccionar respaldo completo ZIP** sólo permite restaurar en una biblioteca completamente vacía. La aplicación valida el paquete antes de pedir confirmación y vuelve a comprobar destino e identidad dentro de la escritura. No fusiona un ZIP con una biblioteca existente.
+6. Retirar un archivo y guardar elimina sus dos registros locales. **Administrar copias locales de audio → Eliminar todo el audio local** pide confirmación y conserva álbumes, experiencias y archivos originales del equipo. Retirar un álbum de forma reversible conserva sus adjuntos.
+
+El navegador puede ofrecer menos espacio que el presupuesto de producto. Un error de cuota conserva el archivo anterior y el borrador. Un archivo ausente, dañado o no reproducible muestra un error al cargarlo; puedes volver a seleccionarlo. Para restaurar un ZIP, utiliza un destino vacío; un JSON por sí solo no recupera archivos ni descriptores de audio.
+
+## Persistencia y formato completo
+
+DB10/nativa100 añade dos tablas a las catorce anteriores, sin añadir campos a Album, UserAlbum, LocalSnapshot, JSON6 o los documentos de sincronización. La migración valida el snapshot y todos los documentos actuales del checkpoint; un dato incoherente aborta la actualización. Las bibliotecas anteriores conservan sus referencias de nota y empiezan sin adjuntos.
+
+| Registro           | Clave primaria | Datos e índices                                                                                                                                              |
+| ------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `audioAttachments` | `[scope, id]`  | `userAlbumId`, pista opcional, basename, tamaño, MIME/contenedor observados, duración y SHA-256; índices `scope`, `[scope, userAlbumId]`, `[scope, trackId]` |
+| `audioFiles`       | `[scope, id]`  | Bytes `Uint8Array`; índice `scope`                                                                                                                           |
+
+`scope` se deriva de la identidad musical local (`userId` y `createdAt`). Cada cuenta y proyecto conserva además una base separada. Una identidad musical importada igual en dos cuentas no comparte archivos ni borradores. Antes de reproducir se comprueban ámbito, álbum asociado, descriptor vigente, tamaño, cabecera y hash.
+
+La selección vive en memoria hasta confirmar. El guardado de metadatos del álbum y adjuntos comparte una transacción de IndexedDB; el hash se calcula antes de abrirla. La comprobación del descriptor anterior evita sobrescribir cambios de otra ventana. Las copias binarias se almacenan con buffers de su tamaño exacto, sin conservar el resto del ZIP de origen. Eliminar una pista con audio requiere desasociarlo o reasignarlo primero.
+
+El paquete tiene formato lógico `auditorium-audio-backup`, manifiesto versión **1**, y exactamente estas entradas:
+
+| Entrada               | Contenido                                                                        | Límite                                              |
+| --------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `audio-manifest.json` | Identidad, SHA-256 del JSON y descriptores con asociaciones, hashes y rutas UUID | 1 MiB                                               |
+| `library.json`        | Documento `auditorium-backup`, versión 6                                         | 20 MiB UTF-8                                        |
+| `audio/<uuid>.bin`    | Bytes de cada archivo, identificados por el manifiesto                           | 16 MiB por archivo; 128 MiB y 128 archivos en total |
+| Paquete ZIP           | Método Store/0, sin cifrado, ZIP64, comentarios ni campos extra                  | 160 MiB                                             |
+
+El lector admite este perfil de Auditorium, no un ZIP genérico con una carpeta de música. Rechaza nombres duplicados, rutas inesperadas, atributos de enlace, compresión/cifrado, regiones solapadas, cabeceras contradictorias, datos añadidos, tamaños inválidos, CRC incorrectos, referencias ajenas y hashes divergentes. Todo se valida antes de escribir. Confirmar restaura identidad, música, metadatos y bytes juntos; cuota, cancelación o cierre no dejan un subconjunto confirmado. Los binarios válidos se conservan aunque el decodificador del destino no los reproduzca.
+
+```mermaid
+sequenceDiagram
+    actor Persona
+    participant UI as Respaldos
+    participant Validador as ZIP y dominio
+    participant DB as IndexedDB DB10
+    Persona->>UI: Seleccionar ZIP completo
+    UI->>Validador: Estructura, CRC, JSON, asociaciones y SHA
+    Validador-->>UI: Paquete preparado en memoria
+    UI-->>Persona: Revisar y confirmar
+    Persona->>UI: Confirmar restauración
+    UI->>DB: Transacción: comprobar vacío e identidad
+    alt Destino válido y espacio suficiente
+        DB->>DB: Escribir identidad, música y audio
+        DB-->>UI: Commit completo
+    else Cuota, cancelación o conflicto
+        DB-->>UI: Rollback, conservar estado anterior
+    end
+```
+
+## Validación de la implementación
+
+Las pruebas de aplicación cubren guardado conjunto, reemplazo concurrente, límites, referencias, archivos ausentes, integridad, migración y reversión, ZIP malformados y restauración atómica. Las pruebas de navegador usan audio sintético: alta y edición, cancelación tardía, controles sin autoplay, exclusión del JSON y de las peticiones de sincronización, cambio de cuenta/dispositivo, cuotas inyectadas, liberación de URLs, ZIP entre perfiles, cierre del proceso y reapertura offline en la ruta Pages. Las cuotas inyectadas no equivalen a llenar un disco.
+
+La reproducción depende del motor. La rama de diagnóstico de WebKit Windows exige un aviso de formato no reproducible y conservación de los bytes; no cuenta como reproducción exitosa. La CI Linux exige reproducción WAV real en Chromium, Firefox y WebKit. Los resultados de laboratorio que siguen no certifican un móvil físico ni Safari.
 
 ## Decisión de producto y técnica
 
@@ -20,9 +81,9 @@ Un archivo es una fuente personal de reproducción. No es la identidad del álbu
 flowchart LR
     Album[Album: identidad musical] --> Track[Track: pista del álbum]
     UserAlbum[UserAlbum: entrada personal] --> Album
-    Attachment[Adjunto personal propuesto] --> UserAlbum
+    Attachment[AudioAttachment: fuente personal] --> UserAlbum
     Attachment -. pista opcional del mismo álbum .-> Track
-    Attachment --> Binary[Bytes locales en IndexedDB propuestos]
+    Attachment --> Binary[audioFiles: bytes locales]
     Binary --> File[URL Blob revocable para reproducir]
     UserAlbum --> Experience[Experiencia y calificación independientes]
     Acquisition[Adquisición física o digital] --> Release[Edición concreta]
@@ -31,7 +92,11 @@ flowchart LR
 
 La asociación exige una entrada personal válida y, si se indica pista, que pertenezca al mismo álbum. Sólo se copian esos identificadores. El prototipo utiliza dos entradas ficticias; no lee repositorios de la aplicación. En una implementación persistente, el adjunto deberá tener identidad propia para eliminar o reemplazar su archivo sin borrar la entrada personal.
 
-## Matriz de contenedor y códec
+## Evaluación previa de AUDIO-01
+
+Las mediciones siguientes corresponden al laboratorio del 23 de octubre de 2026. Su selector temporal y sus sondas de almacenamiento son experimentos aislados; la interfaz y el respaldo implementados se describen al comienzo de esta guía.
+
+### Matriz de contenedor y códec
 
 Las ocho [muestras](../prototypes/audio-01/fixtures/manifest.json) son tonos matemáticos de 440 Hz, mono, 48 kHz y aproximadamente 1,2 segundos. El manifiesto conserva tamaño, SHA-256 y el códec/contenedor comprobados con ffprobe. Son CC0 y no contienen grabaciones de una colección musical. El generador y su procedimiento están versionados; FFmpeg no se distribuye con la aplicación.
 
@@ -52,7 +117,7 @@ En este entorno de WebKit para Windows, el **mismo WAV servido por HTTP local s�
 
 La sonda ejecuta la misma matriz en los tres motores de Playwright de Linux y registra incompatibilidades como resultados, separadas de errores del experimento. Un informe aprobado significa que el protocolo y sus invariantes se verificaron; **no significa que todos los formatos reproduzcan en todos los motores**. Chromium no equivale a Chrome instalado y el puerto WebKit no acredita Safari, iOS o móviles físicos. Los códecs también dependen de la plataforma. [Playwright: navegadores](https://playwright.dev/docs/browsers#chromium), [MDN: códecs de audio](https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Audio_codecs).
 
-## Comparación de conservación
+### Comparación de conservación
 
 | Mecanismo                                      | Recarga o cierre                                                               | Coste y límites observados                                                                                         | Evaluación                                                                                |
 | ---------------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------- |
@@ -75,7 +140,7 @@ La sonda adicional cerró y reabrió procesos con perfiles nuevos: Chromium recu
 
 IndexedDB y OPFS comparten las restricciones del almacenamiento del origen. Por defecto éste puede ser expulsado; limpiar el sitio, los perfiles privados o las decisiones del navegador también pueden eliminarlo. Una cuota estimada no reserva espacio libre. La evaluación sólo consulta `estimate()` y `persisted()`; **nunca solicita `persist()`**. Persistencia local no sustituye un respaldo. [MDN: cuotas y evicción](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria), [estimaciones](https://developer.mozilla.org/en-US/docs/Web/API/StorageManager/estimate), [OPFS](https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system). La [política publicada por WebKit](https://webkit.org/blog/14403/updates-to-storage-policy/) también contempla límites y expulsión del origen; su disponibilidad efectiva debe probarse.
 
-## Selección, errores y liberación
+### Selección, errores y liberación
 
 ```mermaid
 sequenceDiagram
@@ -115,9 +180,9 @@ El respaldo propio de #70 será una descarga explícita **ZIP con biblioteca y a
 4. Restauración completa sólo en destino vacío, incluidos sus adjuntos. Validar biblioteca, asociaciones, cantidades, tamaños, hashes y estructura entera antes del commit; conservar identidad y bytes mediante una transacción coherente o staging con rollback probado. Corrupción, cancelación, cuota insuficiente o cierre durante restauración no dejan una biblioteca parcial. La decodificación puede diferir en el destino: se conservan bytes válidos y se informa si ese navegador no puede reproducirlos.
 5. Metadatos y binarios locales comparten un ámbito de biblioteca y las mismas operaciones de confirmación/borrado. Reemplazar descuenta el anterior al calcular el presupuesto de producto, pero necesita espacio transitorio real; un error conserva el anterior. Consultar cuota es orientativo y nunca equivale a reservar espacio. Eliminar un adjunto o biblioteca libera sus binarios; retirar un álbum de forma reversible los conserva. Cambiar de biblioteca o cuenta no expone adjuntos de otro ámbito. Resolver explícitamente una pista eliminada evita enlaces inválidos sin borrar audio silenciosamente.
 
-La evicción o un binario ausente se presentan como «Archivo no disponible en este dispositivo» y permiten volver a seleccionar o restaurar. Álbum, enlaces, experiencia y adquisiciones mantienen sus reglas. La migración no inventa adjuntos para datos anteriores; la sincronización sigue excluyendo tanto binarios como metadatos locales de audio. #70 debe verificar estos contratos antes de anunciar la función; #69 entrega investigación, no esa implementación.
+La evicción o un binario ausente se presentan como «Archivo no disponible en este dispositivo» y permiten volver a seleccionar o restaurar. Álbum, enlaces, experiencia y adquisiciones mantienen sus reglas. La migración no inventa adjuntos para datos anteriores; la sincronización sigue excluyendo tanto binarios como metadatos locales de audio. AUDIO-02 implementa estos contratos; AUDIO-01 conserva su evaluación previa por separado.
 
-El perfil ZIP anterior es una decisión de Auditorium: utiliza el método 0 sin compresión definido por [PKWARE APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) y debe validar también CRC32 y coherencia de cabeceras/directorio. SHA-256 añade comprobación de contenido, sin acreditar autenticidad del remitente. El laboratorio aún no genera ni restaura ese paquete.
+El perfil ZIP anterior es una decisión de Auditorium: utiliza el método 0 sin compresión definido por [PKWARE APPNOTE 6.3.10](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT) y valida también CRC32 y coherencia de cabeceras/directorio. SHA-256 añade comprobación de contenido, sin acreditar autenticidad del remitente. El laboratorio conserva su experimento previo; la aplicación genera y restaura ese paquete mediante los servicios de AUDIO-02.
 
 ## Reproducción de la evaluación
 
@@ -135,6 +200,6 @@ El benchmark escribe únicamente su base/directorio `auditorium-audio-01-evaluat
 
 La CI conserva el resumen por motor y formato en el job de calidad; los formatos no reproducibles y las APIs inaccesibles permanecen visibles. `--allow-unavailable` sólo sirve para diagnóstico local de un motor que no arranque y **no se usa en CI**. Este laboratorio no está incluido en el build, paquete estático ni service worker de Auditorium; las rutas Pages de la evaluación se sirven localmente, no prueban por sí solas HTTPS o un móvil real.
 
-## Paso a AUDIO-02
+## Código y decisiones
 
-El contrato elegido es persistente local con respaldo ZIP propio. #70 incorpora alta/edición/ficha, borradores, accesibilidad, navegación y un reproductor con URLs temporales reconstruidas desde bytes persistidos. Sus criterios incluyen migración, ámbitos de biblioteca, límites, errores de cuota, reinicio/offline, exportación y restauración completa o rollback. No se preparará una implementación temporal que contradiga la conservación acordada. La investigación y el cumplimiento de ese contrato son entregas distintas.
+[Dominio de audio](../src/domain/audio.ts), [servicio local](../src/application/local-audio.ts), [respaldo completo](../src/application/complete-audio-backups.ts), [lector ZIP](../src/infrastructure/browser/stored-zip.ts) y [ADR-012](adr/012-audio-local-respaldo.md) concretan el contrato. El prototipo de AUDIO-01 permanece fuera del build y del service worker.

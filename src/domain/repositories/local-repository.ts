@@ -1,6 +1,7 @@
 import type { Catalog } from '../catalog/schemas'
 import type { LocalIdentity } from '../identity'
 import type { Library } from '../library/schemas'
+import type { AudioChange } from '../audio'
 
 export interface LocalSnapshot {
   identity: LocalIdentity
@@ -17,6 +18,7 @@ export interface LocalRepository {
 export interface SnapshotMutation<T> {
   snapshot: LocalSnapshot
   result: T
+  audio?: AudioChange
 }
 
 export interface TransactionalLocalRepository extends LocalRepository {

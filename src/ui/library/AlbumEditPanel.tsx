@@ -22,6 +22,9 @@ import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 import { personalLinksFrom } from '../../application/personal-links'
 import type { UserAlbum } from '../../domain/library/schemas'
 import { PersonalLinksEditor } from './PersonalLinksEditor'
+import { AudioEditor } from './AudioEditor'
+import { useAudioDraft } from './use-audio-draft'
+import { AudioError } from '../../domain/audio'
 import { linksDraftFrom, linksInputFrom } from './personal-links-values'
 
 interface ArtistDraft {
@@ -98,6 +101,13 @@ export function AlbumEditPanel({
   )
   const [busy, setBusy] = useState(false)
   const [coverBusy, setCoverBusy] = useState(false)
+  const [audioBusy, setAudioBusy] = useState(false)
+  const audio = useAudioDraft(
+    draftId,
+    snapshot.identity,
+    library.audio,
+    personalEntry.id,
+  )
   const [pendingRead, setPendingRead] = useState(false)
   const [conflict, setConflict] = useState(false)
   const [failure, setFailure] = useState('')
@@ -122,14 +132,14 @@ export function AlbumEditPanel({
     label: 'Datos del álbum',
     dirty:
       comparable(draft) !==
-      comparable(
-        draftFrom(expected, {
-          ...personalEntry,
-          links: expectedLinks.links,
-          preferredPlaybackLinkId: expectedLinks.preferredPlaybackLinkId,
-        }),
-      ),
-    busy: busy || coverBusy,
+        comparable(
+          draftFrom(expected, {
+            ...personalEntry,
+            links: expectedLinks.links,
+            preferredPlaybackLinkId: expectedLinks.preferredPlaybackLinkId,
+          }),
+        ) || audio.dirty,
+    busy: busy || coverBusy || audioBusy,
     pendingRead,
     ...(pendingRead || conflict
       ? { focus: () => readButton.current?.focus() }
@@ -183,6 +193,7 @@ export function AlbumEditPanel({
         setExpected(nextExpected)
         setExpectedLinks(personalLinksFrom(nextEntry))
         setDraft(draftFrom(nextExpected, nextEntry))
+        audio.reload()
         setConflict(false)
         setFailure('')
       } else onComplete()
@@ -201,7 +212,8 @@ export function AlbumEditPanel({
   }
   async function save(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    if (locked.current || coverBusy || pendingRead || conflict) return
+    if (locked.current || coverBusy || audioBusy || pendingRead || conflict)
+      return
     const year = draft.originalYear.trim()
     const genresUnchanged =
       draft.genres === (expected.album.genres?.join(', ') ?? '')
@@ -265,21 +277,31 @@ export function AlbumEditPanel({
     onBusyChange(true)
     setFailure('')
     try {
-      await library.updateAlbum(parsed.data)
+      await library.updateAlbum(
+        parsed.data,
+        audio.dirty ? audio.value : undefined,
+      )
+      audio.accept(personalEntry.id)
     } catch (error) {
       if (
-        error instanceof MusicUseCaseError &&
-        (error.code === 'outdated_album' || error.code === 'outdated_links')
+        (error instanceof MusicUseCaseError &&
+          (error.code === 'outdated_album' ||
+            error.code === 'outdated_links')) ||
+        (error instanceof AudioError &&
+          (error.code === 'conflict' || error.code === 'scope'))
       ) {
         setConflict(true)
         setFailure(
-          'Los datos del álbum, sus artistas o sus enlaces cambiaron desde que abriste el editor. Tu borrador se conserva. Cargar los datos guardados reemplazará este formulario.',
+          'Los datos del álbum, sus artistas, enlaces o archivos cambiaron desde que abriste el editor. Tu borrador se conserva. Cargar los datos guardados reemplazará este formulario.',
         )
       } else
         setFailure(
-          error instanceof LocalStorageError && error.code === 'quota_exceeded'
-            ? 'No hay espacio para guardar. El álbum anterior y tu borrador se conservan; libera espacio y vuelve a intentar.'
-            : 'No se pudieron guardar los cambios. El álbum anterior y tu borrador se conservan.',
+          error instanceof AudioError
+            ? error.message
+            : error instanceof LocalStorageError &&
+                error.code === 'quota_exceeded'
+              ? 'No hay espacio para guardar. El álbum anterior y tu borrador se conservan; libera espacio y vuelve a intentar.'
+              : 'No se pudieron guardar los cambios. El álbum anterior y tu borrador se conservan.',
         )
       onBusyChange(false)
       setBusy(false)
@@ -470,6 +492,25 @@ export function AlbumEditPanel({
             value={draft.personalLinks}
             onChange={(personalLinks) => edit({ personalLinks })}
           />
+          {library.audio ? (
+            <details className="optional-fields">
+              <summary>Archivos de audio propios</summary>
+              <AudioEditor
+                value={audio.value}
+                onChange={audio.set}
+                service={library.audio}
+                tracks={snapshot.catalog.tracks.filter(
+                  (row) => row.albumId === albumId,
+                )}
+                disabled={disabled}
+                onBusyChange={setAudioBusy}
+                outside={audio.value.outside}
+                ready={audio.ready}
+                error={audio.value.error}
+                onReload={audio.reload}
+              />
+            </details>
+          ) : null}
           <label>
             <span className="field-label">Descripción del álbum</span>
             <textarea
@@ -498,7 +539,7 @@ export function AlbumEditPanel({
             <button
               type="submit"
               className="primary-button"
-              disabled={coverBusy || conflict}
+              disabled={coverBusy || audioBusy || conflict}
             >
               Guardar cambios del álbum
             </button>

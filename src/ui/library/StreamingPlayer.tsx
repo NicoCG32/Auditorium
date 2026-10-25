@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { claimPlayback } from '../../infrastructure/browser/playback-coordinator'
 import {
   playbackEmbedUrl,
   youtubePlaybackError,
@@ -288,6 +289,10 @@ export function StreamingPlayer({
   const [open, setOpen] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const loadButton = useRef<HTMLButtonElement>(null)
+  useEffect(() => {
+    if (!open) return
+    return claimPlayback(() => setOpen(false))
+  }, [open])
   const provider = target.provider === 'spotify' ? 'Spotify' : 'YouTube'
   return (
     <div className="streaming-player" aria-label={`Conexión con ${provider}`}>

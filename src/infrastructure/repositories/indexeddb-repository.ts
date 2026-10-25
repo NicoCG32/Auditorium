@@ -1,4 +1,16 @@
 import { ZodError } from 'zod'
+import Dexie from 'dexie'
+import {
+  AudioError,
+  audioAttachmentSchema,
+  audioScope,
+  validateAudioAttachments,
+  verifyAudioFile,
+  type AudioFile,
+  type AudioLocalRepository,
+  type CompleteAudioState,
+} from '../../domain/audio'
+import { planAudioChanges, writeAudioChanges } from '../db/audio-store'
 import { catalogSchema } from '../../domain/catalog/catalog'
 import { localIdentitySchema, type LocalIdentity } from '../../domain/identity'
 import { createLibrarySchema } from '../../domain/library/library'
@@ -37,7 +49,7 @@ export interface IndexedDbOptions {
 }
 
 export class IndexedDbRepository
-  implements BackupLocalRepository, SyncLocalRepository
+  implements BackupLocalRepository, SyncLocalRepository, AudioLocalRepository
 {
   private readonly database: AuditoriumDatabase
   private readonly createId: () => string
@@ -269,6 +281,8 @@ export class IndexedDbRepository
         this.database.tables,
         async () => {
           const before = await this.readInsideTransaction()
+          const storedAudio = await this.database.audioAttachments.toArray()
+          let audioPlan: ReturnType<typeof planAudioChanges>
           let mutation: SnapshotMutation<T>
           let next: LocalSnapshot
           try {
@@ -306,6 +320,7 @@ export class IndexedDbRepository
               localUserId: identity.userId,
             }).parse(mutation.snapshot.library)
             next = { identity, catalog, library }
+            audioPlan = planAudioChanges(next, storedAudio, mutation.audio)
           } catch (error) {
             operationFailure =
               error instanceof Error || error instanceof ZodError
@@ -315,6 +330,7 @@ export class IndexedDbRepository
           }
           try {
             await writeSnapshotChanges(this.database, before, next)
+            await writeAudioChanges(this.database, audioPlan)
           } catch (error) {
             throw asLocalStorageError(error)
           }
@@ -332,20 +348,53 @@ export class IndexedDbRepository
   async restoreEmpty(
     snapshotInput: LocalSnapshot,
     expectedIdentityInput: LocalIdentity,
+    files: AudioFile[] = [],
+    signal?: AbortSignal,
   ): Promise<LocalSnapshot> {
     // Validar antes de abrir o inicializar el destino.
     const next = localSnapshotSchema.parse(snapshotInput)
     const expected = localIdentitySchema.parse(expectedIdentityInput)
+    validateAudioAttachments(
+      next,
+      files.map((file) => file.attachment),
+    )
+    if (
+      files.some(
+        (file) =>
+          !(file.bytes instanceof Uint8Array) ||
+          file.bytes.byteLength !== file.attachment.size,
+      )
+    )
+      throw new AudioError(
+        'integrity',
+        'El tamaño de los archivos no coincide con sus metadatos.',
+      )
+    const preparedFiles = files.map((file) => ({
+      attachment: audioAttachmentSchema.parse(file.attachment),
+      bytes: new Uint8Array(file.bytes),
+    }))
+    for (const file of preparedFiles) await verifyAudioFile(file, signal)
+    signal?.throwIfAborted()
     await this.openDatabase()
+    let stopAbort = () => {}
     try {
       return await this.database.transaction(
         'rw',
         this.database.tables,
         async () => {
+          const transaction = Dexie.currentTransaction
+          const abort = () => {
+            if (transaction.active) transaction.abort()
+          }
+          signal?.addEventListener('abort', abort, { once: true })
+          stopAbort = () => signal?.removeEventListener('abort', abort)
+          signal?.throwIfAborted()
           const before = await this.readInsideTransaction()
           if (
             !isEmptySnapshot(before) ||
-            (await this.database.metadata.count()) !== 1
+            (await this.database.metadata.count()) !== 1 ||
+            (await this.database.audioAttachments.count()) !== 0 ||
+            (await this.database.audioFiles.count()) !== 0
           )
             throw new BackupError(
               'not_empty',
@@ -364,13 +413,134 @@ export class IndexedDbRepository
             ...next.identity,
           })
           await writeSnapshotChanges(this.database, before, next)
+          if (preparedFiles.length) {
+            await this.database.audioFiles.bulkAdd(
+              preparedFiles.map(({ attachment, bytes }) => ({
+                scope: attachment.scope,
+                id: attachment.id,
+                bytes,
+              })),
+            )
+            await this.database.audioAttachments.bulkAdd(
+              preparedFiles.map((file) => file.attachment),
+            )
+          }
+          signal?.throwIfAborted()
           return next
         },
       )
     } catch (error) {
+      if (signal?.aborted)
+        throw new LocalStorageError(
+          'aborted',
+          'La restauración se canceló. La biblioteca anterior se conserva.',
+          error,
+        )
       if (error instanceof BackupError) throw error
       throw asLocalStorageError(error)
+    } finally {
+      stopAbort()
     }
+  }
+
+  async readAudioAttachments() {
+    await this.open()
+    return this.database.transaction('r', this.database.tables, async () =>
+      validateAudioAttachments(
+        await this.readInsideTransaction(),
+        await this.database.audioAttachments.toArray(),
+      ),
+    )
+  }
+  async readAudioFile(id: string): Promise<AudioFile> {
+    await this.open()
+    return this.database.transaction('r', this.database.tables, async () => {
+      const snapshot = await this.readInsideTransaction()
+      const scope = audioScope(snapshot.identity)
+      const row = await this.database.audioAttachments.get([scope, id])
+      if (!row)
+        throw new AudioError(
+          'missing',
+          'El archivo no está disponible en esta biblioteca local. Vuelve a seleccionarlo o restaura un respaldo completo.',
+        )
+      const attachment = audioAttachmentSchema.parse(row)
+      validateAudioAttachments(snapshot, [attachment])
+      const file = await this.database.audioFiles.get([scope, id])
+      if (!file || !(file.bytes instanceof Uint8Array))
+        throw new AudioError(
+          'missing',
+          'Archivo no disponible en este dispositivo. Vuelve a seleccionarlo o restaura un respaldo completo.',
+        )
+      return { attachment, bytes: file.bytes }
+    })
+  }
+  async readCompleteAudio(): Promise<CompleteAudioState> {
+    await this.open()
+    return this.database.transaction('r', this.database.tables, async () => {
+      const snapshot = await this.readInsideTransaction()
+      const attachments = validateAudioAttachments(
+        snapshot,
+        await this.database.audioAttachments.toArray(),
+      )
+      const rows = await this.database.audioFiles.toArray()
+      if (rows.length !== attachments.length)
+        throw new AudioError(
+          'integrity',
+          'Hay archivos ausentes o sin asociación. Resuelve el audio local antes de exportar un respaldo completo.',
+        )
+      const files = attachments.map((attachment) => {
+        const row = rows.find(
+          (file) =>
+            file.scope === attachment.scope && file.id === attachment.id,
+        )
+        if (!row || !(row.bytes instanceof Uint8Array))
+          throw new AudioError(
+            'missing',
+            'Falta un archivo de audio. No se puede generar un respaldo completo; vuelve a seleccionarlo.',
+          )
+        return { attachment, bytes: row.bytes }
+      })
+      return { snapshot, files }
+    })
+  }
+  async restoreCompleteAudio(
+    state: CompleteAudioState,
+    expected: LocalIdentity,
+    signal?: AbortSignal,
+  ) {
+    return this.restoreEmpty(state.snapshot, expected, state.files, signal)
+  }
+  async clearLocalAudio(expected: LocalIdentity, signal?: AbortSignal) {
+    signal?.throwIfAborted()
+    await this.open()
+    let stopAbort = () => {}
+    try {
+      await this.database.transaction('rw', this.database.tables, async () => {
+        const transaction = Dexie.currentTransaction
+        const abort = () => {
+          if (transaction.active) transaction.abort()
+        }
+        signal?.addEventListener('abort', abort, { once: true })
+        stopAbort = () => signal?.removeEventListener('abort', abort)
+        signal?.throwIfAborted()
+        const snapshot = await this.readInsideTransaction()
+        if (canonical(snapshot.identity) !== canonical(expected))
+          throw new AudioError(
+            'scope',
+            'La identidad local cambió. Vuelve a abrir los respaldos antes de eliminar audio.',
+          )
+        const scope = audioScope(snapshot.identity)
+        await this.database.audioAttachments
+          .where('scope')
+          .equals(scope)
+          .delete()
+        await this.database.audioFiles.where('scope').equals(scope).delete()
+        signal?.throwIfAborted()
+      })
+    } finally {
+      stopAbort()
+    }
+    this.notifyChanged()
   }
 
   close(): void {
@@ -414,6 +584,18 @@ export class IndexedDbRepository
           'La biblioteca cambió durante la sincronización. Vuelve a intentar.',
         )
       await this.database.metadata.put({ key: IDENTITY_KEY, ...next.identity })
+      if (
+        audioScope(before.identity) !== audioScope(next.identity) &&
+        (await this.database.audioFiles.count())
+      )
+        throw new AudioError(
+          'scope',
+          'Esta biblioteca tiene audio local. Guarda un respaldo completo y resuelve sus archivos antes de adoptar otra identidad.',
+        )
+      validateAudioAttachments(
+        next,
+        await this.database.audioAttachments.toArray(),
+      )
       await writeSnapshotChanges(this.database, before, next)
       await this.database.syncCheckpoint.put(nextCheckpoint)
     })

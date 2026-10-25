@@ -223,7 +223,9 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
+  await page
+    .getByRole('button', { name: 'Descargar respaldo JSON sin audio' })
+    .click()
   const path = await (await download).path()
   if (!path) throw new Error('Missing acceptance backup')
   const backup = parseBackupText(await readFile(path, 'utf8'))

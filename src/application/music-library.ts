@@ -72,6 +72,14 @@ import {
   sameAlbumEditExpected,
   updateAlbumInputSchema,
 } from './album-edit'
+import { LocalAudio } from './local-audio'
+import {
+  AudioError,
+  bindAudioDraft,
+  hasAudioRepository,
+  prepareAudioDraft,
+  type AudioDraft,
+} from '../domain/audio'
 
 export class MusicUseCaseError extends Error {
   readonly code:
@@ -113,6 +121,7 @@ export type RegisterAlbumResult =
   | { status: 'created'; album: Album; userAlbum: UserAlbum }
 
 export class MusicLibrary {
+  readonly audio: LocalAudio | undefined
   private readonly repository: TransactionalLocalRepository
   private readonly createId: () => string
   private readonly now: () => Date
@@ -121,8 +130,20 @@ export class MusicLibrary {
     options: { createId?: () => string; now?: () => Date } = {},
   ) {
     this.repository = repository
+    this.audio = hasAudioRepository(repository)
+      ? new LocalAudio(repository)
+      : undefined
     this.createId = options.createId ?? (() => globalThis.crypto.randomUUID())
     this.now = options.now ?? (() => new Date())
+  }
+
+  private async prepareAudio(draft: AudioDraft | undefined) {
+    if (draft && !this.audio)
+      throw new AudioError(
+        'unsupported',
+        'Este almacenamiento no permite guardar audio local.',
+      )
+    return prepareAudioDraft(draft)
   }
 
   private addEntry(snapshot: LocalSnapshot, albumId: string): UserAlbum {
@@ -230,13 +251,14 @@ export class MusicLibrary {
     return result
   }
 
-  async updateAlbum(input: unknown): Promise<Album> {
+  async updateAlbum(input: unknown, audioDraft?: AudioDraft): Promise<Album> {
     const request = updateAlbumInputSchema.parse(input)
+    const preparedAudio = await this.prepareAudio(audioDraft)
     return this.repository.mutate((snapshot) => {
       const album = snapshot.catalog.albums.find(
         (row) => row.id === request.albumId,
       )
-      const active = snapshot.library.userAlbums.some(
+      const active = snapshot.library.userAlbums.find(
         (entry) =>
           entry.albumId === request.albumId &&
           entry.userId === snapshot.identity.userId &&
@@ -343,18 +365,26 @@ export class MusicLibrary {
           }),
         ),
       )
-      return { snapshot, result: updated }
+      return {
+        snapshot,
+        result: updated,
+        ...(preparedAudio
+          ? { audio: bindAudioDraft(snapshot, active.id, preparedAudio) }
+          : {}),
+      }
     })
   }
 
   async registerAlbum(
     input: unknown,
     acknowledgedCandidates: string[] = [],
+    audioDraft?: AudioDraft,
   ): Promise<RegisterAlbumResult> {
     const request: CreateAlbumInput = {
       ...manualAlbumInputSchema.parse(input),
       addToLibrary: true,
     }
+    const preparedAudio = await this.prepareAudio(audioDraft)
     const acknowledged = new Set(
       acknowledgedCandidates.map((id) => entityIdSchema.parse(id)),
     )
@@ -372,6 +402,16 @@ export class MusicLibrary {
         )
       return {
         snapshot,
+        ...(preparedAudio
+          ? {
+              audio: bindAudioDraft(
+                snapshot,
+                created.userAlbum.id,
+                preparedAudio,
+                'append',
+              ),
+            }
+          : {}),
         result: {
           status: 'created',
           album: created.album,
@@ -385,8 +425,10 @@ export class MusicLibrary {
     albumId: unknown,
     linksInput?: unknown,
     expectedInput?: unknown,
+    audioDraft?: AudioDraft,
   ): Promise<UserAlbum> {
     const id = entityIdSchema.parse(albumId)
+    const preparedAudio = await this.prepareAudio(audioDraft)
     const input =
       linksInput === undefined
         ? undefined
@@ -412,7 +454,21 @@ export class MusicLibrary {
           'Los enlaces del álbum seleccionado cambiaron. Conservamos tu formulario; vuelve a revisar la coincidencia.',
         )
       const entry = this.addEntry(snapshot, id)
-      if (!input?.links.length) return { snapshot, result: entry }
+      if (!input?.links.length)
+        return {
+          snapshot,
+          result: entry,
+          ...(preparedAudio
+            ? {
+                audio: bindAudioDraft(
+                  snapshot,
+                  entry.id,
+                  preparedAudio,
+                  'append',
+                ),
+              }
+            : {}),
+        }
       const links = [...(entry.links ?? [])]
       const mappedIds = new Map<string, string>()
       for (const link of input.links) {
@@ -449,7 +505,20 @@ export class MusicLibrary {
       snapshot.library.userAlbums[
         snapshot.library.userAlbums.findIndex((row) => row.id === entry.id)
       ] = result
-      return { snapshot, result }
+      return {
+        snapshot,
+        result,
+        ...(preparedAudio
+          ? {
+              audio: bindAudioDraft(
+                snapshot,
+                entry.id,
+                preparedAudio,
+                'append',
+              ),
+            }
+          : {}),
+      }
     })
   }
 

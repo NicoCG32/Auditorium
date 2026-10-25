@@ -2,6 +2,8 @@
 
 PLAY-01 #68 · 22 de octubre de 2026. La ficha permite cargar los reproductores oficiales de Spotify y YouTube desde un enlace personal de escucha. Se mantiene el registro manual y la apertura del servicio externo.
 
+AUDIO-02 añade [archivos propios persistentes](AUDIO_LOCAL.md). Ambos tipos de fuente comparten un solo reproductor activo: cargar audio local retira el marco de streaming, y cargar streaming pausa y libera el audio local. Preparar una fuente no modifica la experiencia ni reproduce automáticamente.
+
 ## Recorrido
 
 1. Abre un álbum de tu Biblioteca. En **Enlace para escuchar**, se selecciona el favorito guardado o el primer enlace de escucha. Puedes elegir otro sin cambiar el favorito persistido.

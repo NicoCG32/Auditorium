@@ -61,4 +61,4 @@ Supabase admite documentos 3 y 4. Una escritura nueva envía 4; después de actu
 
 [LINK-01 #64](https://github.com/NicoCG32/Auditorium/issues/64) cubre contratos, protocolos, duplicados, pertenencia del favorito, guardado conjunto, conflictos, reapertura, migración DB6→DB7, respaldo/restauración y retirada/restauración. Los recorridos de navegador comprueban varios servicios, un proveedor genérico, cancelación, URL inválida, cambio y retirada del favorito y accesibilidad. Las pruebas SQL comprueban aislamiento, revisiones, reintentos, versiones 3/4 y rechazo de downgrade con cuentas ficticias revertidas íntegramente.
 
-Clasificación (UX-05), edición de referencia (UX-06) y reproductores (PLAY-01) tienen sus propias guías y contratos. Los adjuntos de audio conservan la investigación AUDIO-01 y posterior implementación AUDIO-02.
+Clasificación (UX-05), edición de referencia (UX-06) y reproductores (PLAY-01) tienen sus propias guías y contratos. Los [adjuntos de audio](AUDIO_LOCAL.md) tienen persistencia por dispositivo y respaldo ZIP propio en AUDIO-02; sus descriptores no se convierten en enlaces personales ni se sincronizan.

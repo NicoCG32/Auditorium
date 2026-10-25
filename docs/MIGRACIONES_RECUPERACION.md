@@ -1,5 +1,7 @@
 # Migraciones, persistencia y recuperación
 
+DB10/nativa100 añade las tablas locales de audio. Su barrera de actualización valida el snapshot y todos los documentos del checkpoint con el schema actual de DB9, incluidas las referencias opcionales de nota; no los degrada a un lector heredado. Una incoherencia conserva la versión y los registros previos. Los adjuntos anteriores a DB10 empiezan vacíos; las recuperaciones JSON no contienen audio. [Contrato de audio y ZIP](AUDIO_LOCAL.md).
+
 El incremento UX-01 usa IndexedDB v5 (nativa 50), con esquemas históricos v1 a v4. v2 incorpora ejemplares, v3 deseos y v4 la referencia opcional `Album.catalogReference`. v5 mantiene las trece tablas e índices y establece una barrera de compatibilidad para país de artista, géneros y portada local. No cambia identidad, IDs, notas, valoraciones, ediciones o pistas ni completa metadatos mediante red. El [respaldo JSON v3](RESPALDOS_JSON.md) se versiona por separado y admite importar los contratos v1/v2 estrictos.
 
 ## Antes y durante una actualización

@@ -100,7 +100,7 @@ test.each(legacyReleaseTypeSchema.options)(
         name: 'classification',
         factory,
       })
-      expect(after.version).toBe(90)
+      expect(after.version).toBe(100)
       for (const [name, rows] of Object.entries(before.rows))
         if (name !== 'albums' && name !== 'syncCheckpoint')
           expect(after.rows[name]).toEqual(rows)

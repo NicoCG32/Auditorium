@@ -1,5 +1,7 @@
 # Modelo de dominio
 
+El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
+
 UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
 
 LINK-01 implementa los [enlaces personales](ENLACES_PERSONALES.md): valores identificados contenidos en `UserAlbum.links` y un único favorito opcional de escucha. Son independientes de catálogo, nota y adquisición; la guía enlazada incluye su diagrama e invariantes.
@@ -8,7 +10,7 @@ Este documento describe los contratos de Auditorium en el incremento en revisió
 
 UX-03 define por separado los [contratos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). LINK-01 concreta enlaces y favorito; UX-05 implementa la [clasificación independiente](CLASIFICACION_ALBUM.md). Los adjuntos y la referencia de nota a edición conservan su seguimiento posterior.
 
-El refinamiento propuesto conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Mi colección agrupará ejemplares físicos y compras digitales con filtros diferenciados; una edición puede conocerse sin poseerse. La referencia y el cambio de navegación aún no están implementados.
+La implementación conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Una edición puede conocerse sin poseerse; una fuente de reproducción no genera una adquisición. La navegación y la referencia están implementadas; el refinamiento adicional de Mi colección conserva su seguimiento propio.
 
 ## Alcance y vocabulario
 
@@ -412,3 +414,31 @@ Retirar la entrada la oculta de la biblioteca activa, pero conserva todo el ejem
 - [Listas y ediciones](LISTAS_EDICIONES.md), [valoraciones de pistas](CALIFICACIONES_PISTAS.md), [ejemplares](EJEMPLARES.md) y [deseos](DESEOS_COMPRA.md): comportamiento de cada editor.
 - [ADR-004: retirada personal](adr/004-retirada-personal.md) y [ADR-005: identidad y respaldo](adr/005-identidad-respaldo.md): decisiones de conservación y transferencia.
 - [Pruebas de catálogo](../src/domain/catalog/catalog.test.ts), [biblioteca](../src/domain/library/library.test.ts), [ejemplares](../src/domain/library/owned-items.test.ts), [deseos](../src/domain/library/purchase-wishes.test.ts) y [casos de uso](../src/application/music-library.test.ts): ejemplos ejecutables de invariantes.
+
+## Fuente personal de audio
+
+Un adjunto pertenece a UserAlbum y opcionalmente a una Track del mismo Album. Es una fuente personal de reproducción; no genera Release, OwnedItem, escucha ni calificación. En un estado íntegro cada descriptor identifica una copia binaria del mismo ámbito. La ausencia del archivo se presenta al cargar; no elimina el álbum. [Contrato y recuperación](AUDIO_LOCAL.md).
+
+```mermaid
+erDiagram
+    USER_ALBUM ||--o{ AUDIO_ATTACHMENT : agrupa
+    TRACK o|--o{ AUDIO_ATTACHMENT : referencia_opcional
+    AUDIO_ATTACHMENT ||--|| AUDIO_FILE : identifica
+    AUDIO_ATTACHMENT {
+        string scope PK
+        uuid id PK
+        uuid userAlbumId FK
+        uuid trackId FK
+        string name
+        int size
+        string mime
+        string container
+        float duration
+        string sha256
+    }
+    AUDIO_FILE {
+        string scope PK
+        uuid id PK
+        bytes bytes
+    }
+```

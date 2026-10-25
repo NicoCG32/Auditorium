@@ -167,7 +167,9 @@ async function exportText(page: Page) {
   await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloaded = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
+  await page
+    .getByRole('button', { name: 'Descargar respaldo JSON sin audio' })
+    .click()
   const path = await (await downloaded).path()
   if (!path) throw new Error('No se obtuvo el respaldo ficticio.')
   return readFile(path, 'utf8')

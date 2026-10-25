@@ -102,7 +102,7 @@ test('exportación descarga snapshot completo y vigente sin modificar datos', as
   })
   const before = await repository.readSnapshot()
   fireEvent.click(
-    screen.getByRole('button', { name: 'Descargar respaldo JSON' }),
+    screen.getByRole('button', { name: 'Descargar respaldo JSON sin audio' }),
   )
   await screen.findByText(/Descarga de respaldo iniciada/)
   expect(download).toHaveBeenCalledTimes(1)
@@ -120,12 +120,12 @@ test('fallo de descarga conserva biblioteca y permite reintentar', async () => {
     })
     .mockImplementation(() => undefined)
   fireEvent.click(
-    screen.getByRole('button', { name: 'Descargar respaldo JSON' }),
+    screen.getByRole('button', { name: 'Descargar respaldo JSON sin audio' }),
   )
   await screen.findByRole('alert')
   expect(await repository.readSnapshot()).toEqual(before)
   fireEvent.click(
-    screen.getByRole('button', { name: 'Descargar respaldo JSON' }),
+    screen.getByRole('button', { name: 'Descargar respaldo JSON sin audio' }),
   )
   await screen.findByText(/Descarga de respaldo iniciada/)
 })
@@ -254,7 +254,7 @@ test('lectura fallida después del commit muestra recibo con identidad adoptada;
   openLibraryOptions()
   expect(screen.getByRole('button', { name: 'Respaldos' })).toBeDisabled()
   expect(
-    screen.getByRole('button', { name: 'Descargar respaldo JSON' }),
+    screen.getByRole('button', { name: 'Descargar respaldo JSON sin audio' }),
   ).toBeDisabled()
   const retry = screen.getByRole('button', {
     name: 'Reintentar lectura tras restauración',

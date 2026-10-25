@@ -324,5 +324,5 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
     revision: 2,
     base: snapshot,
   })
-  expect(current.database.verno).toBe(9)
+  expect(current.database.verno).toBe(10)
 })

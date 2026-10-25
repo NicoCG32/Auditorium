@@ -14,7 +14,7 @@ import {
   DATABASE_VERSION,
   SCHEMA_V1,
   SCHEMA_V3,
-  SCHEMA_V6,
+  SCHEMA_V10,
 } from '../db/database'
 import { asLocalStorageError, LocalStorageError } from '../db/errors'
 import {
@@ -80,7 +80,7 @@ describe('identidad persistente', () => {
     })
     expect(database.verno).toBe(DATABASE_VERSION)
     expect(database.tables.map((table) => table.name).sort()).toEqual(
-      Object.keys(SCHEMA_V6).sort(),
+      Object.keys(SCHEMA_V10).sort(),
     )
     const snapshot = await repository.readSnapshot()
     expect(snapshot.identity).toEqual(identity)

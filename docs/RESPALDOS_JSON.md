@@ -1,12 +1,12 @@
 # Respaldos JSON y restauración
 
-«Respaldos» permite descargar la biblioteca completa y restaurarla en un destino vacío. Todo se procesa localmente; no se suben archivos a un servidor. El JSON incluye notas y valoraciones personales.
+«Respaldos» permite descargar la biblioteca musical en JSON y restaurarla en un destino vacío. El audio y sus descriptores locales se trasladan únicamente mediante el [respaldo completo ZIP](AUDIO_LOCAL.md); el JSON conserva su límite y formato propios. Todo se procesa localmente; no se suben archivos a un servidor. El JSON incluye notas y valoraciones personales.
 
 Los archivos generados con nombre `auditorium-*.json` se excluyen del control de versiones. Guarda los respaldos fuera del repositorio público.
 
 ## Archivo
 
-El contrato vigente exporta `format: "auditorium-backup"`, `schemaVersion: 6`, `exportedAt` UTC y `data` con identidad, catálogo y biblioteca. La versión del archivo es independiente de la versión física de IndexedDB, actualmente v9 (nativa 90). El formato6 añade la edición de referencia opcional de la nota, como explica [Mi experiencia](MI_EXPERIENCIA.md). El formato5 separó clasificación del álbum, como explica [su guía](CLASIFICACION_ALBUM.md). El formato4 añadió enlaces personales y favorito a los datos de formato 3, que incluye las referencias de catálogo, los géneros del álbum, el país de los artistas y las portadas locales opcionales.
+El contrato vigente exporta `format: "auditorium-backup"`, `schemaVersion: 6`, `exportedAt` UTC y `data` con identidad, catálogo y biblioteca. La versión del archivo es independiente de la versión física de IndexedDB, actualmente v10 (nativa 100). El formato6 añade la edición de referencia opcional de la nota, como explica [Mi experiencia](MI_EXPERIENCIA.md). El formato5 separó clasificación del álbum, como explica [su guía](CLASIFICACION_ALBUM.md). El formato4 añadió enlaces personales y favorito a los datos de formato 3, que incluye las referencias de catálogo, los géneros del álbum, el país de los artistas y las portadas locales opcionales.
 
 Se incluyen todos los IDs y relaciones: artistas, álbumes y créditos, pistas y variantes, lista original, ediciones y apariciones, entradas personales activas/retiradas, escucha, fechas, notas, ejemplares, deseos y ratings. Una portada local JPEG/PNG se incluye como data URL en `Album.coverImage`; una URL remota conserva sólo el enlace, sin descargar su binario. No se incluyen índices derivados, claves técnicas de metadata, credenciales, solicitudes o resultados de recomendaciones. La clave propia de Groq/Gemini existe sólo en memoria y nunca forma parte del archivo. Los IDs y notas literales de un respaldo exportado válido se conservan al restaurar; el orden de pistas continúa determinado por disco/posición.
 
@@ -24,7 +24,7 @@ El selector solo se habilita si no hay datos musicales. Una biblioteca sin álbu
 
 ## Identidad y escritura atómica
 
-El destino debe estar vacío en todas las tablas musicales y conservar únicamente su identidad inicial. `BackupLocalRepository.restoreEmpty(snapshot, expectedIdentity)` vuelve a validar el snapshot antes de abrir el destino y comprueba vacío/identidad dentro de la transacción de escritura. Metadata ajena, una alta concurrente o un cambio de identidad desde la preparación impiden restaurar sin modificar datos.
+El destino debe estar vacío en todas las tablas musicales y en ambas tablas de audio, conservando únicamente su identidad inicial en metadata. La comprobación incluye binarios o descriptores huérfanos; restaurar un JSON no los borra. `BackupLocalRepository.restoreEmpty(snapshot, expectedIdentity)` vuelve a validar el snapshot antes de abrir el destino y comprueba vacío/identidad dentro de la transacción de escritura. Metadata ajena, una alta concurrente o un cambio de identidad desde la preparación impiden restaurar sin modificar datos.
 
 La identidad del archivo, incluidos UUID y fecha de creación, se adopta junto con todas sus relaciones en la misma transacción. Se derivan los índices locales al escribir. No se generan IDs de reemplazo ni se reasignan propietarios: al reabrir, la identidad corresponde a las entradas restauradas y estas quedan visibles. Las mutaciones musicales normales siguen sin poder cambiar identidad.
 

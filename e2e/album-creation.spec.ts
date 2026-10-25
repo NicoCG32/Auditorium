@@ -88,7 +88,9 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
   await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
-  await page.getByRole('button', { name: 'Descargar respaldo JSON' }).click()
+  await page
+    .getByRole('button', { name: 'Descargar respaldo JSON sin audio' })
+    .click()
   const file = await (await download).path()
   const snapshot = parseBackupText(await readFile(file, 'utf8')).data
   expect(snapshot.catalog.albums).toHaveLength(1)

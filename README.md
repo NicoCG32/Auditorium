@@ -1,6 +1,6 @@
 # Auditorium
 
-La [evaluación de audio local](docs/AUDIO_LOCAL.md) concreta la conservación en este dispositivo, los formatos probados y el respaldo completo propuesto para AUDIO-02. Su prototipo es aislado; los adjuntos todavía no están incorporados a la aplicación.
+El [audio personal persistente](docs/AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
 
 La [reproducción desde enlaces](docs/REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](docs/PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 
@@ -18,7 +18,7 @@ La [web/PWA de Auditorium](https://nicocg32.github.io/Auditorium/) se publica me
 
 La versión de desarrollo en main incorpora [integraciones opcionales](docs/INTEGRACIONES_OPCIONALES.md): búsqueda y selección de referencias de Wikidata al añadir álbumes, y recomendaciones de escucha o revaloración mediante Groq o Gemini con clave propia conservada sólo en memoria. El registro manual sigue disponible sin servicios ni cuentas. Las recomendaciones no cambian tus valoraciones; las referencias de catálogo se incluyen en los respaldos. El mismo incremento añade [edición de álbumes](docs/EDICION_CATALOGO.md), géneros, país de origen de los artistas y portadas automáticas por URL o archivo local JPEG/PNG. Estas capacidades pertenecen al código de este incremento y no al ZIP ni al tag de la release v1.0.0; Pages publica las revisiones validadas de main.
 
-La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Mi colección. Navegación, enlaces personales, clasificación, experiencia y reproducción tienen implementación y guías propias. El audio local conserva su evaluación e implementación separadas.
+La [propuesta de experiencia UX-03](docs/EXPERIENCIA_USUARIO.md), con [contratos](docs/CONTRATOS_EXPERIENCIA.md) y [bocetos navegables](docs/prototipos/experiencia/index.html), organiza el siguiente trabajo en Biblioteca, Añadir álbum, Calificaciones y Mi colección. Navegación, enlaces personales, clasificación, experiencia y reproducción tienen implementación y guías propias. El audio local dispone de conservación por dispositivo y respaldo completo propio.
 
 ## Desarrollo local
 

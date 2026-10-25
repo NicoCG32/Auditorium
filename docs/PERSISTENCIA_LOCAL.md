@@ -1,6 +1,6 @@
-# Persistencia local — esquemas v1 a v8
+# Persistencia local — esquemas v1 a v10
 
-El esquema vigente es v8, versión nativa80: separa clasificación e índice de álbum y convierte todos los documentos del checkpoint. [Compatibilidad y reversión](CLASIFICACION_ALBUM.md#migración-y-compatibilidad). La evolución v6 añade la tabla técnica `syncCheckpoint`, vacía para el uso sin cuenta, sin transformar las trece tablas e identidades musicales de v1–v5. Las cachés conectadas se separan por proyecto y cuenta. La [guía de sincronización](SINCRONIZACION_SUPABASE.md) documenta los checkpoints y la [ADR-011](adr/011-supabase-sincronizacion.md) justifica esta evolución. Los apartados v5 siguientes conservan la descripción de sus tablas musicales.
+El esquema vigente es v10, versión nativa100, con dieciséis tablas. [Audio local](AUDIO_LOCAL.md) añade dos stores binarios/metadatos, vacíos para las bibliotecas anteriores; valida el snapshot y los checkpoints actuales antes de actualizar. DB9 conserva la referencia opcional de la nota. DB8 separa clasificación e índice de álbum. Las catorce tablas anteriores mantienen sus registros e índices. Las cachés conectadas continúan separadas por proyecto y cuenta; los apartados v5 siguientes conservan su descripción histórica.
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 

@@ -5,6 +5,98 @@ import { expect, test, type BrowserContext, type Page } from '@playwright/test'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { fixtureId } from '../src/domain/catalog/catalog.fixture'
 import { remoteLibrarySchema, type RemoteLibrary } from '../src/domain/sync'
+import {
+  audioInventory,
+  audioName,
+  restoreAudio,
+} from './helpers/audio-fixture'
+
+test('audio queda en su cuenta y dispositivo; la sincronización sólo transfiere la biblioteca musical', async ({
+  page,
+  context,
+  browser,
+}) => {
+  const state = new Map<string, RemoteLibrary>(),
+    uploads: string[] = []
+  await mock(context, state)
+  context.on('request', (request) => {
+    if (new URL(request.url()).pathname.endsWith('/save_library_snapshot'))
+      uploads.push(request.postData() ?? '')
+  })
+  await login(page)
+  const source = await restoreAudio(page),
+    database = `auditorium-account:auditorium-test.supabase.co:${userId}`
+  const before = await audioInventory(page, database)
+  expect(before.files).toHaveLength(1)
+  await accountPage(page)
+  await page
+    .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+    .click()
+  await expect
+    .poll(() => state.get(userId)?.snapshot)
+    .toEqual(source.fixture.data)
+  expect(uploads.length).toBeGreaterThan(0)
+  for (const body of uploads) {
+    expect(body).not.toContain(audioName)
+    expect(body).not.toContain(source.manifest.attachments[0]!.sha256)
+    expect(body).not.toContain('audioAttachments')
+    expect(body).not.toContain('audioFiles')
+  }
+  const otherDevice = await browser.newContext()
+  try {
+    await mock(otherDevice, state)
+    const other = await otherDevice.newPage()
+    await login(other)
+    await other
+      .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+      .click()
+    await other.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+    await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
+    await expect(
+      other.getByText('Aún no hay archivos propios asociados a este álbum.', {
+        exact: true,
+      }),
+    ).toBeVisible()
+    expect((await audioInventory(other, database)).files).toEqual([])
+  } finally {
+    await otherDevice.close()
+  }
+  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  expect((await audioInventory(page)).files).toEqual([])
+  state.set(fixtureId(902), { revision: 1, snapshot: source.fixture.data })
+  await login(page, 'other@example.invalid')
+  await page
+    .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await expect(
+    page.getByText('Aún no hay archivos propios asociados a este álbum.', {
+      exact: true,
+    }),
+  ).toBeVisible()
+  expect(
+    (
+      await audioInventory(
+        page,
+        `auditorium-account:auditorium-test.supabase.co:${fixtureId(902)}`,
+      )
+    ).files,
+  ).toEqual([])
+  await accountPage(page)
+  await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
+  await login(page)
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await expect(
+    page.getByRole('button', {
+      name: `Cargar audio: ${audioName}`,
+      exact: true,
+    }),
+  ).toBeVisible()
+  expect(await audioInventory(page, database)).toEqual(before)
+})
 
 const email = 'listener@example.invalid'
 const userId = fixtureId(901)
@@ -394,7 +486,10 @@ test('registro y recuperación limpian contraseñas y no guardan credenciales en
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloadEvent = page.waitForEvent('download')
   await page
-    .getByRole('button', { name: 'Descargar respaldo JSON', exact: true })
+    .getByRole('button', {
+      name: 'Descargar respaldo JSON sin audio',
+      exact: true,
+    })
     .click()
   const path = await (await downloadEvent).path()
   if (!path) throw new Error('Missing fictional backup')

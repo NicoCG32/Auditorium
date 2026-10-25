@@ -25,6 +25,9 @@ import { classificationLabel } from '../../domain/catalog/classification'
 import { focusFormField } from './form-focus'
 import { CoverFields } from './CoverFields'
 import { useDraftGuard, useDraftState } from '../navigation/draft-context'
+import { useAudioDraft } from './use-audio-draft'
+import { AudioEditor } from './AudioEditor'
+import { AudioError } from '../../domain/audio'
 
 interface Props {
   snapshot: LocalSnapshot
@@ -55,6 +58,8 @@ export function AlbumForm({
   )
   const [busy, setBusy] = useState(false)
   const [coverBusy, setCoverBusy] = useState(false)
+  const [audioBusy, setAudioBusy] = useState(false)
+  const audio = useAudioDraft('new-album', snapshot.identity, library.audio)
   const [offeredCover, setOfferedCover] = useDraftState<string | undefined>(
     'new-album',
     'offered-cover',
@@ -71,8 +76,9 @@ export function AlbumForm({
   useDraftGuard({
     id: 'new-album',
     label: 'Nuevo álbum',
-    dirty: JSON.stringify(values) !== JSON.stringify(emptyAlbumForm),
-    busy: busy || coverBusy,
+    dirty:
+      JSON.stringify(values) !== JSON.stringify(emptyAlbumForm) || audio.dirty,
+    busy: busy || coverBusy || audioBusy,
     pendingRead: Boolean(pending),
     ...(pending ? { focus: () => retry.current?.focus() } : {}),
     form: formRef,
@@ -153,7 +159,7 @@ export function AlbumForm({
     ) : null
   }
   async function save(acknowledge = false) {
-    if (locked.current || coverBusy || pending) return
+    if (locked.current || coverBusy || audioBusy || pending) return
     if (
       artists.length &&
       !values.catalogArtists &&
@@ -207,18 +213,23 @@ export function AlbumForm({
       const result = await library.registerAlbum(
         parsed.input,
         acknowledge ? review.map((candidate) => candidate.album.id) : [],
+        audio.dirty ? audio.value : undefined,
       )
       if (result.status === 'review') setReview(result.candidates)
       else {
         const committed = { id: result.userAlbum.id, existing: false }
+        audio.accept(result.userAlbum.id)
         setPending(committed)
         await synchronize(committed)
       }
     } catch (error) {
       setFailure(
-        error instanceof LocalStorageError && error.code === 'quota_exceeded'
-          ? 'No hay espacio para guardar. Los datos del formulario se conservan; libera espacio y vuelve a intentar.'
-          : 'No se pudo guardar el álbum. Los datos del formulario se conservan; vuelve a intentar.',
+        error instanceof AudioError
+          ? error.message
+          : error instanceof LocalStorageError &&
+              error.code === 'quota_exceeded'
+            ? 'No hay espacio para guardar. Los datos del formulario se conservan; libera espacio y vuelve a intentar.'
+            : 'No se pudo guardar el álbum. Los datos del formulario se conservan; vuelve a intentar.',
       )
     } finally {
       locked.current = false
@@ -226,7 +237,7 @@ export function AlbumForm({
     }
   }
   async function chooseCandidate(candidate: AlbumCandidate) {
-    if (locked.current || pending) return
+    if (locked.current || pending || audioBusy) return
     locked.current = true
     setBusy(true)
     setFailure('')
@@ -243,8 +254,10 @@ export function AlbumForm({
         candidate.album.id,
         linksInputFrom(values.personalLinks),
         previous ? personalLinksFrom(previous) : undefined,
+        audio.dirty ? audio.value : undefined,
       )
       const committed = { id: entry.id, existing: true }
+      audio.accept(entry.id)
       setPending(committed)
       await synchronize(committed)
     } catch (error) {
@@ -252,9 +265,12 @@ export function AlbumForm({
         error instanceof MusicUseCaseError && error.code === 'outdated_links',
       )
       setFailure(
-        error instanceof MusicUseCaseError && error.code === 'outdated_links'
+        error instanceof AudioError
           ? error.message
-          : 'No se pudo abrir o añadir el álbum seleccionado. Tu formulario se conserva; vuelve a intentar.',
+          : error instanceof MusicUseCaseError &&
+              error.code === 'outdated_links'
+            ? error.message
+            : 'No se pudo abrir o añadir el álbum seleccionado. Tu formulario se conserva; vuelve a intentar.',
       )
     } finally {
       locked.current = false
@@ -693,6 +709,23 @@ export function AlbumForm({
               </details>
             </div>
           </details>
+          {library.audio ? (
+            <details className="optional-fields">
+              <summary>Archivos de audio propios (opcional)</summary>
+              <AudioEditor
+                value={audio.value}
+                onChange={audio.set}
+                service={library.audio}
+                tracks={[]}
+                disabled={busy}
+                onBusyChange={setAudioBusy}
+                outside={audio.value.outside}
+                ready={audio.ready}
+                error={audio.value.error}
+                onReload={audio.reload}
+              />
+            </details>
+          ) : null}
           <h3 ref={saveHeading} tabIndex={-1} className="font-semibold">
             Revisar y guardar
           </h3>
@@ -791,7 +824,7 @@ export function AlbumForm({
               <button
                 type="submit"
                 className="primary-button"
-                disabled={coverBusy}
+                disabled={coverBusy || audioBusy}
               >
                 Guardar álbum
               </button>

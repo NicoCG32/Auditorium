@@ -27,6 +27,7 @@ import { AlbumReferenceLinks } from '../catalog/AlbumReferenceLinks'
 import { PersonalAlbumLinks } from './PersonalAlbumLinks'
 import { AlbumEditPanel } from './AlbumEditPanel'
 import { useNavigation } from '../navigation/navigation-context'
+import { AudioPanel } from './AudioPanel'
 
 export function AlbumSummary({
   snapshot,
@@ -247,6 +248,17 @@ export function AlbumSummary({
           </div>
         </section>
       )}
+      {library.audio ? (
+        <AudioPanel
+          key={personalEntry.id + snapshot.identity.createdAt}
+          service={library.audio}
+          snapshot={snapshot}
+          entryId={personalEntry.id}
+          blocked={busy}
+          onBusyChange={onBusyChange}
+          onCommitted={onExperienceCommitted}
+        />
+      ) : null}
       <details className="album-area" data-album-area="data">
         <summary>Datos del álbum</summary>
         <dl className="mt-5 grid gap-4 text-sm">

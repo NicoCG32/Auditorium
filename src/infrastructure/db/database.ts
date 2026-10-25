@@ -23,9 +23,11 @@ import type { IdentityRecord, StoredUserAlbum } from './records'
 import { validateRatingUpgradeCheckpoint } from './validate-rating-upgrade'
 import { migrateLegacyCheckpoint } from './migrate-classification'
 import type { SyncCheckpoint } from '../../domain/sync'
+import { syncCheckpointSchema } from '../../domain/sync'
+import type { AudioAttachment, AudioFileRecord } from '../../domain/audio'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 9
+export const DATABASE_VERSION = 10
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -64,6 +66,25 @@ export const SCHEMA_V8 = {
 } as const
 
 export const SCHEMA_V9 = { ...SCHEMA_V8 } as const
+export const SCHEMA_V10 = {
+  ...SCHEMA_V9,
+  audioAttachments: '[scope+id], scope, [scope+userAlbumId], [scope+trackId]',
+  audioFiles: '[scope+id], scope',
+} as const
+
+async function validateBeforeAudioUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local del checkpoint. Los datos se conservan.',
+    )
+  if (snapshot) localSnapshotSchema.parse(snapshot)
+  checkpoints.forEach((row) => syncCheckpointSchema.parse(row))
+}
 
 async function readUpgradeSnapshot(transaction: Transaction) {
   const rows = new Map<string, unknown[]>()
@@ -166,6 +187,8 @@ export class AuditoriumDatabase extends Dexie {
   readonly ownedItems: Table<OwnedItem, string>
   readonly purchaseWishes: Table<PurchaseWish, string>
   readonly syncCheckpoint: Table<SyncCheckpoint, string>
+  readonly audioAttachments: Table<AudioAttachment, [string, string]>
+  readonly audioFiles: Table<AudioFileRecord, [string, string]>
 
   constructor(
     name = DATABASE_NAME,
@@ -186,7 +209,14 @@ export class AuditoriumDatabase extends Dexie {
     this.version(7).stores(SCHEMA_V7).upgrade(validateBeforeSyncUpgrade)
     this.version(8).stores(SCHEMA_V8).upgrade(migrateClassification)
     this.version(9).stores(SCHEMA_V9).upgrade(validateBeforeRatingUpgrade)
+    this.version(10).stores(SCHEMA_V10).upgrade(validateBeforeAudioUpgrade)
     this.metadata = this.table<IdentityRecord, string>('metadata')
+    this.audioAttachments = this.table<AudioAttachment, [string, string]>(
+      'audioAttachments',
+    )
+    this.audioFiles = this.table<AudioFileRecord, [string, string]>(
+      'audioFiles',
+    )
     this.artists = this.table<Artist, string>('artists')
     this.albums = this.table<Album, string>('albums')
     this.albumArtists = this.table<AlbumArtist, [string, string, string]>(

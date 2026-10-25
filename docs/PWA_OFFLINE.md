@@ -1,5 +1,7 @@
 # Instalación, uso sin conexión y almacenamiento
 
+El [audio persistente de AUDIO-02](AUDIO_LOCAL.md) reside en IndexedDB DB10, fuera de Cache Storage y de la precaché. La URL Blob se reconstruye al cargarlo; no se almacena ni exporta. El navegador puede limpiar los datos del sitio: conserva los originales y un respaldo ZIP completo. El JSON y la cuenta no recuperan audio.
+
 La compilación de producción incluye un manifest y un service worker generado con Vite PWA y Workbox. No necesita cuentas, claves ni servicios externos para guardar datos.
 
 ## Primera apertura e instalación

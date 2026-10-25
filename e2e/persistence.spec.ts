@@ -14,6 +14,156 @@ import {
 import { migrateLegacyAlbum } from '../src/domain/catalog/legacy-classification'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
+import {
+  audioBackup,
+  audioInventory,
+  openBackups,
+  playPersonalAudio,
+  restoreAudio,
+} from './helpers/audio-fixture'
+
+async function audioProfile() {
+  const directory = resolve(
+      await mkdtemp(join(tmpdir(), 'auditorium-e2e-audio-')),
+    ),
+    root = resolve(tmpdir())
+  if (
+    !directory.startsWith(`${root}${sep}`) ||
+    !basename(directory).startsWith('auditorium-e2e-audio-')
+  )
+    throw new Error('Invalid temporary audio profile')
+  return directory
+}
+test('audio sobrevive a cerrar el proceso del navegador y volver offline con los mismos bytes', async () => {
+  const profile = await audioProfile()
+  let context = await chromium.launchPersistentContext(profile, {
+    headless: true,
+    baseURL: origin,
+    serviceWorkers: 'allow',
+  })
+  try {
+    const page = context.pages()[0] ?? (await context.newPage())
+    await restoreAudio(page)
+    await expect(
+      page.getByText('Aplicación preparada para usar sin conexión.', {
+        exact: true,
+      }),
+    ).toBeVisible()
+    await playPersonalAudio(page)
+    const before = await audioInventory(page),
+      url = page.url()
+    await context.close()
+    context = await chromium.launchPersistentContext(profile, {
+      headless: true,
+      baseURL: origin,
+      serviceWorkers: 'allow',
+      offline: true,
+    })
+    const reopened = context.pages()[0] ?? (await context.newPage())
+    await reopened.goto(url)
+    await expect(
+      reopened.getByRole('heading', { name: 'Eclipse', exact: true }),
+    ).toBeVisible()
+    expect(await audioInventory(reopened)).toEqual(before)
+    await expect(reopened.locator('audio')).toHaveCount(0)
+    await playPersonalAudio(reopened)
+  } finally {
+    await context.close()
+    await rm(profile, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100,
+    })
+  }
+})
+test('cerrar el proceso durante una escritura de audio recupera el estado anterior o el paquete completo', async () => {
+  const profile = await audioProfile(),
+    source = await audioBackup()
+  let context = await chromium.launchPersistentContext(profile, {
+    headless: true,
+    baseURL: origin,
+    serviceWorkers: 'allow',
+  })
+  try {
+    const page = context.pages()[0] ?? (await context.newPage())
+    await page.goto('/')
+    await expect(
+      page.getByText('Aplicación preparada para usar sin conexión.', {
+        exact: true,
+      }),
+    ).toBeVisible()
+    await openBackups(page)
+    await page.locator('#complete-audio-file').setInputFiles({
+      name: 'cierre-ficticio.zip',
+      mimeType: 'application/zip',
+      buffer: Buffer.from(source.bytes),
+    })
+    await page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/unbound-method -- Called below with the original store as this.
+      const original = IDBObjectStore.prototype.add
+      IDBObjectStore.prototype.add = function (
+        value: unknown,
+        key?: IDBValidKey,
+      ) {
+        if (this.name === 'audioAttachments') {
+          const keepAlive = () => {
+            const read = this.get('fictitious-keepalive')
+            read.onsuccess = () => keepAlive()
+          }
+          keepAlive()
+          document.documentElement.dataset.audioWrite = 'pending'
+        }
+        return key === undefined
+          ? original.call(this, value)
+          : original.call(this, value, key)
+      }
+    })
+    await page
+      .getByRole('button', {
+        name: 'Confirmar restauración completa',
+        exact: true,
+      })
+      .click()
+    await expect(page.locator('html')).toHaveAttribute(
+      'data-audio-write',
+      'pending',
+    )
+    await context.close()
+    context = await chromium.launchPersistentContext(profile, {
+      headless: true,
+      baseURL: origin,
+      serviceWorkers: 'allow',
+      offline: true,
+    })
+    const reopened = context.pages()[0] ?? (await context.newPage())
+    await reopened.goto('/')
+    await expect(
+      reopened.getByRole('button', { name: 'Añadir álbum', exact: true }),
+    ).toBeEnabled()
+    const recovered = await audioInventory(reopened)
+    const album = reopened.getByRole('button', { name: 'Eclipse', exact: true })
+    if (recovered.files.length) {
+      expect(recovered.files).toHaveLength(1)
+      expect(recovered.metadata).toHaveLength(1)
+      expect(recovered.files[0]!.sha256).toBe(
+        source.manifest.attachments[0]!.sha256,
+      )
+      await expect(album).toBeVisible()
+    } else {
+      expect(recovered.metadata).toEqual([])
+      await expect(album).toHaveCount(0)
+    }
+  } finally {
+    await context.close()
+    await rm(profile, {
+      recursive: true,
+      force: true,
+      maxRetries: 10,
+      retryDelay: 100,
+    })
+  }
+})
 
 const origin = 'http://127.0.0.1:4178'
 async function seed(
@@ -46,7 +196,10 @@ async function downloadBackup(page: Page, path: string) {
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
-    .getByRole('button', { name: 'Descargar respaldo JSON', exact: true })
+    .getByRole('button', {
+      name: 'Descargar respaldo JSON sin audio',
+      exact: true,
+    })
     .click()
   await (await downloading).saveAs(path)
   return parseBackupText(await readFile(path, 'utf8'))
@@ -87,7 +240,7 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(90)
+      expect(migrated.version).toBe(100)
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(
           name === 'albums' ? rows.map(migrateLegacyAlbum) : rows,
@@ -204,7 +357,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 90)
+        if (name === 'auditorium' && version === 100)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -232,7 +385,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(90)
+    expect(after.version).toBe(100)
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(
         name === 'albums'
