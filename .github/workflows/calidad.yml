@@ -35,8 +35,33 @@ jobs:
         run: npm run check
       - name: Preparar navegadores
         run: npx playwright install --with-deps chromium firefox webkit
+      - name: Preparar salida de audio virtual
+        run: |
+          sudo apt-get install -y --no-install-recommends pulseaudio pulseaudio-utils
+          audio_runtime="${RUNNER_TEMP}/auditorium-audio-runtime"
+          mkdir -p "$audio_runtime"
+          chmod 700 "$audio_runtime"
+          export XDG_RUNTIME_DIR="$audio_runtime"
+          unset PULSE_SERVER
+          pulseaudio --start --exit-idle-time=-1
+          export PULSE_SERVER="unix:${audio_runtime}/pulse/native"
+          pactl load-module module-null-sink sink_name=auditorium_test
+          pactl set-default-sink auditorium_test
+          pactl get-default-sink
+          echo "XDG_RUNTIME_DIR=$XDG_RUNTIME_DIR" >> "$GITHUB_ENV"
+          echo "PULSE_SERVER=$PULSE_SERVER" >> "$GITHUB_ENV"
+      - name: Verificar reproducción de audio en Firefox
+        run: npx playwright test e2e/local-audio.spec.ts --project=firefox --grep "alta con audio" --reporter=line
       - name: Verificar aceptación, accesibilidad y PWA
         run: npm run test:e2e
+      - name: Conservar diagnóstico de navegador ante fallos
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: auditorium-browser-diagnostics-${{ github.sha }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 3
       - name: Verificar prototipo aislado de proveedores sin red externa
         run: |
           node --test prototypes/media-01/media.test.mjs
@@ -54,6 +79,12 @@ jobs:
           path: release/auditorium-*/
           if-no-files-found: error
           retention-days: 7
+      - name: Cerrar salida de audio virtual
+        if: always()
+        run: |
+          if pulseaudio --check; then
+            pulseaudio --kill
+          fi
 
   pages-build:
     name: Compilar web para Pages

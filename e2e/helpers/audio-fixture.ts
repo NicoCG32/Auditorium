@@ -132,6 +132,40 @@ export async function audioInventory(page: Page, name = 'auditorium') {
   }, name)
 }
 export async function playPersonalAudio(page: Page, unsupported = false) {
+  await page.evaluate(() => {
+    const events: unknown[] = []
+    for (const type of [
+      'play',
+      'playing',
+      'pause',
+      'error',
+      'abort',
+      'emptied',
+      'loadeddata',
+      'ended',
+    ])
+      document.addEventListener(
+        type,
+        (event) => {
+          if (!(event.target instanceof HTMLMediaElement)) return
+          const audio = event.target
+          events.push({
+            type,
+            time: audio.currentTime,
+            duration: audio.duration,
+            paused: audio.paused,
+            ready: audio.readyState,
+            network: audio.networkState,
+            error: audio.error?.code,
+            reason: audio.error?.message,
+          })
+          document.documentElement.dataset.testAudioHistory = JSON.stringify(
+            events.slice(-30),
+          )
+        },
+        true,
+      )
+  })
   await page
     .getByRole('button', { name: new RegExp('^Cargar audio:') })
     .first()
@@ -166,16 +200,27 @@ export async function playPersonalAudio(page: Page, unsupported = false) {
       )
       .toBeGreaterThan(0.05)
   } catch (error) {
-    const diagnostic = await player.evaluate((audio: HTMLAudioElement) => ({
-      time: audio.currentTime,
-      duration: audio.duration,
-      paused: audio.paused,
-      ended: audio.ended,
-      ready: audio.readyState,
-      network: audio.networkState,
-      error: audio.error?.code,
-      visible: document.visibilityState,
-    }))
+    const diagnostic = await page.evaluate(() => {
+      const audio = document.querySelector('audio')
+      return {
+        audio: audio
+          ? {
+              time: audio.currentTime,
+              duration: audio.duration,
+              paused: audio.paused,
+              ended: audio.ended,
+              ready: audio.readyState,
+              network: audio.networkState,
+              error: audio.error?.code,
+            }
+          : null,
+        visible: document.visibilityState,
+        history: document.documentElement.dataset.testAudioHistory,
+        alerts: [...document.querySelectorAll('[role="alert"]')].map(
+          (node) => node.textContent,
+        ),
+      }
+    })
     throw new Error(
       'Native playback did not advance: ' + JSON.stringify(diagnostic),
       { cause: error },
@@ -197,4 +242,9 @@ export async function playPersonalAudio(page: Page, unsupported = false) {
   await expect
     .poll(() => player.evaluate((audio: HTMLAudioElement) => audio.currentTime))
     .toBeGreaterThan(0)
+  const history = await page
+    .locator('html')
+    .getAttribute('data-test-audio-history')
+  if (history?.includes('"type":"error"'))
+    console.log('Native audio event history: ' + history)
 }

@@ -233,13 +233,18 @@ export function LocalAudioPlayer({
               message: 'Audio listo. Pulsa reproducir en sus controles.',
             }))
           }}
-          onError={() => {
-            if (!active.current || active.current.url !== state.url) return
+          onError={(event) => {
+            const mediaError = event.currentTarget.error
+            if (
+              !mediaError ||
+              !active.current ||
+              active.current.url !== event.currentTarget.src
+            )
+              return
             release()
             setState({
               status: 'error',
-              message:
-                'Este navegador no pudo reproducir el formato. El archivo guardado se conserva; puedes usar otro navegador o reemplazarlo.',
+              message: `Este navegador no pudo reproducir el formato. Código ${mediaError.code}. El archivo guardado se conserva; puedes usar otro navegador o reemplazarlo.`,
             })
           }}
         />

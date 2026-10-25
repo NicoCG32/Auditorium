@@ -63,6 +63,8 @@ Las pruebas de aplicación cubren guardado conjunto, reemplazo concurrente, lím
 
 La reproducción depende del motor. La rama de diagnóstico de WebKit Windows exige un aviso de formato no reproducible y conservación de los bytes; no cuenta como reproducción exitosa. La CI Linux exige reproducción WAV real en Chromium, Firefox y WebKit. Los resultados de laboratorio que siguen no certifican un móvil físico ni Safari.
 
+La CI prepara una salida PulseAudio virtual antes de los navegadores y comprueba el avance real del reloj, pausa y búsqueda por teclado. El decodificador permanece nativo; no se acredita sonido en un altavoz físico. El [sumidero nulo](https://wiki.freedesktop.org/www/Software/PulseAudio/Documentation/User/Modules/#module-null-sink) consume audio con reloj de sistema. La [documentación de Firefox sobre entornos headless](https://firefox-source-docs.mozilla.org/media/SpeechRecognition.html) advierte de la necesidad de un servidor de audio en entornos de CI sin sesión de escritorio.
+
 ## Decisión de producto y técnica
 
 Se elige **audio persistente en este dispositivo, con respaldo propio**. La opción temporal se evaluó como alternativa de menor alcance, pero no es el contrato elegido. Seleccionar audio propio debe guardarlo localmente sólo después de validar asociación, presupuesto, decodificación y escritura. Al recargar, cerrar o reabrir, se recuperarán los adjuntos conservados por el navegador. La persistencia sigue siendo susceptible de evicción o limpieza del sitio; no sustituye el respaldo.
