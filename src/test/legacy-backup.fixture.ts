@@ -2,8 +2,9 @@ import type { LocalSnapshot } from '../domain/repositories/local-repository'
 import type { LibraryBackup } from '../domain/backup'
 
 export function legacySnapshotFixture(snapshot: LocalSnapshot) {
+  const legacy = legacySnapshotV6Fixture(snapshot)
   return {
-    ...snapshot,
+    ...legacy,
     catalog: {
       ...snapshot.catalog,
       albums: snapshot.catalog.albums.map(
@@ -27,6 +28,12 @@ export function legacySnapshotFixture(snapshot: LocalSnapshot) {
       ),
     },
   }
+}
+export function legacySnapshotV6Fixture(snapshot: LocalSnapshot) {
+  const { albumGenreRatings, ...library } = snapshot.library
+  if (albumGenreRatings.length)
+    throw new Error('Historical fixtures cannot discard genre ratings')
+  return { ...snapshot, library }
 }
 export function legacyBackupFixture(
   backup: LibraryBackup,

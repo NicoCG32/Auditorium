@@ -8,6 +8,7 @@ import { AuditoriumDatabase, SCHEMA_V8 } from '../db/database'
 import { IndexedDbRepository } from './indexeddb-repository'
 import { toStoredUserAlbum } from '../db/records'
 import { inspectNativeStorage } from '../../test/historical-storage.fixture'
+import { legacySnapshotV6Fixture } from '../../test/legacy-backup.fixture'
 
 test.each([
   'valid',
@@ -22,24 +23,25 @@ test.each([
   async (damage) => {
     const factory = new IDBFactory(),
       name = `rating-${damage}`,
-      snapshot = makeBackup().data
+      snapshot = makeBackup().data,
+      historical = legacySnapshotV6Fixture(snapshot)
     const checkpoint = {
       key: 'cloud',
       revision: 8,
-      base: structuredClone(snapshot),
+      base: structuredClone(historical),
       pending: {
         operationId: fixtureId(99000),
         expectedRevision: 8,
-        snapshot: structuredClone(snapshot),
-        localSnapshot: structuredClone(snapshot),
+        snapshot: structuredClone(historical),
+        localSnapshot: structuredClone(historical),
       },
       recovery: {
-        local: structuredClone(snapshot),
-        remote: structuredClone(snapshot),
+        local: structuredClone(historical),
+        remote: structuredClone(historical),
       },
     }
     const targets = {
-      rows: snapshot,
+      rows: historical,
       base: checkpoint.base,
       pendingSnapshot: checkpoint.pending.snapshot,
       pendingLocal: checkpoint.pending.localSnapshot,
@@ -55,10 +57,10 @@ test.each([
     await old.open()
     await old.transaction('rw', old.tables, async () => {
       for (const [table, rows] of Object.entries({
-        ...snapshot.catalog,
-        ...snapshot.library,
-        metadata: [{ key: 'local_identity', ...snapshot.identity }],
-        userAlbums: snapshot.library.userAlbums.map(toStoredUserAlbum),
+        ...historical.catalog,
+        ...historical.library,
+        metadata: [{ key: 'local_identity', ...historical.identity }],
+        userAlbums: historical.library.userAlbums.map(toStoredUserAlbum),
         syncCheckpoint: [checkpoint],
       }))
         await old.table(table).bulkPut(rows)
@@ -74,8 +76,14 @@ test.each([
       if (damage === 'valid') {
         const frame = await repository.readSyncFrame()
         expect(frame.snapshot).toEqual(snapshot)
-        expect(frame.checkpoint).toEqual(checkpoint)
-        expect(database.verno).toBe(10)
+        expect(frame.checkpoint).toEqual({
+          ...checkpoint,
+          base: snapshot,
+          pending: { ...checkpoint.pending, snapshot, localSnapshot: snapshot },
+          recovery: { local: snapshot, remote: snapshot },
+        })
+        expect(database.verno).toBe(11)
+        expect(frame.snapshot.library.albumGenreRatings).toEqual([])
         expect(frame.snapshot.library.albumRatings[0]).not.toHaveProperty(
           'referenceReleaseId',
         )

@@ -27,6 +27,15 @@ import {
   type UserAlbum,
 } from '../domain/library/schemas'
 import { scoreToUnits } from '../domain/library/scores'
+import { genreKey } from '../domain/catalog/genre-key'
+import { canonical } from '../domain/sync'
+import {
+  genreRenameExpected,
+  rateAlbumGenreInputSchema,
+  referencedRemovedGenres,
+  removeAlbumGenreRatingInputSchema,
+  renameAlbumGenreInputSchema,
+} from './album-genre-ratings'
 import {
   personalLinksInputSchema,
   normalizedLinkUrl,
@@ -89,6 +98,9 @@ export class MusicUseCaseError extends Error {
     | 'outdated_album'
     | 'outdated_links'
     | 'referenced_release'
+    | 'referenced_genre'
+    | 'genre_conflict'
+    | 'outdated_genre'
   constructor(
     code:
       | 'missing_reference'
@@ -96,7 +108,10 @@ export class MusicUseCaseError extends Error {
       | 'outdated_experience'
       | 'outdated_album'
       | 'outdated_links'
-      | 'referenced_release',
+      | 'referenced_release'
+      | 'referenced_genre'
+      | 'genre_conflict'
+      | 'outdated_genre',
     message: string,
   ) {
     super(message)
@@ -274,6 +289,13 @@ export class MusicLibrary {
         throw new MusicUseCaseError(
           'outdated_album',
           'Los datos del álbum cambiaron después de abrir el formulario. Vuelve a cargarlo antes de guardar.',
+        )
+      if (
+        referencedRemovedGenres(snapshot, album.id, request.genres ?? []).length
+      )
+        throw new MusicUseCaseError(
+          'referenced_genre',
+          'Hay valoraciones por género vinculadas a una etiqueta que intentas quitar. Renómbrala explícitamente o retira antes sus notas; también se conservan las de entradas retiradas.',
         )
       if (request.personalLinks) {
         const entry = snapshot.library.userAlbums.find(
@@ -605,6 +627,9 @@ export class MusicLibrary {
       if (
         snapshot.library.albumRatings.some(
           (row) => row.referenceReleaseId === id,
+        ) ||
+        snapshot.library.albumGenreRatings.some(
+          (row) => row.referenceReleaseId === id,
         )
       )
         throw new MusicUseCaseError(
@@ -824,6 +849,95 @@ export class MusicLibrary {
       userAlbumId: entityIdSchema.parse(userAlbumId),
       scoreUnits: scoreToUnits(score),
       updatedAt: this.now().toISOString(),
+    })
+  }
+
+  async rateAlbumGenre(input: unknown): Promise<void> {
+    const request = rateAlbumGenreInputSchema.parse(input)
+    return this.changeLibrary({
+      type: 'set_album_genre_rating',
+      userAlbumId: request.userAlbumId,
+      genreKey: genreKey(request.genre),
+      scoreUnits: scoreToUnits(request.score),
+      updatedAt: this.now().toISOString(),
+      expected: request.expected,
+      ...(request.referenceReleaseId === undefined
+        ? {}
+        : { referenceReleaseId: request.referenceReleaseId }),
+    })
+  }
+
+  async removeAlbumGenreRating(input: unknown): Promise<void> {
+    const request = removeAlbumGenreRatingInputSchema.parse(input)
+    return this.changeLibrary({
+      type: 'remove_album_genre_rating',
+      userAlbumId: request.userAlbumId,
+      genreKey: genreKey(request.genre),
+      expected: request.expected,
+    })
+  }
+
+  async renameAlbumGenre(input: unknown): Promise<Album> {
+    const request = renameAlbumGenreInputSchema.parse(input)
+    return this.repository.mutate((snapshot) => {
+      const album = snapshot.catalog.albums.find(
+        (row) => row.id === request.albumId,
+      )
+      if (!album)
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'El álbum ya no existe.',
+        )
+      const source = genreKey(request.fromGenre),
+        target = genreKey(request.toGenre)
+      const current = genreRenameExpected(snapshot, album.id, source)
+      const orderedExpected = {
+        ...request.expected,
+        ratings: request.expected.ratings.toSorted((a, b) =>
+          a.userAlbumId.localeCompare(b.userAlbumId),
+        ),
+      }
+      if (canonical(current) !== canonical(orderedExpected))
+        throw new MusicUseCaseError(
+          'outdated_genre',
+          'Los géneros o sus valoraciones cambiaron. Revisa los datos guardados antes de renombrar.',
+        )
+      if (!album.genres?.some((label) => genreKey(label) === source))
+        throw new MusicUseCaseError(
+          'missing_reference',
+          'El género de origen no está asignado al álbum.',
+        )
+      if (
+        target !== source &&
+        album.genres.some((label) => genreKey(label) === target)
+      )
+        throw new MusicUseCaseError(
+          'genre_conflict',
+          'El género de destino ya está asignado. No se fusionan etiquetas ni valoraciones automáticamente.',
+        )
+      let inserted = false
+      const genres = album.genres.flatMap((label) => {
+        if (genreKey(label) !== source) return [label]
+        if (inserted) return []
+        inserted = true
+        return [request.toGenre]
+      })
+      const updated = albumSchema.parse({ ...album, genres })
+      snapshot.catalog.albums[
+        snapshot.catalog.albums.findIndex((row) => row.id === album.id)
+      ] = updated
+      const entries = new Set(
+        snapshot.library.userAlbums
+          .filter((row) => row.albumId === album.id)
+          .map((row) => row.id),
+      )
+      snapshot.library.albumGenreRatings =
+        snapshot.library.albumGenreRatings.map((row) =>
+          entries.has(row.userAlbumId) && row.genreKey === source
+            ? { ...row, genreKey: target }
+            : row,
+        )
+      return { snapshot, result: updated }
     })
   }
 

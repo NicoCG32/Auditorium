@@ -1,6 +1,6 @@
 # Auditorium
 
-El [audio personal persistente](docs/AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
+El [modelo de valoraciones por género](docs/VALORACIONES_POR_GENERO.md) añade notas opcionales independientes de la general, con referencia de edición propia y renombrado protegido. DB11/nativa110 y JSON/snapshot7 conservan datos anteriores y audio local; ZIP1 mantiene su formato. La interfaz para editar estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
 
 La [reproducción desde enlaces](docs/REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](docs/PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 

@@ -11,8 +11,21 @@ import {
 } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
-async function seed(page: Page) {
+async function seed(page: Page, genreRating = false) {
   const backup = makeBackup()
+  if (genreRating) {
+    backup.data.catalog.albums.find((row) => row.id === ids.album)!.genres = [
+      'Death Metal',
+      'Power Metal',
+    ]
+    backup.data.library.albumGenreRatings.push({
+      userAlbumId: backup.data.library.userAlbums[0]!.id,
+      genreKey: 'death metal',
+      scoreUnits: 2,
+      updatedAt: backup.data.library.albumRatings[0]!.updatedAt,
+      referenceReleaseId: ids.deluxe,
+    })
+  }
   backup.data.catalog.releases.push(
     {
       id: fixtureId(85000),
@@ -160,7 +173,7 @@ test('ficha y Calificaciones mantienen una nota y una referencia opcional entre 
     .click()
   await saved(page)
   const after = await backup(page)
-  expect(after.schemaVersion).toBe(6)
+  expect(after.schemaVersion).toBe(7)
   expect(after.data.catalog).toEqual(before.data.catalog)
   expect(
     after.data.library.albumRatings.filter(
@@ -173,6 +186,53 @@ test('ficha y Calificaciones mantienen una nota y una referencia opcional entre 
   )
   expect(after.data.library.userAlbums[0]!.personalNotes).toBe(
     'Comentario sobre la edición digital no adquirida.',
+  )
+})
+
+test('modelo de notas por género restaura7, conserva la general y protege etiquetas referenciadas', async ({
+  page,
+}) => {
+  const before = await seed(page, true)
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await expect(page.locator('.experience-summary')).toContainText('9,5 / 10')
+  await openExperience(page)
+  await page
+    .getByRole('button', { name: 'Quitar nota del borrador', exact: true })
+    .click()
+  await saved(page)
+  const withoutGeneral = await backup(page)
+  expect(withoutGeneral.data.library.albumGenreRatings).toEqual(
+    before.data.library.albumGenreRatings,
+  )
+  expect(withoutGeneral.data.library.albumRatings).toEqual(
+    before.data.library.albumRatings.filter(
+      (r) => r.userAlbumId !== before.data.library.userAlbums[0]!.id,
+    ),
+  )
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await openAlbumArea(page, 'actions')
+  await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await page
+    .getByRole('combobox', { name: 'Géneros (separados por comas)' })
+    .fill('Power Metal')
+  await page
+    .getByRole('button', { name: 'Guardar cambios del álbum', exact: true })
+    .click()
+  await expect(page.getByRole('alert')).toContainText(
+    'Hay valoraciones por género vinculadas',
+  )
+  await page
+    .getByRole('button', { name: 'Cancelar edición', exact: true })
+    .click()
+  await page
+    .getByRole('dialog')
+    .getByRole('button', { name: 'Descartar cambios', exact: true })
+    .click()
+  const after = await backup(page)
+  expect(after.data.catalog).toEqual(before.data.catalog)
+  expect(after.data.library.albumGenreRatings).toEqual(
+    before.data.library.albumGenreRatings,
   )
 })
 

@@ -217,6 +217,7 @@ export class IndexedDbRepository
         releaseTracks,
         userAlbums,
         albumRatings,
+        albumGenreRatings,
         trackRatings,
         ownedItems,
         purchaseWishes,
@@ -231,6 +232,7 @@ export class IndexedDbRepository
         this.database.releaseTracks.toArray(),
         this.database.userAlbums.toArray(),
         this.database.albumRatings.toArray(),
+        this.database.albumGenreRatings.toArray(),
         this.database.trackRatings.toArray(),
         this.database.ownedItems.toArray(),
         this.database.purchaseWishes.toArray(),
@@ -260,6 +262,7 @@ export class IndexedDbRepository
       }).parse({
         userAlbums: userAlbums.map(fromStoredUserAlbum),
         albumRatings,
+        albumGenreRatings,
         trackRatings,
         ownedItems,
         purchaseWishes,

@@ -173,7 +173,13 @@ async function exportedBackup(page: Page) {
     .click()
   const path = await (await downloading).path()
   if (!path) throw new Error('Missing fictitious Pages backup download')
-  return parseBackupText(await readFile(path, 'utf8'))
+  const text = await readFile(path, 'utf8')
+  const document: unknown = JSON.parse(text)
+  expect(document).toMatchObject({
+    schemaVersion: 7,
+    data: { library: { albumGenreRatings: [] } },
+  })
+  return parseBackupText(text)
 }
 
 async function rawDatabase(page: Page) {
@@ -394,7 +400,8 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
     page.getByText('Experiencia guardada.', { exact: true }),
   ).toBeVisible()
   const before = await rawDatabase(page)
-  expect(Object.keys(before)).toHaveLength(16)
+  expect(Object.keys(before)).toHaveLength(17)
+  expect(before['albumGenreRatings']).toEqual([])
   expect(before['syncCheckpoint']).toEqual([])
   await page.close()
   for (const path of [
@@ -511,7 +518,8 @@ test('Pages espera a las dos ventanas para actualizar y conserva las tablas y la
   await openPrepared(page)
   const source = await restoreFixture(page)
   const before = await rawDatabase(page)
-  expect(Object.keys(before)).toHaveLength(16)
+  expect(Object.keys(before)).toHaveLength(17)
+  expect(before['albumGenreRatings']).toEqual([])
   expect(before['syncCheckpoint']).toEqual([])
   const other = await context.newPage()
   await openPrepared(other)

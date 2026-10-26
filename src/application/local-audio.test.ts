@@ -19,6 +19,7 @@ import { AuditoriumDatabase, SCHEMA_V9 } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import { toStoredUserAlbum } from '../infrastructure/db/records'
 import { syntheticAudio } from '../test/audio.fixture'
+import { legacySnapshotV6Fixture } from '../test/legacy-backup.fixture'
 import { MusicLibrary } from './music-library'
 import { LocalAudio } from './local-audio'
 import { LibraryBackups } from './library-backups'
@@ -251,6 +252,7 @@ test('exact byte/count limits and replacement dirty state avoid serializing byte
 test('DB9 upgrades preserve reference rating/checkpoint and create empty local-only audio stores', async () => {
   const snapshot = makeBackup().data
   snapshot.library.albumRatings[0]!.referenceReleaseId = ids.deluxe
+  const historical = legacySnapshotV6Fixture(snapshot)
   const previous = new Dexie('upgrade-audio', {
     indexedDB: factory,
     IDBKeyRange,
@@ -260,18 +262,19 @@ test('DB9 upgrades preserve reference rating/checkpoint and create empty local-o
   await previous.open()
   await previous.transaction('rw', previous.tables, async () => {
     for (const [table, rows] of Object.entries({
-      ...snapshot.catalog,
-      ...snapshot.library,
-      metadata: [{ key: 'local_identity', ...snapshot.identity }],
-      userAlbums: snapshot.library.userAlbums.map(toStoredUserAlbum),
-      syncCheckpoint: [{ key: 'cloud', revision: 1, base: snapshot }],
+      ...historical.catalog,
+      ...historical.library,
+      metadata: [{ key: 'local_identity', ...historical.identity }],
+      userAlbums: historical.library.userAlbums.map(toStoredUserAlbum),
+      syncCheckpoint: [{ key: 'cloud', revision: 1, base: historical }],
     }))
       await previous.table(table).bulkPut(rows)
   })
   previous.close()
   const current = connect('upgrade-audio')
   expect(await current.repository.readSnapshot()).toEqual(snapshot)
-  expect(current.database.backendDB().version).toBe(100)
+  expect(current.database.backendDB().version).toBe(110)
+  expect(await current.database.albumGenreRatings.count()).toBe(0)
   expect(await current.audio.list()).toEqual([])
   expect((await current.repository.readSyncFrame()).checkpoint.base).toEqual(
     snapshot,
@@ -295,8 +298,8 @@ test('playback rejects a stale filename, different album association or foreign 
   )
 })
 
-test('DB9 → DB10 rejects an invalid reference inside its current-format checkpoint without rewriting the database', async () => {
-  const snapshot = makeBackup().data,
+test('DB9 → DB10 rejects an invalid reference inside its v6 checkpoint without rewriting the database', async () => {
+  const snapshot = legacySnapshotV6Fixture(makeBackup().data),
     bad = structuredClone(snapshot)
   bad.library.albumRatings[0]!.referenceReleaseId = ids.missing
   const checkpoint = { key: 'cloud', revision: 1, base: bad }

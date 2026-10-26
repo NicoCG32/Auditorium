@@ -108,7 +108,7 @@ test('alta, edición coordinada, favoritos, cancelación y proveedor genérico c
     }),
   ).not.toContainText('Favorito de reproducción')
   const before = await backup(page)
-  expect(before.schemaVersion).toBe(6)
+  expect(before.schemaVersion).toBe(7)
   expect(before.data.library.albumRatings).toEqual([])
   expect(before.data.library.ownedItems).toEqual([])
   expect(before.data.library.userAlbums[0]!.listeningStatus).toBe('untracked')

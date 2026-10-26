@@ -171,6 +171,12 @@ export function RemovedAlbumsPanel({
                     'valoración de pista',
                     'valoraciones de pistas',
                   )}
+                  {' y '}
+                  {formatCount(
+                    data.albumGenreRatings.length,
+                    'valoración por género',
+                    'valoraciones por género',
+                  )}
                   .{' '}
                   {data.albumRating
                     ? 'Nota del álbum conservada.'

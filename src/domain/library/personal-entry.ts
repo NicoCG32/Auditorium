@@ -9,6 +9,9 @@ export function personalEntryData(library: Library, entryId: string) {
     trackRatings: library.trackRatings
       .filter((row) => row.userAlbumId === entryId)
       .toSorted((a, b) => a.trackId.localeCompare(b.trackId)),
+    albumGenreRatings: library.albumGenreRatings
+      .filter((row) => row.userAlbumId === entryId)
+      .toSorted((a, b) => a.genreKey.localeCompare(b.genreKey)),
     ownedItems: library.ownedItems
       .filter((row) => row.userAlbumId === entryId)
       .toSorted((a, b) => a.id.localeCompare(b.id)),

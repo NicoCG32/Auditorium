@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { localSnapshotSchema } from './backup'
+import { legacySnapshotV6Schema, localSnapshotSchema } from './backup'
 import type { LocalSnapshot } from './repositories/local-repository'
 
 export function canonical(value: unknown): string {
@@ -53,9 +53,11 @@ function rowKey(table: string, input: unknown): string {
         ? ['albumId', 'discNumber', 'trackNumber']
         : table === 'albumRatings'
           ? ['userAlbumId']
-          : table === 'trackRatings'
-            ? ['userAlbumId', 'trackId']
-            : ['id']
+          : table === 'albumGenreRatings'
+            ? ['userAlbumId', 'genreKey']
+            : table === 'trackRatings'
+              ? ['userAlbumId', 'trackId']
+              : ['id']
   return canonical(keys.map((key) => row[key]))
 }
 
@@ -140,6 +142,24 @@ export const syncCheckpointSchema = z.strictObject({
     .optional(),
 })
 export type SyncCheckpoint = z.output<typeof syncCheckpointSchema>
+/** DB10 and earlier checkpoints have strict v6 documents at every location. */
+export const legacySyncCheckpointV6Schema = syncCheckpointSchema.extend({
+  base: legacySnapshotV6Schema.optional(),
+  pending: z
+    .strictObject({
+      operationId: z.uuid(),
+      expectedRevision: z.number().int().nonnegative(),
+      snapshot: legacySnapshotV6Schema,
+      localSnapshot: legacySnapshotV6Schema,
+    })
+    .optional(),
+  recovery: z
+    .strictObject({
+      local: legacySnapshotV6Schema,
+      remote: legacySnapshotV6Schema,
+    })
+    .optional(),
+})
 export interface SyncFrame {
   snapshot: LocalSnapshot
   checkpoint: SyncCheckpoint

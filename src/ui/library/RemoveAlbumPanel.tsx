@@ -208,6 +208,12 @@ export function RemoveAlbumPanel({
                   'valoración de pista conservada',
                   'valoraciones de pistas conservadas',
                 )}
+                {' y '}
+                {formatCount(
+                  confirmation.personal.albumGenreRatings.length,
+                  'valoración por género conservada',
+                  'valoraciones por género conservadas',
+                )}
                 .
               </li>
               <li>

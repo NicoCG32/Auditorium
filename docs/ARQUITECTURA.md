@@ -1,6 +1,8 @@
 # Arquitectura del sistema
 
-El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
+RATE-01 incorpora el [modelo de valoraciones por género](VALORACIONES_POR_GENERO.md), separado de la nota general: DB11/nativa110 y JSON/snapshot7, con migración histórica y control concurrente. La interfaz de estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
+
+El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
 La [reproducción desde enlaces](REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](PROVEEDORES_STREAMING.md) conserva sus fuentes y límites. Los adaptadores de streaming son servicios de navegador opcionales; no acceden a los repositorios de dominio ni modifican persistencia.
 
@@ -82,7 +84,7 @@ flowchart TB
     HTTP <-->|Solicitud explícita y respuesta validada| Proveedores
 ```
 
-IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v10/nativa100 conserva los registros musicales, su identidad, las portadas locales y dos tablas separadas de audio. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
+IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v11/nativa110 conserva los registros musicales, sus notas por género, identidad, portadas locales y dos tablas separadas de audio. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
 
 Las referencias de catálogo seleccionadas pertenecen a `Album` y se guardan con el alta local. Las claves y recomendaciones viven sólo en memoria, sin tablas, respaldo o caché. Las consultas se realizan fuera de cualquier transacción IndexedDB; el modelo no recibe un repositorio ni ejecuta escrituras.
 

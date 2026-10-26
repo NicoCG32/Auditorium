@@ -7,7 +7,10 @@ import {
 } from './legacy-classification'
 import { parseBackupDocument } from '../backup'
 import { makeBackup } from '../backup.fixture'
-import { legacyBackupFixture } from '../../test/legacy-backup.fixture'
+import {
+  legacyBackupFixture,
+  legacySnapshotV6Fixture,
+} from '../../test/legacy-backup.fixture'
 
 test('EP, Demo e Inédito son independientes de géneros, ediciones y adquisiciones', () => {
   expect(
@@ -68,7 +71,7 @@ test.each(legacyReleaseTypeSchema.options)(
     old.data.catalog.albums[0]!.releaseType = type
     const before = structuredClone(old)
     const migrated = parseBackupDocument(old)
-    expect(migrated.schemaVersion).toBe(6)
+    expect(migrated.schemaVersion).toBe(7)
     expect(migrated.data).toEqual({
       ...current.data,
       catalog: {
@@ -81,7 +84,11 @@ test.each(legacyReleaseTypeSchema.options)(
     expect(old).toEqual(before)
     for (const schemaVersion of [1, 2, 3, 4])
       expect(() =>
-        parseBackupDocument({ ...migrated, schemaVersion }),
+        parseBackupDocument({
+          ...migrated,
+          schemaVersion,
+          data: legacySnapshotV6Fixture(migrated.data),
+        }),
       ).toThrow()
   },
 )

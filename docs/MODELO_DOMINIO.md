@@ -1,6 +1,8 @@
 # Modelo de dominio
 
-El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
+RATE-01 incorpora el [modelo de valoraciones por género](VALORACIONES_POR_GENERO.md), separado de la nota general: DB11/nativa110 y JSON/snapshot7, con migración histórica y control concurrente. La interfaz de estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
+
+El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
 UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
 
@@ -10,7 +12,7 @@ Este documento describe los contratos de Auditorium en el incremento en revisió
 
 UX-03 define por separado los [contratos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). LINK-01 concreta enlaces y favorito; UX-05 implementa la [clasificación independiente](CLASIFICACION_ALBUM.md). Los adjuntos y la referencia de nota a edición conservan su seguimiento posterior.
 
-La implementación conserva una entrada y una valoración personal por álbum conceptual, con [edición de referencia opcional](CONTRATOS_EXPERIENCIA.md#calificación-única-y-edición-de-referencia) en la nota. Una edición puede conocerse sin poseerse; una fuente de reproducción no genera una adquisición. La navegación y la referencia están implementadas; el refinamiento adicional de Mi colección conserva su seguimiento propio.
+La implementación conserva una entrada activa y una valoración general opcional por álbum conceptual, ampliada con notas independientes por género asignado. Cada nota admite su propia edición de referencia del mismo álbum. Una edición puede conocerse sin poseerse; una fuente de reproducción no genera una adquisición. La interfaz de notas contextuales queda pendiente en RATE-02; el refinamiento de Mi colección conserva su seguimiento propio.
 
 ## Alcance y vocabulario
 
@@ -206,13 +208,15 @@ Crear una edición con `copyCoreTracks` copia las posiciones originales y reutil
 
 ## Biblioteca personal
 
-La biblioteca contiene `userAlbums`, `albumRatings`, `trackRatings`, `ownedItems` y `purchaseWishes`. Los ejemplares, deseos, valoraciones y experiencia se vinculan a la entrada personal, no directamente a una cuenta externa ni a una edición como unidad de biblioteca.
+La biblioteca contiene `userAlbums`, `albumRatings`, `albumGenreRatings`, `trackRatings`, `ownedItems` y `purchaseWishes`. Los ejemplares, deseos, valoraciones y experiencia se vinculan a la entrada personal, no directamente a una cuenta externa ni a una edición como unidad de biblioteca.
 
 ```mermaid
 erDiagram
     LocalIdentity ||--o{ UserAlbum : posee
     Album ||--o{ UserAlbum : referencia
     UserAlbum ||--o| AlbumRating : valora
+    UserAlbum ||--o{ AlbumGenreRating : valora_por_genero
+    Release o|--o{ AlbumGenreRating : referencia_contextual
     Release o|--o{ AlbumRating : contextualiza
     UserAlbum ||--o{ TrackRating : registra
     Track ||--o{ TrackRating : recibe
@@ -282,6 +286,8 @@ erDiagram
 | `TrackRating`   | `userAlbumId`, `trackId`, `scoreUnits`, `updatedAt`                  | Ninguno                                                                                      |
 | `OwnedItem`     | `id`, `userAlbumId`, `medium`, `format`, `createdAt`                 | `releaseId`, `mediaCondition`, `sleeveCondition`, `acquiredAt`, `notes`                      |
 | `PurchaseWish`  | `id`, `userAlbumId`, `status`, `createdAt`                           | `targetReleaseId`, `targetFormat`, `notes`; al menos uno de los dos objetivos es obligatorio |
+
+`AlbumGenreRating` contiene `userAlbumId`, `genreKey`, `scoreUnits`, `updatedAt` y `referenceReleaseId` opcional. Su identidad es la pareja entrada/género, independiente de la general y de pistas; las [reglas de género y renombrado](VALORACIONES_POR_GENERO.md) completan estas relaciones.
 
 `listeningStatus` toma por defecto `untracked`. Las notas personales y de copia/deseo conservan espacios y saltos de línea cuando contienen texto; los formularios omiten un campo formado solo por blancos. Omitir `personalNotes` al guardar la experiencia retira únicamente esas notas.
 

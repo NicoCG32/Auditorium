@@ -6,6 +6,7 @@ import {
   audioScope,
   MAX_AUDIO_ARCHIVE_BYTES,
   MAX_AUDIO_FILE_BYTES,
+  audioDigest,
 } from '../domain/audio'
 import { makeBackup } from '../domain/backup.fixture'
 import { fixtureId } from '../domain/catalog/catalog.fixture'
@@ -20,6 +21,9 @@ import {
 import { syntheticAudio } from '../test/audio.fixture'
 import { LocalAudio } from './local-audio'
 import { CompleteAudioBackups } from './complete-audio-backups'
+import { legacySnapshotV6Fixture } from '../test/legacy-backup.fixture'
+import { parseBackupText } from '../domain/backup'
+import { z } from 'zod'
 
 let factory: IDBFactory, databases: AuditoriumDatabase[]
 beforeEach(() => {
@@ -66,6 +70,71 @@ function file(bytes: Uint8Array) {
     arrayBuffer: () => Promise.resolve(new Uint8Array(bytes).buffer),
   }
 }
+
+test('ZIP1 conserva notas de género de JSON7, referencias y bytes exactos', async () => {
+  const origin = await source(),
+    destination = connect('genre-target'),
+    identity = await destination.repository.open()
+  await origin.repository.mutate((snapshot) => {
+    const entry = snapshot.library.userAlbums.find(
+      (row) => row.id === libraryIds.entry,
+    )!
+    snapshot.catalog.albums.find((row) => row.id === entry.albumId)!.genres = [
+      'Death Metal',
+    ]
+    const edition = snapshot.catalog.releases.find(
+      (row) => row.albumId === entry.albumId,
+    )!
+    snapshot.library.albumGenreRatings.push({
+      userAlbumId: entry.id,
+      genreKey: 'death metal',
+      scoreUnits: 2,
+      updatedAt: times.updated,
+      referenceReleaseId: edition.id,
+    })
+    return { snapshot, result: undefined }
+  })
+  const expected = await origin.repository.readSnapshot(),
+    exported = await origin.service.export()
+  const prepared = await destination.service.readFile(file(exported.bytes))
+  await destination.service.restore(prepared, identity)
+  expect(await destination.repository.readSnapshot()).toEqual(expected)
+  expect((await destination.database.audioFiles.toArray())[0]!.bytes).toEqual(
+    (await syntheticAudio()).bytes,
+  )
+})
+
+test('ZIP1 histórico verifica hash original de JSON6 y migra a7 sin alterar audio', async () => {
+  const origin = await source(),
+    destination = connect('legacy-zip-target'),
+    identity = await destination.repository.open()
+  const entries: StoredZipEntry[] = [
+    ...(await readStoredZip((await origin.service.export()).bytes)),
+  ].map(([name, data]) => ({ name, data: new Uint8Array(data) }))
+  const library = entries.find((row) => row.name === 'library.json')!,
+    manifestEntry = entries.find((row) => row.name === 'audio-manifest.json')!
+  const backup = parseBackupText(new TextDecoder().decode(library.data))
+  library.data = new TextEncoder().encode(
+    JSON.stringify({
+      ...backup,
+      schemaVersion: 6,
+      data: legacySnapshotV6Fixture(backup.data),
+    }),
+  )
+  const manifest = z
+    .looseObject({ librarySha256: z.string() })
+    .parse(JSON.parse(new TextDecoder().decode(manifestEntry.data)) as unknown)
+  manifest.librarySha256 = await audioDigest(library.data)
+  manifestEntry.data = new TextEncoder().encode(JSON.stringify(manifest))
+  const prepared = await destination.service.readFile(
+    file(await createStoredZip(entries)),
+  )
+  await destination.service.restore(prepared, identity)
+  expect(await destination.repository.readSnapshot()).toEqual(origin.snapshot)
+  expect((await destination.database.audioFiles.toArray())[0]!.bytes).toEqual(
+    (await syntheticAudio()).bytes,
+  )
+})
 function headers(bytes: Uint8Array) {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
     end = bytes.length - 22

@@ -8,6 +8,7 @@ import {
   migrateLegacySnapshot,
   legacySnapshotV3Schema,
   legacySnapshotV5Schema,
+  migrateSnapshotV6,
 } from '../../domain/backup'
 import {
   remoteLibrarySchema,
@@ -98,22 +99,23 @@ export class SupabaseLibraryRepository implements RemoteLibraryRepository {
             z.literal(4),
             z.literal(5),
             z.literal(6),
+            z.literal(7),
           ]),
           snapshot: z.unknown(),
         })
         .parse(data)
       const snapshot =
-        wire.schema_version === 6
+        wire.schema_version === 7
           ? localSnapshotSchema.parse(wire.snapshot)
-          : wire.schema_version === 5
-            ? localSnapshotSchema.parse(
-                legacySnapshotV5Schema.parse(wire.snapshot),
-              )
-            : migrateLegacySnapshot(
-                wire.schema_version === 3
-                  ? legacySnapshotV3Schema.parse(wire.snapshot)
-                  : wire.snapshot,
-              )
+          : wire.schema_version === 6
+            ? migrateSnapshotV6(wire.snapshot)
+            : wire.schema_version === 5
+              ? migrateSnapshotV6(legacySnapshotV5Schema.parse(wire.snapshot))
+              : migrateLegacySnapshot(
+                  wire.schema_version === 3
+                    ? legacySnapshotV3Schema.parse(wire.snapshot)
+                    : wire.snapshot,
+                )
       this.cached = remoteLibrarySchema.parse({
         revision: wire.revision,
         snapshot,

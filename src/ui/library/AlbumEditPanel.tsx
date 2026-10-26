@@ -317,12 +317,15 @@ export function AlbumEditPanel({
         )
       } else
         setFailure(
-          error instanceof AudioError
+          error instanceof MusicUseCaseError &&
+            error.code === 'referenced_genre'
             ? error.message
-            : error instanceof LocalStorageError &&
-                error.code === 'quota_exceeded'
-              ? 'No hay espacio para guardar. El álbum anterior y tu borrador se conservan; libera espacio y vuelve a intentar.'
-              : 'No se pudieron guardar los cambios. El álbum anterior y tu borrador se conservan.',
+            : error instanceof AudioError
+              ? error.message
+              : error instanceof LocalStorageError &&
+                  error.code === 'quota_exceeded'
+                ? 'No hay espacio para guardar. El álbum anterior y tu borrador se conservan; libera espacio y vuelve a intentar.'
+                : 'No se pudieron guardar los cambios. El álbum anterior y tu borrador se conservan.',
         )
       onBusyChange(false)
       setBusy(false)

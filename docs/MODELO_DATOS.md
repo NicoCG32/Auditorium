@@ -1,6 +1,8 @@
 # Modelo de datos y persistencia
 
-El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
+RATE-01 incorpora el [modelo de valoraciones por género](VALORACIONES_POR_GENERO.md), separado de la nota general: DB11/nativa110 y JSON/snapshot7, con migración histórica y control concurrente. La interfaz de estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
+
+El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
 UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunto de escucha, nota, comentario y referencia opcional a una edición del mismo álbum. Persistencia DB9/nativa90 y respaldo6, con datos anteriores sin referencia inferida.
 
@@ -10,7 +12,7 @@ UX-05 separa la clasificación en Album y migra las filas y los documentos del c
 
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia del incremento en revisión, desde el MVP **v1.0.0** hasta AUDIO-02 de DB10/respaldo6 y ZIP completo1, que incluye las referencias externas de CAT-01. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia desde el MVP **v1.0.0** hasta RATE-01 de DB11/respaldo7 y ZIP completo1. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 
@@ -22,7 +24,7 @@ La información musical y personal reside en IndexedDB, en la base `auditorium` 
 | ---------- | ---------------------------------------------------------------------------- | --------------------------------------- |
 | `identity` | `userId`, `createdAt`                                                        | Registro `local_identity` en `metadata` |
 | `catalog`  | Artistas, álbumes, créditos, pistas, lista original, ediciones y apariciones | Siete tablas de catálogo                |
-| `library`  | Entradas personales, notas, ejemplares y deseos                              | Cinco tablas de biblioteca              |
+| `library`  | Entradas personales, notas, ejemplares y deseos                              | Seis tablas de biblioteca               |
 
 `LocalRepository` ofrece `open`, `readSnapshot` y `close`. `TransactionalLocalRepository` añade `mutate`; `BackupLocalRepository` añade `restoreEmpty`. El dominio depende de estos contratos, sin importar Dexie. La implementación concreta es [`IndexedDbRepository`](../src/infrastructure/repositories/indexeddb-repository.ts).
 
@@ -37,7 +39,7 @@ flowchart TD
     Mapping --> Transaction["Transacción Dexie sobre todas las tablas"]
     Transaction --> Metadata[(metadata)]
     Transaction --> Catalog[(7 tablas de catálogo)]
-    Transaction --> Library[(5 tablas de biblioteca)]
+    Transaction --> Library[(6 tablas de biblioteca)]
     Preflight --> Native["IndexedDB nativo: versión, tablas, claves e índices"]
 ```
 
@@ -53,24 +55,25 @@ La [definición de la base](../src/infrastructure/db/database.ts) declara versi�
 
 En la tabla, los corchetes representan una clave o índice compuesto, en el orden indicado. Los índices secundarios son **no únicos**, excepto los marcados como **único**. Se enumeran los índices declarados y materializados, sin incluir las posibilidades de consulta mediante prefijos compuestos que Dexie pueda ofrecer.
 
-| Tabla              | Clave primaria                       | Índices secundarios                                                                      |
-| ------------------ | ------------------------------------ | ---------------------------------------------------------------------------------------- |
-| `syncCheckpoint`   | `key`                                | Ninguno; checkpoint técnico, fuera del respaldo                                          |
-| `audioAttachments` | `[scope, id]`                        | `scope`, `[scope, userAlbumId]`, `[scope, trackId]`                                      |
-| `audioFiles`       | `[scope, id]`                        | `scope`                                                                                  |
-| `metadata`         | `key`                                | Ninguno                                                                                  |
-| `artists`          | `id`                                 | `name`                                                                                   |
-| `albums`           | `id`                                 | `title`, `primaryType`, `originalYear`                                                   |
-| `albumArtists`     | `[albumId, artistId, role]`          | `[albumId, position]` **único**; `artistId`                                              |
-| `tracks`           | `id`                                 | `albumId`, `title`, `variantOfTrackId`                                                   |
-| `coreTracks`       | `[albumId, discNumber, trackNumber]` | `[albumId, trackId]`                                                                     |
-| `releases`         | `id`                                 | `albumId`, `format`                                                                      |
-| `releaseTracks`    | `id`                                 | `[releaseId, discNumber, trackNumber]` **único**; `[releaseId, trackId]`, `trackId`      |
-| `userAlbums`       | `id`                                 | `activeAlbumKey` **único**; `[userId, albumId]`, `albumId`, `listeningStatus`, `addedAt` |
-| `albumRatings`     | `userAlbumId`                        | Ninguno                                                                                  |
-| `trackRatings`     | `[userAlbumId, trackId]`             | `trackId`                                                                                |
-| `ownedItems`       | `id`                                 | `userAlbumId`, `releaseId`, `medium`, `format`, `createdAt`                              |
-| `purchaseWishes`   | `id`                                 | `userAlbumId`, `targetReleaseId`, `targetFormat`, `status`, `createdAt`                  |
+| Tabla               | Clave primaria                       | Índices secundarios                                                                      |
+| ------------------- | ------------------------------------ | ---------------------------------------------------------------------------------------- |
+| `syncCheckpoint`    | `key`                                | Ninguno; checkpoint técnico, fuera del respaldo                                          |
+| `audioAttachments`  | `[scope, id]`                        | `scope`, `[scope, userAlbumId]`, `[scope, trackId]`                                      |
+| `audioFiles`        | `[scope, id]`                        | `scope`                                                                                  |
+| `metadata`          | `key`                                | Ninguno                                                                                  |
+| `artists`           | `id`                                 | `name`                                                                                   |
+| `albums`            | `id`                                 | `title`, `primaryType`, `originalYear`                                                   |
+| `albumArtists`      | `[albumId, artistId, role]`          | `[albumId, position]` **único**; `artistId`                                              |
+| `tracks`            | `id`                                 | `albumId`, `title`, `variantOfTrackId`                                                   |
+| `coreTracks`        | `[albumId, discNumber, trackNumber]` | `[albumId, trackId]`                                                                     |
+| `releases`          | `id`                                 | `albumId`, `format`                                                                      |
+| `releaseTracks`     | `id`                                 | `[releaseId, discNumber, trackNumber]` **único**; `[releaseId, trackId]`, `trackId`      |
+| `userAlbums`        | `id`                                 | `activeAlbumKey` **único**; `[userId, albumId]`, `albumId`, `listeningStatus`, `addedAt` |
+| `albumRatings`      | `userAlbumId`                        | Ninguno                                                                                  |
+| `albumGenreRatings` | `[userAlbumId, genreKey]`            | `userAlbumId`, `genreKey`                                                                |
+| `trackRatings`      | `[userAlbumId, trackId]`             | `trackId`                                                                                |
+| `ownedItems`        | `id`                                 | `userAlbumId`, `releaseId`, `medium`, `format`, `createdAt`                              |
+| `purchaseWishes`    | `id`                                 | `userAlbumId`, `targetReleaseId`, `targetFormat`, `status`, `createdAt`                  |
 
 Los índices de títulos, nombres, formatos y pares edición/pista no imponen unicidad. Por ejemplo, varias apariciones de la misma pista en una edición son posibles si ocupan posiciones diferentes. La clave de `coreTracks` impide dos filas en una misma posición original; la clave de `trackRatings` limita a una nota por entrada personal y pista.
 
@@ -90,6 +93,7 @@ La retirada de un álbum personal no elimina su catálogo ni los registros perso
 | 8             | 80                       | Clasificación independiente de Album e índice primaryType; migra filas y checkpoint                   |
 | 9             | 90                       | Referencia opcional de AlbumRating; valida filas y todos los documentos del checkpoint                |
 | 10            | 100                      | Audio local en dos tablas; valida snapshot y documentos actuales del checkpoint sin inventar adjuntos |
+| 11            | 110                      | Notas por género en tabla compuesta; convierte los cinco documentos del checkpoint a snapshot7        |
 
 Las migraciones mantienen claves, índices y registros históricos; v2/v3 crean las nuevas tablas vacías. v4 y v5 no crean tablas ni transforman filas: establecen barreras de compatibilidad para sus campos opcionales, evitando que una versión anterior los interprete como corrupción. No hay una conversión de notas, regeneración de identificadores ni enriquecimiento de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
 
@@ -183,7 +187,7 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 ## Contrato de respaldo JSON
 
-El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 6`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las cinco de biblioteca, incluidas `ownedItems` y `purchaseWishes`, aunque estén vacías. Incluye las portadas locales como data URL en `Album.coverImage` y las URL remotas como enlaces, sin descargar sus binarios. No incluye filas de `metadata`, índices técnicos, cachés, archivos musicales ni claves o resultados de recomendaciones.
+El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 7`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las seis de biblioteca, incluida `albumGenreRatings`, aunque estén vacías. Incluye portadas locales y enlaces remotos. Excluye índices técnicos, checkpoint, audio y claves o resultados de recomendaciones. Los contratos históricos 1–6 se validan antes de convertirlos.
 
 La versión **6 del respaldo** es independiente de IndexedDB **9**. El formato vigente incorpora la referencia opcional de la nota al snapshot completo. El formato4 incorporó enlaces personales y favorito; el5 separó la clasificación del álbum. Los formatos 1/2/3 mantienen sus schemas históricos estrictos antes de normalizar al formato vigente: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y ninguno admite los campos de enlaces. No se inventan datos al migrar. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de tablas nativas.
 
@@ -253,4 +257,4 @@ El modo sin cuenta conserva su biblioteca local. [SYNC-01](SINCRONIZACION_SUPABA
 
 ## Audio fuera de los snapshots
 
-`AudioLocalRepository` amplía el repositorio de respaldo con lectura local, restauración completa y borrado de audio. `SnapshotMutation.audio` es un plan de escritura aparte; no es un campo de `LocalSnapshot`. El repositorio aplica música y audio en la misma transacción. Las lecturas JSON y SyncFrame enumeran sus campos musicales: no incorporan ni bytes ni descriptores de audio. El checkpoint remoto conserva formato6. La [guía de audio](AUDIO_LOCAL.md#persistencia-y-formato-completo) especifica las dos tablas, el ámbito, los índices y el perfil ZIP1.
+`AudioLocalRepository` amplía el repositorio de respaldo con lectura local, restauración completa y borrado de audio. `SnapshotMutation.audio` es un plan de escritura aparte; no es un campo de `LocalSnapshot`. El repositorio aplica música y audio en la misma transacción. JSON y SyncFrame excluyen bytes y descriptores de audio. El checkpoint usa snapshot7. La [guía de audio](AUDIO_LOCAL.md#persistencia-y-formato-completo) especifica tablas, ámbito, índices y ZIP1.

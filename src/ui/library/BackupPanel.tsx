@@ -61,6 +61,12 @@ function Counts({ snapshot }: { snapshot: LocalSnapshot }) {
           'valoración de pista',
           'valoraciones de pistas',
         )}
+        {' y '}
+        {formatCount(
+          library.albumGenreRatings.length,
+          'valoración por género',
+          'valoraciones por género',
+        )}
         .
       </li>
       <li>Identidad local, fechas, escucha y notas personales incluidas.</li>

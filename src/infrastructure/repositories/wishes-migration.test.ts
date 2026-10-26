@@ -2,6 +2,7 @@
 import Dexie from 'dexie'
 import { legacySnapshotFixture } from '../../test/legacy-backup.fixture'
 import { migrateLegacyAlbum } from '../../domain/catalog/legacy-classification'
+import { makeBackup } from '../../domain/backup.fixture'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { beforeEach, afterEach, expect, test } from 'vitest'
 import {
@@ -10,12 +11,11 @@ import {
   SCHEMA_V1,
   SCHEMA_V2,
   SCHEMA_V3,
-  SCHEMA_V10,
+  SCHEMA_V11,
 } from '../db/database'
 import { IndexedDbRepository } from './indexeddb-repository'
 import { IDENTITY_KEY, toStoredUserAlbum } from '../db/records'
 import {
-  makeContext,
   makeLibrary,
   libraryIds,
   times,
@@ -72,9 +72,7 @@ test.each([
     if (populated)
       await old.transaction('rw', old.tables, async () => {
         for (const [name, data] of Object.entries(
-          legacySnapshotFixture({
-            catalog: makeContext().catalog,
-          } as Parameters<typeof legacySnapshotFixture>[0]).catalog,
+          legacySnapshotFixture(makeBackup().data).catalog,
         ))
           await old.table(name).bulkAdd(data)
         const library = makeLibrary()
@@ -101,13 +99,14 @@ test.each([
       snapshot = await next.repository.readSnapshot()
     expect(next.database.backendDB().version).toBe(DATABASE_VERSION * 10)
     expect(snapshot.library.purchaseWishes).toEqual([])
+    expect(snapshot.library.albumGenreRatings).toEqual([])
     expect(snapshot.identity.userId).toBe(libraryIds.user)
     expect(await rows(next.database, names)).toEqual({
       ...before,
       albums: before['albums']!.map(migrateLegacyAlbum),
     })
     expect(next.database.tables.map((table) => table.name).sort()).toEqual(
-      Object.keys(SCHEMA_V10).sort(),
+      Object.keys(SCHEMA_V11).sort(),
     )
   },
 )

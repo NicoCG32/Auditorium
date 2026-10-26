@@ -3,14 +3,17 @@ import { createClient } from '@supabase/supabase-js'
 import { expect, test, vi } from 'vitest'
 import { SupabaseLibraryRepository } from './client'
 import { makeBackup } from '../../domain/backup.fixture'
-import { legacySnapshotFixture } from '../../test/legacy-backup.fixture'
+import {
+  legacySnapshotFixture,
+  legacySnapshotV6Fixture,
+} from '../../test/legacy-backup.fixture'
 import { fixtureId, ids } from '../../domain/catalog/catalog.fixture'
 
-test.each([5, 6])(
+test.each([5, 6, 7])(
   'lector remoto v%s conserva el contrato de referencia correspondiente',
   async (schema_version) => {
     const snapshot = makeBackup().data
-    if (schema_version === 6)
+    if (schema_version >= 6)
       snapshot.library.albumRatings[0]!.referenceReleaseId = ids.deluxe
     const client = createClient(
       'https://cloud.example',
@@ -19,7 +22,14 @@ test.each([5, 6])(
         global: {
           fetch: () =>
             Promise.resolve(
-              Response.json({ revision: 5, schema_version, snapshot }),
+              Response.json({
+                revision: 5,
+                schema_version,
+                snapshot:
+                  schema_version === 7
+                    ? snapshot
+                    : legacySnapshotV6Fixture(snapshot),
+              }),
             ),
         },
         auth: { persistSession: false },
@@ -47,7 +57,7 @@ test.each([3, 4, 5])(
                 schema_version,
                 snapshot:
                   schema_version === 5
-                    ? snapshot
+                    ? legacySnapshotV6Fixture(snapshot)
                     : legacySnapshotFixture(snapshot),
               }),
             ),
@@ -127,7 +137,7 @@ test('un envío histórico ya confirmado se reconoce después de migrar sin dupl
   expect(requests).toEqual([
     expect.objectContaining({
       operation_id: operationId,
-      schema_version: 6,
+      schema_version: 7,
       document: snapshot,
     }),
   ])
@@ -142,7 +152,7 @@ test('una versión remota futura se rechaza sin convertirla en una biblioteca va
           Promise.resolve(
             Response.json({
               revision: 3,
-              schema_version: 7,
+              schema_version: 8,
               snapshot: makeBackup().data,
             }),
           ),

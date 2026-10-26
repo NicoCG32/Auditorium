@@ -202,7 +202,13 @@ async function downloadBackup(page: Page, path: string) {
     })
     .click()
   await (await downloading).saveAs(path)
-  return parseBackupText(await readFile(path, 'utf8'))
+  const text = await readFile(path, 'utf8')
+  const document: unknown = JSON.parse(text)
+  expect(document).toMatchObject({
+    schemaVersion: 7,
+    data: { library: { albumGenreRatings: [] } },
+  })
+  return parseBackupText(text)
 }
 
 test.beforeEach(async ({ request }) => {
@@ -240,7 +246,9 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(100)
+      expect(migrated.version).toBe(110)
+      expect(migrated.stores).toHaveLength(17)
+      expect(migrated.rows['albumGenreRatings']).toEqual([])
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(
           name === 'albums' ? rows.map(migrateLegacyAlbum) : rows,
@@ -357,7 +365,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 100)
+        if (name === 'auditorium' && version === 110)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -385,7 +393,8 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(100)
+    expect(after.version).toBe(110)
+    expect(after.rows['albumGenreRatings']).toEqual([])
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(
         name === 'albums'
@@ -486,7 +495,7 @@ for (const damaged of ['index', 'future', 'identity', 'rating'] as const) {
       ]
     await page.evaluate(seedNativeStorage, {
       name: 'auditorium',
-      version: damaged === 'index' ? 20 : damaged === 'future' ? 100 : 50,
+      version: damaged === 'index' ? 20 : damaged === 'future' ? 120 : 50,
       stores,
       rows,
     })
@@ -625,6 +634,7 @@ test('cuota al restaurar revierte también identidad y conserva confirmación pa
     ...historicalRows(makeBackup().data, historicalStores(3)),
     albums: makeBackup().data.catalog.albums,
     syncCheckpoint: [],
+    albumGenreRatings: [],
     audioAttachments: [],
     audioFiles: [],
   })

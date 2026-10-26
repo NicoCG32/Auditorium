@@ -113,5 +113,11 @@ export async function writeSnapshotChanges(
       after.library.trackRatings,
       (row): [string, string] => [row.userAlbumId, row.trackId],
     ),
+    syncTable(
+      database.albumGenreRatings,
+      before.library.albumGenreRatings,
+      after.library.albumGenreRatings,
+      (row): [string, string] => [row.userAlbumId, row.genreKey],
+    ),
   ])
 }

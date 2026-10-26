@@ -2,6 +2,9 @@
 
 ## Sin publicar
 
+- Modelo de notas por género asignado al álbum, independientes de la general y por pista, con referencia de edición propia, comparación concurrente completa y renombrado atómico de etiquetas valoradas, incluidas entradas retiradas. Quitar una nota general conserva las contextuales.
+- DB11/nativa110 y JSON/snapshot7 con lectores históricos estrictos y migración de los cinco documentos del checkpoint, sin notas inferidas. ZIP1 conserva audio y admite JSON6 histórico; la RPC amplía validación, mantiene RLS/CAS y bloquea retrocesos. Guía y ADR-013; controles de edición y filtros pendientes en RATE-02 #81.
+
 - Sugerencias locales de géneros y artistas por prefijo en alta, créditos múltiples y edición, también offline. Selección manual con teclado, ratón o toque; géneros por fragmento sin duplicados y nombres nuevos permitidos. Reutilización explícita de bandas con control concurrente, identidad y datos conservados, sin migración ni nuevo servicio.
 
 - Audio propio persistente por dispositivo en alta, edición y ficha, con asociación opcional a una pista del mismo álbum. Conserva experiencia y adquisiciones independientes; comparte un único reproductor explícito con streaming y libera sus URLs al salir.

@@ -1,6 +1,8 @@
 # Documentación de Auditorium
 
-El [audio personal persistente](AUDIO_LOCAL.md) permite adjuntar archivos al añadir o editar un álbum, conservarlos en este dispositivo y trasladarlos con un respaldo completo ZIP. AUDIO-02 mantiene el audio y sus descriptores fuera de la cuenta y del respaldo JSON musical. La base local es DB10/nativa100; el JSON y el contrato remoto continúan en versión 6.
+RATE-01 incorpora el [modelo de valoraciones por género](VALORACIONES_POR_GENERO.md), separado de la nota general: DB11/nativa110 y JSON/snapshot7, con migración histórica y control concurrente. La interfaz de estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
+
+El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
 La [reproducción desde enlaces](REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 
@@ -46,7 +48,7 @@ La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contex
 | Recuperación y offline   | [Respaldos JSON](RESPALDOS_JSON.md), [PWA](PWA_OFFLINE.md), [migraciones](MIGRACIONES_RECUPERACION.md)                     |
 | Implementación y calidad | [Casos de uso](CASOS_DE_USO.md), [integridad y persistencia](VALIDACION_PERSISTENCIA.md), [diseño base](DISENO_BASE.md)    |
 
-Estas guías complementan las referencias transversales. Las menciones a esquemas v1/v2/v3/v4/v5/v6/v7 corresponden a la evolución de IndexedDB; la versión del archivo de respaldo es un contrato independiente, actualmente 4, con importación compatible de los formatos 1, 2 y 3 estrictos.
+Estas guías complementan las referencias transversales. IndexedDB es actualmente DB11/nativa110; el archivo de respaldo y el snapshot remoto usan7, con lectores históricos estrictos. La [guía de notas por género](VALORACIONES_POR_GENERO.md) concreta la compatibilidad, el renombrado protegido y la independencia de la nota general.
 
 La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica búsqueda Wikidata, procedencia persistente, portadas y enlaces, y recomendaciones Groq/Gemini con clave propia en memoria, datos enviados, condiciones de gratuidad y límites de validación.
 
@@ -62,20 +64,21 @@ La [guía de integraciones opcionales](INTEGRACIONES_OPCIONALES.md) explica bús
 
 [ADR-011: cuenta opcional con Supabase](adr/011-supabase-sincronizacion.md) amplía las decisiones del MVP para acceder a una biblioteca privada desde varios dispositivos.
 
-| Decisión                                                                              | Justificación                                                                                       |
-| ------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| [ADR-001: MVP local](adr/001-mvp-local.md)                                            | Biblioteca ejecutada y guardada en el navegador                                                     |
-| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)                     | Identidades musicales y apariciones diferenciadas                                                   |
-| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                              | Servicios opcionales evaluados antes de incorporarlos                                               |
-| [ADR-004: retirada personal](adr/004-retirada-personal.md)                            | Restauración de la misma entrada sin borrar catálogo o datos relacionados                           |
-| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)                      | Adopción atómica de identidad y datos en un destino vacío                                           |
-| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)                          | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                             |
-| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)                     | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                  |
-| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md)              | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local  |
-| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)                 | Edición con identidad estable, géneros, país y portada automática local o remota                    |
-| [ADR-010: navegación por tareas](adr/010-navegacion-experiencia.md)                   | Navegación y borradores en UX-04; enlaces, experiencia conjunta y contratos de colección por tareas |
-| [ADR-011: sincronización opcional](adr/011-supabase-sincronizacion.md)                | Bibliotecas privadas, cachés por cuenta, revisiones y conflictos con Supabase                       |
-| [ADR-012: audio por dispositivo y respaldo completo](adr/012-audio-local-respaldo.md) | Adjuntos locales, aislamiento, ZIP1 y restauración atómica, independientes del JSON6 y la cuenta    |
+| Decisión                                                                              | Justificación                                                                                        |
+| ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| [ADR-001: MVP local](adr/001-mvp-local.md)                                            | Biblioteca ejecutada y guardada en el navegador                                                      |
+| [ADR-002: álbum, edición y pista](adr/002-album-edicion-pista.md)                     | Identidades musicales y apariciones diferenciadas                                                    |
+| [ADR-003: costo obligatorio cero](adr/003-costo-cero.md)                              | Servicios opcionales evaluados antes de incorporarlos                                                |
+| [ADR-004: retirada personal](adr/004-retirada-personal.md)                            | Restauración de la misma entrada sin borrar catálogo o datos relacionados                            |
+| [ADR-005: identidad del respaldo](adr/005-identidad-respaldo.md)                      | Adopción atómica de identidad y datos en un destino vacío                                            |
+| [ADR-006: actualización PWA](adr/006-actualizaciones-pwa.md)                          | Aplicación de recursos nuevos después de cerrar las ventanas anteriores                              |
+| [ADR-007: importación revisada](adr/007-importacion-metadatos.md)                     | Propuesta: archivo local, identidades preservadas y confirmación antes de escribir                   |
+| [ADR-008: integraciones opcionales](adr/008-integraciones-opcionales.md)              | Búsqueda Wikidata revisada y recomendaciones con clave de sesión, sin dependencia del núcleo local   |
+| [ADR-009: edición y metadatos](adr/009-edicion-metadatos-portadas.md)                 | Edición con identidad estable, géneros, país y portada automática local o remota                     |
+| [ADR-010: navegación por tareas](adr/010-navegacion-experiencia.md)                   | Navegación y borradores en UX-04; enlaces, experiencia conjunta y contratos de colección por tareas  |
+| [ADR-011: sincronización opcional](adr/011-supabase-sincronizacion.md)                | Bibliotecas privadas, cachés por cuenta, revisiones y conflictos con Supabase                        |
+| [ADR-012: audio por dispositivo y respaldo completo](adr/012-audio-local-respaldo.md) | Adjuntos locales, aislamiento, ZIP1 y restauración atómica, independientes del JSON6 y la cuenta     |
+| [ADR-013: notas por género](adr/013-valoraciones-por-genero.md)                       | Notas contextuales independientes, clave normalizada, renombrado atómico y compatibilidad DB11/JSON7 |
 
 Los ADR conservan la fecha y el contexto de la decisión. El estado de ejecución actual se consulta en la [arquitectura](ARQUITECTURA.md), el [Project](https://github.com/users/NicoCG32/projects/4) y los [hitos](https://github.com/NicoCG32/Auditorium/milestones).
 

@@ -140,7 +140,7 @@ test('alta atómica persiste enlaces, favorito e identidad sin inferir nota, esc
   const backup = parseBackupText(
     serializeBackup({
       format: 'auditorium-backup',
-      schemaVersion: 6,
+      schemaVersion: 7,
       exportedAt: '2026-10-20T00:00:00.000Z',
       data: before,
     }),
@@ -277,7 +277,7 @@ test('retirar y restaurar conserva enlaces y favorito; mezcla entre dispositivos
   other.library.userAlbums[0]!.preferredPlaybackLinkId = second.id
   expect(() => mergeSnapshots(before, removed, other)).toThrow(SyncConflict)
 })
-test('v1/v2/v3 estrictos se convierten a v4 sin inventar enlaces ni aceptar campos futuros', () => {
+test('v1/v2/v3 estrictos se convierten al esquema actual sin inventar enlaces ni aceptar campos futuros', () => {
   const backup = makeBackup()
   for (const schemaVersion of [1, 2, 3]) {
     expect(
@@ -290,7 +290,7 @@ test('v1/v2/v3 estrictos se convierten a v4 sin inventar enlaces ni aceptar camp
     ).toThrow()
   }
 })
-test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la identidad', async () => {
+test('migrar DB6 al esquema actual conserva todos los datos y el checkpoint sin cambiar la identidad', async () => {
   const factory = new IDBFactory(),
     snapshot = makeBackup().data
   const historical = new Dexie('links-migration', {
@@ -308,7 +308,9 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
       legacySnapshotFixture(snapshot).catalog,
     ))
       await historical.table(name).bulkPut(rows)
-    for (const [name, rows] of Object.entries(snapshot.library))
+    for (const [name, rows] of Object.entries(
+      legacySnapshotFixture(snapshot).library,
+    ))
       await historical
         .table(name)
         .bulkPut(name === 'userAlbums' ? rows.map(toStoredUserAlbum) : rows)
@@ -324,5 +326,5 @@ test('migrar DB6 a DB7 conserva todos los datos y el checkpoint sin cambiar la i
     revision: 2,
     base: snapshot,
   })
-  expect(current.database.verno).toBe(10)
+  expect(current.database.verno).toBe(11)
 })

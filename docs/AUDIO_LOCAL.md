@@ -2,6 +2,8 @@
 
 AUDIO-02 #70 · 24 de octubre de 2026. Implementación de audio por dispositivo con respaldo completo propio. La investigación AUDIO-01 #69 y su [prototipo aislado](../prototypes/audio-01/README.md) conservan la evidencia previa de formatos y almacenamiento.
 
+RATE-01 actualiza la biblioteca musical a DB11/JSON7 sin cambiar las dos tablas de audio ni ZIP1. El ZIP valida el hash del JSON6 histórico antes de migrarlo y conserva los bytes; los paquetes nuevos incluyen JSON7. [Migración y notas por género](VALORACIONES_POR_GENERO.md#persistencia-y-compatibilidad).
+
 ## Recorrido implementado
 
 1. En **Añadir álbum**, abre **Archivos de audio propios (opcional)**. En **Editar álbum** también puedes añadir, retirar o reemplazar archivos. La selección valida los bytes que se decodificarán; sólo queda guardada cuando confirmas el formulario. Cancelar conserva los datos anteriores.
@@ -31,7 +33,7 @@ El paquete tiene formato lógico `auditorium-audio-backup`, manifiesto versión 
 | Entrada               | Contenido                                                                        | Límite                                              |
 | --------------------- | -------------------------------------------------------------------------------- | --------------------------------------------------- |
 | `audio-manifest.json` | Identidad, SHA-256 del JSON y descriptores con asociaciones, hashes y rutas UUID | 1 MiB                                               |
-| `library.json`        | Documento `auditorium-backup`, versión 6                                         | 20 MiB UTF-8                                        |
+| `library.json`        | Documento `auditorium-backup`, versión7; lectura de versión6 histórica           | 20 MiB UTF-8                                        |
 | `audio/<uuid>.bin`    | Bytes de cada archivo, identificados por el manifiesto                           | 16 MiB por archivo; 128 MiB y 128 archivos en total |
 | Paquete ZIP           | Método Store/0, sin cifrado, ZIP64, comentarios ni campos extra                  | 160 MiB                                             |
 

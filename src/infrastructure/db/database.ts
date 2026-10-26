@@ -2,8 +2,9 @@ import Dexie, { type Table, type Transaction } from 'dexie'
 import {
   legacySnapshotV4Schema,
   legacySnapshotV5Schema,
-  localSnapshotSchema,
-  migrateLegacySnapshot,
+  legacySnapshotV6Schema,
+  migrateLegacySnapshotToV6,
+  migrateSnapshotV6,
 } from '../../domain/backup'
 import { fromStoredUserAlbum, identityRecordSchema } from './records'
 import { LocalStorageError } from './errors'
@@ -16,18 +17,23 @@ import type {
   ReleaseTrack,
   Track,
 } from '../../domain/catalog/schemas'
-import type { AlbumRating, TrackRating } from '../../domain/library/schemas'
+import type {
+  AlbumGenreRating,
+  AlbumRating,
+  TrackRating,
+} from '../../domain/library/schemas'
 import type { OwnedItem } from '../../domain/library/owned-items'
 import type { PurchaseWish } from '../../domain/library/purchase-wishes'
 import type { IdentityRecord, StoredUserAlbum } from './records'
 import { validateRatingUpgradeCheckpoint } from './validate-rating-upgrade'
 import { migrateLegacyCheckpoint } from './migrate-classification'
+import { migrateGenreRatingsCheckpoint } from './migrate-genre-ratings'
 import type { SyncCheckpoint } from '../../domain/sync'
-import { syncCheckpointSchema } from '../../domain/sync'
+import { legacySyncCheckpointV6Schema } from '../../domain/sync'
 import type { AudioAttachment, AudioFileRecord } from '../../domain/audio'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 10
+export const DATABASE_VERSION = 11
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -71,6 +77,10 @@ export const SCHEMA_V10 = {
   audioAttachments: '[scope+id], scope, [scope+userAlbumId], [scope+trackId]',
   audioFiles: '[scope+id], scope',
 } as const
+export const SCHEMA_V11 = {
+  ...SCHEMA_V10,
+  albumGenreRatings: '[userAlbumId+genreKey], userAlbumId, genreKey',
+} as const
 
 async function validateBeforeAudioUpgrade(transaction: Transaction) {
   const snapshot = await readUpgradeSnapshot(transaction)
@@ -82,8 +92,24 @@ async function validateBeforeAudioUpgrade(transaction: Transaction) {
       'identity_missing',
       'Falta la identidad local del checkpoint. Los datos se conservan.',
     )
-  if (snapshot) localSnapshotSchema.parse(snapshot)
-  checkpoints.forEach((row) => syncCheckpointSchema.parse(row))
+  if (snapshot) legacySnapshotV6Schema.parse(snapshot)
+  checkpoints.forEach((row) => legacySyncCheckpointV6Schema.parse(row))
+}
+
+async function migrateGenreRatings(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local del checkpoint. Los datos se conservan.',
+    )
+  if (snapshot) migrateSnapshotV6(snapshot)
+  const migrated = checkpoints.map(migrateGenreRatingsCheckpoint)
+  if (migrated.length)
+    await transaction.table('syncCheckpoint').bulkPut(migrated)
 }
 
 async function readUpgradeSnapshot(transaction: Transaction) {
@@ -149,7 +175,7 @@ async function validateBeforeRatingUpgrade(transaction: Transaction) {
       'Falta la identidad local del checkpoint. Los datos se conservan.',
     )
   if (snapshot)
-    localSnapshotSchema.parse(legacySnapshotV5Schema.parse(snapshot))
+    legacySnapshotV6Schema.parse(legacySnapshotV5Schema.parse(snapshot))
   checkpoints.forEach(validateRatingUpgradeCheckpoint)
 }
 async function migrateClassification(transaction: Transaction) {
@@ -164,7 +190,7 @@ async function migrateClassification(transaction: Transaction) {
     )
   const migrated = checkpoints.map(migrateLegacyCheckpoint)
   if (legacy) {
-    const snapshot = migrateLegacySnapshot(legacy)
+    const snapshot = migrateLegacySnapshotToV6(legacy)
     await transaction.table('albums').bulkPut(snapshot.catalog.albums)
   }
   if (migrated.length)
@@ -183,6 +209,7 @@ export class AuditoriumDatabase extends Dexie {
   readonly releaseTracks: Table<ReleaseTrack, string>
   readonly userAlbums: Table<StoredUserAlbum, string>
   readonly albumRatings: Table<AlbumRating, string>
+  readonly albumGenreRatings: Table<AlbumGenreRating, [string, string]>
   readonly trackRatings: Table<TrackRating, [string, string]>
   readonly ownedItems: Table<OwnedItem, string>
   readonly purchaseWishes: Table<PurchaseWish, string>
@@ -210,6 +237,7 @@ export class AuditoriumDatabase extends Dexie {
     this.version(8).stores(SCHEMA_V8).upgrade(migrateClassification)
     this.version(9).stores(SCHEMA_V9).upgrade(validateBeforeRatingUpgrade)
     this.version(10).stores(SCHEMA_V10).upgrade(validateBeforeAudioUpgrade)
+    this.version(11).stores(SCHEMA_V11).upgrade(migrateGenreRatings)
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.audioAttachments = this.table<AudioAttachment, [string, string]>(
       'audioAttachments',
@@ -230,6 +258,9 @@ export class AuditoriumDatabase extends Dexie {
     this.releaseTracks = this.table<ReleaseTrack, string>('releaseTracks')
     this.userAlbums = this.table<StoredUserAlbum, string>('userAlbums')
     this.albumRatings = this.table<AlbumRating, string>('albumRatings')
+    this.albumGenreRatings = this.table<AlbumGenreRating, [string, string]>(
+      'albumGenreRatings',
+    )
     this.trackRatings = this.table<TrackRating, [string, string]>(
       'trackRatings',
     )

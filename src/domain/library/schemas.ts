@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { entityIdSchema as id, utcTimestampSchema } from '../shared/scalars'
+import { genreKeySchema } from '../catalog/genre-key'
 import { ownedItemDataSchema, ownedItemSchema } from './owned-items'
 import {
   checkPersonalLinks,
@@ -80,10 +81,18 @@ export const trackRatingSchema = z.strictObject({
   scoreUnits: scoreUnitsSchema,
   updatedAt: utcTimestampSchema,
 })
+export const albumGenreRatingSchema = z.strictObject({
+  userAlbumId: id,
+  genreKey: genreKeySchema,
+  scoreUnits: scoreUnitsSchema,
+  updatedAt: utcTimestampSchema,
+  referenceReleaseId: id.optional(),
+})
 export const libraryDataSchema = z.strictObject({
   userAlbums: z.array(userAlbumSchema),
   albumRatings: z.array(albumRatingSchema),
   trackRatings: z.array(trackRatingSchema),
+  albumGenreRatings: z.array(albumGenreRatingSchema).default([]),
   ownedItems: z.array(ownedItemSchema).default([]),
   purchaseWishes: z.array(purchaseWishSchema).default([]),
 })
@@ -146,6 +155,19 @@ export const libraryChangeSchema = z.discriminatedUnion('type', [
     trackId: id,
   }),
   z.strictObject({
+    type: z.literal('set_album_genre_rating'),
+    ...rating,
+    genreKey: genreKeySchema,
+    referenceReleaseId: id.nullable().optional(),
+    expected: albumGenreRatingSchema.nullable(),
+  }),
+  z.strictObject({
+    type: z.literal('remove_album_genre_rating'),
+    ...target,
+    genreKey: genreKeySchema,
+    expected: albumGenreRatingSchema,
+  }),
+  z.strictObject({
     type: z.literal('remove_album_rating'),
     ...target,
     expectedScoreUnits: scoreUnitsSchema.optional(),
@@ -175,6 +197,7 @@ export type UserAlbum = z.output<typeof userAlbumSchema>
 export type ListeningStatus = z.output<typeof listeningStatusSchema>
 export type AlbumRating = z.output<typeof albumRatingSchema>
 export type TrackRating = z.output<typeof trackRatingSchema>
+export type AlbumGenreRating = z.output<typeof albumGenreRatingSchema>
 export type Library = z.output<typeof libraryDataSchema>
 export type LibraryInput = z.input<typeof libraryDataSchema>
 export type LibraryChange = z.output<typeof libraryChangeSchema>

@@ -1,4 +1,5 @@
 import type { Catalog } from '../catalog/schemas'
+import { genreKey } from '../catalog/genre-key'
 import type { Library } from './schemas'
 import { ownedItemMatchesRelease } from './owned-items'
 
@@ -9,6 +10,7 @@ export type LibraryRule =
   | 'wrong_owner'
   | 'wrong_album'
   | 'duplicate_rating'
+  | 'genre_not_assigned'
   | 'rating_before_entry'
   | 'inactive_entry'
   | 'outdated_change'
@@ -35,6 +37,15 @@ export function getLibraryIssues(
     issues.push({ rule, path, message })
   }
   const albumIds = new Set(catalog.albums.map((album) => album.id))
+  const albumGenres = new Map(
+    catalog.albums.map((album) => [
+      album.id,
+      new Set((album.genres ?? []).map(genreKey)),
+    ]),
+  )
+  const releases = new Map(
+    catalog.releases.map((release) => [release.id, release]),
+  )
   const tracks = new Map(
     catalog.tracks.map((track) => [track.id, track] as const),
   )
@@ -161,9 +172,40 @@ export function getLibraryIssues(
     }
     ratedTracks.add(key)
   })
-  const releases = new Map(
-    catalog.releases.map((release) => [release.id, release]),
-  )
+  const ratedGenres = new Set<string>()
+  library.albumGenreRatings.forEach((row, index) => {
+    const path = ['albumGenreRatings', index]
+    const entry = checkRatingReference(row, path)
+    if (entry && !albumGenres.get(entry.albumId)?.has(row.genreKey))
+      report(
+        'genre_not_assigned',
+        [...path, 'genreKey'],
+        'El género debe estar asignado al álbum de la entrada personal.',
+      )
+    if (row.referenceReleaseId) {
+      const release = releases.get(row.referenceReleaseId)
+      if (!release)
+        report(
+          'missing_reference',
+          [...path, 'referenceReleaseId'],
+          'No existe la edición de referencia.',
+        )
+      else if (entry && release.albumId !== entry.albumId)
+        report(
+          'wrong_album',
+          [...path, 'referenceReleaseId'],
+          'La edición de referencia pertenece a otro álbum.',
+        )
+    }
+    const key = JSON.stringify([row.userAlbumId, row.genreKey])
+    if (ratedGenres.has(key))
+      report(
+        'duplicate_rating',
+        path,
+        'El género ya tiene una calificación en esta entrada.',
+      )
+    ratedGenres.add(key)
+  })
   const ownedIds = new Set<string>()
   library.ownedItems.forEach((item, index) => {
     const path = ['ownedItems', index]

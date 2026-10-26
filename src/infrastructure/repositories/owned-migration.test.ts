@@ -2,6 +2,7 @@
 import Dexie from 'dexie'
 import { legacySnapshotFixture } from '../../test/legacy-backup.fixture'
 import { migrateLegacyAlbum } from '../../domain/catalog/legacy-classification'
+import { libraryDataSchema } from '../../domain/library/schemas'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { beforeEach, afterEach, expect, test } from 'vitest'
 import {
@@ -65,12 +66,14 @@ test.each([false, true])(
     const old = await legacy()
     if (populated) {
       const catalog = makeContext().catalog,
-        library = makeLibrary()
+        library = libraryDataSchema.parse(makeLibrary())
       await old.transaction('rw', old.tables, async () => {
         for (const [name, data] of Object.entries(
-          legacySnapshotFixture({ catalog } as Parameters<
-            typeof legacySnapshotFixture
-          >[0]).catalog,
+          legacySnapshotFixture({
+            catalog,
+            library,
+            identity: { userId: libraryIds.user, createdAt: times.added },
+          }).catalog,
         ))
           await old.table(name).bulkAdd(data)
         await old

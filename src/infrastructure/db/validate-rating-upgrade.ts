@@ -1,8 +1,8 @@
 import { z } from 'zod'
 import { legacySnapshotV5Schema } from '../../domain/backup'
-import { syncCheckpointSchema } from '../../domain/sync'
+import { legacySyncCheckpointV6Schema } from '../../domain/sync'
 
-const historicalCheckpointSchema = syncCheckpointSchema.extend({
+const historicalCheckpointSchema = legacySyncCheckpointV6Schema.extend({
   base: legacySnapshotV5Schema.optional(),
   pending: z
     .strictObject({
@@ -20,5 +20,7 @@ const historicalCheckpointSchema = syncCheckpointSchema.extend({
     .optional(),
 })
 export function validateRatingUpgradeCheckpoint(input: unknown) {
-  return syncCheckpointSchema.parse(historicalCheckpointSchema.parse(input))
+  return legacySyncCheckpointV6Schema.parse(
+    historicalCheckpointSchema.parse(input),
+  )
 }

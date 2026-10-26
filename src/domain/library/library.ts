@@ -2,7 +2,12 @@ import { catalogSchema } from '../catalog/catalog'
 import type { Catalog } from '../catalog/schemas'
 import { entityIdSchema } from '../shared/scalars'
 import { getLibraryIssues, type LibraryRule } from './integrity'
-import { libraryChangeSchema, libraryDataSchema, type Library } from './schemas'
+import {
+  libraryChangeSchema,
+  libraryDataSchema,
+  type AlbumGenreRating,
+  type Library,
+} from './schemas'
 import { ownedItemSchema } from './owned-items'
 import { purchaseWishSchema, wishMatchesOwnedItem } from './purchase-wishes'
 import { personalEntryToken } from './personal-entry'
@@ -49,6 +54,20 @@ export class LibraryChangeError extends Error {
   }
 }
 
+export function sameAlbumGenreRating(
+  a: AlbumGenreRating | null,
+  b: AlbumGenreRating | null,
+): boolean {
+  if (!a || !b) return a === b
+  return (
+    a.userAlbumId === b.userAlbumId &&
+    a.genreKey === b.genreKey &&
+    a.scoreUnits === b.scoreUnits &&
+    a.updatedAt === b.updatedAt &&
+    a.referenceReleaseId === b.referenceReleaseId
+  )
+}
+
 export function applyLibraryChange(
   contextInput: LibraryContext,
   input: unknown,
@@ -86,6 +105,19 @@ export function applyLibraryChange(
       )
     }
   }
+  if (
+    change.type === 'set_album_genre_rating' ||
+    change.type === 'remove_album_genre_rating'
+  ) {
+    const previous = library.albumGenreRatings.find(
+      (row) => row.userAlbumId === entry.id && row.genreKey === change.genreKey,
+    )
+    if (!sameAlbumGenreRating(previous ?? null, change.expected))
+      throw new LibraryChangeError(
+        'outdated_change',
+        'La nota por género cambió después de leerla.',
+      )
+  }
   if ('updatedAt' in change) {
     const previous =
       change.type === 'set_album_rating'
@@ -96,7 +128,13 @@ export function applyLibraryChange(
               (row) =>
                 row.userAlbumId === entry.id && row.trackId === change.trackId,
             )?.updatedAt
-          : entry.updatedAt
+          : change.type === 'set_album_genre_rating'
+            ? library.albumGenreRatings.find(
+                (row) =>
+                  row.userAlbumId === entry.id &&
+                  row.genreKey === change.genreKey,
+              )?.updatedAt
+            : entry.updatedAt
     if (previous !== undefined && change.updatedAt < previous) {
       throw new LibraryChangeError(
         'outdated_change',
@@ -329,6 +367,41 @@ export function applyLibraryChange(
           updatedAt: change.updatedAt,
         },
       ]
+      break
+    case 'set_album_genre_rating': {
+      const previous = library.albumGenreRatings.find(
+        (row) =>
+          row.userAlbumId === entry.id && row.genreKey === change.genreKey,
+      )
+      const referenceReleaseId =
+        change.referenceReleaseId === undefined
+          ? previous?.referenceReleaseId
+          : (change.referenceReleaseId ?? undefined)
+      if (
+        previous?.scoreUnits === change.scoreUnits &&
+        previous.referenceReleaseId === referenceReleaseId
+      )
+        break
+      library.albumGenreRatings = [
+        ...library.albumGenreRatings.filter(
+          (row) =>
+            row.userAlbumId !== entry.id || row.genreKey !== change.genreKey,
+        ),
+        {
+          userAlbumId: entry.id,
+          genreKey: change.genreKey,
+          scoreUnits: change.scoreUnits,
+          updatedAt: change.updatedAt,
+          ...(referenceReleaseId ? { referenceReleaseId } : {}),
+        },
+      ]
+      break
+    }
+    case 'remove_album_genre_rating':
+      library.albumGenreRatings = library.albumGenreRatings.filter(
+        (row) =>
+          row.userAlbumId !== entry.id || row.genreKey !== change.genreKey,
+      )
       break
     case 'remove_album_rating':
       library.albumRatings = library.albumRatings.filter(

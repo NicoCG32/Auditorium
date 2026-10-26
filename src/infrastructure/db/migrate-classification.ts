@@ -1,11 +1,11 @@
 import { z } from 'zod'
 import {
   legacySnapshotV4Schema,
-  migrateLegacySnapshot,
+  migrateLegacySnapshotToV6,
 } from '../../domain/backup'
-import { syncCheckpointSchema } from '../../domain/sync'
+import { legacySyncCheckpointV6Schema } from '../../domain/sync'
 
-const historicalCheckpointSchema = syncCheckpointSchema.extend({
+const historicalCheckpointSchema = legacySyncCheckpointV6Schema.extend({
   base: legacySnapshotV4Schema.optional(),
   pending: z
     .strictObject({
@@ -24,23 +24,23 @@ const historicalCheckpointSchema = syncCheckpointSchema.extend({
 })
 export function migrateLegacyCheckpoint(input: unknown) {
   const old = historicalCheckpointSchema.parse(input)
-  return syncCheckpointSchema.parse({
+  return legacySyncCheckpointV6Schema.parse({
     ...old,
-    ...(old.base ? { base: migrateLegacySnapshot(old.base) } : {}),
+    ...(old.base ? { base: migrateLegacySnapshotToV6(old.base) } : {}),
     ...(old.pending
       ? {
           pending: {
             ...old.pending,
-            snapshot: migrateLegacySnapshot(old.pending.snapshot),
-            localSnapshot: migrateLegacySnapshot(old.pending.localSnapshot),
+            snapshot: migrateLegacySnapshotToV6(old.pending.snapshot),
+            localSnapshot: migrateLegacySnapshotToV6(old.pending.localSnapshot),
           },
         }
       : {}),
     ...(old.recovery
       ? {
           recovery: {
-            local: migrateLegacySnapshot(old.recovery.local),
-            remote: migrateLegacySnapshot(old.recovery.remote),
+            local: migrateLegacySnapshotToV6(old.recovery.local),
+            remote: migrateLegacySnapshotToV6(old.recovery.remote),
           },
         }
       : {}),

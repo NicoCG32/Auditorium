@@ -8,7 +8,10 @@ import { makeBackup } from '../domain/backup.fixture'
 import { fixtureId, ids } from '../domain/catalog/catalog.fixture'
 import { libraryIds } from '../domain/library/library.fixture'
 import { localSnapshotSchema, parseBackupDocument } from '../domain/backup'
-import { legacyBackupFixture } from '../test/legacy-backup.fixture'
+import {
+  legacyBackupFixture,
+  legacySnapshotV6Fixture,
+} from '../test/legacy-backup.fixture'
 import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 
@@ -278,7 +281,11 @@ test.each([1, 2, 3, 4, 5])(
   (version) => {
     const backup =
       version === 5
-        ? { ...makeBackup(), schemaVersion: 5 }
+        ? {
+            ...makeBackup(),
+            schemaVersion: 5,
+            data: legacySnapshotV6Fixture(makeBackup().data),
+          }
         : legacyBackupFixture(makeBackup(), version)
     if (version < 3) {
       for (const artist of backup.data.catalog.artists) delete artist.country
