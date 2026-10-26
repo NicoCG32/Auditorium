@@ -10,6 +10,7 @@ import {
   updateAlbumInputSchema,
 } from '../application/album-edit'
 import { makeBackup } from '../domain/backup.fixture'
+import { fixtureId } from '../domain/catalog/catalog.fixture'
 import { libraryIds, times } from '../domain/library/library.fixture'
 import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
@@ -48,6 +49,68 @@ function change(label: string, value: string) {
     target: { value },
   })
 }
+
+test('elegir un homónimo cambia sólo el crédito elegido y la edición de país mantiene su alcance compartido', async () => {
+  const selectedId = fixtureId(16000)
+  await repository.mutate((snapshot) => {
+    const artist = snapshot.catalog.artists[0]!
+    artist.name = 'Banda Delta'
+    artist.country = 'Chile'
+    snapshot.catalog.artists.push({
+      id: selectedId,
+      name: 'Banda Delta',
+      country: 'Perú',
+      catalogScope: 'personal',
+    })
+    snapshot.catalog.albumArtists.push({
+      ...snapshot.catalog.albumArtists[0]!,
+      position: 2,
+      role: 'collaborator',
+    })
+    return { snapshot, result: undefined }
+  })
+  const before = await repository.readSnapshot()
+  await edit()
+  change('País de origen 1', 'Argentina')
+  expect(screen.getByRole('textbox', { name: 'País de origen 2' })).toHaveValue(
+    'Argentina',
+  )
+  change('País de origen 1', 'Chile')
+  const artist = screen.getByRole('combobox', {
+    name: 'Artista 1',
+  })
+  fireEvent.keyDown(artist, { key: 'ArrowDown' })
+  fireEvent.click(screen.getByRole('option', { name: /Perú/u }))
+  expect(screen.getByRole('textbox', { name: 'País de origen 2' })).toHaveValue(
+    'Chile',
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Guardar cambios del álbum' }),
+  )
+  await screen.findByText('Datos del álbum guardados.')
+  const after = await repository.readSnapshot()
+  expect(
+    after.catalog.albumArtists.find(
+      (row) =>
+        row.albumId === before.catalog.albums[0]!.id && row.role === 'primary',
+    )?.artistId,
+  ).toBe(selectedId)
+  expect(
+    after.catalog.albumArtists.find(
+      (row) =>
+        row.albumId === before.catalog.albums[0]!.id &&
+        row.role === 'collaborator',
+    ),
+  ).toEqual(
+    before.catalog.albumArtists.find(
+      (row) =>
+        row.albumId === before.catalog.albums[0]!.id &&
+        row.role === 'collaborator',
+    ),
+  )
+  expect(after.catalog.artists).toEqual(before.catalog.artists)
+  expect(after.library).toEqual(before.library)
+})
 test('editar y guardar corrige metadatos, conserva relaciones y permite filtrar por género y origen', async () => {
   const before = await repository.readSnapshot()
   await edit()

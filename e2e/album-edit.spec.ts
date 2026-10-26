@@ -19,11 +19,17 @@ const png = Buffer.from(
   'base64',
 )
 
-async function suggestionSeed(page: Page) {
+async function suggestionSeed(page: Page, repeatedCredit = false) {
   const backup = makeBackup()
   backup.data.catalog.albums[0]!.genres = ['Death Metal', 'Power Metal']
   backup.data.catalog.artists[0]!.name = 'Banda Delta'
   backup.data.catalog.artists[0]!.country = 'Chile'
+  if (repeatedCredit)
+    backup.data.catalog.albumArtists.push({
+      ...backup.data.catalog.albumArtists[0]!,
+      role: 'collaborator',
+      position: 2,
+    })
   backup.data.catalog.artists.push({
     id: fixtureId(15000),
     name: 'Banda Delta',
@@ -122,10 +128,13 @@ test('autocompleta bandas y géneros offline, edita el fragmento central y conse
 test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugerencias', async ({
   page,
 }) => {
-  const original = await suggestionSeed(page)
+  await suggestionSeed(page, true)
+  const original = await exportBackup(page)
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await editor(page)
   const artist = page.getByRole('combobox', { name: 'Artista 1', exact: true })
-  await artist.fill('Ban')
+  await artist.press('End')
+  await artist.press('ArrowDown')
   await page
     .getByRole('listbox', { name: 'Artistas del catálogo local 1' })
     .getByRole('option', { name: /Perú/u })
@@ -146,7 +155,8 @@ test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugere
   expect((await exportBackup(page)).data).toEqual(original.data)
   await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await editor(page)
-  await artist.fill('Ban')
+  await artist.press('End')
+  await artist.press('ArrowDown')
   await page
     .getByRole('listbox', { name: 'Artistas del catálogo local 1' })
     .getByRole('option', { name: /Perú/u })
@@ -166,8 +176,18 @@ test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugere
   expect(after.data.catalog.artists).toEqual(original.data.catalog.artists)
   expect(after.data.library).toEqual(original.data.library)
   expect(
-    after.data.catalog.albumArtists.find((row) => row.albumId === ids.album)
-      ?.artistId,
+    after.data.catalog.albumArtists.find(
+      (row) => row.albumId === ids.album && row.role === 'collaborator',
+    ),
+  ).toEqual(
+    original.data.catalog.albumArtists.find(
+      (row) => row.albumId === ids.album && row.role === 'collaborator',
+    ),
+  )
+  expect(
+    after.data.catalog.albumArtists.find(
+      (row) => row.albumId === ids.album && row.role === 'primary',
+    )?.artistId,
   ).toBe(fixtureId(15000))
   expect(
     after.data.catalog.albumArtists.filter((row) => row.albumId !== ids.album),

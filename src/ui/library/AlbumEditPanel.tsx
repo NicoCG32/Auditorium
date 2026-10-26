@@ -174,15 +174,18 @@ export function AlbumEditPanel({
   }
   function editArtist(key: string, change: Partial<ArtistDraft>) {
     const selected = draft.artists.find((artist) => artist.key === key)
+    const sharedCountry =
+      Object.keys(change).length === 1 ? change.country : undefined
     edit({
       artists: draft.artists.map((artist) =>
-        artist.key === key ||
-        ('country' in change &&
-          selected?.artistId &&
-          artist.artistId === selected.artistId &&
-          artist.name === selected.name)
+        artist.key === key
           ? { ...artist, ...change }
-          : artist,
+          : sharedCountry !== undefined &&
+              selected?.artistId &&
+              artist.artistId === selected.artistId &&
+              artist.name === selected.name
+            ? { ...artist, country: sharedCountry }
+            : artist,
       ),
     })
   }
