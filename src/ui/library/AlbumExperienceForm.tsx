@@ -15,9 +15,24 @@ import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 import { parseRating } from './parse-rating'
 import { formatScore, listeningLabels } from './labels'
 import { releaseLabels } from './release-labels'
+import { genreKey } from '../../domain/catalog/genre-key'
+import { GenreRatingsFields, type GenreRatingDraft } from './GenreRatingsFields'
 
 function draftFrom(saved: ExperienceExpected) {
+  const genres = new Map<string, GenreRatingDraft>()
+  for (const label of saved.genres?.labels ?? []) {
+    const key = genreKey(label)
+    if (genres.has(key)) continue
+    const rating = saved.genres?.ratings.find((row) => row.genreKey === key)
+    genres.set(key, {
+      genreKey: key,
+      label,
+      score: rating ? formatScore(unitsToScore(rating.scoreUnits)) : '',
+      reference: rating?.referenceReleaseId ?? '',
+    })
+  }
   return {
+    genres: [...genres.values()],
     listeningStatus: saved.listeningStatus,
     notes: saved.personalNotes ?? '',
     score: saved.rating
@@ -35,6 +50,7 @@ export function AlbumExperienceForm({
   onBusyChange,
   onComplete,
   onCancel,
+  initialGenre,
 }: {
   snapshot: LocalSnapshot
   entryId: string
@@ -44,10 +60,11 @@ export function AlbumExperienceForm({
   onBusyChange: (busy: boolean) => void
   onComplete: () => void
   onCancel: () => void
+  initialGenre?: string
 }) {
   const draftId = `experience:${entryId}`
   const [base, setBase] = useDraftState(draftId, 'expected', () =>
-    experienceExpected(snapshot, entryId),
+    experienceExpected(snapshot, entryId, true),
   )
   const [draft, setDraft] = useDraftState(draftId, 'draft', () =>
     draftFrom(base),
@@ -57,6 +74,7 @@ export function AlbumExperienceForm({
   const [conflict, setConflict] = useState(false)
   const [failure, setFailure] = useState('')
   const [validation, setValidation] = useState('')
+  const [genreError, setGenreError] = useState('')
   const [notice, setNotice] = useState('')
   const locked = useRef(false)
   const input = useRef<HTMLInputElement>(null)
@@ -67,6 +85,10 @@ export function AlbumExperienceForm({
     (release) => release.albumId === entry.albumId,
   )
   const labels = releaseLabels(releases)
+  const initialGenreAssigned = Boolean(
+    initialGenre &&
+    base.genres?.labels.some((label) => genreKey(label) === initialGenre),
+  )
   useDraftGuard({
     id: draftId,
     label: 'Mi experiencia',
@@ -77,22 +99,23 @@ export function AlbumExperienceForm({
     form,
   })
   useEffect(() => {
-    input.current?.focus()
-  }, [])
+    if (!initialGenreAssigned) input.current?.focus()
+  }, [initialGenreAssigned])
   useEffect(() => {
     if (!busy && (pending || conflict) && failure) retry.current?.focus()
   }, [busy, pending, conflict, failure])
   function edit(change: Partial<typeof draft>) {
     setDraft((previous) => ({ ...previous, ...change }))
-    setFailure('')
+    if (!conflict) setFailure('')
     setValidation('')
+    setGenreError('')
     setNotice('')
   }
   async function read(replace: boolean) {
     try {
       const fresh = await onCommitted()
       if (replace) {
-        const saved = experienceExpected(fresh, entryId)
+        const saved = experienceExpected(fresh, entryId, true)
         setBase(saved)
         setDraft(draftFrom(saved))
         setConflict(false)
@@ -119,6 +142,24 @@ export function AlbumExperienceForm({
       input.current?.focus()
       return
     }
+    const genreRatings: {
+      genreKey: string
+      score: number
+      referenceReleaseId?: string
+    }[] = []
+    for (const row of draft.genres) {
+      const value = parseRating(row.score)
+      if (row.score.trim() && value === undefined) {
+        setGenreError(row.genreKey)
+        return
+      }
+      if (value !== undefined)
+        genreRatings.push({
+          genreKey: row.genreKey,
+          score: value,
+          ...(row.reference ? { referenceReleaseId: row.reference } : {}),
+        })
+    }
     locked.current = true
     setBusy(true)
     onBusyChange(true)
@@ -139,6 +180,7 @@ export function AlbumExperienceForm({
               },
             }),
         expected: base,
+        genreRatings,
       })
       setBase(saved)
       setDraft(draftFrom(saved))
@@ -179,11 +221,19 @@ export function AlbumExperienceForm({
         Mi experiencia
       </h3>
       <p className="mt-3 text-sm text-muted">
-        Escucha, nota, edición de referencia y comentario se guardan juntos. La
-        nota del álbum es independiente de las pistas.
+        Escucha, notas y comentario se guardan juntos. La valoración general,
+        las de género y las de pistas son independientes.
       </p>
+      {initialGenreAssigned ? (
+        <p className="mt-3 text-sm text-accent-text">
+          Contexto seleccionado:{' '}
+          {draft.genres.find((row) => row.genreKey === initialGenre)?.label}.
+          Puedes editar también las demás notas de forma independiente.
+        </p>
+      ) : null}
       <form
         ref={form}
+        className="experience-editor"
         onSubmit={(event) => void save(event)}
         noValidate
         autoComplete="off"
@@ -232,7 +282,8 @@ export function AlbumExperienceForm({
             />
             <p id="album-score-help" className="mt-2 text-xs text-muted">
               De 1 a 10, en pasos de 0,5. Coma o punto. Dejarla vacía guarda la
-              experiencia sin nota.
+              experiencia sin nota general. Añadir este álbum ya expresa valor;
+              una nota baja compara experiencias dentro de tu biblioteca.
             </p>
             {validation ? (
               <p role="alert" className="field-error">
@@ -262,10 +313,23 @@ export function AlbumExperienceForm({
             </select>
             <span className="mt-2 block text-xs text-muted">
               {releases.length
-                ? 'Ediciones añadidas a este álbum, aunque no las hayas adquirido. La selección contextualiza tu única nota.'
+                ? 'Ediciones añadidas a este álbum, aunque no las hayas adquirido. Esta selección contextualiza la nota general.'
                 : 'Aún no has añadido ediciones. Puedes valorar sin referencia.'}
             </span>
           </label>
+          <GenreRatingsFields
+            rows={draft.genres}
+            releases={labels}
+            invalidKey={genreError}
+            {...(initialGenreAssigned ? { focusGenre: initialGenre! } : {})}
+            onChange={(key, change) =>
+              edit({
+                genres: draft.genres.map((row) =>
+                  row.genreKey === key ? { ...row, ...change } : row,
+                ),
+              })
+            }
+          />
           <label>
             <span className="field-label">Notas personales</span>
             <textarea

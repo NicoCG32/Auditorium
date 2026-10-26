@@ -154,6 +154,11 @@ export function RecommendationsPanel({
         guardado, tomando tus últimas incorporaciones como contexto. No cambia
         tus calificaciones ni tu estado de escucha.
       </p>
+      <p className="text-sm text-muted">
+        Incorporar un álbum ya expresa valor para ti. La nota general compara
+        experiencias dentro de tu biblioteca; una nota baja no significa
+        rechazo. Las notas por género no se envían al proveedor.
+      </p>
       <div className="form-field">
         <label className="field-label" htmlFor={providerId}>
           Proveedor

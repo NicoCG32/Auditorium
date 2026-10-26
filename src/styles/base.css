@@ -1648,6 +1648,55 @@
   gap: 1rem;
   margin-block-end: 1.5rem;
 }
+.genre-ratings-fields {
+  min-inline-size: 0;
+  padding: clamp(0.5rem, 2vw, 1rem);
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+}
+.genre-ratings-fields > summary {
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+.genre-rating-row {
+  min-inline-size: 0;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+}
+.genre-rating-row legend {
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+}
+.rating-basis-control {
+  min-inline-size: 0;
+  margin-block: 1rem;
+}
+.experience-editor input,
+.experience-editor select,
+.experience-editor textarea,
+.rating-basis-control select,
+.ratings-genre-filter select,
+.genre-ratings-fields input,
+.genre-ratings-fields select {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--muted);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 1rem;
+}
+@media (max-width: 23rem) {
+  .library-heading {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .library-utilities {
+    justify-self: end;
+  }
+}
 @media (max-width: 39.99rem) {
   .album-summary-grid {
     grid-template-columns: minmax(4.5rem, 0.7fr) minmax(0, 1.3fr);

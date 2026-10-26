@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.19 · 2026-10-26 · Estado: MVP v1.0.0 publicado; modelo y compatibilidad de notas por género incorporados; interfaz contextual pendiente.
+Versión 1.20 · 2026-10-26 · Estado: MVP v1.0.0 publicado; valoraciones por género, guardado conjunto y comparación contextual incorporados.
 
 ## Objetivo del producto
 
@@ -26,9 +26,9 @@ No se asignan personas ni calendarios hasta acordar disponibilidad.
 
 ## Fuente de seguimiento
 
-El refinamiento actual sigue [CAT-02 #79](https://github.com/NicoCG32/Auditorium/issues/79), sugerencias locales en alta y edición, entregadas; [RATE-01 #80](https://github.com/NicoCG32/Auditorium/issues/80), modelo y compatibilidad de valoraciones por género; y [RATE-02 #81](https://github.com/NicoCG32/Auditorium/issues/81), experiencia y filtros contextuales, siguiente implementación. La [guía de notas por género](VALORACIONES_POR_GENERO.md) concreta el modelo de RATE-01, sus operaciones, renombrado protegido y migración DB11/JSON7/ZIP1. La [guía de registro](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local) documenta el autocompletado. COL-05 y UX-07 mantienen su alcance pendiente.
+El refinamiento incorpora [CAT-02 #79](https://github.com/NicoCG32/Auditorium/issues/79), sugerencias locales en alta y edición; [RATE-01 #80](https://github.com/NicoCG32/Auditorium/issues/80), modelo y compatibilidad; y [RATE-02 #81](https://github.com/NicoCG32/Auditorium/issues/81), experiencia y filtros contextuales. La [guía de notas por género](VALORACIONES_POR_GENERO.md) concreta guardado, comparación explícita, renombrado protegido y compatibilidad DB11/JSON7/ZIP1. La [guía de registro](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local) documenta el autocompletado. COL-05 y UX-07 mantienen su alcance pendiente.
 
-Las valoraciones son personales y comparativas dentro de la biblioteca: incorporar un álbum expresa valor y una nota mínima no implica rechazo. RATE-01 amplía el modelo de nota general con notas opcionales por género, independientes y sin promedios. Mantener ausencia explícita y una base de comparación visible en filtros forma parte de RATE-02, todavía pendiente.
+Las valoraciones son personales y comparativas dentro de la biblioteca: incorporar un álbum expresa valor y una nota mínima no implica rechazo. RATE-01/02 incorporan notas opcionales por género, independientes y sin promedios, con ausencia explícita y una base visible compartida por cifra, ordenación y filtros. No se amplían automáticamente los datos enviados a proveedores.
 
 [GitHub Projects — Auditorium](https://github.com/users/NicoCG32/projects/4) organiza el backlog; las issues contienen alcance, criterios de aceptación y dependencias. Los milestones representan fases. Este documento conserva el método y los criterios generales, mientras el estado de ejecución se mantiene en el Project.
 

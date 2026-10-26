@@ -2,6 +2,7 @@ import type { ListeningStatus } from '../domain/library/schemas'
 import { classificationLabel } from '../domain/catalog/classification'
 import { unitsToScore } from '../domain/library/scores'
 import type { LocalSnapshot } from '../domain/repositories/local-repository'
+import { genreKey } from '../domain/catalog/genre-key'
 
 export interface LibraryAlbum {
   id: string
@@ -11,6 +12,7 @@ export interface LibraryAlbum {
   searchText: string
   originalYear?: number
   score?: number
+  genreScores?: Record<string, number>
   genres?: string[]
   countries?: string[]
   coverUrl?: string
@@ -29,6 +31,26 @@ export interface LibraryFilters {
   order: LibraryOrder
   genre?: string
   country?: string
+  ratingBasis?: 'auto' | 'general'
+}
+
+/** The general projection stays unchanged for recommendations and other consumers. */
+export function ratingGenre(
+  filters: Pick<LibraryFilters, 'genre' | 'ratingBasis'>,
+): string | undefined {
+  return filters.genre && filters.ratingBasis !== 'general'
+    ? genreKey(filters.genre)
+    : undefined
+}
+export function albumScore(
+  album: LibraryAlbum,
+  genre?: string,
+): number | undefined {
+  if (!genre) return album.score
+  const key = genreKey(genre)
+  return album.genreScores && Object.hasOwn(album.genreScores, key)
+    ? album.genreScores[key]
+    : undefined
 }
 
 export const defaultLibraryFilters: LibraryFilters = {
@@ -38,6 +60,7 @@ export const defaultLibraryFilters: LibraryFilters = {
   order: 'added',
   genre: '',
   country: '',
+  ratingBasis: 'auto',
 }
 
 const collator = new Intl.Collator('es', { sensitivity: 'base', numeric: true })
@@ -136,6 +159,9 @@ function projectEntries(
         names.flatMap((name) => (name.country ? [name.country] : [])),
       )
       const rating = ratings.get(entry.id)
+      const genreRatings = snapshot.library.albumGenreRatings.filter(
+        (row) => row.userAlbumId === entry.id,
+      )
       return {
         id: entry.id,
         albumId: album.id,
@@ -156,6 +182,16 @@ function projectEntries(
         ...(rating === undefined
           ? {}
           : { score: unitsToScore(rating.scoreUnits) }),
+        ...(genreRatings.length
+          ? {
+              genreScores: Object.fromEntries(
+                genreRatings.map((row) => [
+                  row.genreKey,
+                  unitsToScore(row.scoreUnits),
+                ]),
+              ),
+            }
+          : {}),
         ...(genres.length ? { genres } : {}),
         ...(countries.length ? { countries } : {}),
         ...(album.coverUrl === undefined ? {} : { coverUrl: album.coverUrl }),
@@ -175,6 +211,7 @@ export function queryLibrary(
   const words = normalized(filters.search.trim()).split(/\s+/u).filter(Boolean)
   const genre = normalized(filters.genre ?? '')
   const country = normalized(filters.country ?? '')
+  const context = ratingGenre(filters)
   return albums
     .filter((album) => {
       if (!words.every((word) => album.searchText.includes(word))) return false
@@ -190,13 +227,10 @@ export function queryLibrary(
         filters.listening !== album.listeningStatus
       )
         return false
-      if (filters.rating === 'unrated' && album.score !== undefined)
-        return false
-      if (filters.rating === 'rated' && album.score === undefined) return false
-      if (
-        filters.rating === 'high' &&
-        (album.score === undefined || album.score < 8)
-      )
+      const score = albumScore(album, context)
+      if (filters.rating === 'unrated' && score !== undefined) return false
+      if (filters.rating === 'rated' && score === undefined) return false
+      if (filters.rating === 'high' && (score === undefined || score < 8))
         return false
       return true
     })
@@ -206,7 +240,8 @@ export function queryLibrary(
       if (filters.order === 'title') order = collator.compare(a.title, b.title)
       if (filters.order === 'artist')
         order = collator.compare(a.artist, b.artist)
-      if (filters.order === 'rating') order = (b.score ?? -1) - (a.score ?? -1)
+      if (filters.order === 'rating')
+        order = (albumScore(b, context) ?? -1) - (albumScore(a, context) ?? -1)
       if (filters.order === 'genre') order = compareLabels(a.genres, b.genres)
       if (filters.order === 'country')
         order = compareLabels(a.countries, b.countries)

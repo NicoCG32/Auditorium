@@ -142,6 +142,9 @@ test('filtros combinados, portada, regreso, teclado y texto ampliado conservan e
     .getByRole('combobox', { name: 'Género', exact: true })
     .selectOption('metal progresivo')
   await page
+    .getByRole('combobox', { name: 'Valoración usada', exact: true })
+    .selectOption('general')
+  await page
     .getByRole('combobox', { name: 'País de origen', exact: true })
     .selectOption('chile')
   await page

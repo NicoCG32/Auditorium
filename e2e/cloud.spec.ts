@@ -1,4 +1,7 @@
-import { openLibraryOptions } from './helpers/library-navigation'
+import {
+  openLibraryOptions,
+  openExperience,
+} from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { readFile } from 'node:fs/promises'
 import { expect, test, type BrowserContext, type Page } from '@playwright/test'
@@ -366,8 +369,13 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   context,
   browser,
 }) => {
+  test.setTimeout(90_000)
   const snapshot = makeBackup().data
   const entry = snapshot.library.userAlbums[0]!
+  snapshot.catalog.albums.find((row) => row.id === entry.albumId)!.genres = [
+    'Death Metal',
+    'Power Metal',
+  ]
   const linkId = '00000000-0000-4000-8000-000000056000'
   entry.links = [
     {
@@ -393,6 +401,32 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
   const second = await browser.newContext()
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await openExperience(page)
+  await page.getByText('Valorar por género', { exact: false }).click()
+  await page
+    .getByRole('textbox', { name: 'Nota en Death Metal', exact: true })
+    .fill('9,5')
+  await page
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
+  await expect(
+    page.getByText('Experiencia guardada.', { exact: true }),
+  ).toBeVisible()
+  await accountPage(page)
+  await page
+    .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+    .click()
+  await expect
+    .poll(
+      () =>
+        state
+          .get(userId)
+          ?.snapshot.library.albumGenreRatings.find(
+            (row) => row.genreKey === 'death metal',
+          )?.scoreUnits,
+    )
+    .toBe(19)
   await mock(second, state)
   const other = await second.newPage()
   await login(other)
@@ -412,6 +446,50 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   await expect(
     other.getByRole('region', { name: 'Escuchar', exact: true }),
   ).toContainText('Favorito de reproducción')
+  await openExperience(other)
+  await other.getByText('Valorar por género', { exact: false }).click()
+  await expect(
+    other.getByRole('textbox', { name: 'Nota en Death Metal', exact: true }),
+  ).toHaveValue('9,5')
+  await other
+    .getByRole('textbox', { name: 'Nota en Power Metal', exact: true })
+    .fill('3')
+  await other
+    .getByRole('button', { name: 'Guardar experiencia', exact: true })
+    .click()
+  await expect(
+    other.getByText('Experiencia guardada.', { exact: true }),
+  ).toBeVisible()
+  await accountPage(other)
+  await other
+    .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+    .click()
+  await expect
+    .poll(
+      () =>
+        state
+          .get(userId)
+          ?.snapshot.library.albumGenreRatings.find(
+            (row) => row.genreKey === 'power metal',
+          )?.scoreUnits,
+    )
+    .toBe(6)
+  await page
+    .getByRole('button', { name: 'Sincronizar ahora', exact: true })
+    .click()
+  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await openExperience(page)
+  await page.getByText('Valorar por género', { exact: false }).click()
+  await expect(
+    page.getByRole('textbox', { name: 'Nota en Power Metal', exact: true }),
+  ).toHaveValue('3')
+  await expect(
+    page.getByRole('textbox', { name: 'Nota del álbum', exact: true }),
+  ).toHaveValue('9,5')
+  await page
+    .getByRole('button', { name: 'Cancelar experiencia', exact: true })
+    .click()
   await accountPage(page)
   const result = await new AxeBuilder({ page })
     .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])

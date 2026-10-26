@@ -2,6 +2,8 @@
 
 UX-06 organiza la consulta del álbum y permite guardar su experiencia personal como una sola operación. El álbum conceptual, sus ediciones, la opinión personal y las adquisiciones mantienen responsabilidades distintas.
 
+RATE-02 amplía el editor con **Valorar por género (opcional)**: notas independientes de la general y referencias de edición propias. Guarda el conjunto de forma atómica, con comparación del estado esperado y de las etiquetas del álbum. La [guía contextual](VALORACIONES_POR_GENERO.md) explica la comparación en Biblioteca/Calificaciones, ausencia explícita y renombrado protegido. DB11/JSON7/ZIP1 se mantienen sin migración nueva.
+
 ## Recorrido
 
 La ficha empieza con portada, título, artista, clasificación, año, enlaces de escucha o compra y un resumen de **Mi experiencia**. **Calificar álbum**, **Recalificar álbum** y **Editar experiencia** abren el mismo editor. **Editar álbum** abre los metadatos de catálogo por separado.
@@ -14,7 +16,7 @@ Desde **Calificaciones** se puede buscar y alternar entre **Por calificar** y **
 
 El editor reúne estado de escucha, nota opcional de 1 a 10 en pasos de 0,5, edición de referencia opcional y comentario personal. **Guardar experiencia** confirma el conjunto y vuelve al resumen. Los espacios y saltos de línea de un comentario con contenido se conservan; dejarlo en blanco retira el comentario.
 
-**Quitar nota del borrador** vacía nota y referencia. La base no cambia hasta pulsar **Guardar experiencia**. Cancelar o navegar con un borrador permite seguir editando, descartarlo o guardarlo antes de salir. Quitar la nota conserva escucha, comentario, enlaces, pistas y adquisiciones.
+**Quitar nota del borrador** vacía sólo la general y su referencia. Cada género tiene su propia acción para quitar su nota del borrador. La base no cambia hasta **Guardar experiencia**. Cancelar o navegar con cambios permite seguir editando, descartar o guardar antes de salir. Quitar una nota conserva las demás, escucha, comentario, enlaces, pistas y adquisiciones.
 
 ```mermaid
 flowchart TD

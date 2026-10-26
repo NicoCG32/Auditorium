@@ -6,7 +6,7 @@ export async function openAlbumArea(
 ) {
   const panel = page.locator(`details[data-album-area="${area}"]`)
   if ((await panel.getAttribute('open')) === null)
-    await panel.locator('summary').click()
+    await panel.locator(':scope > summary').click()
 }
 
 export async function openExperience(page: Page) {

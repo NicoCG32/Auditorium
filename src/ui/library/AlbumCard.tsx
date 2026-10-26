@@ -1,4 +1,5 @@
-import type { LibraryAlbum } from '../../application/library-query'
+import { albumScore, type LibraryAlbum } from '../../application/library-query'
+import { genreKey } from '../../domain/catalog/genre-key'
 import { AlbumCover } from './AlbumCover'
 import { formatScore, listeningLabels } from './labels'
 
@@ -6,11 +7,18 @@ export function AlbumCard({
   album,
   view,
   onOpen,
+  ratingGenre,
 }: {
   album: LibraryAlbum
   view: 'grid' | 'list'
   onOpen: () => void
+  ratingGenre?: string
 }) {
+  const score = albumScore(album, ratingGenre)
+  const context = ratingGenre
+    ? (album.genres?.find((label) => genreKey(label) === ratingGenre) ??
+      ratingGenre)
+    : 'General'
   return (
     <li
       data-entry-id={album.id}
@@ -78,15 +86,15 @@ export function AlbumCard({
             </dd>
           </div>
           <div>
-            <dt>Mi nota</dt>
+            <dt className="wrap-anywhere">Mi nota · {context}</dt>
             <dd className="text-sm font-semibold">
-              {album.score === undefined ? (
-                <span className="font-normal text-muted">Sin nota</span>
+              {score === undefined ? (
+                <span className="font-normal text-muted">
+                  {ratingGenre ? 'Sin valoración en este género' : 'Sin nota'}
+                </span>
               ) : (
                 <>
-                  <span className="text-accent-text">
-                    {formatScore(album.score)}
-                  </span>
+                  <span className="text-accent-text">{formatScore(score)}</span>
                   <span className="text-muted"> / 10</span>
                 </>
               )}

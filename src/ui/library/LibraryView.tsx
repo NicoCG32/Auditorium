@@ -1,6 +1,7 @@
 import {
   defaultLibraryFilters,
   queryLibrary,
+  ratingGenre,
   type LibraryAlbum,
   type LibraryFilters,
 } from '../../application/library-query'
@@ -25,6 +26,7 @@ export function LibraryView({
   onAdd: () => void
 }) {
   const visible = queryLibrary(albums, filters)
+  const context = ratingGenre(filters)
   const narrowed = Boolean(
     filters.search ||
     filters.genre ||
@@ -76,6 +78,7 @@ export function LibraryView({
         <p role="status" className="text-sm text-muted">
           {visible.length} de {albums.length}{' '}
           {albums.length === 1 ? 'álbum' : 'álbumes'}
+          {!context ? ' · Valoración general' : ''}
         </p>
         {narrowed ? (
           <button
@@ -113,6 +116,7 @@ export function LibraryView({
               key={album.id}
               album={album}
               view={view}
+              {...(context ? { ratingGenre: context } : {})}
               onOpen={() => onOpen(album.id)}
             />
           ))}

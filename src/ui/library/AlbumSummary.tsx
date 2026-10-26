@@ -28,6 +28,8 @@ import { PersonalAlbumLinks } from './PersonalAlbumLinks'
 import { AlbumEditPanel } from './AlbumEditPanel'
 import { useNavigation } from '../navigation/navigation-context'
 import { AudioPanel } from './AudioPanel'
+import { GenreRatingsSummary } from './GenreRatingsSummary'
+import { GenreRenameForm } from './GenreRenameForm'
 
 export function AlbumSummary({
   snapshot,
@@ -55,12 +57,14 @@ export function AlbumSummary({
   onExperienceOpen,
   onExperienceComplete,
   onExperienceCancel,
+  ratingGenre,
 }: {
   experienceEditing: boolean
   collectionEditing: boolean
   onExperienceOpen: () => void
   onExperienceComplete: () => void
   onExperienceCancel: () => void
+  ratingGenre?: string
   snapshot: LocalSnapshot
   album: Album
   entry: LibraryAlbum
@@ -190,6 +194,7 @@ export function AlbumSummary({
           onBusyChange={onBusyChange}
           onComplete={onExperienceComplete}
           onCancel={onExperienceCancel}
+          {...(ratingGenre ? { initialGenre: ratingGenre } : {})}
         />
       ) : (
         <section
@@ -205,7 +210,7 @@ export function AlbumSummary({
               <strong>{listeningLabels[personalEntry.listeningStatus]}</strong>
             </p>
             <p>
-              Nota guardada:{' '}
+              Nota general guardada:{' '}
               <strong className="text-accent-text">
                 {rating
                   ? formatScore(unitsToScore(rating.scoreUnits)) + ' / 10'
@@ -219,6 +224,14 @@ export function AlbumSummary({
               ? releaseNames.get(rating.referenceReleaseId)
               : 'Sin edición de referencia'}
           </p>
+          <GenreRatingsSummary
+            labels={album.genres ?? []}
+            ratings={personalLibrary.albumGenreRatings.filter(
+              (row) => row.userAlbumId === personalEntry.id,
+            )}
+            releases={releaseNames}
+            {...(ratingGenre ? { selected: ratingGenre } : {})}
+          />
           {personalEntry.personalNotes ? (
             <p className="mt-4 whitespace-pre-wrap wrap-anywhere">
               {personalEntry.personalNotes}
@@ -286,6 +299,16 @@ export function AlbumSummary({
             </dd>
           </div>
         </dl>
+        {album.genres?.length ? (
+          <GenreRenameForm
+            snapshot={snapshot}
+            albumId={album.id}
+            library={library}
+            blocked={busy}
+            onBusyChange={onBusyChange}
+            onCommitted={onExperienceCommitted}
+          />
+        ) : null}
         {album.description ? (
           <p className="mt-5 whitespace-pre-wrap wrap-anywhere">
             {album.description}

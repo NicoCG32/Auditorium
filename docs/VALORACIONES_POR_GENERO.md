@@ -1,6 +1,35 @@
 # Valoraciones personales por género
 
-RATE-01 #80 · 26 de octubre de 2026. Implementa el modelo, las operaciones y la compatibilidad. La edición de estas notas y los filtros contextuales en la interfaz corresponden a RATE-02 #81 y siguen pendientes. La nota general de **Mi experiencia** continúa disponible.
+RATE-01 #80 y RATE-02 #81 · 26 de octubre de 2026. Modelo, operaciones, compatibilidad e interfaz de notas por género y comparación contextual. La nota general de **Mi experiencia** continúa siendo independiente y opcional.
+
+## Valorar y comparar en la aplicación
+
+En la ficha, **Calificar álbum**, **Recalificar álbum** o **Editar experiencia** abren el mismo editor. La nota general permanece visible. Despliega **Valorar por género (opcional)** para introducir notas en los géneros asignados al álbum. Cada campo admite coma o punto, de 1 a 10 en pasos de 0,5; vacío significa sin valoración en ese género. Puedes indicar una edición de referencia propia para cada nota, elegida entre las ediciones conocidas del álbum, aunque no las hayas adquirido.
+
+**Guardar experiencia** confirma escucha, comentario, general y géneros en una sola transacción. Quitar la general deja intactas las notas por género; quitar una nota contextual no cambia las demás. Cancelar o navegar con cambios permite guardar, descartar o seguir editando. Un conflicto conserva el borrador: **Cargar datos guardados** lo reemplaza explícitamente. Si el guardado terminó y falla la lectura de la ficha, el reintento hace sólo esa lectura. Las notas guardadas sobreviven a recarga y se sincronizan mediante el contrato existente.
+
+En **Biblioteca**, elegir **Género** selecciona automáticamente su nota contextual. **Valoración usada** permite elegir **General** de forma explícita. **Mayor nota**, **8 o más** y **Con/Sin nota** usan exactamente la misma base que las tarjetas. Sin contexto de género se muestra General; sin nota contextual se muestra **Sin valoración en este género**, incluso si existe una general. Cambiar de género vuelve a su base contextual y quitar el filtro vuelve a General. País, escucha y búsqueda siguen combinándose. Los valores de consulta se conservan al volver desde una ficha; son temporales y no se promete conservarlos al recargar.
+
+```mermaid
+flowchart TD
+    F["Género seleccionado"] --> B{"Valoración usada"}
+    B -->|En el género| C["Consultar nota de entrada y genreKey"]
+    B -->|General explícita| G["Consultar nota general"]
+    N["Sin género seleccionado"] --> G
+    C --> P{"¿Tiene nota?"}
+    P -->|Sí| V["Mostrar, ordenar y filtrar por esa cifra"]
+    P -->|No| A["Sin valoración en este género"]
+    G --> Q{"¿Tiene nota general?"}
+    Q -->|Sí| V
+    Q -->|No| Z["Sin nota general"]
+    A --> U["Sin nota; nunca sustituir por la general"]
+```
+
+**Calificaciones** tiene su propio selector **Género a valorar**, base visible y modos **Por calificar/Calificados**. Abrir un álbum desde una comparación contextual despliega los campos por género y enfoca la nota elegida. La ficha mantiene visible la general, indica el contexto de comparación y permite consultar todas las notas y sus referencias sin promediarlas.
+
+Para corregir una etiqueta valorada, abre **Datos del álbum → Renombrar un género conservando sus valoraciones**. Elige origen y nombre nuevo y confirma. Si el destino ya está asignado o cambió el origen, la operación no combina ni elimina notas; puedes revisar o cargar los datos guardados. Esta operación conserva también las valoraciones de entradas retiradas. La edición ordinaria de metadatos sigue bloqueando quitar una etiqueta con notas.
+
+Las recomendaciones explican el carácter comparativo de la escala. Continúan enviando únicamente el contexto autorizado de notas generales; no añaden etiquetas ni notas por género al proveedor. Se conservan consentimiento, clave de sesión y controles anteriores.
 
 ## Significado y separación
 

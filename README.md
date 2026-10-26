@@ -1,6 +1,6 @@
 # Auditorium
 
-El [modelo de valoraciones por género](docs/VALORACIONES_POR_GENERO.md) añade notas opcionales independientes de la general, con referencia de edición propia y renombrado protegido. DB11/nativa110 y JSON/snapshot7 conservan datos anteriores y audio local; ZIP1 mantiene su formato. La interfaz para editar estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
+Las [valoraciones por género](docs/VALORACIONES_POR_GENERO.md) permiten editar notas opcionales independientes de la general, con referencia de edición propia y renombrado protegido. Biblioteca y Calificaciones indican qué nota comparan; ordenar y filtrar usan esa misma base, sin sustituir notas ausentes. DB11/nativa110, JSON/snapshot7 y ZIP1 mantienen sus contratos.
 
 La [reproducción desde enlaces](docs/REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](docs/PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.
 

@@ -297,6 +297,7 @@ describe('búsqueda, filtros y orden', () => {
         rating: 'high',
         order: 'title',
         genre: '  MÉTAL   progresivo  ',
+        ratingBasis: 'general',
         country: 'ESPANA',
       }).map((album) => album.id),
     ).toEqual([libraryIds.entry])

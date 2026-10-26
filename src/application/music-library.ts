@@ -799,7 +799,11 @@ export class MusicLibrary {
           'missing_reference',
           'El álbum ya no está activo en tu biblioteca.',
         )
-      const previous = experienceExpected(snapshot, id)
+      const previous = experienceExpected(
+        snapshot,
+        id,
+        request.genreRatings !== undefined,
+      )
       if (!sameExperience(previous, request.expected))
         throw new MusicUseCaseError(
           'outdated_experience',
@@ -839,7 +843,46 @@ export class MusicLibrary {
               }
             : { type: 'remove_album_rating', userAlbumId: id },
         )
-      return { snapshot, result: experienceExpected(snapshot, id) }
+      if (request.genreRatings !== undefined) {
+        const before = previous.genres!.ratings
+        const desired = new Map(
+          request.genreRatings.map((row) => [row.genreKey, row]),
+        )
+        for (const row of before) {
+          if (!desired.has(row.genreKey))
+            snapshot.library = applyLibraryChange(context, snapshot.library, {
+              type: 'remove_album_genre_rating',
+              userAlbumId: id,
+              genreKey: row.genreKey,
+              expected: row,
+            })
+        }
+        for (const row of request.genreRatings) {
+          const old = before.find((value) => value.genreKey === row.genreKey)
+          if (
+            old?.scoreUnits === scoreToUnits(row.score) &&
+            old.referenceReleaseId === row.referenceReleaseId
+          )
+            continue
+          snapshot.library = applyLibraryChange(context, snapshot.library, {
+            type: 'set_album_genre_rating',
+            userAlbumId: id,
+            genreKey: row.genreKey,
+            scoreUnits: scoreToUnits(row.score),
+            referenceReleaseId: row.referenceReleaseId ?? null,
+            expected: old ?? null,
+            updatedAt,
+          })
+        }
+      }
+      return {
+        snapshot,
+        result: experienceExpected(
+          snapshot,
+          id,
+          request.genreRatings !== undefined,
+        ),
+      }
     })
   }
 

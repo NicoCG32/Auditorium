@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Mi experiencia incorpora notas opcionales por género y referencia de edición propia, con guardado atómico y protección de borradores y conflictos. Biblioteca y Calificaciones muestran la base elegida, ordenan y filtran por la misma nota, con ausencia explícita y General seleccionable. Renombrado de géneros desde la ficha sin perder notas; textos comparativos y recomendaciones sin ampliar los datos enviados. DB11/JSON7/ZIP1 sin cambios de formato.
+
 - Modelo de notas por género asignado al álbum, independientes de la general y por pista, con referencia de edición propia, comparación concurrente completa y renombrado atómico de etiquetas valoradas, incluidas entradas retiradas. Quitar una nota general conserva las contextuales.
 - DB11/nativa110 y JSON/snapshot7 con lectores históricos estrictos y migración de los cinco documentos del checkpoint, sin notas inferidas. ZIP1 conserva audio y admite JSON6 histórico; la RPC amplía validación, mantiene RLS/CAS y bloquea retrocesos. Guía y ADR-013; controles de edición y filtros pendientes en RATE-02 #81.
 

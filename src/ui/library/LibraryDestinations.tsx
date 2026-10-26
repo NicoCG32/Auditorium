@@ -1,4 +1,12 @@
-import type { LibraryAlbum } from '../../application/library-query'
+import {
+  albumScore,
+  libraryFilterOptions,
+  queryLibrary,
+  defaultLibraryFilters,
+  ratingGenre,
+  type LibraryAlbum,
+} from '../../application/library-query'
+import { RatingBasisControl } from './RatingBasisControl'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { formatScore } from './labels'
 import { ownedFormatLabels } from './owned-labels'
@@ -10,6 +18,10 @@ export function RatingsDestination({
   mode,
   onMode,
   onOpen,
+  genre,
+  basis,
+  onGenre,
+  onBasis,
 }: {
   albums: LibraryAlbum[]
   search: string
@@ -17,16 +29,53 @@ export function RatingsDestination({
   mode: 'unrated' | 'rated'
   onMode: (mode: 'unrated' | 'rated') => void
   onOpen: (id: string) => void
+  genre: string
+  basis: 'auto' | 'general'
+  onGenre: (value: string) => void
+  onBasis: (value: 'auto' | 'general') => void
 }) {
-  const visible = albums.filter(
-    (album) =>
-      (mode === 'rated') === (album.score !== undefined) &&
-      `${album.title} ${album.artist}`
-        .toLocaleLowerCase()
-        .includes(search.toLocaleLowerCase()),
-  )
+  const options = libraryFilterOptions(albums).genres
+  const context = ratingGenre({ genre, ratingBasis: basis })
+  const visible = queryLibrary(albums, {
+    ...defaultLibraryFilters,
+    search,
+    rating: mode,
+    genre,
+    ratingBasis: basis,
+    order: 'rating',
+  })
   return (
     <section aria-label="Álbumes por calificar o calificados">
+      <div className="mb-5 grid gap-4">
+        <label className="ratings-genre-filter">
+          <span className="field-label">Género a valorar</span>
+          <select
+            value={genre}
+            onChange={(event) => onGenre(event.target.value)}
+          >
+            <option value="">Todos los géneros</option>
+            {genre && !options.some((item) => item.value === genre) ? (
+              <option value={genre}>{genre} (sin coincidencias)</option>
+            ) : null}
+            {options.map((item) => (
+              <option key={item.value} value={item.value}>
+                {item.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <RatingBasisControl
+          {...(genre
+            ? {
+                genre,
+                label:
+                  options.find((item) => item.value === genre)?.label ?? genre,
+              }
+            : {})}
+          basis={basis}
+          onChange={onBasis}
+        />
+      </div>
       <div
         className="flex flex-wrap gap-3 mb-5"
         role="group"
@@ -70,9 +119,14 @@ export function RatingsDestination({
                 <h2 className="text-lg font-semibold">{album.title}</h2>
                 <p className="text-sm text-muted">
                   {album.artist} ·{' '}
-                  {album.score === undefined
-                    ? 'Sin nota'
-                    : formatScore(album.score)}
+                  {context
+                    ? `En ${options.find((item) => item.value === genre)?.label ?? genre}: `
+                    : 'General: '}
+                  {albumScore(album, context) === undefined
+                    ? context
+                      ? 'Sin valoración en este género'
+                      : 'Sin nota'
+                    : formatScore(albumScore(album, context)!)}
                 </p>
               </div>
               <button
@@ -81,7 +135,9 @@ export function RatingsDestination({
                 data-focus-key={`rating-${album.id}`}
                 onClick={() => onOpen(album.id)}
               >
-                {album.score === undefined ? 'Calificar' : 'Recalificar'}{' '}
+                {albumScore(album, context) === undefined
+                  ? 'Calificar'
+                  : 'Recalificar'}{' '}
                 {album.title}
               </button>
             </li>

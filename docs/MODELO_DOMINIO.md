@@ -1,6 +1,6 @@
 # Modelo de dominio
 
-RATE-01 incorpora el [modelo de valoraciones por género](VALORACIONES_POR_GENERO.md), separado de la nota general: DB11/nativa110 y JSON/snapshot7, con migración histórica y control concurrente. La interfaz de estas notas y los filtros contextuales siguen pendientes en RATE-02 #81.
+RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB11/nativa110 y JSON/snapshot7 conservan su compatibilidad; ZIP1 mantiene el audio separado.
 
 El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
@@ -12,7 +12,7 @@ Este documento describe los contratos de Auditorium en el incremento en revisió
 
 UX-03 define por separado los [contratos de clasificación del álbum, enlaces personales, favorito y adjuntos](CONTRATOS_EXPERIENCIA.md), junto al [recorrido de usuario](EXPERIENCIA_USUARIO.md). LINK-01 concreta enlaces y favorito; UX-05 implementa la [clasificación independiente](CLASIFICACION_ALBUM.md). Los adjuntos y la referencia de nota a edición conservan su seguimiento posterior.
 
-La implementación conserva una entrada activa y una valoración general opcional por álbum conceptual, ampliada con notas independientes por género asignado. Cada nota admite su propia edición de referencia del mismo álbum. Una edición puede conocerse sin poseerse; una fuente de reproducción no genera una adquisición. La interfaz de notas contextuales queda pendiente en RATE-02; el refinamiento de Mi colección conserva su seguimiento propio.
+La implementación conserva una entrada activa y una valoración general opcional por álbum conceptual, ampliada con notas independientes por género asignado. Cada nota admite su propia edición de referencia del mismo álbum. Una edición puede conocerse sin poseerse; una fuente de reproducción no genera una adquisición. RATE-02 incorpora edición y comparación contextual; el refinamiento de Mi colección conserva su seguimiento propio.
 
 ## Alcance y vocabulario
 

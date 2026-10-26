@@ -1,6 +1,6 @@
 # ADR-013: valoraciones independientes por género del álbum
 
-Fecha: 2026-10-26. Estado: aceptada e implementada en RATE-01 #80. La interfaz y los filtros se desarrollan en RATE-02 #81.
+Fecha: 2026-10-26. Estado: aceptada e implementada en RATE-01 #80; interfaz y comparación contextual incorporadas en RATE-02 #81.
 
 ## Contexto
 

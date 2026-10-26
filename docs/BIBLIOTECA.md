@@ -1,5 +1,7 @@
 # Biblioteca: búsqueda, filtros y consulta
 
+RATE-02 incorpora [comparación por género](VALORACIONES_POR_GENERO.md): elegir un género usa su nota contextual y permite General de forma explícita. Tarjetas, orden por nota, umbral y Con/Sin nota comparten la base visible; una nota ausente no se sustituye. Las preferencias de consulta siguen siendo temporales y los datos guardados conservan DB11/JSON7/ZIP1.
+
 La Biblioteca es la entrada principal a la música guardada. El menú mantiene el recorrido **Biblioteca → Añadir álbum → Calificaciones → Mi colección**. Añadir álbum permanece visible; las utilidades se abren desde **Más opciones**.
 
 ## Encontrar un álbum

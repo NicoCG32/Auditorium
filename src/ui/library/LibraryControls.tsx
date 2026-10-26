@@ -8,6 +8,7 @@ import {
 } from '../../application/library-query'
 import { listeningStatusSchema } from '../../domain/library/schemas'
 import { listeningLabels } from './labels'
+import { RatingBasisControl } from './RatingBasisControl'
 
 interface Props {
   filters: LibraryFilters
@@ -152,6 +153,7 @@ export function LibraryControls({
                   onChange({
                     ...filters,
                     [key]: key === 'genre' || key === 'country' ? '' : 'all',
+                    ...(key === 'genre' ? { ratingBasis: 'auto' } : {}),
                   })
                 }
               >
@@ -161,13 +163,28 @@ export function LibraryControls({
           ))}
         </ul>
       ) : null}
+      {filters.genre ? (
+        <RatingBasisControl
+          genre={filters.genre}
+          label={
+            options.genres.find((item) => item.value === filters.genre)
+              ?.label ?? filters.genre
+          }
+          {...(filters.ratingBasis ? { basis: filters.ratingBasis } : {})}
+          onChange={(ratingBasis) => onChange({ ...filters, ratingBasis })}
+        />
+      ) : null}
       <div id={panelId} className="library-filter-fields" hidden={!expanded}>
         <label>
           <span className="field-label">Género</span>
           <select
             value={filters.genre ?? ''}
             onChange={(event) =>
-              onChange({ ...filters, genre: event.target.value })
+              onChange({
+                ...filters,
+                genre: event.target.value,
+                ratingBasis: 'auto',
+              })
             }
           >
             <option value="">Todos los géneros</option>

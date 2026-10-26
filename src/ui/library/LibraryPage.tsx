@@ -9,6 +9,7 @@ import {
 import {
   defaultLibraryFilters,
   projectLibrary,
+  ratingGenre,
   type LibraryAlbum,
 } from '../../application/library-query'
 import { MusicLibrary } from '../../application/music-library'
@@ -113,6 +114,8 @@ function LibraryContent({
   const [view, setView] = useState<'grid' | 'list'>('grid')
   const [ratingSearch, setRatingSearch] = useState('')
   const [ratingMode, setRatingMode] = useState<'unrated' | 'rated'>('unrated')
+  const [ratingsGenre, setRatingsGenre] = useState('')
+  const [ratingsBasis, setRatingsBasis] = useState<'auto' | 'general'>('auto')
   const [collectionMedium, setCollectionMedium] = useState<
     'all' | 'physical' | 'purchased_digital'
   >('all')
@@ -263,6 +266,12 @@ function LibraryContent({
   const from = selected
     ? navigation.origin(selected.id)
     : ({ kind: 'library' } as const)
+  const comparisonGenre =
+    from.kind === 'ratings'
+      ? ratingGenre({ genre: ratingsGenre, ratingBasis: ratingsBasis })
+      : from.kind === 'library'
+        ? ratingGenre(filters)
+        : undefined
   return (
     <div ref={content}>
       <nav className="primary-navigation" aria-label="Navegación principal">
@@ -392,6 +401,7 @@ function LibraryContent({
             snapshot={state.snapshot}
             album={selectedAlbum}
             entry={selected}
+            {...(comparisonGenre ? { ratingGenre: comparisonGenre } : {})}
             library={library}
             busy={detailBusy}
             onBusyChange={setDetailBusy}
@@ -473,6 +483,13 @@ function LibraryContent({
           search={ratingSearch}
           onSearch={setRatingSearch}
           mode={ratingMode}
+          genre={ratingsGenre}
+          basis={ratingsBasis}
+          onGenre={(genre) => {
+            setRatingsGenre(genre)
+            setRatingsBasis('auto')
+          }}
+          onBasis={setRatingsBasis}
           onMode={setRatingMode}
           onOpen={(id) => navigation.openAlbum(id, 'experience')}
         />

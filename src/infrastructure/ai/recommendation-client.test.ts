@@ -82,6 +82,9 @@ describe('transporte de recomendaciones sin persistencia', () => {
         /00000000-|2026-10-15|búsqueda privada|entryId|albumId|addedAt|searchText/u,
       )
       expect(init?.body).not.toContain(secret)
+      expect(init.body).toContain(
+        'una nota mínima no significa rechazo o disgusto',
+      )
       const body = JSON.parse(init.body) as Record<string, unknown>
       if (provider === 'groq') {
         expect(url).toBe('https://api.groq.com/openai/v1/chat/completions')
