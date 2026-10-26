@@ -60,6 +60,7 @@ test('elegir un homónimo cambia sólo el crédito elegido y la edición de paí
       id: selectedId,
       name: 'Banda Delta',
       country: 'Perú',
+      sortName: 'Delta, Banda',
       catalogScope: 'personal',
     })
     snapshot.catalog.albumArtists.push({
@@ -84,6 +85,7 @@ test('elegir un homónimo cambia sólo el crédito elegido y la edición de paí
   expect(screen.getByRole('textbox', { name: 'País de origen 2' })).toHaveValue(
     'Chile',
   )
+  change('Artista 1', '  BANDA   DELTA ')
   fireEvent.click(
     screen.getByRole('button', { name: 'Guardar cambios del álbum' }),
   )

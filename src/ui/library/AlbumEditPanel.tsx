@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { catalogSuggestions } from '../../application/catalog-suggestions'
+import { catalogNameKey } from '../../application/catalog-names'
 import { CatalogNameInput } from './CatalogNameInput'
 import {
   buildAlbumEditExpected,
@@ -427,7 +428,9 @@ export function AlbumEditPanel({
                     onChange={(name) =>
                       editArtist(artist.key, {
                         name,
-                        ...(artist.reuseExpected
+                        ...(artist.reuseExpected &&
+                        catalogNameKey(name) !==
+                          catalogNameKey(artist.reuseExpected.name)
                           ? { artistId: undefined, reuseExpected: undefined }
                           : {}),
                       })

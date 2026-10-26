@@ -171,6 +171,10 @@ test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugere
   await expect(
     page.getByRole('heading', { name: 'Editar álbum', exact: true }),
   ).toBeVisible()
+  await artist.fill('  BANDA   DELTA ')
+  await expect(
+    page.getByRole('textbox', { name: 'País de origen 1', exact: true }),
+  ).toBeDisabled()
   await save(page)
   const after = await exportBackup(page)
   expect(after.data.catalog.artists).toEqual(original.data.catalog.artists)
