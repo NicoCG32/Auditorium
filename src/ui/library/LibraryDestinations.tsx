@@ -97,7 +97,7 @@ export function RatingsDestination({
           Calificados
         </button>
       </div>
-      <label className="field-label">
+      <label className="field-label ratings-search">
         Buscar calificaciones
         <input
           id="rating-search"

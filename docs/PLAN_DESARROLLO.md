@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.21 · 2026-10-27 · Estado: MVP v1.0.0 publicado; Mi colección con búsqueda, filtros, copias editables y medios diferenciados incorporada.
+Versión 1.22 · 2026-10-27 · Estado: MVP v1.0.0 publicado; recorrido principal en validación integral, con aceptación de comprensión pendiente.
 
 ## Objetivo del producto
 
@@ -26,7 +26,7 @@ No se asignan personas ni calendarios hasta acordar disponibilidad.
 
 ## Fuente de seguimiento
 
-[COL-05 #71](https://github.com/NicoCG32/Auditorium/issues/71) completa [Mi colección](MI_COLECCION.md), con búsqueda, filtros por medio/formato, copias corregibles, retirada confirmada y referencias de edición independientes. Sigue UX-07 #72, validación final de comprensión y regresiones del recorrido, antes de cerrar la coordinación #60.
+[COL-05 #71](https://github.com/NicoCG32/Auditorium/issues/71) completa [Mi colección](MI_COLECCION.md), con búsqueda, filtros por medio/formato, copias corregibles, retirada confirmada y referencias de edición independientes. [UX-07 #72](https://github.com/NicoCG32/Auditorium/issues/72) reúne la [validación integral](VALIDACION_RECORRIDO.md), su matriz de regresiones y el guion de revisión con participantes. La claridad sigue pendiente de esa revisión; #72 y la coordinación #60 permanecen abiertas hasta comprobar su aceptación.
 
 El refinamiento incorpora [CAT-02 #79](https://github.com/NicoCG32/Auditorium/issues/79), sugerencias locales en alta y edición; [RATE-01 #80](https://github.com/NicoCG32/Auditorium/issues/80), modelo y compatibilidad; y [RATE-02 #81](https://github.com/NicoCG32/Auditorium/issues/81), experiencia y filtros contextuales. La [guía de notas por género](VALORACIONES_POR_GENERO.md) concreta guardado, comparación explícita, renombrado protegido y compatibilidad DB11/JSON7/ZIP1. La [guía de registro](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local) documenta el autocompletado. COL-05 completa Mi colección; UX-07 mantiene pendiente la validación final del recorrido.
 
