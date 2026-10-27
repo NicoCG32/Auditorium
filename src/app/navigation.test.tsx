@@ -225,7 +225,7 @@ test('Mi colección separa medios sin cambiar adquisiciones ni deseos', async ()
   fireEvent.click(screen.getByRole('button', { name: 'Mi colección' }))
   const medium = screen.getByRole('combobox', { name: 'Medio de la colección' })
   fireEvent.change(medium, { target: { value: 'purchased_digital' } })
-  expect(screen.getByText('No hay adquisiciones en esta vista.')).toBeVisible()
+  expect(screen.getByText(/^No hay adquisiciones que coincidan/)).toBeVisible()
   openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Deseos de compra' }))
   expect(location.hash).toBe('#/opciones/deseos')
@@ -243,7 +243,7 @@ test('cancelar un ejemplar no descarta la experiencia pendiente del mismo álbum
   change('Notas del ejemplar', 'Ejemplar ficticio descartable')
   fireEvent.click(screen.getByRole('button', { name: 'Cancelar registro' }))
   const dialog = screen.getByRole('dialog', { name: 'Cambios sin guardar' })
-  expect(dialog).toHaveTextContent('Nuevo ejemplar')
+  expect(dialog).toHaveTextContent('Nueva adquisición')
   expect(dialog).not.toHaveTextContent('Mi experiencia')
   fireEvent.click(
     within(dialog).getByRole('button', { name: 'Descartar cambios' }),
@@ -254,7 +254,7 @@ test('cancelar un ejemplar no descarta la experiencia pendiente del mismo álbum
   openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
   expect(dialog).toHaveTextContent('Mi experiencia')
-  expect(dialog).not.toHaveTextContent('Nuevo ejemplar')
+  expect(dialog).not.toHaveTextContent('Nueva adquisición')
   fireEvent.click(
     within(dialog).getByRole('button', { name: 'Seguir editando' }),
   )

@@ -8,7 +8,7 @@ import {
 import type { OwnedItem } from '../../domain/library/owned-items'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
-import { ownedItemLabel } from './owned-labels'
+import { ownedItemLabels } from './owned-labels'
 import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 import { useNavigation } from '../navigation/navigation-context'
 
@@ -105,6 +105,7 @@ export function PurchaseWishesPanel({
   const compatible = releases.filter(
     (release) => !format || release.format === format,
   )
+  const itemNames = ownedItemLabels(items)
   const activeCount = visible.filter((wish) => wish.status === 'active').length
   function begin(wish?: PurchaseWish) {
     setEditing(wish)
@@ -263,7 +264,7 @@ export function PurchaseWishesPanel({
                       >
                         {matches.map((item) => (
                           <option key={item.id} value={item.id}>
-                            {ownedItemLabel(item)}
+                            {itemNames.get(item.id)}
                           </option>
                         ))}
                       </select>

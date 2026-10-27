@@ -2,6 +2,8 @@
 
 ## Sin publicar
 
+- Mi colección incorpora búsqueda por álbum, artista, edición y formato, recuentos separados de físicos/digitales y varias copias con etiquetas legibles. Edición y retirada con comparación completa del registro, borradores y recuperación de lectura, sin modificar ediciones compartidas, valoraciones, enlaces o deseos. Regreso con filtros, selector y foco; guía y diagramas. DB11/JSON7/ZIP1 sin migración.
+
 - Mi experiencia incorpora notas opcionales por género y referencia de edición propia, con guardado atómico y protección de borradores y conflictos. Biblioteca y Calificaciones muestran la base elegida, ordenan y filtran por la misma nota, con ausencia explícita y General seleccionable. Renombrado de géneros desde la ficha sin perder notas; textos comparativos y recomendaciones sin ampliar los datos enviados. DB11/JSON7/ZIP1 sin cambios de formato.
 
 - Modelo de notas por género asignado al álbum, independientes de la general y por pista, con referencia de edición propia, comparación concurrente completa y renombrado atómico de etiquetas valoradas, incluidas entradas retiradas. Quitar una nota general conserva las contextuales.

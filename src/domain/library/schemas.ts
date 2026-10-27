@@ -143,7 +143,16 @@ export const libraryChangeSchema = z.discriminatedUnion('type', [
     type: z.literal('remove_owned_item'),
     ...target,
     ownedItemId: id,
+    expected: ownedItemSchema.optional(),
   }),
+  ownedItemDataSchema
+    .omit({ id: true, userAlbumId: true, createdAt: true })
+    .extend({
+      type: z.literal('update_owned_item'),
+      ...target,
+      ownedItemId: id,
+      expected: ownedItemSchema,
+    }),
   z.strictObject({
     type: z.literal('set_album_rating'),
     ...rating,

@@ -998,6 +998,28 @@ export class MusicLibrary {
     return item
   }
 
+  async updateOwnedItem(expected: unknown, input: unknown): Promise<OwnedItem> {
+    const item = ownedItemSchema.parse(expected)
+    const request = addOwnedItemInputSchema.parse(input)
+    return this.repository.mutate((snapshot) => {
+      snapshot.library = applyLibraryChange(
+        { catalog: snapshot.catalog, localUserId: snapshot.identity.userId },
+        snapshot.library,
+        {
+          type: 'update_owned_item',
+          userAlbumId: item.userAlbumId,
+          ownedItemId: item.id,
+          expected: item,
+          ...request,
+        },
+      )
+      return {
+        snapshot,
+        result: snapshot.library.ownedItems.find((row) => row.id === item.id)!,
+      }
+    })
+  }
+
   async addPurchaseWish(
     userAlbumId: unknown,
     input: unknown,
@@ -1077,11 +1099,15 @@ export class MusicLibrary {
   async removeOwnedItem(
     userAlbumId: unknown,
     ownedItemId: unknown,
+    expected?: unknown,
   ): Promise<void> {
     await this.changeLibrary({
       type: 'remove_owned_item',
       userAlbumId: entityIdSchema.parse(userAlbumId),
       ownedItemId: entityIdSchema.parse(ownedItemId),
+      ...(expected === undefined
+        ? {}
+        : { expected: ownedItemSchema.parse(expected) }),
     })
   }
 

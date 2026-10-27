@@ -22,6 +22,28 @@ export const conditionLabels: Record<
   fair: 'Regular',
   poor: 'Deteriorado',
 }
-export function ownedItemLabel(item: OwnedItem): string {
-  return `${ownedFormatLabels[item.format]} · Ejemplar ${item.id.slice(-8)}`
+export function ownedItemLabels(items: OwnedItem[]): Map<string, string> {
+  const ordered = items.toSorted(
+    (a, b) =>
+      a.createdAt.localeCompare(b.createdAt) || a.id.localeCompare(b.id),
+  )
+  const counts = new Map<string, number>(),
+    labels = new Map<string, string>()
+  for (const item of ordered) {
+    const number = (counts.get(item.userAlbumId) ?? 0) + 1
+    counts.set(item.userAlbumId, number)
+    labels.set(
+      item.id,
+      `${ownedFormatLabels[item.format]} · ${item.medium === 'physical' ? 'Copia' : 'Adquisición'} ${number}`,
+    )
+  }
+  return labels
+}
+export function ownedItemLabel(
+  item: OwnedItem,
+  items: OwnedItem[] = [item],
+): string {
+  return (
+    ownedItemLabels(items).get(item.id) ?? ownedItemLabels([item]).get(item.id)!
+  )
 }

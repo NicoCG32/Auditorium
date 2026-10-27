@@ -85,7 +85,7 @@ export function routeTitle(route: Route) {
         : route.editor === 'experience'
           ? 'Mi experiencia'
           : route.editor === 'collection'
-            ? 'Registrar adquisición'
+            ? 'Mi colección del álbum'
             : 'Ficha del álbum'
     case 'options':
       return {

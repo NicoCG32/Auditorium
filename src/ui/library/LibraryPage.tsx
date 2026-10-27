@@ -30,11 +30,9 @@ import { useNavigation } from '../navigation/navigation-context'
 import { useDraftGuard } from '../navigation/draft-context'
 import { routeHash, routeTitle, type Route } from '../navigation/routes'
 import { LibraryView } from './LibraryView'
-import {
-  RatingsDestination,
-  CollectionDestination,
-  WishesDestination,
-} from './LibraryDestinations'
+import { RatingsDestination, WishesDestination } from './LibraryDestinations'
+import { CollectionDestination } from './CollectionDestination'
+import { defaultCollectionFilters } from '../../application/collection-query'
 
 type LoadState =
   | { status: 'loading' }
@@ -116,9 +114,11 @@ function LibraryContent({
   const [ratingMode, setRatingMode] = useState<'unrated' | 'rated'>('unrated')
   const [ratingsGenre, setRatingsGenre] = useState('')
   const [ratingsBasis, setRatingsBasis] = useState<'auto' | 'general'>('auto')
-  const [collectionMedium, setCollectionMedium] = useState<
-    'all' | 'physical' | 'purchased_digital'
-  >('all')
+  const [collectionFilters, setCollectionFilters] = useState(
+    defaultCollectionFilters,
+  )
+  const [collectionAlbumSearch, setCollectionAlbumSearch] = useState('')
+  const [collectionRegisterOpen, setCollectionRegisterOpen] = useState(false)
   const [notice, setNotice] = useState('')
   const [detailBusy, setDetailBusy] = useState(false)
   const [recommendationProvider, setRecommendationProvider] =
@@ -497,9 +497,15 @@ function LibraryContent({
         <CollectionDestination
           albums={state.albums}
           snapshot={state.snapshot}
-          medium={collectionMedium}
-          onMedium={setCollectionMedium}
+          filters={collectionFilters}
+          onFilters={setCollectionFilters}
+          albumSearch={collectionAlbumSearch}
+          onAlbumSearch={setCollectionAlbumSearch}
+          registerOpen={collectionRegisterOpen}
+          onRegisterOpen={setCollectionRegisterOpen}
           onOpen={(id) => navigation.openAlbum(id, 'collection')}
+          onWishes={() => go({ kind: 'options', section: 'wishes' })}
+          onAdd={() => go({ kind: 'add' })}
         />
       ) : route.kind === 'options' ? (
         route.section === 'account' ? (

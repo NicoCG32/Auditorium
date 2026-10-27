@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { ZodError } from 'zod'
+import { LibraryChangeError } from '../../domain/library/library'
 import type { MusicLibrary } from '../../application/music-library'
 import {
   ownedItemMatchesRelease,
@@ -13,15 +14,18 @@ import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { useDraftGuard, useDraftState } from '../navigation/draft-context'
 import { useNavigation } from '../navigation/navigation-context'
+import { releaseLabels } from './release-labels'
 import {
   ownedMediumLabels,
   ownedFormatLabels,
   conditionLabels,
   ownedItemLabel,
+  ownedItemLabels,
 } from './owned-labels'
 
 type ConfirmedChange =
-  { type: 'added'; item: OwnedItem } | { type: 'removed'; id: string }
+  | { type: 'added' | 'updated'; item: OwnedItem }
+  | { type: 'removed'; id: string }
 export function OwnedItemsPanel({
   entryId,
   items,
@@ -42,6 +46,11 @@ export function OwnedItemsPanel({
   const draftId = `owned:${entryId}`
   const navigation = useNavigation()
   const [formOpen, setFormOpen] = useDraftState(draftId, 'open', false)
+  const [editing, setEditing] = useDraftState<OwnedItem | undefined>(
+    draftId,
+    'editing',
+    undefined,
+  )
   const [medium, setMedium] = useDraftState<OwnedItem['medium']>(
     draftId,
     'medium',
@@ -70,6 +79,7 @@ export function OwnedItemsPanel({
   const [pending, setPending] = useState<ConfirmedChange>()
   const [failure, setFailure] = useState('')
   const [notice, setNotice] = useState('')
+  const [conflict, setConflict] = useState(false)
   const lock = useRef(false)
   const panel = useRef<HTMLElement>(null)
   const addButton = useRef<HTMLButtonElement>(null)
@@ -81,44 +91,44 @@ export function OwnedItemsPanel({
   const form = useRef<HTMLFormElement>(null)
   useDraftGuard({
     id: draftId,
-    label: 'Nuevo ejemplar',
+    label: editing ? 'Editar adquisición' : 'Nueva adquisición',
     dirty:
       formOpen &&
       Boolean(
-        medium !== 'physical' ||
-        format !== 'cd' ||
-        releaseId ||
-        acquiredAt ||
-        mediaCondition ||
-        sleeveCondition ||
-        notes,
+        medium !== (editing?.medium ?? 'physical') ||
+        format !== (editing?.format ?? 'cd') ||
+        releaseId !== (editing?.releaseId ?? '') ||
+        acquiredAt !== (editing?.acquiredAt ?? '') ||
+        mediaCondition !== (editing?.mediaCondition ?? '') ||
+        sleeveCondition !== (editing?.sleeveCondition ?? '') ||
+        notes !== (editing?.notes ?? ''),
       ),
     busy,
     pendingRead: Boolean(pending),
-    ...(pending ? { focus: () => retry.current?.focus() } : {}),
+    ...(pending || conflict ? { focus: () => retry.current?.focus() } : {}),
     form,
   })
   useEffect(() => {
-    if (formOpen) mediumInput.current?.focus()
-  }, [formOpen])
+    if (formOpen && !busy && !pending && !conflict) mediumInput.current?.focus()
+  }, [formOpen, busy, pending, conflict])
   useEffect(() => {
     if (deleting) cancelDelete.current?.focus()
   }, [deleting])
   useEffect(() => {
     if (busy) return
-    if (pending && failure) retry.current?.focus()
+    if ((pending || conflict) && failure) retry.current?.focus()
     else if (failure) error.current?.focus()
     else if (focusAdd.current) {
       addButton.current?.focus()
       focusAdd.current = false
     }
-  }, [busy, pending, failure, formOpen])
+  }, [busy, pending, conflict, failure, formOpen])
   let visibleItems = items.filter((item) => item.userAlbumId === entryId)
-  if (
-    pending?.type === 'added' &&
-    !visibleItems.some((item) => item.id === pending.item.id)
-  )
-    visibleItems = [...visibleItems, pending.item]
+  if (pending && pending.type !== 'removed')
+    visibleItems = [
+      ...visibleItems.filter((item) => item.id !== pending.item.id),
+      pending.item,
+    ]
   if (pending?.type === 'removed')
     visibleItems = visibleItems.filter((item) => item.id !== pending.id)
   visibleItems = visibleItems.toSorted(
@@ -128,23 +138,28 @@ export function OwnedItemsPanel({
   const compatible = releases.filter((release) =>
     ownedItemMatchesRelease({ medium, format }, release),
   )
-  function begin() {
-    setMedium('physical')
-    setFormat('cd')
-    setReleaseId('')
-    setAcquiredAt('')
-    setNotes('')
-    setMediaCondition('')
-    setSleeveCondition('')
+  const itemNames = ownedItemLabels(visibleItems)
+  const releaseNames = releaseLabels(releases)
+  function begin(item?: OwnedItem) {
+    setEditing(item)
+    setMedium(item?.medium ?? 'physical')
+    setFormat(item?.format ?? 'cd')
+    setReleaseId(item?.releaseId ?? '')
+    setAcquiredAt(item?.acquiredAt ?? '')
+    setNotes(item?.notes ?? '')
+    setMediaCondition(item?.mediaCondition ?? '')
+    setSleeveCondition(item?.sleeveCondition ?? '')
     setDeleting(undefined)
     setFailure('')
     setNotice('')
+    setConflict(false)
     setFormOpen(true)
   }
   function cancelRemoval() {
     const id = deleting?.id
     setDeleting(undefined)
     setFailure('')
+    setConflict(false)
     if (id)
       panel.current
         ?.querySelector<HTMLButtonElement>(`[data-remove-item="${id}"]`)
@@ -167,7 +182,7 @@ export function OwnedItemsPanel({
     action: () => Promise<ConfirmedChange>,
     message: string,
   ) {
-    if (lock.current || blocked || pending) return
+    if (lock.current || blocked || pending || conflict) return
     lock.current = true
     setBusy(true)
     onBusyChange(true)
@@ -176,13 +191,19 @@ export function OwnedItemsPanel({
     try {
       setPending(await action())
     } catch (cause) {
+      const outdated =
+        cause instanceof LibraryChangeError &&
+        (cause.rule === 'outdated_change' || cause.rule === 'missing_reference')
+      setConflict(outdated)
       setFailure(
-        cause instanceof ZodError
-          ? 'Revisa la fecha, las condiciones y la compatibilidad del medio, formato y edición. Los datos guardados y el borrador se conservan.'
-          : cause instanceof LocalStorageError &&
-              cause.code === 'quota_exceeded'
-            ? 'No hay espacio para guardar. Los ejemplares previos y tu borrador se conservan; libera espacio y vuelve a intentar.'
-            : 'No se pudo guardar el cambio. Los ejemplares previos y tu borrador se conservan; vuelve a intentar.',
+        outdated
+          ? 'Esta adquisición cambió o fue eliminada desde que la abriste. Tu borrador se conserva; cargar la colección guardada lo reemplaza.'
+          : cause instanceof ZodError
+            ? 'Revisa la fecha, las condiciones y la compatibilidad del medio, formato y edición. Los datos guardados y el borrador se conservan.'
+            : cause instanceof LocalStorageError &&
+                cause.code === 'quota_exceeded'
+              ? 'No hay espacio para guardar. Los ejemplares previos y tu borrador se conservan; libera espacio y vuelve a intentar.'
+              : 'No se pudo guardar el cambio. Los ejemplares previos y tu borrador se conservan; vuelve a intentar.',
       )
       setBusy(false)
       onBusyChange(false)
@@ -190,6 +211,7 @@ export function OwnedItemsPanel({
       return
     }
     setFormOpen(false)
+    setEditing(undefined)
     setDeleting(undefined)
     setNotice(message)
     await read()
@@ -198,20 +220,23 @@ export function OwnedItemsPanel({
   }
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    const fields = {
+      medium,
+      format,
+      notes,
+      ...(releaseId ? { releaseId } : {}),
+      ...(acquiredAt ? { acquiredAt } : {}),
+      ...(mediaCondition ? { mediaCondition } : {}),
+      ...(sleeveCondition ? { sleeveCondition } : {}),
+    }
     void commit(
       async () => ({
-        type: 'added',
-        item: await library.addOwnedItem(entryId, {
-          medium,
-          format,
-          notes,
-          ...(releaseId ? { releaseId } : {}),
-          ...(acquiredAt ? { acquiredAt } : {}),
-          ...(mediaCondition ? { mediaCondition } : {}),
-          ...(sleeveCondition ? { sleeveCondition } : {}),
-        }),
+        type: editing ? 'updated' : 'added',
+        item: editing
+          ? await library.updateOwnedItem(editing, fields)
+          : await library.addOwnedItem(entryId, fields),
       }),
-      'Ejemplar registrado.',
+      editing ? 'Adquisición actualizada.' : 'Ejemplar registrado.',
     )
   }
   async function retryRead() {
@@ -220,6 +245,34 @@ export function OwnedItemsPanel({
     setBusy(true)
     await read()
     setBusy(false)
+    lock.current = false
+  }
+  async function loadSaved() {
+    if (lock.current || blocked) return
+    lock.current = true
+    setBusy(true)
+    onBusyChange(true)
+    try {
+      const fresh = await onCommitted()
+      const item =
+        editing && fresh.library.ownedItems.find((row) => row.id === editing.id)
+      if (item) begin(item)
+      else {
+        setFormOpen(false)
+        setEditing(undefined)
+        setDeleting(undefined)
+        setConflict(false)
+        setFailure('')
+        focusAdd.current = true
+      }
+      setNotice(
+        'Colección guardada cargada. Revisa los datos antes de continuar.',
+      )
+    } catch {
+      setFailure('No se pudo leer la colección. Tu borrador se conserva.')
+    }
+    setBusy(false)
+    onBusyChange(false)
     lock.current = false
   }
   return (
@@ -245,12 +298,12 @@ export function OwnedItemsPanel({
             return (
               <li key={item.id} className="owned-card">
                 <h4 className="font-semibold wrap-anywhere">
-                  {ownedItemLabel(item)}
+                  {itemNames.get(item.id)}
                 </h4>
                 <p className="mt-2 text-sm text-muted">
                   {ownedMediumLabels[item.medium]} ·{' '}
                   {release
-                    ? `${release.editionLabel ?? 'Edición sin nombre'}${release.releaseYear ? ` · ${release.releaseYear}` : ''}`
+                    ? releaseNames.get(release.id)
                     : 'Edición sin determinar'}
                 </p>
                 <dl className="mt-3 grid gap-2 text-sm">
@@ -280,6 +333,14 @@ export function OwnedItemsPanel({
                 ) : null}
                 <button
                   type="button"
+                  className="action-button mt-3 mr-3"
+                  disabled={blocked || formOpen || Boolean(deleting)}
+                  onClick={() => begin(item)}
+                >
+                  Editar ejemplar {itemNames.get(item.id)}
+                </button>
+                <button
+                  type="button"
                   className="text-button mt-3"
                   data-remove-item={item.id}
                   disabled={blocked || formOpen}
@@ -289,7 +350,7 @@ export function OwnedItemsPanel({
                     setNotice('')
                   }}
                 >
-                  Eliminar ejemplar {item.id.slice(-8)}
+                  Eliminar ejemplar {itemNames.get(item.id)}
                 </button>
               </li>
             )
@@ -306,7 +367,7 @@ export function OwnedItemsPanel({
           type="button"
           className="primary-button mt-5"
           disabled={blocked || deleting !== undefined}
-          onClick={begin}
+          onClick={() => begin()}
         >
           Registrar ejemplar
         </button>
@@ -318,7 +379,11 @@ export function OwnedItemsPanel({
           autoComplete="off"
           aria-describedby={failure ? 'owned-error' : 'owned-help'}
         >
-          <h4 className="mt-6 text-lg font-semibold">Registrar ejemplar</h4>
+          <h4 className="mt-6 text-lg font-semibold">
+            {editing
+              ? `Editar ${ownedItemLabel(editing, visibleItems)}`
+              : 'Registrar ejemplar'}
+          </h4>
           <fieldset disabled={busy || blocked} className="min-w-0">
             <div className="owned-fields mt-4">
               <label className="field-label">
@@ -373,10 +438,15 @@ export function OwnedItemsPanel({
                   onChange={(event) => setReleaseId(event.target.value)}
                 >
                   <option value="">Sin edición determinada</option>
+                  {releaseId &&
+                  !compatible.some((release) => release.id === releaseId) ? (
+                    <option value={releaseId}>
+                      Edición no disponible: revisa la selección
+                    </option>
+                  ) : null}
                   {compatible.map((release) => (
                     <option key={release.id} value={release.id}>
-                      {release.editionLabel ?? 'Edición sin nombre'}
-                      {release.releaseYear ? ` · ${release.releaseYear}` : ''}
+                      {releaseNames.get(release.id)}
                     </option>
                   ))}
                 </select>
@@ -440,8 +510,12 @@ export function OwnedItemsPanel({
               los espacios y saltos de línea de tus notas.
             </p>
             <div className="mt-4 flex flex-wrap gap-3">
-              <button type="submit" className="primary-button">
-                Guardar ejemplar
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={conflict}
+              >
+                {editing ? 'Guardar cambios del ejemplar' : 'Guardar ejemplar'}
               </button>
               <button
                 type="button"
@@ -449,6 +523,8 @@ export function OwnedItemsPanel({
                 onClick={() => {
                   const close = () => {
                     setFormOpen(false)
+                    setEditing(undefined)
+                    setConflict(false)
                     setFailure('')
                     focusAdd.current = true
                   }
@@ -456,7 +532,9 @@ export function OwnedItemsPanel({
                   else close()
                 }}
               >
-                Cancelar registro
+                {editing
+                  ? 'Cancelar edición del ejemplar'
+                  : 'Cancelar registro'}
               </button>
             </div>
           </fieldset>
@@ -476,7 +554,7 @@ export function OwnedItemsPanel({
           }}
         >
           <h4 id="remove-owned-title" className="text-lg font-semibold">
-            Eliminar {ownedItemLabel(deleting)}
+            Eliminar {ownedItemLabel(deleting, visibleItems)}
           </h4>
           <p id="remove-owned-help" className="mt-3 text-sm">
             Se borrará únicamente este registro de propiedad y sus notas de
@@ -497,10 +575,10 @@ export function OwnedItemsPanel({
             <button
               type="button"
               className="primary-button"
-              disabled={blocked || busy}
+              disabled={blocked || busy || conflict}
               onClick={() => {
                 void commit(async () => {
-                  await library.removeOwnedItem(entryId, deleting.id)
+                  await library.removeOwnedItem(entryId, deleting.id, deleting)
                   return { type: 'removed', id: deleting.id }
                 }, 'Ejemplar eliminado.')
               }}
@@ -542,6 +620,17 @@ export function OwnedItemsPanel({
           }}
         >
           Reintentar lectura de colección
+        </button>
+      ) : null}
+      {conflict ? (
+        <button
+          ref={retry}
+          type="button"
+          className="action-button mt-4"
+          disabled={busy || blocked}
+          onClick={() => void loadSaved()}
+        >
+          Cargar colección guardada
         </button>
       ) : null}
     </section>

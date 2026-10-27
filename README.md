@@ -1,5 +1,7 @@
 # Auditorium
 
+[Mi colección](docs/MI_COLECCION.md) organiza ejemplares físicos y compras digitales con búsqueda, filtros y recuentos separados. Permite registrar varias copias, corregirlas y eliminar sólo la seleccionada, conservando sus ediciones y valoraciones. La navegación mantiene el contexto y los cambios concurrentes requieren revisión explícita.
+
 Las [valoraciones por género](docs/VALORACIONES_POR_GENERO.md) permiten editar notas opcionales independientes de la general, con referencia de edición propia y renombrado protegido. Biblioteca y Calificaciones indican qué nota comparan; ordenar y filtrar usan esa misma base, sin sustituir notas ausentes. DB11/nativa110, JSON/snapshot7 y ZIP1 mantienen sus contratos.
 
 La [reproducción desde enlaces](docs/REPRODUCCION.md), implementada en PLAY-01, permite cargar Spotify o YouTube desde la ficha, con alternativa externa, datos temporales revisables y controles de privacidad. La [evaluación MEDIA-01](docs/PROVEEDORES_STREAMING.md) conserva sus fuentes y límites.

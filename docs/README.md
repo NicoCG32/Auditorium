@@ -1,5 +1,7 @@
 # Documentación de Auditorium
 
+[Mi colección](MI_COLECCION.md) documenta búsqueda, filtros, medios físicos/digitales, copias editables, confirmación de retirada y guardado concurrente, con diagramas de dominio y transacción. No modifica los contratos DB11/JSON7/ZIP1.
+
 RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB11/nativa110 y JSON/snapshot7 conservan su compatibilidad; ZIP1 mantiene el audio separado.
 
 El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.

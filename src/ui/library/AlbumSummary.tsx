@@ -89,9 +89,13 @@ export function AlbumSummary({
   const navigation = useNavigation()
   const [focusLinks, setFocusLinks] = useState(false)
   const heading = useRef<HTMLHeadingElement>(null)
+  const collectionHeading = useRef<HTMLElement>(null)
   useEffect(() => {
-    if (!experienceEditing) heading.current?.focus()
-  }, [entry.id, experienceEditing])
+    if (collectionEditing) {
+      collectionHeading.current?.focus()
+      collectionHeading.current?.scrollIntoView?.({ block: 'start' })
+    } else if (!experienceEditing) heading.current?.focus()
+  }, [entry.id, experienceEditing, collectionEditing])
   const creditedArtists = catalog.albumArtists
     .filter((credit) => credit.albumId === album.id)
     .toSorted((a, b) => a.position - b.position)
@@ -345,7 +349,7 @@ export function AlbumSummary({
         data-album-area="collection"
         open={collectionEditing || undefined}
       >
-        <summary>Mi colección</summary>
+        <summary ref={collectionHeading}>Mi colección</summary>
         <OwnedItemsPanel
           entryId={personalEntry.id}
           items={ownedItems}

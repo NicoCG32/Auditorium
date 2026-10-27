@@ -1,5 +1,7 @@
 # Arquitectura del sistema
 
+COL-05 completa [Mi colección](MI_COLECCION.md): proyección de adquisiciones con búsqueda y filtros, operaciones de copias independientes y actualización con comparación del registro completo dentro de una transacción. No cambia catálogo, experiencia ni contratos de almacenamiento o sincronización.
+
 RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB11/nativa110 y JSON/snapshot7 conservan su compatibilidad; ZIP1 mantiene el audio separado.
 
 El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.

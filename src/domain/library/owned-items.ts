@@ -69,6 +69,21 @@ export const ownedItemSchema = ownedItemDataSchema.superRefine(
 )
 export type OwnedItem = z.output<typeof ownedItemSchema>
 
+export function sameOwnedItem(a: OwnedItem, b: OwnedItem): boolean {
+  return (
+    a.id === b.id &&
+    a.userAlbumId === b.userAlbumId &&
+    a.createdAt === b.createdAt &&
+    a.medium === b.medium &&
+    a.format === b.format &&
+    a.releaseId === b.releaseId &&
+    a.acquiredAt === b.acquiredAt &&
+    a.mediaCondition === b.mediaCondition &&
+    a.sleeveCondition === b.sleeveCondition &&
+    a.notes === b.notes
+  )
+}
+
 export function ownedItemMatchesRelease(
   item: Pick<OwnedItem, 'medium' | 'format'>,
   release: Release,

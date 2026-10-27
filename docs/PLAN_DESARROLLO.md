@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.20 · 2026-10-26 · Estado: MVP v1.0.0 publicado; valoraciones por género, guardado conjunto y comparación contextual incorporados.
+Versión 1.21 · 2026-10-27 · Estado: MVP v1.0.0 publicado; Mi colección con búsqueda, filtros, copias editables y medios diferenciados incorporada.
 
 ## Objetivo del producto
 
@@ -26,7 +26,9 @@ No se asignan personas ni calendarios hasta acordar disponibilidad.
 
 ## Fuente de seguimiento
 
-El refinamiento incorpora [CAT-02 #79](https://github.com/NicoCG32/Auditorium/issues/79), sugerencias locales en alta y edición; [RATE-01 #80](https://github.com/NicoCG32/Auditorium/issues/80), modelo y compatibilidad; y [RATE-02 #81](https://github.com/NicoCG32/Auditorium/issues/81), experiencia y filtros contextuales. La [guía de notas por género](VALORACIONES_POR_GENERO.md) concreta guardado, comparación explícita, renombrado protegido y compatibilidad DB11/JSON7/ZIP1. La [guía de registro](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local) documenta el autocompletado. COL-05 y UX-07 mantienen su alcance pendiente.
+[COL-05 #71](https://github.com/NicoCG32/Auditorium/issues/71) completa [Mi colección](MI_COLECCION.md), con búsqueda, filtros por medio/formato, copias corregibles, retirada confirmada y referencias de edición independientes. Sigue UX-07 #72, validación final de comprensión y regresiones del recorrido, antes de cerrar la coordinación #60.
+
+El refinamiento incorpora [CAT-02 #79](https://github.com/NicoCG32/Auditorium/issues/79), sugerencias locales en alta y edición; [RATE-01 #80](https://github.com/NicoCG32/Auditorium/issues/80), modelo y compatibilidad; y [RATE-02 #81](https://github.com/NicoCG32/Auditorium/issues/81), experiencia y filtros contextuales. La [guía de notas por género](VALORACIONES_POR_GENERO.md) concreta guardado, comparación explícita, renombrado protegido y compatibilidad DB11/JSON7/ZIP1. La [guía de registro](REGISTRO_MANUAL.md#sugerencias-del-catálogo-local) documenta el autocompletado. COL-05 completa Mi colección; UX-07 mantiene pendiente la validación final del recorrido.
 
 Las valoraciones son personales y comparativas dentro de la biblioteca: incorporar un álbum expresa valor y una nota mínima no implica rechazo. RATE-01/02 incorporan notas opcionales por género, independientes y sin promedios, con ausencia explícita y una base visible compartida por cifra, ordenación y filtros. No se amplían automáticamente los datos enviados a proveedores.
 

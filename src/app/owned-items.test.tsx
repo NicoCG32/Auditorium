@@ -159,7 +159,7 @@ test('formatos y ediciones compatibles se filtran; cambio de medio limpia edici�
   change('Formato del ejemplar', 'vinyl')
   expect(editions).toHaveValue('')
   expect(
-    within(editions).getByRole('option', { name: 'Deluxe · 2024' }),
+    within(editions).getByRole('option', { name: 'Deluxe · Vinilo · 2024' }),
   ).toBeVisible()
   change('Medio del ejemplar', 'purchased_digital')
   expect(screen.queryByLabelText('Estado del soporte')).not.toBeInTheDocument()
@@ -326,4 +326,149 @@ test('actualizar una valoración conserva el borrador de registro de propiedad',
     'Borrador ficticio',
   )
   expect((await repository.readSnapshot()).library.ownedItems).toEqual([])
+})
+
+test('editar una copia compartida y cancelar su borrador conserva las otras copias y el catálogo', async () => {
+  const repository = await populated(),
+    service = new MusicLibrary(repository)
+  const first = await service.addOwnedItem(libraryIds.entry, {
+    medium: 'physical',
+    format: 'cd',
+    releaseId: ids.original,
+    notes: 'Primera copia',
+  })
+  const second = await service.addOwnedItem(libraryIds.entry, {
+    medium: 'physical',
+    format: 'cd',
+    releaseId: ids.original,
+  })
+  const before = await repository.readSnapshot()
+  await open(repository)
+  const card = cards().find((card) =>
+    within(card).queryByText('Primera copia'),
+  )!
+  fireEvent.click(
+    within(card).getByRole('button', { name: /^Editar ejemplar/ }),
+  )
+  change('Notas del ejemplar', 'Borrador descartable')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Cancelar edición del ejemplar' }),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
+  expect(await repository.readSnapshot()).toEqual(before)
+  fireEvent.click(
+    within(card).getByRole('button', { name: /^Editar ejemplar/ }),
+  )
+  change('Formato del ejemplar', 'vinyl')
+  change('Edición del ejemplar', ids.deluxe)
+  change('Notas del ejemplar', '  Copia corregida.\nSin tocar la edición.  ')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Guardar cambios del ejemplar' }),
+  )
+  await finished()
+  const after = await repository.readSnapshot()
+  expect(
+    after.library.ownedItems.find((row) => row.id === first.id),
+  ).toMatchObject({
+    format: 'vinyl',
+    releaseId: ids.deluxe,
+    createdAt: first.createdAt,
+  })
+  expect(after.library.ownedItems.find((row) => row.id === second.id)).toEqual(
+    second,
+  )
+  expect(after.catalog).toEqual(before.catalog)
+  expect(after.library.userAlbums).toEqual(before.library.userAlbums)
+  expect(
+    cards()
+      .map((card) => card.textContent)
+      .join(' '),
+  ).not.toContain(first.id.slice(-8))
+})
+
+test.each(['cambiada', 'eliminada'])(
+  'un borrador de copia %s se conserva y cargar no escribe',
+  async (action) => {
+    const repository = await populated(),
+      service = new MusicLibrary(repository)
+    const item = await service.addOwnedItem(libraryIds.entry, {
+      medium: 'physical',
+      format: 'cd',
+    })
+    await open(repository)
+    fireEvent.click(
+      within(cards()[0]!).getByRole('button', { name: /^Editar ejemplar/ }),
+    )
+    change('Notas del ejemplar', 'Borrador protegido')
+    if (action === 'cambiada')
+      await service.updateOwnedItem(item, {
+        medium: 'physical',
+        format: 'cd',
+        notes: 'Cambio concurrente',
+      })
+    else await service.removeOwnedItem(item.userAlbumId, item.id, item)
+    const before = await repository.readSnapshot(),
+      update = vi.spyOn(MusicLibrary.prototype, 'updateOwnedItem')
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Guardar cambios del ejemplar' }),
+    )
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Tu borrador se conserva',
+    )
+    expect(screen.getByLabelText('Notas del ejemplar')).toHaveValue(
+      'Borrador protegido',
+    )
+    expect(await repository.readSnapshot()).toEqual(before)
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Cargar colección guardada' }),
+    )
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Cargar colección guardada' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(update).toHaveBeenCalledTimes(1)
+    expect(await repository.readSnapshot()).toEqual(before)
+    if (action === 'cambiada')
+      expect(screen.getByLabelText('Notas del ejemplar')).toHaveValue(
+        'Cambio concurrente',
+      )
+    else
+      expect(
+        screen.queryByLabelText('Notas del ejemplar'),
+      ).not.toBeInTheDocument()
+  },
+)
+
+test('lectura fallida tras editar muestra la copia corregida y reintenta sin actualizar otra vez', async () => {
+  const repository = await populated()
+  await new MusicLibrary(repository).addOwnedItem(libraryIds.entry, {
+    medium: 'physical',
+    format: 'cd',
+    notes: 'Antes',
+  })
+  await open(repository)
+  fireEvent.click(
+    within(cards()[0]!).getByRole('button', { name: /^Editar ejemplar/ }),
+  )
+  change('Notas del ejemplar', 'Después')
+  const update = vi.spyOn(MusicLibrary.prototype, 'updateOwnedItem')
+  vi.spyOn(repository, 'readSnapshot').mockRejectedValueOnce(
+    new LocalStorageError('unexpected', 'Lectura ficticia'),
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Guardar cambios del ejemplar' }),
+  )
+  expect(await screen.findByRole('alert')).toHaveTextContent(
+    'El cambio se guardó',
+  )
+  expect(cards()[0]).toHaveTextContent('Después')
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Reintentar lectura de colección' }),
+  )
+  await finished()
+  expect(update).toHaveBeenCalledTimes(1)
+  expect((await repository.readSnapshot()).library.ownedItems[0]?.notes).toBe(
+    'Después',
+  )
 })

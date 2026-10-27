@@ -8,7 +8,7 @@ import {
   type AlbumGenreRating,
   type Library,
 } from './schemas'
-import { ownedItemSchema } from './owned-items'
+import { ownedItemSchema, sameOwnedItem } from './owned-items'
 import { purchaseWishSchema, wishMatchesOwnedItem } from './purchase-wishes'
 import { personalEntryToken } from './personal-entry'
 
@@ -291,6 +291,7 @@ export function applyLibraryChange(
       library.ownedItems = [...library.ownedItems, item]
       break
     }
+    case 'update_owned_item':
     case 'remove_owned_item': {
       const item = library.ownedItems.find(
         (row) => row.id === change.ownedItemId,
@@ -305,9 +306,33 @@ export function applyLibraryChange(
           'wrong_album',
           'El ejemplar no pertenece a esta entrada.',
         )
-      library.ownedItems = library.ownedItems.filter(
-        (row) => row.id !== item.id,
-      )
+      if (change.expected && !sameOwnedItem(item, change.expected))
+        throw new LibraryChangeError(
+          'outdated_change',
+          'El ejemplar cambió después de leerlo. Carga los datos guardados antes de continuar.',
+        )
+      if (change.type === 'remove_owned_item') {
+        library.ownedItems = library.ownedItems.filter(
+          (row) => row.id !== item.id,
+        )
+      } else {
+        const updated = ownedItemSchema.parse({
+          id: item.id,
+          userAlbumId: item.userAlbumId,
+          createdAt: item.createdAt,
+          ...Object.fromEntries(
+            Object.entries(change).filter(
+              ([key, value]) =>
+                !['type', 'userAlbumId', 'ownedItemId', 'expected'].includes(
+                  key,
+                ) && value !== undefined,
+            ),
+          ),
+        })
+        library.ownedItems = library.ownedItems.map((row) =>
+          row.id === item.id ? updated : row,
+        )
+      }
       break
     }
     case 'set_personal_experience':
