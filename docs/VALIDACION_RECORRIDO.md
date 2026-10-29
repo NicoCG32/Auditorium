@@ -1,8 +1,8 @@
 # Validación del recorrido principal
 
-27 de octubre de 2026 · UX-07 #72 · Revisión de comprensión pendiente.
+Preparación: 27 de octubre de 2026 · Aceptación: 28 de octubre de 2026 · Actualización documental: 29 de octubre de 2026.
 
-Este informe reúne la aceptación técnica del recorrido posterior al MVP. La revisión con participantes se registra por separado: no hay resultados de participantes en este informe y la claridad de uso todavía no se declara aceptada. La coordinación del incremento continúa en [#60](https://github.com/NicoCG32/Auditorium/issues/60) y la aceptación en [#72](https://github.com/NicoCG32/Auditorium/issues/72).
+Este informe reúne la validación técnica del recorrido posterior al MVP y la aceptación final comunicada de escritorio. [UX-07 #72](https://github.com/NicoCG32/Auditorium/issues/72) y [su coordinación #60](https://github.com/NicoCG32/Auditorium/issues/60) están completadas; las actas de las issues registran la aceptación del 28 de octubre. Los resultados automáticos se mantienen separados de la revisión de uso.
 
 ## Contrato que se revisa
 
@@ -76,6 +76,6 @@ Repetir las tareas de consulta y una edición en pantalla estrecha y escritorio,
 | Hallazgo               | Reproducción con datos ficticios, consecuencia, prioridad y referencia a la corrección; conservar observaciones personales fuera del repositorio |
 | Comprobación posterior | Repetir el objetivo afectado después de corregirlo, indicando si la duda se resolvió                                                             |
 
-No hay sesiones registradas todavía. Tampoco se atribuyen dudas o satisfacción a participantes inexistentes. La primera sesión sirve como revisión formativa; no demuestra que toda la población comprenda la aplicación.
+La revisión comunicada de escritorio describió el recorrido como entendible y simple, sin dudas concretas informadas. Después se recibió la confirmación final de revisión, que resolvió la reserva sobre borrador, tres ediciones/referencia no poseída y respaldo/restauración. Se registra como autoinforme y aceptación de producto; no se inventan observaciones directas, mediciones, pasos individuales o pruebas móviles no comunicados. Esta revisión formativa no demuestra que toda la población comprenda la aplicación.
 
-Priorizar pérdida/confusión de datos o tarea bloqueada; después, pasos que requieran ayuda o induzcan interpretaciones incorrectas; por último, detalles visuales sin efecto sobre la tarea. Para cerrar UX-07 se necesita evidencia de revisión, corrección y nueva comprobación de los problemas principales, aceptación del resultado y CI aprobada del cambio integrado. Mientras eso falte, #72 permanece abierta y la coordinación #60 también. Publicar main o preparar un paquete no declara por sí mismo aceptada la claridad ni crea una nueva release.
+La revisión y las correcciones principales quedaron aceptadas con CI aprobada del cambio integrado; #72 y #60 están cerradas. El hito de experiencia completó sus diez tareas. Para futuras revisiones, priorizar pérdida/confusión de datos o tarea bloqueada; después, pasos que requieran ayuda o induzcan interpretaciones incorrectas; por último, detalles visuales sin efecto sobre la tarea. Publicar main o preparar un paquete no sustituye la aceptación de producto. La [entrega 1.1.0](ENTREGA.md) consolida el incremento sin ampliar los límites de la evidencia.

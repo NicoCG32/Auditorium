@@ -1,6 +1,14 @@
 import { createHash } from 'node:crypto'
-import { cp, mkdir, readFile, readdir, rm, writeFile } from 'node:fs/promises'
-import { dirname, join, resolve, sep } from 'node:path'
+import {
+  access,
+  cp,
+  mkdir,
+  readFile,
+  readdir,
+  rm,
+  writeFile,
+} from 'node:fs/promises'
+import { dirname, join, relative, resolve, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -19,12 +27,32 @@ if (!output.startsWith(releases + sep) || dirname(output) !== releases) {
 await rm(output, { recursive: true, force: true })
 await mkdir(output, { recursive: true })
 await cp(join(root, 'dist'), join(output, 'site'), { recursive: true })
-await cp(join(root, 'docs', 'ENTREGA_MVP.md'), join(output, 'ENTREGA_MVP.md'))
 await cp(join(root, 'CHANGELOG.md'), join(output, 'CHANGELOG.md'))
-await cp(
-  join(root, 'docs', 'VALIDACION_MVP.md'),
-  join(output, 'VALIDACION_MVP.md'),
-)
+for (const [source, destination] of [
+  ['docs/ENTREGA.md', 'README.md'],
+  ['docs/VALIDACION_RECORRIDO.md', 'VALIDACION_RECORRIDO.md'],
+]) {
+  const sourcePath = join(root, source)
+  const references = new Set()
+  const markdown = (await readFile(sourcePath, 'utf8')).replace(
+    /\]\(([^\s)]+)\)/g,
+    (match, target) => {
+      if (/^(?:https?:|mailto:|#)/i.test(target)) return match
+      const [path, anchor] = target.split('#')
+      const resolved = resolve(dirname(sourcePath), decodeURIComponent(path))
+      if (!resolved.startsWith(root + sep))
+        throw new Error('Document reference outside repository')
+      references.add(resolved)
+      const repositoryPath = relative(root, resolved)
+        .split(sep)
+        .map(encodeURIComponent)
+        .join('/')
+      return `](https://github.com/NicoCG32/Auditorium/blob/v${version}/${repositoryPath}${anchor ? `#${anchor}` : ''})`
+    },
+  )
+  for (const reference of references) await access(reference)
+  await writeFile(join(output, destination), markdown)
+}
 
 const runtimePackages = [
   'react',
@@ -100,6 +128,10 @@ for (const required of [
   'site/index.html',
   'site/sw.js',
   'site/manifest.webmanifest',
+  'README.md',
+  'VALIDACION_RECORRIDO.md',
+  'CHANGELOG.md',
+  'THIRD_PARTY_NOTICES.md',
 ]) {
   if (!files.some((file) => file.path === required))
     throw new Error(`Missing ${required}`)

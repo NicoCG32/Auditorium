@@ -1,6 +1,6 @@
 # Documentación de Auditorium
 
-La [validación del recorrido principal](VALIDACION_RECORRIDO.md) reúne la matriz técnica y una sesión de revisión preparada. UX-07 conserva pendiente la aceptación con participantes; las pruebas automáticas se distinguen de la comprensión de uso.
+La [guía de entrega 1.1.0](ENTREGA.md) describe la distribución actual, su configuración y la actualización desde versiones anteriores. La [validación del recorrido principal](VALIDACION_RECORRIDO.md) reúne la matriz técnica y la aceptación comunicada de escritorio del 28 de octubre. UX-07 y su coordinación están completadas; la revisión de uso se distingue de las pruebas automáticas.
 
 [Mi colección](MI_COLECCION.md) documenta búsqueda, filtros, medios físicos/digitales, copias editables, confirmación de retirada y guardado concurrente, con diagramas de dominio y transacción. No modifica los contratos DB11/JSON7/ZIP1.
 
@@ -14,7 +14,7 @@ UX-06 incorpora la [ficha y Mi experiencia](MI_EXPERIENCIA.md): guardado conjunt
 
 [Clasificación y alta de álbumes](CLASIFICACION_ALBUM.md) describe tipo, categorías, publicación, créditos y su migración inicial DB8/respaldo5.
 
-Documentación de la implementación actual, basada en el contrato de datos del **MVP v1.0.0**, junto con su publicación web, evolución visual e incrementos de integraciones, edición y cuenta opcional. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. La sincronización y sus requisitos de activación se documentan por separado. Las capacidades futuras aparecen como propuestas separadas.
+Documentación de la implementación actual **1.1.0**, que consolida el MVP local y los incrementos de experiencia, integraciones, reproducción, audio y cuenta opcional. La release original corresponde al [tag v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0); las referencias técnicas vigentes se mantienen en este repositorio y deben revisarse cuando cambien código, esquemas o decisiones. La sincronización y sus requisitos de activación se documentan por separado. Las capacidades futuras aparecen como propuestas separadas.
 
 ## Ruta de lectura
 
@@ -27,7 +27,7 @@ Para abrir o mantener la web/PWA alojada, consulta la [guía de GitHub Pages](PU
 | Comprender límites del sistema, componentes, dependencias y flujos        | [Arquitectura](ARQUITECTURA.md)          |
 | Entender entidades, relaciones, cardinalidades, invariantes y estados     | [Modelo de dominio](MODELO_DOMINIO.md)   |
 | Consultar tablas, claves, índices, migraciones, transacciones y respaldos | [Modelo de datos](MODELO_DATOS.md)       |
-| Usar o alojar el paquete publicado                                        | [Entrega del MVP](ENTREGA_MVP.md)        |
+| Usar o alojar el paquete publicado                                        | [Entrega actual](ENTREGA.md)             |
 | Revisar evidencia y límites de aceptación                                 | [Validación del MVP](VALIDACION_MVP.md)  |
 | Conocer alcance, proceso y seguimiento                                    | [Plan de desarrollo](PLAN_DESARROLLO.md) |
 
@@ -39,7 +39,7 @@ La [guía de enlaces personales](ENLACES_PERSONALES.md) documenta el modelo, los
 
 La [guía de Biblioteca](BIBLIOTECA.md) explica búsqueda, orden, filtros combinados con selecciones extraíbles, Cuadrícula/Lista, acceso desde portada o título y utilidades plegables.
 
-La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contexto, índices de Calificaciones/Mi colección y protección de cambios implementados en UX-04. La [experiencia propuesta](EXPERIENCIA_USUARIO.md) sigue especificando los refinamientos pendientes de formularios y datos.
+La [guía de navegación y borradores](NAVEGACION.md) describe las rutas, contexto y protección de cambios. La [experiencia propuesta](EXPERIENCIA_USUARIO.md) conserva el diseño histórico que dio origen a los formularios y datos ya implementados; las guías funcionales y la validación reflejan el resultado vigente.
 
 | Área                     | Referencias                                                                                                                |
 | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |

@@ -2,38 +2,22 @@
 
 ## Sin publicar
 
-- Validación integrada desde alta manual hasta restauración en otro perfil, con tres ediciones, notas general/por género, enlace favorito, adquisiciones y deseo independientes. Matriz de regresiones, ampliación de texto al 200 % y guion de revisión de uso; aceptación con participantes explícitamente pendiente.
-- Calificaciones y alta se ajustan al ancho disponible con texto al 200 % a 320 px: buscador acotado, navegación por espacio, paneles estrechos y botón de archivo que permite varias líneas, sin desbordamiento horizontal.
+Sin cambios pendientes posteriores a 1.1.0.
 
-- Mi colección incorpora búsqueda por álbum, artista, edición y formato, recuentos separados de físicos/digitales y varias copias con etiquetas legibles. Edición y retirada con comparación completa del registro, borradores y recuperación de lectura, sin modificar ediciones compartidas, valoraciones, enlaces o deseos. Regreso con filtros, selector y foco; guía y diagramas. DB11/JSON7/ZIP1 sin migración.
+## 1.1.0 — 2026-10-29
 
-- Mi experiencia incorpora notas opcionales por género y referencia de edición propia, con guardado atómico y protección de borradores y conflictos. Biblioteca y Calificaciones muestran la base elegida, ordenan y filtran por la misma nota, con ausencia explícita y General seleccionable. Renombrado de géneros desde la ficha sin perder notas; textos comparativos y recomendaciones sin ampliar los datos enviados. DB11/JSON7/ZIP1 sin cambios de formato.
+Consolidación del recorrido de biblioteca, experiencia y colección, aceptado el 28 de octubre de 2026.
 
-- Modelo de notas por género asignado al álbum, independientes de la general y por pista, con referencia de edición propia, comparación concurrente completa y renombrado atómico de etiquetas valoradas, incluidas entradas retiradas. Quitar una nota general conserva las contextuales.
-- DB11/nativa110 y JSON/snapshot7 con lectores históricos estrictos y migración de los cinco documentos del checkpoint, sin notas inferidas. ZIP1 conserva audio y admite JSON6 histórico; la RPC amplía validación, mantiene RLS/CAS y bloquea retrocesos. Guía y ADR-013; controles de edición y filtros pendientes en RATE-02 #81.
-
-- Sugerencias locales de géneros y artistas por prefijo en alta, créditos múltiples y edición, también offline. Selección manual con teclado, ratón o toque; géneros por fragmento sin duplicados y nombres nuevos permitidos. Reutilización explícita de bandas con control concurrente, identidad y datos conservados, sin migración ni nuevo servicio.
-
-- Audio propio persistente por dispositivo en alta, edición y ficha, con asociación opcional a una pista del mismo álbum. Conserva experiencia y adquisiciones independientes; comparte un único reproductor explícito con streaming y libera sus URLs al salir.
-- IndexedDB v10/nativa100 añade dos tablas de audio con guardado atómico, control concurrente y límites de 16 MiB por archivo, 128 MiB y 128 adjuntos por biblioteca. JSON y sincronización permanecen en formato6, sin binarios ni descriptores de audio.
-- Respaldo completo ZIP1 con manifiesto, JSON musical y archivos, validación estructural/CRC/SHA y restauración atómica sólo en destino vacío. Borrado explícito de las copias locales, recuperación offline, guía de uso, modelos y ADR-012.
-
-- Cuenta opcional con correo y contraseña mediante Supabase, cachés por cuenta y copia explícita de la biblioteca sin cuenta. Conserva el uso local y sin conexión; el registro público por correo queda pendiente de configurar SMTP.
-- Sincronización privada versionada, permisos RLS, escritura con revisión e idempotencia, combinación de cambios independientes y resolución de conflictos con conservación de ambas copias. IndexedDB v6 añade sólo el checkpoint técnico; el respaldo sigue en formato v3.
-- Guía de instalación y operación, modelos remoto/local y diagramas de sincronización, ADR-011 y pruebas de permisos en Postgres y del recorrido de cuenta en navegador.
-
-- Nombres de álbumes, artistas, alias acreditados y géneros con mayúscula inicial por palabra al añadir o editar, también desde catálogo; conserva siglas reconocibles como AC/DC, R.E.M. y U2. Las correcciones de mayúsculas/espacios mantienen IDs y procedencia externa. Lectura e importación conservan los nombres históricos, sin migración masiva.
-
-- Navegación por Biblioteca, Añadir álbum, Calificaciones y Mi colección mediante rutas de fragmento compatibles con Pages. Conserva contexto, consulta, vista, foco y posición al regresar; Calificaciones y Mi colección incorporan índices iniciales sobre los datos existentes, con medios físicos y digitales diferenciados.
-- Protección de borradores al navegar, usar Atrás/Adelante o cancelar editores: guardar y salir, descartar explícitamente o seguir editando. Un commit con lectura fallida bloquea nuevas escrituras y sólo reintenta lectura; el alta abre su ficha después de confirmar ambos pasos. Los borradores siguen en memoria de la pestaña y no sobreviven a una recarga confirmada.
-- Búsqueda opcional de álbumes en Wikidata por acción explícita, con revisión de candidatos, créditos múltiples y borrador editable. El registro manual continúa disponible sin coincidencia, red o servicio.
-- Procedencia y referencias validadas de MusicBrainz, Spotify y YouTube en la ficha; URL de portada opcional de Cover Art Archive, aceptada por separado y cargada automáticamente en el borrador, la ficha y las tarjetas.
-- Recomendaciones de escucha o revaloración mediante Groq o Gemini, con clave propia sólo en memoria, contexto acotado y respuesta validada sobre álbumes ya guardados. No cambia valoraciones ni activa facturación; los niveles gratuitos dependen de cada cuenta y sus cuotas.
-- Edición de metadatos de álbumes guardados con el mismo ID, comprobación de cambios concurrentes y conservación de listas, notas, colección y deseos. Cambiar el nombre de un artista crea una identidad para ese álbum; corregir su país mantiene la referencia compartida y se advierte en el editor.
-- Géneros libres de álbum y país de origen de cada artista, con búsqueda, filtros y ordenación A–Z. Portadas JPEG/PNG locales de hasta 2 MiB, validadas antes de guardarse y disponibles también offline.
-- Base local v5 (nativa 50) con las mismas trece tablas e índices de v3/v4, referencias opcionales de catálogo, géneros, país y portada local. Migración compatible desde v1/v2/v3/v4 sin regenerar identidad ni IDs.
-- Exportación de respaldos v3 e importación de formatos v1/v2 mediante sus contratos históricos estrictos, normalizados a v3. Las claves y recomendaciones no forman parte de la base, respaldo o precaché.
-- Guías de integraciones y edición, ADR-008/ADR-009, con arquitectura, dominio, datos, privacidad y recuperación actualizados. La release v1.0.0 y sus archivos conservan su contrato original.
+- Navegación por Biblioteca, Añadir álbum, Calificaciones y Mi colección, con búsqueda, filtros combinables, vistas, contexto y foco al regresar. Protección de borradores, cancelación explícita y reintento de lectura sin repetir una escritura confirmada.
+- Alta manual mínima y edición con identidad estable; clasificación separada en tipo principal, categorías y publicación. Géneros y país por artista, créditos múltiples y reutilización explícita de bandas, con sugerencias locales por prefijo y control de homónimos. Mayúscula inicial por palabra conservando siglas; lectura y respaldos históricos mantienen sus nombres.
+- Experiencia conjunta con escucha, comentario, nota general opcional y notas independientes por género. Referencias opcionales a ediciones del mismo álbum, poseídas o no. Comparación visible compartida por cifra, orden y filtros, sin promedios ni sustitución de notas ausentes. Renombrado protegido y conflictos recuperables. Incorporar un álbum expresa valor; una nota baja es comparativa.
+- Mi colección con búsqueda, medios y formatos diferenciados, recuentos físicos/digitales y varias copias con etiquetas legibles. Edición y retirada confirmada de cada adquisición conservan álbum, ediciones compartidas, valoraciones, enlaces y deseos. Deseos secundarios y cumplimiento explícito.
+- Enlaces personales Escuchar/Comprar, favorito opcional y portadas automáticas por URL o JPG/PNG local de hasta 2 MiB. Consulta Wikidata explícita con selección revisada y referencias; el registro manual permanece disponible. Recomendaciones Gemini/Groq con clave propia sólo en memoria y datos acotados, sin modificar notas.
+- Reproducción Spotify/YouTube por elección, alternativa externa, cancelación y referencia temporal. Audio propio persistente por dispositivo, asociación opcional a pista, un reproductor activo y límites explícitos. Respaldos ZIP completos con audio e integridad comprobada; archivos y descriptores excluidos de JSON y sincronización.
+- Cuenta opcional con Supabase, aislamiento por cuenta, sincronización privada, incorporación explícita de la biblioteca local, revisiones y resolución de conflictos. Correo transaccional configurado en la web publicada y recuperación con tratamiento de retornos caducados. El ZIP genérico usa modo local; la activación de cuentas se configura al compilar.
+- Identidad visual, temas oscuro/pergamino, ambientación opcional y portadas offline. Ajustes de reflujo con texto al 200 %, buscador, formularios, navegación y controles de archivo en pantallas estrechas.
+- Persistencia DB11/nativa110, JSON/snapshot7 y ZIP1. Lectores históricos estrictos, migración sin regenerar identidad y restauración atómica en destino vacío. Una base actualizada no se abre con una aplicación antigua: conservar respaldos antes de actualizar.
+- Arquitectura, dominio, guías y diagramas actualizados. Documentación de aceptación al día y guía de distribución 1.1.0 incluida en el paquete, con referencias fijadas al tag. Inventario de archivos y SHA-256, calidad y paquete vinculados al commit exacto de CI. La release v1.0.0 conserva sus archivos originales.
 
 ## 1.0.0 — 2026-10-14
 
