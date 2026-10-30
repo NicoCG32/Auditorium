@@ -191,7 +191,7 @@
   }
   .brand-wordmark {
     display: block;
-    inline-size: min(100%, 22rem);
+    inline-size: min(100%, 13rem);
     block-size: auto;
     object-fit: contain;
   }
@@ -1520,9 +1520,6 @@
   }
   .app-brand {
     flex: 1 1 0;
-  }
-  .brand-wordmark {
-    inline-size: min(100%, 15rem);
   }
   .appearance-panel > summary {
     padding-inline: 0.6rem;
