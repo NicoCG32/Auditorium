@@ -1,8 +1,36 @@
+<div align="center">
+
+<img src="public/auditorium/brand/logo-stacked.webp" alt="Identidad visual de Auditorium" width="160" />
+
 # Auditorium
+
+**Tu música, tus ediciones, tu experiencia.**
+
+[![Estado: 1.1.0 publicada](https://img.shields.io/badge/Estado-1.1.0%20publicada-8D343A?style=flat-square&labelColor=263244)](#sobre-el-proyecto) [![Plataforma: Web / PWA](https://img.shields.io/badge/Plataforma-Web%20%2F%20PWA-386B8F?style=flat-square&labelColor=263244)](#usar-o-descargar) [![Licencia: PolyForm NC](https://img.shields.io/badge/Licencia-PolyForm%20NC-596273?style=flat-square&labelColor=263244)](LICENSING.md)
+
+[![React 19](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#tecnologías) [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=FFFFFF)](#tecnologías) [![Vite 8](https://img.shields.io/badge/Vite%208-646CFF?style=for-the-badge&logo=vite&logoColor=FFFFFF)](#tecnologías) [![Dexie 4](https://img.shields.io/badge/Dexie%204-4F46E5?style=for-the-badge)](#tecnologías)
+
+[Abrir aplicación](https://nicocg32.github.io/Auditorium/) · [Releases y descargas](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0) · [Documentación](docs/README.md) · [Arquitectura](docs/01-arquitectura-general.md) · [Inicio rápido](#ejecutar-desde-el-código)
+
+</div>
+
+---
+
+## Sobre el proyecto
 
 Biblioteca musical personal para organizar álbumes, ediciones, escuchas, valoraciones y adquisiciones, con independencia del formato o de las plataformas de streaming.
 
 **Estado:** Web/PWA 1.1.0 disponible. Funciona localmente sin cuenta; la web ofrece sincronización opcional. El audio propio se conserva por dispositivo. Escritorio empaquetado y APK siguen planificados.
+
+## Tecnologías
+
+| Área             | Tecnologías y responsabilidad                                                 |
+| ---------------- | ----------------------------------------------------------------------------- |
+| **Interfaz**     | React 19, TypeScript 6 y Tailwind CSS; Vite 8 y PWA.                          |
+| **Datos**        | IndexedDB mediante Dexie 4; cuentas y sincronización opcionales con Supabase. |
+| **Verificación** | Vitest, Testing Library y Playwright.                                         |
+
+> **Enfoque técnico:** Biblioteca local primero, con audio y respaldos por dispositivo.
 
 ## Usar o descargar
 
