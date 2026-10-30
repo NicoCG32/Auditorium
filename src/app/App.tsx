@@ -61,8 +61,8 @@ export function App({
             <img
               src={`${import.meta.env.BASE_URL}auditorium/brand/wordmark-${appearance.theme}.svg`}
               alt="Auditórium · Tu fonoteca digital"
-              width={980}
-              height={198}
+              width={2400}
+              height={720}
               className="brand-wordmark"
             />
           </div>

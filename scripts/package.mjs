@@ -28,6 +28,10 @@ await rm(output, { recursive: true, force: true })
 await mkdir(output, { recursive: true })
 await cp(join(root, 'dist'), join(output, 'site'), { recursive: true })
 await cp(join(root, 'CHANGELOG.md'), join(output, 'CHANGELOG.md'))
+await cp(join(root, 'branding'), join(output, 'branding'), { recursive: true })
+for (const notice of ['LICENSE', 'NOTICE', 'LICENSING.md']) {
+  await cp(join(root, notice), join(output, notice))
+}
 for (const [source, destination] of [
   ['docs/ENTREGA.md', 'README.md'],
   ['docs/VALIDACION_RECORRIDO.md', 'VALIDACION_RECORRIDO.md'],

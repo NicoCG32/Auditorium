@@ -1,6 +1,9 @@
 <div align="center">
 
-<img src="public/auditorium/brand/logo-stacked.webp" alt="Identidad visual de Auditorium" width="160" />
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="branding/auditorium-banner-oscuro.png" />
+  <img src="branding/auditorium-banner-claro.png" alt="Identidad visual de Auditorium" width="100%" />
+</picture>
 
 # Auditorium
 
@@ -56,6 +59,8 @@ Abre la dirección indicada por Vite. La biblioteca local no necesita claves. [C
 | General    | [Problema, cliente y solución](docs/00-problematica-cliente-y-valor.md) · [Motivación](docs/16-motivacion-y-contexto.md)                                                         |
 | Técnica    | [Arquitectura y diagramas](docs/01-arquitectura-general.md) · [Dominio y datos](docs/04-base-de-datos.md)                                                                        |
 | Desarrollo | [Etapas y metodología](docs/17-desarrollo-y-metodologia.md) · [Proyección](docs/15-escalabilidad-y-nuevos-mercados.md) · [Costos CLP/USD](docs/18-analisis-economico-clp-usd.md) |
+
+[Identidad visual](branding/README.md): logos, banners y variantes de aplicación.
 
 ## Licencia y créditos
 

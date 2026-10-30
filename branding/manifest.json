@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "project": "Auditorium",
+  "bannerLight": "auditorium-banner-claro.png",
+  "bannerDark": "auditorium-banner-oscuro.png",
+  "resources": [
+    "apple-touch-icon.png",
+    "auditorium-banner-claro.png",
+    "auditorium-banner-oscuro.png",
+    "auditorium-emblema-original-remaster.png",
+    "auditorium-icono-app.png",
+    "auditorium-icono-app.svg",
+    "auditorium-icono-simple.png",
+    "auditorium-icono-simple.svg",
+    "auditorium-identidad-cuadrada-clara.png",
+    "auditorium-identidad-cuadrada-oscura.png",
+    "auditorium-logo-horizontal-claro.png",
+    "auditorium-logo-horizontal-claro.svg",
+    "auditorium-logo-horizontal.png",
+    "auditorium-logo-horizontal.svg",
+    "auditorium-monograma-vinilo.png",
+    "auditorium-monograma-vinilo.svg",
+    "favicon.png",
+    "icon-192.png",
+    "icon-512.png"
+  ]
+}
