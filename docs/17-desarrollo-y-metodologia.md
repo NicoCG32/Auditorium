@@ -2,7 +2,7 @@
 
 ## Desarrollo del proyecto: etapas y método
 
-Desarrollo incremental por capacidades y criterios de aceptación, con issues, decisiones, contratos, pruebas y entrega versionada. La publicación 1.1.0 es una base de producto; empaquetar escritorio/Android constituye otra etapa.
+Desarrollo Auditorium por capacidades completas: defino el comportamiento, lo llevo al dominio y a la interfaz, y compruebo que se pueda usar sin comprometer la biblioteca existente. Las versiones 1.0.0 y 1.1.0 reúnen esos incrementos; el empaquetado de escritorio y Android tiene su propio recorrido.
 
 ### Etapas del proyecto
 
@@ -15,19 +15,16 @@ Desarrollo incremental por capacidades y criterios de aceptación, con issues, d
 
 ### Ciclo de trabajo y decisión
 
-1. Caracterizar una necesidad y un escenario observable.
-2. Revisar contratos, datos y límites del alcance.
-3. Implementar o prototipar el incremento apropiado a la etapa.
-4. Verificar el recorrido y sus errores relevantes; conservar resultados negativos.
-5. Decidir continuar, corregir, limitar o posponer y actualizar documentación vigente.
-
-Los siguientes incrementos siguen este ciclo y se contrastan con los criterios de aceptación del producto.
+1. Parto de una tarea de la biblioteca, como registrar una edición o restaurar un respaldo.
+2. Reviso cómo afecta al catálogo, a la experiencia personal y a las copias que ya existen.
+3. Implemento el cambio y pruebo tanto el recorrido habitual como una interrupción o un dato incompatible.
+4. Lo integro cuando puedo explicar su uso y conservar la información anterior.
 
 ### Cierre y continuidad
 
-La entrega identifica fuente, plataforma, límites, guía de uso e integridad de datos/artefactos. Los informes académicos conservan su etapa, cuando aplican, y no se actualizan como si fueran manuales del runtime. La proyección no obliga a desarrollar extensiones antes de validar el núcleo.
+Mi siguiente paso es comprobar archivos, audio y recuperación en las plataformas adicionales. Conservo una guía de entrega por versión para que instalar o actualizar la aplicación sea tan claro como usarla.
 
-Justificación y prioridades: [15-escalabilidad-y-nuevos-mercados.md](15-escalabilidad-y-nuevos-mercados.md). Esfuerzo futuro y operación: [18-analisis-economico-clp-usd.md](18-analisis-economico-clp-usd.md).
+[Justificación y próximos pasos](15-escalabilidad-y-nuevos-mercados.md) · [Estimaciones comerciales y operación](18-analisis-economico-clp-usd.md).
 
 ## Código y documentación relacionada
 

@@ -2,6 +2,8 @@
 
 ## Justificación y proyección
 
+Quiero poder distinguir el álbum que conozco, la edición que me interesa y el ejemplar que tengo. Esa separación da sentido al catálogo y a mis registros personales. También quiero conservar la posibilidad de usar la biblioteca localmente y trasladarla mediante un respaldo.
+
 ### Ajuste entre problema y solución
 
 | Necesidad                   | Razón del diseño                                                                  |
@@ -12,16 +14,19 @@
 
 Tiempo para encontrar un registro y exactitud de colección/restauración; satisfacción y uso sostenido, sin convertir volumen de álbumes en éxito por sí solo.
 
+Para mí, su utilidad se ve en tareas sencillas: encontrar un álbum, reconocer qué edición tengo, retomar una escucha y recuperar la biblioteca sin perder información. Quiero comprobar esas tareas con bibliotecas de distintos tamaños y con otras personas que coleccionen música.
+
 ### Qué se puede abstraer y qué no
 
-Las entidades, reglas y fronteras de [04-base-de-datos.md](04-base-de-datos.md) permiten evaluar reutilización. Cambiar un nombre o una categoría no prueba compatibilidad con otro sector: datos, permisos, reglas, operación y costos deben validarse de nuevo.
+La separación entre obra, edición y ejemplar puede servir para otras colecciones. El respaldo versionado y la experiencia personal son piezas aprovechables; los metadatos y las reglas de cada tipo de colección necesitan un diseño propio.
 
 ### Posibles líneas de evolución
 
-- Fonotecas personales
-- Colecciones de cine con ediciones y copias
-- Bibliotecas de juegos físicos/digitales
-- Archivos de coleccionismo editorial
+Son caminos que me gustaría explorar después del alcance actual.
+
+- **Cine doméstico:** Películas, ediciones y copias físicas comparten parte de esa estructura; habría que adaptar duración, repartos y formatos.
+- **Bibliotecas de videojuegos:** Permitiría distinguir juego, plataforma, edición y copia, con reglas propias para licencias digitales.
+- **Coleccionismo editorial:** Libros o cómics requieren autores, tiradas y volúmenes, además de revisar la procedencia de sus metadatos.
 
 ### Límites y trade-offs
 
@@ -32,13 +37,13 @@ Las entidades, reglas y fronteras de [04-base-de-datos.md](04-base-de-datos.md) 
 
 ### Prioridad de inversión
 
-| Prioridad   | Iniciativa                                                                           | Impacto a comprobar                                                                                                                                           | Criterio económico                                                    |
-| ----------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| Alta        | Evaluación de empaquetado y validación de archivos/audio en una plataforma adicional | Tiempo para encontrar un registro y exactitud de colección/restauración; satisfacción y uso sostenido, sin convertir volumen de álbumes en éxito por sí solo. | Rango de esfuerzo y costo en capítulo 18; no presupuesto comprometido |
-| Media       | Reproducción, soporte y recuperación por plataforma                                  | Menos fallos de entrega y pérdida de datos                                                                                                                    | Costo recurrente separado de implementación                           |
-| Estratégica | Validar una extensión/forma de sostenimiento                                         | Uso y aceptación fuera del contexto inicial                                                                                                                   | Investigar costos, demanda y condiciones antes de monetizar           |
+| Prioridad | Iniciativa                                                         | Qué quiero conseguir                                         |
+| --------- | ------------------------------------------------------------------ | ------------------------------------------------------------ |
+| Alta      | Validar audio, archivos y restauración en una plataforma adicional | Poder llevar la biblioteca a otro dispositivo con confianza. |
+| Media     | Revisar rendimiento con bibliotecas grandes                        | Buscar y editar sin perder fluidez.                          |
+| Futura    | Explorar otra clase de colección                                   | Comprobar si el modelo se adapta sin complicar la fonoteca.  |
 
-Las cifras CLP/USD, supuestos, sensibilidad y retorno se presentan en [18-analisis-economico-clp-usd.md](18-analisis-economico-clp-usd.md); no son una valoración comercial del repositorio.
+Las [estimaciones comerciales y de operación](18-analisis-economico-clp-usd.md) permiten conversar sobre estos alcances con referencias para Chile y el extranjero.
 
 ## Código y documentación relacionada
 

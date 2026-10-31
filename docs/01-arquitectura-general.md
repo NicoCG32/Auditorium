@@ -39,7 +39,7 @@ Dexie sobre IndexedDB: DB11/nativa110 en la documentación vigente. JSON/snapsho
 - Retirar de la colección no equivale a borrar el álbum de catálogo ni las otras experiencias.
 - Las operaciones conjuntas validan identidad, referencias y concurrencia antes de confirmar.
 
-Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalidades y representación; [05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) para invariantes. Las piezas marcadas como propuestas pertenecen al diseño del prototipo.
+Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalidades y representación; [05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) para invariantes. Las propuestas de evolución se identifican por separado de las capacidades disponibles.
 
 ### Nivel 4 — Despliegue y distribución
 

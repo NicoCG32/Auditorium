@@ -1,54 +1,33 @@
-# 18 — Escenarios económicos CLP / USD
+# 18 — Estimaciones comerciales y sostenimiento
 
-## Escenarios económicos de Auditorium
+Mi prioridad es mantener una fonoteca útil para uso personal. Si alguien necesitara una adaptación propia, plantearía un trabajo acotado de configuración, importación y acompañamiento. El escritorio y Android siguen siendo líneas de desarrollo independientes de la web disponible.
 
-**Finalidad:** presupuestar decisiones futuras, no tasar el repositorio ni declarar costos/ventas históricos. Alcance modelado: **Evaluación de empaquetado y validación de archivos/audio en una plataforma adicional**. Sin ingresos ni precio de venta definidos. El retorno inicial es utilidad personal, portabilidad y aprendizaje.
+## Referencias para conversar sobre un alcance
 
-### Moneda y supuestos
+Estos rangos son mi propuesta inicial para evaluar trabajos o ediciones futuras. La columna CLP está pensada para clientes en Chile y la columna USD para clientes internacionales. El presupuesto final se acuerda según el alcance y el acompañamiento necesario en cada caso.
 
-Conversión: **USD 1 = CLP 994,29**, valor del **27-10-2026** en la [tabla oficial SII](https://www.sii.cl/valores_y_fechas/dolar/dolar2026.htm), utilizado como referencia para los escenarios de este capítulo. CLP = USD × R; USD = CLP / R, con R = 994,29.
+| Propuesta                              | Alcance de referencia                                              | Clientes en Chile · CLP | Clientes internacionales · USD |
+| -------------------------------------- | ------------------------------------------------------------------ | ----------------------- | ------------------------------ |
+| Configuración e importación acompañada | Una biblioteca, revisión del archivo de origen y una sesión de uso | CLP 150.000–300.000     | USD 250–500                    |
+| Adaptación acotada de la biblioteca    | Un flujo específico, pruebas y guía de entrega                     | CLP 500.000–1.000.000   | USD 800–1.500                  |
+| Soporte mensual opcional               | Consultas y correcciones menores con dedicación limitada           | CLP 30.000–60.000       | USD 50–100                     |
 
-Para valorizar esfuerzo se supone **CLP 15.000/h** (USD 15,09/h). Es una tasa elegida para comparar escenarios, no una tarifa profesional ni un presupuesto de implementación. Rangos de horas, mantenimiento y reservas también son supuestos; no se deducen de SCT, commits o líneas de código.
+Los servicios puntuales se estiman por entrega; los que indican soporte mensual se estiman por mes. Los rangos se presentan antes de impuestos y comisiones. Acordaría entregables, plazo y dedicación de soporte antes de iniciar un trabajo.
 
-### Inversión del siguiente alcance
+## Recursos y operación
 
-| Concepto                        | Base del escenario                       | CLP                     | USD                   |
-| ------------------------------- | ---------------------------------------- | ----------------------- | --------------------- |
-| Tiempo del siguiente alcance    | 24–48 h a CLP 15.000/h                   | CLP 360.000–CLP 720.000 | USD 362,07–USD 724,13 |
-| Reserva de materiales           | Supuesto; equipo existente no valorizado | CLP 0                   | USD 0,00              |
-| Total de inversión de escenario | No es inversión histórica ni cotización  | CLP 360.000–CLP 720.000 | USD 362,07–USD 724,13 |
+La biblioteca local no necesita un servicio de pago para funcionar. Para una instancia con sincronización y soporte, reservaría CLP 20.000–50.000 mensuales o USD 30–80 mensuales para infraestructura, según el despliegue. El alojamiento y el soporte se presupuestan por separado.
 
-### Operación mensual
+Las reservas de operación cubren recursos o dedicación, según se indica; no se suman automáticamente a una propuesta de servicio. Para una implementación concreta, definiría quién contrata la infraestructura y cómo se reparte el mantenimiento.
 
-Escenario local: servicios obligatorios USD 0. Escenario opcional aquí modelado: base Pro desde USD 25/mes, sin cambiar que la biblioteca local funciona sin esa contratación. No es el gasto actual del proyecto.
+## Qué valor quiero comprobar
 
-| Concepto                        | Base                               | CLP/mes    | USD/mes   |
-| ------------------------------- | ---------------------------------- | ---------- | --------- |
-| Mantenimiento de escenario      | 2 h/mes                            | CLP 30.000 | USD 30,17 |
-| Servicios externos de escenario | Ver composición; no factura actual | CLP 24.857 | USD 25,00 |
-| Costo mensual modelado          | Tiempo + servicios                 | CLP 54.857 | USD 55,17 |
+Evaluaría el valor por la comodidad de mantener la colección y la facilidad de recuperarla. Una adaptación sólo tendría sentido si resuelve una necesidad que el catálogo general todavía no cubre.
 
-No se suman aquí impuestos, comisiones, dominio, sobreconsumo, reposición extraordinaria o equipo no valorizado. Costos de nube por proyecto/organización y cuotas gratuitas deben revisarse para la cuenta concreta. Una cuota de nube no sustituye la arquitectura ni la validación necesarias para escalar.
+## Qué puede cambiar el presupuesto
 
-### Justificación y retorno
+La carga inicial de una colección grande, la limpieza de metadatos, el almacenamiento de audio y una nueva plataforma pueden ampliar mucho el trabajo. El acceso a música y los permisos de sus archivos corresponden a cada usuario.
 
-Ejemplo **hipotético**, no resultado medido: evitar 2 h/mes a la misma tasa representa CLP 30.000 / USD 30,17 de tiempo valorizado, no ingresos. Frente al costo modelado, el saldo de ese ejemplo es CLP -24.857 / USD -25,00 al mes. El punto de equilibrio por ahorro temporal sería 3.66 h/mes; debe comprobarse con uso real, pérdidas evitadas o un beneficio distinto.
+Las condiciones de uso y reutilización del proyecto se explican en [licencia y créditos](../LICENSING.md). Un servicio de adaptación o soporte se acuerda con su propio alcance.
 
-Tiempo para encontrar un registro y exactitud de colección/restauración; satisfacción y uso sostenido, sin convertir volumen de álbumes en éxito por sí solo.
-
-ROI sólo se calcula cuando beneficios y costos comparables estén medidos: (beneficio − costo) / costo, indicando período y si el tiempo valorizado realmente se convierte en ahorro. Un costo de caja bajo no acredita rentabilidad ni valor comercial de la idea.
-
-### Sensibilidad y decisión
-
-- Con R ±10 %, cambia en ±10 % el costo CLP de servicios fijados en USD; el gasto local CLP no cambia por ese supuesto.
-- Separar creación puntual de mantenimiento recurrente y reserva física de consumo.
-- Registrar facturas/uso, horas observadas y aceptación antes de reemplazar estos escenarios por un presupuesto comprometido.
-- Las monedas ficticias de un videojuego, saldos de clientes e inventario de una empresa no son ingresos del software.
-
-### Referencias de servicios
-
-[Supabase](https://supabase.com/pricing): Free y Pro desde USD 25/mes; [Vercel](https://vercel.com/pricing): Hobby y Pro desde USD 20/mes. Son referencias consultadas, no planes asignados al proyecto. [Gemini](https://ai.google.dev/gemini-api/docs/pricing) y [Firebase](https://firebase.google.com/pricing) requieren revisar producto/modelo, cuotas y condiciones antes de cuantificar consumo. El plan actual de Lovable u otro proveedor no se deduce de estas tarifas.
-
-## Código y documentación relacionada
-
-[README.md](../README.md) · [docs/ARQUITECTURA.md](ARQUITECTURA.md) · [docs/MODELO_DOMINIO.md](MODELO_DOMINIO.md) · [docs/MODELO_DATOS.md](MODELO_DATOS.md) · [docs/ENTREGA.md](ENTREGA.md) · [docs/PLAN_DESARROLLO.md](PLAN_DESARROLLO.md) · [docs/AUDIO_LOCAL.md](AUDIO_LOCAL.md).
+[Proyección y prioridades](15-escalabilidad-y-nuevos-mercados.md) · [Etapas y metodología](17-desarrollo-y-metodologia.md).

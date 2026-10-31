@@ -23,7 +23,7 @@ Entorno declarado: engines `{"node": "^24.15.0 || >=26.0.0", "npm": "^12.2.0"}`;
 ### Secuencia de puesta en marcha
 
 1. Preparar el runtime/editor y la configuración que indiquen las fuentes enlazadas; usar valores de prueba y restaurar el lockfile apropiado.
-2. Ejecutar la modalidad local y sus comprobaciones existentes desde la carpeta indicada por esa guía. No confundir preview web con el runtime nativo o montaje físico.
+2. Inicia la aplicación web y comprueba registro, audio y respaldo en el navegador que vayas a utilizar.
 3. Construir/instalar el artefacto de ese target y comprobar recorrido principal, error relevante y reapertura/actualización antes de declararlo entregado.
 
 Ejecuta los comandos de comprobación antes de distribuir una compilación. Puedes consultar sus resultados remotos en la pestaña Actions del repositorio.

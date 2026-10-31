@@ -1,6 +1,6 @@
 # Validación del recorrido principal
 
-Preparación: 27 de octubre de 2026 · Aceptación: 28 de octubre de 2026 · Actualización documental: 29 de octubre de 2026.
+Este recorrido permite evaluar las tareas principales de la biblioteca en escritorio.
 
 Este informe reúne la validación técnica del recorrido posterior al MVP y la aceptación final comunicada de escritorio. [UX-07 #72](https://github.com/NicoCG32/Auditorium/issues/72) y [su coordinación #60](https://github.com/NicoCG32/Auditorium/issues/60) están completadas; las actas de las issues registran la aceptación del 28 de octubre. Los resultados automáticos se mantienen separados de la revisión de uso.
 
