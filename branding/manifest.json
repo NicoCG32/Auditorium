@@ -1,27 +1,230 @@
 {
   "schemaVersion": 1,
   "project": "Auditorium",
-  "bannerLight": "auditorium-banner-claro.png",
-  "bannerDark": "auditorium-banner-oscuro.png",
+  "bannerLight": "banners/auditorium-banner-claro.png",
+  "bannerDark": "banners/auditorium-banner-oscuro.png",
   "resources": [
-    "apple-touch-icon.png",
-    "auditorium-banner-claro.png",
-    "auditorium-banner-oscuro.png",
-    "auditorium-emblema-original-remaster.png",
-    "auditorium-icono-app.png",
-    "auditorium-icono-app.svg",
-    "auditorium-icono-simple.png",
-    "auditorium-icono-simple.svg",
-    "auditorium-identidad-cuadrada-clara.png",
-    "auditorium-identidad-cuadrada-oscura.png",
-    "auditorium-logo-horizontal-claro.png",
-    "auditorium-logo-horizontal-claro.svg",
-    "auditorium-logo-horizontal.png",
-    "auditorium-logo-horizontal.svg",
-    "auditorium-monograma-vinilo.png",
-    "auditorium-monograma-vinilo.svg",
-    "favicon.png",
-    "icon-192.png",
-    "icon-512.png"
-  ]
+    "banners/auditorium-banner-claro.png",
+    "banners/auditorium-banner-oscuro.png",
+    "iconos/apple-touch-icon.png",
+    "iconos/auditorium-icono-app.png",
+    "iconos/auditorium-icono-app.svg",
+    "iconos/auditorium-icono-simple.png",
+    "iconos/auditorium-icono-simple.svg",
+    "iconos/favicon.png",
+    "iconos/icon-192.png",
+    "iconos/icon-512.png",
+    "logos/auditorium-emblema-original-remaster.png",
+    "logos/auditorium-logo-horizontal-claro.png",
+    "logos/auditorium-logo-horizontal-claro.svg",
+    "logos/auditorium-logo-horizontal.png",
+    "logos/auditorium-logo-horizontal.svg",
+    "logos/auditorium-monograma-vinilo.png",
+    "logos/auditorium-monograma-vinilo.svg",
+    "portadas/auditorium-identidad-cuadrada-clara.png",
+    "portadas/auditorium-identidad-cuadrada-oscura.png"
+  ],
+  "groups": {
+    "logos": [
+      "logos/auditorium-emblema-original-remaster.png",
+      "logos/auditorium-logo-horizontal-claro.png",
+      "logos/auditorium-logo-horizontal-claro.svg",
+      "logos/auditorium-logo-horizontal.png",
+      "logos/auditorium-logo-horizontal.svg",
+      "logos/auditorium-monograma-vinilo.png",
+      "logos/auditorium-monograma-vinilo.svg"
+    ],
+    "iconos": [
+      "iconos/apple-touch-icon.png",
+      "iconos/auditorium-icono-app.png",
+      "iconos/auditorium-icono-app.svg",
+      "iconos/auditorium-icono-simple.png",
+      "iconos/auditorium-icono-simple.svg",
+      "iconos/favicon.png",
+      "iconos/icon-192.png",
+      "iconos/icon-512.png"
+    ],
+    "banners": [
+      "banners/auditorium-banner-claro.png",
+      "banners/auditorium-banner-oscuro.png"
+    ],
+    "portadas": [
+      "portadas/auditorium-identidad-cuadrada-clara.png",
+      "portadas/auditorium-identidad-cuadrada-oscura.png"
+    ],
+    "referencias": []
+  },
+  "metadata": {
+    "banners/auditorium-banner-claro.png": {
+      "format": "png",
+      "bytes": 3734341,
+      "sha256": "f3c72de07fb7d7543064eb654d6204addeebcb6c1d2defbf2eed1f6d4f48ee05",
+      "width": 2800,
+      "height": 1200,
+      "scalable": false,
+      "alpha": false
+    },
+    "banners/auditorium-banner-oscuro.png": {
+      "format": "png",
+      "bytes": 4049060,
+      "sha256": "539723247e80e1436354862455978079c7610eb74cb143a003e2d3f0c531da8e",
+      "width": 2800,
+      "height": 1200,
+      "scalable": false,
+      "alpha": false
+    },
+    "iconos/apple-touch-icon.png": {
+      "format": "png",
+      "bytes": 39573,
+      "sha256": "f45aece9e7942eecba7d00129c700c446dfa34bc87dc6b185ea1a5b3982f9a7e",
+      "width": 180,
+      "height": 180,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/auditorium-icono-app.png": {
+      "format": "png",
+      "bytes": 467847,
+      "sha256": "9f5ce4c53b64810fde6400e01ad26c3bae134d6d6c0e279d8f54248390729a3d",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/auditorium-icono-app.svg": {
+      "format": "svg",
+      "bytes": 5734,
+      "sha256": "dba4f58cc5be60d4256600a145738f15a2cf7140aa0cc874a93c1043d8a7ec74",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "iconos/auditorium-icono-simple.png": {
+      "format": "png",
+      "bytes": 176688,
+      "sha256": "e6168cbfb935765435e22b62de252b5e9d31c676d9352e11faf02e97ebebbaf7",
+      "width": 1024,
+      "height": 1024,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/auditorium-icono-simple.svg": {
+      "format": "svg",
+      "bytes": 1328,
+      "sha256": "f936fa9bb2b85dbd4ed5f338988884b584931faafaa43f931a78589b98de0397",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "iconos/favicon.png": {
+      "format": "png",
+      "bytes": 7197,
+      "sha256": "1f63952ee631a0159d203c9c068e54040e0ed0070f5185b8f2ebc3ad916b51cf",
+      "width": 64,
+      "height": 64,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/icon-192.png": {
+      "format": "png",
+      "bytes": 44221,
+      "sha256": "2fc30fabdbd29cc08b2cd38efc6567f1e9d31c582cb547d2326d5e5877192737",
+      "width": 192,
+      "height": 192,
+      "scalable": false,
+      "alpha": true
+    },
+    "iconos/icon-512.png": {
+      "format": "png",
+      "bytes": 183024,
+      "sha256": "b76807da90b2a23b33bbdbda43a426981e6ba2c5443e8b08fb2bb4221aacfb02",
+      "width": 512,
+      "height": 512,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/auditorium-emblema-original-remaster.png": {
+      "format": "png",
+      "bytes": 4453815,
+      "sha256": "c0d2a8338a7f32457bb8a989680500370dbcba47dfc10da0e74653a63fd7f3a8",
+      "width": 2100,
+      "height": 2200,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/auditorium-logo-horizontal-claro.png": {
+      "format": "png",
+      "bytes": 362978,
+      "sha256": "0ebaab48b134f04c4870b4f601f7aa2f855c9d19549505bf65953c6da07ca3f0",
+      "width": 2400,
+      "height": 720,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/auditorium-logo-horizontal-claro.svg": {
+      "format": "svg",
+      "bytes": 36001,
+      "sha256": "333014efb1f466f0d94e443d0cec49543c8ad5d2359bdf3df4f84b314d3b952e",
+      "width": 2400.0,
+      "height": 720.0,
+      "viewBox": [0.0, 0.0, 2400.0, 720.0],
+      "scalable": true
+    },
+    "logos/auditorium-logo-horizontal.png": {
+      "format": "png",
+      "bytes": 364391,
+      "sha256": "09201f05be020902d9043b93dac5c3fcb381273421598f03c77068b62eccf24f",
+      "width": 2400,
+      "height": 720,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/auditorium-logo-horizontal.svg": {
+      "format": "svg",
+      "bytes": 36001,
+      "sha256": "1060fec5128b343ada96e90b5694db89476fd91144fafbbda165fb0ae3f47055",
+      "width": 2400.0,
+      "height": 720.0,
+      "viewBox": [0.0, 0.0, 2400.0, 720.0],
+      "scalable": true
+    },
+    "logos/auditorium-monograma-vinilo.png": {
+      "format": "png",
+      "bytes": 586915,
+      "sha256": "ec5d7a4886a607d8692a958776503ab13c304c37adeceec31964436293dd39b6",
+      "width": 1400,
+      "height": 1400,
+      "scalable": false,
+      "alpha": true
+    },
+    "logos/auditorium-monograma-vinilo.svg": {
+      "format": "svg",
+      "bytes": 5431,
+      "sha256": "158684b7c6b3f0d365a881418ef82381e3cbfd324046325206a555032767d65f",
+      "width": 1024.0,
+      "height": 1024.0,
+      "viewBox": [0.0, 0.0, 1024.0, 1024.0],
+      "scalable": true
+    },
+    "portadas/auditorium-identidad-cuadrada-clara.png": {
+      "format": "png",
+      "bytes": 2323404,
+      "sha256": "0b7fe82e9b5a3090b6350ff0c567093996375f08862a7106d61d9348d5a09b6e",
+      "width": 1800,
+      "height": 1800,
+      "scalable": false,
+      "alpha": false
+    },
+    "portadas/auditorium-identidad-cuadrada-oscura.png": {
+      "format": "png",
+      "bytes": 2312894,
+      "sha256": "0707bb0d7104fc8037f97974b8d00216243b874f6c29220efcfe359725f807a9",
+      "width": 1800,
+      "height": 1800,
+      "scalable": false,
+      "alpha": false
+    }
+  }
 }

@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="branding/auditorium-banner-oscuro.png" />
-  <img src="branding/auditorium-banner-claro.png" alt="Identidad visual de Auditorium" width="100%" />
+  <source media="(prefers-color-scheme: dark)" srcset="branding/banners/auditorium-banner-oscuro.png" />
+  <img src="branding/banners/auditorium-banner-claro.png" alt="Identidad visual de Auditorium" width="100%" />
 </picture>
 
 # Auditorium
