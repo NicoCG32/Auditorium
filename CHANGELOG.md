@@ -2,7 +2,8 @@
 
 ## Sin publicar
 
-Sin cambios pendientes posteriores a 1.1.0.
+- Importación aditiva de respaldos JSON sobre bibliotecas existentes, con vista previa, decisiones explícitas de conflictos e identidades coincidentes, confirmación atómica y detección de cambios concurrentes. Conserva identidad de destino, registros ausentes, audio y experiencia; recuperación de lectura sin repetir importación.
+- Catálogo musical JSON versionado para incorporar discografías sin notas, escuchas o adquisiciones inferidas. Plantilla exportable con identificadores y créditos principales, sin identidad ni experiencia personal; contrato y guía de importación. DB11/JSON7/ZIP1 sin cambios.
 
 ## 1.1.0 — 2026-10-29
 

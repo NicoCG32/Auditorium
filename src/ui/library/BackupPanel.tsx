@@ -15,6 +15,7 @@ import { downloadBackup } from '../../infrastructure/browser/backup-download'
 import { formatCount } from './labels'
 import { hasAudioRepository } from '../../domain/audio'
 import { CompleteAudioBackupPanel } from './CompleteAudioBackupPanel'
+import { JsonImportPanel } from './JsonImportPanel'
 
 function Counts({ snapshot }: { snapshot: LocalSnapshot }) {
   const library = snapshot.library
@@ -94,6 +95,7 @@ export function BackupPanel({
   onBusyChange,
   onCommitted,
   onRestored,
+  onImported,
   onBack,
 }: {
   repository: BackupLocalRepository
@@ -102,6 +104,7 @@ export function BackupPanel({
   onBusyChange: (busy: boolean) => void
   onCommitted: () => Promise<LocalSnapshot>
   onRestored: () => void
+  onImported?: () => void
   onBack: () => void
 }) {
   const backups = useMemo(() => new LibraryBackups(repository), [repository])
@@ -115,6 +118,7 @@ export function BackupPanel({
   const [phase, setPhase] = useState('')
   const [failure, setFailure] = useState('')
   const [notice, setNotice] = useState('')
+  const [importReview, setImportReview] = useState(false)
   const lock = useRef(false)
   const focusFile = useRef(false)
   const heading = useRef<HTMLHeadingElement>(null)
@@ -137,7 +141,8 @@ export function BackupPanel({
       focusFile.current = false
     }
   }, [busy, pending, failure, prepared])
-  const disabled = busy || blocked || Boolean(pending)
+  const baseDisabled = busy || blocked || Boolean(pending)
+  const disabled = baseDisabled || importReview
   const empty = isEmptySnapshot(snapshot)
   function start(message: string) {
     lock.current = true
@@ -275,6 +280,14 @@ export function BackupPanel({
           Descargar respaldo JSON sin audio
         </button>
       </section>
+      <JsonImportPanel
+        repository={repository}
+        blocked={baseDisabled || Boolean(prepared)}
+        onBusyChange={onBusyChange}
+        onReviewChange={setImportReview}
+        onCommitted={onCommitted}
+        onImported={onImported ?? onRestored}
+      />
       <section className="owned-panel" aria-labelledby="backup-import-title">
         <h3 id="backup-import-title" className="text-xl font-semibold">
           Restaurar desde un archivo

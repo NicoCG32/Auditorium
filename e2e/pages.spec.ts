@@ -10,6 +10,52 @@ import {
   restoreAudio,
 } from './helpers/audio-fixture'
 
+test('importación JSON en Pages añade un catálogo sin conexión y conserva los datos al recargar', async ({
+  page,
+  context,
+}) => {
+  await page.goto('/Auditorium/')
+  await expect(
+    page.getByRole('button', { name: 'Añadir álbum', exact: true }),
+  ).toBeEnabled()
+  await expect(
+    page.getByText('Aplicación preparada para usar sin conexión.', {
+      exact: true,
+    }),
+  ).toBeVisible()
+  await context.setOffline(true)
+  await openLibraryOptions(page)
+  await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
+  const guide = await readFile('docs/IMPORTACION_JSON.md', 'utf8'),
+    json = guide.match(/```json\s*\n([\s\S]*?)```/)?.[1]
+  if (!json) throw Error('Falta ejemplo documentado')
+  await page.locator('#json-import-file').setInputFiles({
+    name: 'catalogo-ficticio-offline.json',
+    mimeType: 'application/json',
+    buffer: Buffer.from(json),
+  })
+  await page.getByRole('button', { name: 'Confirmar importación' }).click()
+  await expect(
+    page.getByRole('button', { name: 'Horizonte De Ejemplo', exact: true }),
+  ).toBeVisible()
+  const response = await page.reload()
+  expect(response?.fromServiceWorker()).toBe(true)
+  await expect(
+    page.getByRole('button', { name: 'Horizonte De Ejemplo', exact: true }),
+  ).toBeVisible()
+  await openLibraryOptions(page)
+  await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
+  const downloading = page.waitForEvent('download')
+  await page
+    .getByRole('button', { name: 'Descargar respaldo JSON sin audio' })
+    .click()
+  const path = await (await downloading).path()
+  if (!path) throw Error('Falta respaldo ficticio')
+  const result = parseBackupText(await readFile(path, 'utf8'))
+  expect(result.data.library.albumRatings).toEqual([])
+  expect(result.data.catalog.albums).toHaveLength(1)
+})
+
 test('audio persistente en Pages funciona offline y queda fuera de JSON y de Cache Storage', async ({
   page,
   context,

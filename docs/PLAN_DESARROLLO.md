@@ -1,6 +1,6 @@
 # Plan de desarrollo de Auditorium
 
-Versión 1.23 · 2026-10-29 · Estado: recorrido principal aceptado; consolidación de la distribución 1.1.0.
+Versión 1.24 · 2026-10-31 · Estado: recorrido principal aceptado; importación JSON aditiva y revisión de conflictos.
 
 ## Objetivo del producto
 
@@ -25,6 +25,8 @@ Una fase es un hito de producto y puede abarcar varios sprints. Se propone una d
 No se asignan personas ni calendarios hasta acordar disponibilidad.
 
 ## Fuente de seguimiento
+
+[DATA-01 #83](https://github.com/NicoCG32/Auditorium/issues/83) incorpora la [importación JSON](IMPORTACION_JSON.md) sobre una biblioteca existente: respaldos compatibles y catálogo sencillo, vista previa, elección explícita de diferencias y posibles duplicados, conservación de identidad/audio y transacción con comprobación concurrente. La plantilla exporta metadatos e identificadores sin experiencia personal para ampliar el catálogo y valorarlo después. No cambia DB11/nativa110, JSON7, ZIP1 ni servicios; continúa en main sin nuevo sprint.
 
 [COL-05 #71](https://github.com/NicoCG32/Auditorium/issues/71) completa [Mi colección](MI_COLECCION.md), con búsqueda, filtros por medio/formato, copias corregibles, retirada confirmada y referencias de edición independientes. [UX-07 #72](https://github.com/NicoCG32/Auditorium/issues/72) completó la [validación integral](VALIDACION_RECORRIDO.md), con aceptación comunicada de escritorio el 28 de octubre. #72, la coordinación #60 y las diez tareas del hito de experiencia están cerradas. Los hitos de integraciones y reproducción también están completados.
 

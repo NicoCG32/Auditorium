@@ -537,6 +537,13 @@ function LibraryContent({
             blocked={detailBusy}
             onBusyChange={setDetailBusy}
             onCommitted={synchronizeDetail}
+            onImported={() => {
+              setFilters(defaultLibraryFilters)
+              setNotice(
+                'Datos incorporados a tu biblioteca. La identidad local se conserva.',
+              )
+              navigation.completed({ kind: 'library' }, 'operation')
+            }}
             onRestored={() => {
               setFilters(defaultLibraryFilters)
               setNotice(

@@ -1,10 +1,14 @@
-export function downloadBackup(text: string, exportedAt: string): void {
+export function downloadBackup(
+  text: string,
+  exportedAt: string,
+  prefix = 'auditorium',
+): void {
   const url = URL.createObjectURL(
     new Blob([text], { type: 'application/json;charset=utf-8' }),
   )
   const link = document.createElement('a')
   link.href = url
-  link.download = `auditorium-${exportedAt.replace(/[:.]/g, '-')}.json`
+  link.download = `${prefix}-${exportedAt.replace(/[:.]/g, '-')}.json`
   try {
     document.body.append(link)
     link.click()
@@ -12,6 +16,10 @@ export function downloadBackup(text: string, exportedAt: string): void {
     link.remove()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
+}
+
+export function downloadCatalog(text: string, exportedAt: string): void {
+  downloadBackup(text, exportedAt, 'auditorium-catalogo')
 }
 
 export function downloadCompleteBackup(
