@@ -180,6 +180,57 @@ test('descarga plantilla separada sin datos personales ni escritura', async () =
   expect(await repo.readSnapshot()).toEqual(before)
 })
 
+test('revisión distingue cada género y aplica decisiones independientes del mismo álbum', async () => {
+  const { repo, onImported } = await setup(),
+    backup = makeBackup()
+  backup.data.catalog.albums[0]!.genres = ['Death Metal', 'Power Metal']
+  backup.data.library.albumGenreRatings = [
+    {
+      userAlbumId: libraryIds.entry,
+      genreKey: 'death metal',
+      scoreUnits: 18,
+      updatedAt: times.updated,
+    },
+    {
+      userAlbumId: libraryIds.entry,
+      genreKey: 'power metal',
+      scoreUnits: 6,
+      updatedAt: times.updated,
+    },
+  ]
+  await repo.mutate(() => ({ snapshot: backup.data, result: undefined }))
+  const incoming = structuredClone(backup)
+  incoming.data.library.albumGenreRatings[0]!.scoreUnits = 20
+  incoming.data.library.albumGenreRatings[1]!.scoreUnits = 10
+  upload(incoming)
+  await screen.findByRole('dialog')
+  fireEvent.change(
+    screen.getByRole('combobox', {
+      name: 'Decisión: Nota por género: Eclipse · Death Metal',
+    }),
+    { target: { value: 'incoming' } },
+  )
+  fireEvent.change(
+    screen.getByRole('combobox', {
+      name: 'Decisión: Nota por género: Eclipse · Power Metal',
+    }),
+    { target: { value: 'current' } },
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar importación' }))
+  await waitFor(() => expect(onImported).toHaveBeenCalledOnce())
+  const after = await repo.readSnapshot()
+  expect(
+    after.library.albumGenreRatings.find(
+      (row) => row.genreKey === 'death metal',
+    )?.scoreUnits,
+  ).toBe(20)
+  expect(
+    after.library.albumGenreRatings.find(
+      (row) => row.genreKey === 'power metal',
+    )?.scoreUnits,
+  ).toBe(6)
+})
+
 test('pantalla integrada bloquea operaciones incompatibles y regresa a biblioteca con aviso correcto', async () => {
   const repo = await repository()
   render(<App repository={repo} />)

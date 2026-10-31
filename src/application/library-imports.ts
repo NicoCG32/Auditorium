@@ -96,7 +96,11 @@ function rowLabel(table: string, row: Row, snapshot: LocalSnapshot): string {
     purchaseWishes: 'Deseo',
   }
   const display = row.title ?? row.name ?? album ?? row.editionLabel ?? row.id
-  return `${names[table] ?? table}: ${typeof display === 'string' || typeof display === 'number' ? String(display) : 'registro'}`
+  const genre =
+    typeof row.genreKey === 'string'
+      ? ` · ${capitalizeCatalogName(row.genreKey)}`
+      : ''
+  return `${names[table] ?? table}: ${typeof display === 'string' || typeof display === 'number' ? String(display) : 'registro'}${genre}`
 }
 
 /** Additive import: omission never means deletion; choices never bypass integrity. */
