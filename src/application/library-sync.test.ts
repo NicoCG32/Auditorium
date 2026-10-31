@@ -76,6 +76,35 @@ test('dos dispositivos comparten IDs, álbumes, notas, retirados y adquisiciones
   expect((await second.readSyncFrame()).checkpoint.revision).toBe(1)
 })
 
+test('sincroniza una importación solicitada mientras termina una lectura vacía', async () => {
+  const local = await device('import-during-load'),
+    remote = new Remote()
+  let release!: () => void
+  let started!: () => void
+  const loading = new Promise<void>((resolve) => {
+    started = resolve
+  })
+  const paused = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  remote.load.mockImplementationOnce(async () => {
+    started()
+    await paused
+    return null
+  })
+  const engine = new LibrarySync(local, remote)
+  const initial = engine.sync()
+  await loading
+  const frame = await local.readSyncFrame()
+  await local.applySyncFrame(frame, makeBackup().data, frame.checkpoint)
+  const imported = engine.sync()
+  release()
+  await Promise.all([initial, imported])
+  expect(remote.value?.snapshot).toEqual(makeBackup().data)
+  expect((await local.readSyncFrame()).checkpoint.revision).toBe(1)
+  expect(engine.getSnapshot().phase).toBe('synced')
+})
+
 test('cambios independientes offline se combinan y las bajas no resucitan', async () => {
   const first = await device('first', true),
     second = await device('second'),

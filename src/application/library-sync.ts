@@ -24,6 +24,7 @@ export class LibrarySync {
   }
   private listeners = new Set<() => void>()
   private running: Promise<void> | undefined
+  private requested = false
   private stopped = false
   private readonly local: SyncLocalRepository
   private readonly remote: RemoteLibraryRepository
@@ -65,11 +66,18 @@ export class LibrarySync {
   }
   sync = (): Promise<void> => {
     if (this.stopped) return Promise.resolve()
+    this.requested = true
     if (this.running) return this.running
-    this.running = this.perform().finally(() => {
+    this.running = this.drain().finally(() => {
       this.running = undefined
     })
     return this.running
+  }
+  private async drain() {
+    do {
+      this.requested = false
+      await this.perform()
+    } while (this.requested && !this.stopped)
   }
   private async perform() {
     this.update({ phase: 'syncing', message: 'Sincronizando biblioteca…' })

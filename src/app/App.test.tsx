@@ -606,7 +606,9 @@ test('fallar la lectura después de guardar no repite la escritura al reintentar
     new LocalStorageError('unexpected', 'Fallo ficticio de lectura'),
   )
   fireEvent.click(screen.getByRole('button', { name: 'Guardar álbum' }))
-  await screen.findByRole('alert')
+  await screen.findByText(
+    'El álbum se guardó, pero no pudimos actualizar la biblioteca. Reintenta sólo la lectura para continuar.',
+  )
   expect(screen.getByRole('alert')).toHaveTextContent('El álbum se guardó')
   fireEvent.click(
     screen.getByRole('button', { name: 'Reintentar lectura del álbum' }),
