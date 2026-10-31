@@ -1,18 +1,12 @@
 # 09 — Puesta en marcha y distribución
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** técnica.
-
 ## Puesta en marcha y distribución por plataforma
 
-Revisión documental: 2026-10-29. Base `0dccf7cb8659` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Web/PWA 1.1.0 publicada según la guía de entrega y el tag; escritorio empaquetado y APK siguen siendo objetivos separados, no productos certificados por la web.
+**Disponibilidad:** Aplicación web/PWA para gestionar una fonoteca personal. Las versiones de escritorio y Android están previstas como entregas independientes.
 
 **Destinos:** Escritorio + Webpage + APK en GitHub Releases.
 
-Entorno declarado: engines `{"node": "^24.15.0 || >=26.0.0", "npm": "^12.2.0"}`; packageManager `npm@12.2.0`. No actualizar dependencias por redactar documentación.
+Entorno declarado: engines `{"node": "^24.15.0 || >=26.0.0", "npm": "^12.2.0"}`; packageManager `npm@12.2.0`. Instala las versiones fijadas en el lockfile.
 
 | Script existente | Definición en package.json                  |
 | ---------------- | ------------------------------------------- |
@@ -32,40 +26,20 @@ Entorno declarado: engines `{"node": "^24.15.0 || >=26.0.0", "npm": "^12.2.0"}`;
 2. Ejecutar la modalidad local y sus comprobaciones existentes desde la carpeta indicada por esa guía. No confundir preview web con el runtime nativo o montaje físico.
 3. Construir/instalar el artefacto de ese target y comprobar recorrido principal, error relevante y reapertura/actualización antes de declararlo entregado.
 
-Los comandos se enumeran desde archivos presentes; esta actualización documental no los ejecuta de nuevo ni certifica sus resultados. Estado de pruebas y CI se informa por revisión/fecha, separado de capacidades propuestas.
+Ejecuta los comandos de comprobación antes de distribuir una compilación. Puedes consultar sus resultados remotos en la pestaña Actions del repositorio.
 
 ### Datos, servicios y distribución
 
 Dexie sobre IndexedDB: DB11/nativa110 en la documentación vigente. JSON/snapshot7 y ZIP1 son formatos diferentes. JSON/sync excluyen los bytes de audio; ZIP1 los incorpora con manifiesto e integridad. Las relaciones de dominio no implican FKs de servidor ni aislamiento criptográfico del navegador.
 
-Para APK: application ID estable, versión/código creciente, firma privada preservada, permisos y prueba en dispositivo; adjuntar APK y SHA-256 a la release. Para escritorio: distinguir portable/instalador y dependencias. Para web: base/rutas, servidor/servicios y cambio de origen. Para firmware: dispositivo, cableado, compilación y prueba física separados. Aplicar sólo los targets aprobados.
+La web se compila para el origen y prefijo donde se alojará. IndexedDB conserva la biblioteca por origen; cambiar de dominio requiere trasladarla mediante el respaldo adecuado. El escritorio y Android tendrán paquetes e instalación propios.
 
-GitHub Releases no aloja el backend ni convierte un ZIP de fuentes en instalador. No hacer push como parte de una revisión documental: en proyectos con publicación automática desde main, ese push puede generar una nueva APK o despliegue.
+GitHub Releases distribuye los archivos de cada versión. Los servicios de servidor se despliegan por separado; consulta la guía de la plataforma para instalar o alojar la aplicación.
 
 ### Recuperación
 
-Conservar el artefacto anterior y su procedencia. Retroceder código no revierte automáticamente datos o migraciones. Revisar compatibilidad de guardado/snapshot y restauración antes de instalar una versión antigua. La aceptación debe identificar archivo/URL, commit, target, fecha y limitaciones.
+Conservar el artefacto anterior y su procedencia. Retroceder código no revierte automáticamente datos o migraciones. Revisar compatibilidad de guardado/snapshot y restauración antes de instalar una versión antigua. Consulta las notas de la versión para conocer los requisitos y límites de la entrega.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/ARQUITECTURA.md](ARQUITECTURA.md) · [docs/MODELO_DOMINIO.md](MODELO_DOMINIO.md) · [docs/MODELO_DATOS.md](MODELO_DATOS.md) · [docs/ENTREGA.md](ENTREGA.md) · [docs/PLAN_DESARROLLO.md](PLAN_DESARROLLO.md) · [docs/AUDIO_LOCAL.md](AUDIO_LOCAL.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->
-
-<!-- DOCUMENTACION:evidencia-ci-2026-10-29:BEGIN -->
-
-## Estado remoto consultado el 29 de octubre de 2026
-
-Consulta para el commit `0dccf7cb865948d1b5178c9062fbe8171d98ea93`. Se leyó GitHub Actions; no se ejecutó de nuevo la aplicación ni se repitieron sus pruebas.
-
-| Workflow | Estado    | Resultado | Evidencia                                                                          |
-| -------- | --------- | --------- | ---------------------------------------------------------------------------------- |
-| Calidad  | completed | success   | [Run 40812829211](https://github.com/NicoCG32/Auditorium/actions/runs/40812829211) |
-
-Releases consultadas (no una comprobación nueva de instalación):
-
-| Tag                                                                  | Canal                          | Adjuntos identificados               |
-| -------------------------------------------------------------------- | ------------------------------ | ------------------------------------ |
-| [v1.1.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0) | Publicada sin marca prerelease | auditorium-1.1.0.zip, SHA256SUMS.txt |
-| [v1.0.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.0.0) | Publicada sin marca prerelease | auditorium-1.0.0.zip, SHA256SUMS.txt |
-
-<!-- DOCUMENTACION:evidencia-ci-2026-10-29:END -->

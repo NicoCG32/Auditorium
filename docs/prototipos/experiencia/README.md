@@ -2,7 +2,7 @@
 
 Estado: propuesta visual de la [experiencia](../../EXPERIENCIA_USUARIO.md), pendiente de revisión. **No es la aplicación publicada ni guarda cambios.** Todos los álbumes y artistas son ficticios; las portadas son composiciones CSS originales. Sólo se reutilizan los wordmarks propios del producto.
 
-El refinamiento posterior conserva una sola entrada/nota por álbum, añade el selector opcional Edición de referencia y cambia el destino a Mi colección (Físico / Digital adquirido). Se documenta en [experiencia](../../EXPERIENCIA_USUARIO.md) y [contratos](../../CONTRATOS_EXPERIENCIA.md); el HTML todavía conserva la composición anterior. Esta revisión sólo documenta las decisiones, sin modificar el código de los bocetos.
+El refinamiento posterior conserva una sola entrada/nota por álbum, añade el selector opcional Edición de referencia y cambia el destino a Mi colección (Físico / Digital adquirido). Se documenta en [experiencia](../../EXPERIENCIA_USUARIO.md) y [contratos](../../CONTRATOS_EXPERIENCIA.md); el HTML todavía conserva la composición anterior.
 
 ## Abrir y revisar
 

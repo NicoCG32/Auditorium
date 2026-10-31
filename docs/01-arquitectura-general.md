@@ -1,14 +1,6 @@
 # 01 — Arquitectura por niveles
 
-<!-- DOCUMENTACION:nivel-2026-10-29:BEGIN -->
-
-**Nivel:** técnica.
-
 ## Arquitectura del sistema por niveles
-
-Revisión documental: 2026-10-29. Base `0dccf7cb8659` en `main`; árbol inicialmente limpio. La inspección de fuentes no sustituye pruebas de ejecución.
-
-**Estado y alcance:** Web/PWA 1.1.0 publicada según la guía de entrega y el tag; escritorio empaquetado y APK siguen siendo objetivos separados, no productos certificados por la web.
 
 ### Nivel 1 — Contexto y fronteras de ejecución
 
@@ -37,7 +29,7 @@ Una biblioteca local-first distingue catálogo, experiencia personal y colecció
 | Sincronización | Contratos de conflictos y checkpoints             | [src/domain/sync.ts](../src/domain/sync.ts)     |
 | Interfaz       | Registro, consulta y reproducción                 | [src](../src)                                   |
 
-Las flechas del contexto representan comunicación/flujo. No se deduce una dependencia de código o transacción compartida sólo porque dos componentes intercambien datos.
+Las flechas muestran el flujo de información entre componentes. Las transacciones y dependencias de código se detallan en los contratos de cada módulo.
 
 ### Nivel 3 — Dominio, contratos y adaptadores
 
@@ -47,7 +39,7 @@ Dexie sobre IndexedDB: DB11/nativa110 en la documentación vigente. JSON/snapsho
 - Retirar de la colección no equivale a borrar el álbum de catálogo ni las otras experiencias.
 - Las operaciones conjuntas validan identidad, referencias y concurrencia antes de confirmar.
 
-Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalidades y representación; [05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) para invariantes. En un prototipo, las piezas rotuladas propuestas no son clases implementadas.
+Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalidades y representación; [05-motor-o-nucleo-de-negocio.md](05-motor-o-nucleo-de-negocio.md) para invariantes. Las piezas marcadas como propuestas pertenecen al diseño del prototipo.
 
 ### Nivel 4 — Despliegue y distribución
 
@@ -61,7 +53,7 @@ Consultar [04-base-de-datos.md](04-base-de-datos.md) para entidades, cardinalida
                                                           [Usuario y sus datos]
 ```
 
-La persistencia y los servicios del contexto anterior conservan sus propias fronteras. Distribuir un APK no incorpora automáticamente el servidor, una PWA no acredita un instalador y el firmware requiere dispositivo. El capítulo [09-instalacion-y-despliegue.md](09-instalacion-y-despliegue.md) concreta la puesta en marcha.
+La web se compila para el origen y prefijo donde se alojará. IndexedDB conserva la biblioteca por origen; cambiar de dominio requiere trasladarla mediante el respaldo adecuado. El escritorio y Android tendrán paquetes e instalación propios. El capítulo [09-instalacion-y-despliegue.md](09-instalacion-y-despliegue.md) concreta la puesta en marcha.
 
 ### Calidad y límites arquitectónicos
 
@@ -70,9 +62,8 @@ La persistencia y los servicios del contexto anterior conservan sus propias fron
 - Términos y disponibilidad de servicios musicales
 - Audio o datos locales trasladados incorrectamente al empaquetar
 
-No se publican garantías de latencia, disponibilidad o escala sin medición para la revisión/entorno concretos. Un diagrama explica responsabilidades; no es una certificación de ejecución o seguridad del servicio desplegado.
+El rendimiento y la capacidad dependen del entorno de ejecución. Consulta las guías de instalación y las limitaciones de cada plataforma antes de desplegar.
 
-## Fuentes de implementación y contratos
+## Código y documentación relacionada
 
 [README.md](../README.md) · [docs/ARQUITECTURA.md](ARQUITECTURA.md) · [docs/MODELO_DOMINIO.md](MODELO_DOMINIO.md) · [docs/MODELO_DATOS.md](MODELO_DATOS.md) · [docs/ENTREGA.md](ENTREGA.md) · [docs/PLAN_DESARROLLO.md](PLAN_DESARROLLO.md) · [docs/AUDIO_LOCAL.md](AUDIO_LOCAL.md).
-<!-- DOCUMENTACION:nivel-2026-10-29:END -->

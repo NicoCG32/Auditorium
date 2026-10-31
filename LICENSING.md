@@ -10,7 +10,7 @@ Esta autorización no cambia licencias de dependencias, código ajeno, recursos 
 
 Se permite usar, modificar y distribuir para los fines autorizados por LICENSE. Incluye usos no comerciales y los permisos específicos para usos personales y organizaciones que define ese texto. No se exige pago por esos usos.
 
-Al entregar copias, conserva la licencia y todas las líneas `Required Notice:` de NOTICE, incluidos los avisos de otros autores. El crédito identifica el proyecto original, a NicoCG32 y [el repositorio de origen](https://github.com/NicoCG32/Auditorium); indica también tus modificaciones. Una mención en el README, documentación o pantalla de créditos es una forma de presentar ese reconocimiento. Para esos usos, el reconocimiento no económico es suficiente; no hace falta inventar un pago simbólico.
+Al entregar copias, conserva la licencia y todas las líneas `Required Notice:` de NOTICE, incluidos los avisos de otros autores. El crédito identifica el proyecto original, a NicoCG32 y [el repositorio de origen](https://github.com/NicoCG32/Auditorium); indica también tus modificaciones. Una mención en el README, documentación o pantalla de créditos es una forma de presentar ese reconocimiento. Para esos usos, el reconocimiento no económico es suficiente; no se exige un pago simbólico.
 
 ## Uso comercial mediante acuerdo separado
 
@@ -22,6 +22,6 @@ Que una aplicación sea gratuita para su usuario no determina por sí solo que l
 
 ## Versiones y distribución
 
-Estas condiciones acompañan a esta revisión del repositorio. No se afirma que hayan sido incorporadas a APK, ZIP o releases anteriores. Las nuevas entregas deben incluir LICENSE, NOTICE y este documento, además de los avisos de terceros aplicables.
+Consulta los avisos incluidos en cada APK o ZIP para conocer las condiciones de esa versión. Al redistribuir el proyecto, incluye LICENSE, NOTICE y este documento, además de los avisos de terceros aplicables.
 
 Texto oficial: [PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0). El texto de LICENSE prevalece para su autorización gratuita; el uso comercial adicional requiere el acuerdo separado descrito arriba.
