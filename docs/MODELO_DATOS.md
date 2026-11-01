@@ -191,7 +191,7 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 7`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las seis de biblioteca, incluida `albumGenreRatings`, aunque estén vacías. Incluye portadas locales y enlaces remotos. Excluye índices técnicos, checkpoint, audio y claves o resultados de recomendaciones. Los contratos históricos 1–6 se validan antes de convertirlos.
 
-La versión **6 del respaldo** es independiente de IndexedDB **9**. El formato vigente incorpora la referencia opcional de la nota al snapshot completo. El formato4 incorporó enlaces personales y favorito; el5 separó la clasificación del álbum. Los formatos 1/2/3 mantienen sus schemas históricos estrictos antes de normalizar al formato vigente: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y ninguno admite los campos de enlaces. No se inventan datos al migrar. Los objetos se validan con esquemas estrictos, además de referencias, propietario, duplicados y fechas. No se importa directamente un volcado de tablas nativas.
+La versión **7 del respaldo** es independiente de IndexedDB **11**. Incorpora las notas por género al snapshot; el formato 6 añadió la referencia opcional de la nota general, el 5 separó la clasificación del álbum y el 4 incorporó enlaces personales y favorito. Los formatos 1–6 mantienen sus schemas históricos estrictos antes de normalizar al formato vigente: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y v1–3 no admiten los campos de enlaces. Las migraciones conservan los datos existentes y validan referencias, propietario, duplicados y fechas. El archivo de respaldo usa su propio contrato, separado del volcado de tablas nativas.
 
 [`LibraryBackups`](../src/application/library-backups.ts) aplica un límite de **20 MiB**, medido en bytes:
 
@@ -199,7 +199,7 @@ La versión **6 del respaldo** es independiente de IndexedDB **9**. El formato v
 - Comprueba el tamaño UTF-8 real del texto antes de analizar JSON; admite un BOM inicial.
 - Valida el documento y comprueba también el tamaño de su representación normalizada mediante serialización.
 
-El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Una aplicación anterior no puede abrir una base v9 ni un respaldo6; conserva copias históricas antes de actualizar.
+El tamaño base64 de cada portada local cuenta para ese límite total; varias imágenes de 2 MiB pueden agotar la capacidad del archivo antes que la cuota disponible de IndexedDB. Antes de volver a una aplicación antigua, comprueba qué versión de base y respaldo admite y conserva copias previas a la actualización.
 
 La exportación parte de una lectura validada y consistente. Serializa el documento con sangría de dos espacios y un salto de línea final. La aplicación inicia su descarga, pero esa acción no demuestra que el navegador haya guardado el archivo en el equipo.
 

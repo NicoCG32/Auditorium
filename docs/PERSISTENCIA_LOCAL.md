@@ -1,6 +1,6 @@
-# Persistencia local — esquemas v1 a v10
+# Persistencia local — esquemas v1 a v11
 
-El esquema vigente es v10, versión nativa100, con dieciséis tablas. [Audio local](AUDIO_LOCAL.md) añade dos stores binarios/metadatos, vacíos para las bibliotecas anteriores; valida el snapshot y los checkpoints actuales antes de actualizar. DB9 conserva la referencia opcional de la nota. DB8 separa clasificación e índice de álbum. Las catorce tablas anteriores mantienen sus registros e índices. Las cachés conectadas continúan separadas por proyecto y cuenta; los apartados v5 siguientes conservan su descripción histórica.
+El esquema vigente es v11, versión nativa 110, con diecisiete tablas. Añade `albumGenreRatings` para las [notas por género](VALORACIONES_POR_GENERO.md) y migra los snapshots locales y los documentos del checkpoint. Los bytes de [audio local](AUDIO_LOCAL.md) permanecen separados del snapshot y de la sincronización. Las cachés conectadas se separan por proyecto y cuenta; los apartados de v5 conservan el detalle de aquella migración.
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 

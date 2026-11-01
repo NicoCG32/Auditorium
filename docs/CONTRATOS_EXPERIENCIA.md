@@ -1,10 +1,8 @@
 # Contratos de experiencia y acceso musical
 
-Actualización LINK-01: enlaces personales y favorito ya están implementados con almacenamiento contenido en UserAlbum, DB7 y respaldo4; la [guía vigente](ENLACES_PERSONALES.md) concreta sus contratos. UX-05 implementa clasificación y formularios con DB8/respaldo5; véase la [guía vigente](CLASIFICACION_ALBUM.md). Los refinamientos posteriores mantienen su seguimiento.
+Documento de diseño de UX-03, 18 de octubre de 2026. Conserva las propuestas de enlaces, experiencia, reproducción y audio que orientaron los incrementos posteriores. La [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
 
-UX-06 implementa la [experiencia conjunta y edición de referencia](MI_EXPERIENCIA.md), con DB9/respaldo6. PLAY-01 implementa la reproducción desde enlaces; AUDIO-02 implementa los adjuntos persistentes y el respaldo ZIP completo con DB10/respaldo6. Sus guías precisan los contratos vigentes.
-
-Estado original: **diseño lógico propuesto en UX-03**, 2026-10-18. Los apartados que siguen propuestos no son schemas ejecutables ni migraciones aplicadas. Complementa la [experiencia propuesta](EXPERIENCIA_USUARIO.md) y el [modelo vigente](MODELO_DOMINIO.md); la [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
+Los contratos implementados se detallan en [enlaces personales](ENLACES_PERSONALES.md), [clasificación](CLASIFICACION_ALBUM.md), [Mi experiencia](MI_EXPERIENCIA.md), [reproducción](REPRODUCCION.md), [audio local](AUDIO_LOCAL.md) y [notas por género](VALORACIONES_POR_GENERO.md). La base vigente usa DB11/JSON7/ZIP1; las versiones y tipos propuestos en este documento pertenecen al diseño inicial.
 
 ## 1. Responsabilidades y relaciones
 

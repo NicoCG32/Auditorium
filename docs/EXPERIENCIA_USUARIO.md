@@ -1,10 +1,10 @@
 # Experiencia de biblioteca, escucha y colección
 
-Estado: **diseño de referencia acordado en UX-03, implementación por tareas**. UX-04 incorpora la base de navegación en revisión; los demás refinamientos mantienen sus tareas. Fecha: 2026-10-18. Referencias: [UX-02 #60](https://github.com/NicoCG32/Auditorium/issues/60), [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61) y [ADR-010](adr/010-navegacion-experiencia.md).
+Diseño de referencia de UX-03, 18 de octubre de 2026. La implementación posterior se documenta en [Biblioteca](BIBLIOTECA.md), [Mi experiencia](MI_EXPERIENCIA.md) y [Mi colección](MI_COLECCION.md). Este documento y sus bocetos conservan el diseño inicial. Referencias: [UX-02 #60](https://github.com/NicoCG32/Auditorium/issues/60), [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61) y [ADR-010](adr/010-navegacion-experiencia.md).
 
-Este documento define el recorrido que se implementará por tareas. No describe una interfaz ya publicada ni modifica el contrato vigente DB5/respaldo3. Los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) separan música, experiencia, enlaces y posesión. Los [bocetos navegables](prototipos/experiencia/index.html) permiten comparar las pantallas en escritorio y móvil con datos ficticios; no acceden a la biblioteca real ni guardan cambios.
+El diseño inicial partía de DB5/respaldo3; los contratos actuales usan DB11/JSON7/ZIP1. Los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) separan música, experiencia, enlaces y posesión. Los [bocetos navegables](prototipos/experiencia/index.html) permiten comparar las pantallas en escritorio y móvil con datos ficticios; no acceden a la biblioteca real ni guardan cambios.
 
-UX-04 implementa la base de [navegación, contexto y borradores](NAVEGACION.md), con índices iniciales de Calificaciones y Mi colección. Los editores finales, composición visual y ampliaciones de datos de las tareas siguientes continúan siendo propuesta; esta base no incluye aún el selector de edición de referencia ni el guardado conjunto de nota/escucha/comentario.
+La [navegación, el contexto y los borradores](NAVEGACION.md) se incorporaron en UX-04. Los incrementos posteriores completaron el editor conjunto, la referencia de edición, las notas por género y Mi colección. La [validación del recorrido](VALIDACION_RECORRIDO.md) describe el resultado.
 
 ## 1. Jerarquía de navegación
 

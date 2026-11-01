@@ -2,66 +2,88 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="branding/banners/auditorium-banner-oscuro.png" />
-  <img src="branding/banners/auditorium-banner-claro.png" alt="Identidad visual de Auditorium" width="100%" />
+  <img src="branding/banners/auditorium-banner-claro.png" alt="Auditorium: identidad de la fonoteca digital" width="100%" />
 </picture>
 
 # Auditorium
 
-**Tu música, tus ediciones, tu experiencia.**
+**Tu música. Tu criterio. Tu colección.**
 
-[![Estado: 1.1.0 publicada](https://img.shields.io/badge/Estado-1.1.0%20publicada-8D343A?style=flat-square&labelColor=263244)](#sobre-el-proyecto) [![Plataforma: Web / PWA](https://img.shields.io/badge/Plataforma-Web%20%2F%20PWA-386B8F?style=flat-square&labelColor=263244)](#usar-o-descargar) [![Licencia: PolyForm NC](https://img.shields.io/badge/Licencia-PolyForm%20NC-596273?style=flat-square&labelColor=263244)](LICENSING.md)
+[![React 19](https://img.shields.io/badge/React-19-263244?logo=react&logoColor=white)](package.json)
+[![TypeScript 6](https://img.shields.io/badge/TypeScript-6-263244?logo=typescript&logoColor=white)](package.json)
+[![Dexie 4](https://img.shields.io/badge/Dexie-4-8D343A)](package.json)
+[![Web / PWA](https://img.shields.io/badge/Plataforma-Web%20%2F%20PWA-8D343A)](docs/tecnica/01-arquitectura.md)
+[![PolyForm NC](https://img.shields.io/badge/Licencia-PolyForm%20NC-596273)](LICENSE)
 
-[![React 19](https://img.shields.io/badge/React%2019-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#tecnologías) [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=FFFFFF)](#tecnologías) [![Vite 8](https://img.shields.io/badge/Vite%208-646CFF?style=for-the-badge&logo=vite&logoColor=FFFFFF)](#tecnologías) [![Dexie 4](https://img.shields.io/badge/Dexie%204-4F46E5?style=for-the-badge)](#tecnologías)
-
-[Abrir aplicación](https://nicocg32.github.io/Auditorium/) · [Releases y descargas](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0) · [Documentación](docs/README.md) · [Arquitectura](docs/01-arquitectura-general.md) · [Inicio rápido](#ejecutar-desde-el-código)
+[**Abrir la aplicación**](https://nicocg32.github.io/Auditorium/) · [**Documentación**](docs/README.md) · [**Descargas del proyecto**](https://github.com/NicoCG32/Auditorium/releases) · [**Código fuente**](https://github.com/NicoCG32/Auditorium)
 
 </div>
 
----
+## Resumen ejecutivo
 
-## Sobre el proyecto
+Auditorium es una fonoteca digital para organizar álbumes, ediciones, escuchas, valoraciones y adquisiciones en un mismo lugar. Separa el catálogo musical de la experiencia personal y de la colección, para reconocer tanto una obra como las distintas ediciones y copias que tienes.
 
-Creé Auditorium para organizar una biblioteca musical personal: álbumes, ediciones, escuchas, valoraciones y adquisiciones, con independencia del formato o de las plataformas de streaming.
+Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La versión publicada es la 1.1.0; los cambios posteriores se describen en el [changelog](CHANGELOG.md).
 
-**Estado:** Web/PWA 1.1.0 disponible. Funciona localmente sin cuenta; la web ofrece sincronización opcional. El audio propio se conserva por dispositivo. Escritorio empaquetado y APK siguen planificados.
+## ¿Por qué hice Auditorium?
 
-## Tecnologías
+Quería una fonoteca digital que no me obligara a reducir mi relación con la música a una lista de canciones guardadas en un servicio. Un álbum puede tener distintas ediciones; una edición, distintas pistas; y yo puedo haberlo escuchado, valorado o coleccionado sin que todo eso sea lo mismo.
 
-| Área             | Tecnologías y responsabilidad                                                 |
-| ---------------- | ----------------------------------------------------------------------------- |
-| **Interfaz**     | React 19, TypeScript 6 y Tailwind CSS; Vite 8 y PWA.                          |
-| **Datos**        | IndexedDB mediante Dexie 4; cuentas y sincronización opcionales con Supabase. |
-| **Verificación** | Vitest, Testing Library y Playwright.                                         |
+Esa diferencia fue el punto de partida. Diseñé Auditorium para reunir **el catálogo musical, mi experiencia de escucha y mi colección** sin depender de una cuenta ni de una plataforma de streaming. El vinilo también forma parte de su identidad visual: representa el valor que puede tener una obra completa, tanto en formato físico como digital.
 
-> **Enfoque técnico:** Biblioteca local primero, con audio y respaldos por dispositivo.
+## Qué puedo hacer
 
-## Usar o descargar
+- **Catalogar:** registrar artistas, álbumes, ediciones, pistas, géneros y referencias; buscar y filtrar.
+- **Llevar mi experiencia:** anotar estados de escucha, comentarios y valoraciones del álbum, de pistas y por género, sin confundir unas con otras.
+- **Administrar la colección:** registrar ejemplares físicos, compras digitales y deseos de adquisición.
+- **Escuchar o consultar:** abrir enlaces personales, utilizar reproductores externos compatibles o vincular audio propio guardado en el dispositivo.
+- **Conservar mis datos:** trabajar localmente y exportar respaldos; optar por una cuenta con sincronización de metadatos cuando la aplicación esté configurada para ello.
 
-[Abrir la web/PWA](https://nicocg32.github.io/Auditorium/) · [Release 1.1.0 y ZIP web](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0) · [Instalación y respaldos](docs/ENTREGA.md). El ZIP web no es un instalador de escritorio ni una APK.
+Puedes [abrir la web](https://nicocg32.github.io/Auditorium/) o [descargar el paquete web 1.1.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0). La [guía de entrega](docs/ENTREGA.md) explica la instalación como PWA, los respaldos y las actualizaciones.
 
-## Ejecutar desde el código
+## Cómo está construida
 
-Con Node.js 24.15+ dentro de la rama 24 y npm 12.2.x, desde la raíz:
+| Capa                 | Implementación                         | Para qué se usa                                               |
+| -------------------- | -------------------------------------- | ------------------------------------------------------------- |
+| Interfaz             | React 19, TypeScript 6, Tailwind CSS 4 | Formularios, vistas, experiencia y navegación                 |
+| Construcción / PWA   | Vite 8, vite-plugin-pwa                | Compilación, recursos y funcionamiento sin conexión preparado |
+| Dominio y validación | TypeScript y Zod 4                     | Identidades, relaciones y reglas de integridad                |
+| Persistencia local   | IndexedDB con Dexie 4                  | Catálogo, biblioteca y audio por dispositivo                  |
+| Cuenta opcional      | Supabase Auth y PostgreSQL             | Sincronización privada de _snapshots_ sin bytes de audio      |
+| Calidad              | Vitest, Testing Library, Playwright    | Pruebas unitarias, de interfaz, navegador y accesibilidad     |
 
-```sh
+> La biblioteca se guarda en este navegador. Exporta un respaldo antes de cambiar de dispositivo u origen: JSON para metadatos y ZIP completo para incluir el audio propio.
+
+## Empezar desde el código
+
+Requisitos: **Node 24.15+ dentro de la rama 24, o Node 26+**, con **npm 12.2.x**.
+
+```bash
 npm ci
 npm run dev
 ```
 
-Abre la dirección indicada por Vite. La biblioteca local no necesita claves. [Configuración, build y comprobaciones](docs/09-instalacion-y-despliegue.md).
+Vite muestra la dirección local. Para calidad y compilación:
 
-## Documentación
+```bash
+npm run check
+npm run test:e2e
+npm run build:pages
+```
 
-[Índice completo y rutas de lectura](docs/README.md) · [Biblioteca, audio y entrega](docs/ENTREGA.md).
+La biblioteca local funciona sin claves. Para habilitar cuentas y sincronización, consulta la [configuración de Supabase](docs/tecnica/05-integraciones-y-seguridad.md).
 
-| Tipo       | Lectura                                                                                                                                                                                |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| General    | [Problema, cliente y solución](docs/00-problematica-cliente-y-valor.md) · [Motivación](docs/16-motivacion-y-contexto.md)                                                               |
-| Técnica    | [Arquitectura y diagramas](docs/01-arquitectura-general.md) · [Dominio y datos](docs/04-base-de-datos.md)                                                                              |
-| Desarrollo | [Etapas y metodología](docs/17-desarrollo-y-metodologia.md) · [Proyección](docs/15-escalabilidad-y-nuevos-mercados.md) · [Estimaciones CLP/USD](docs/18-analisis-economico-clp-usd.md) |
+## Leer la documentación
 
-[Identidad visual](branding/README.md): logos, banners y variantes de aplicación.
+| Quiero…                          | Leer                                                                                                                                                                    |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Comprender el origen y uso       | [General](docs/general/01-origen-y-alcance.md) · [Recorrido](docs/general/02-uso-y-limites.md)                                                                          |
+| Entender el sistema              | [Arquitectura y diagramas](docs/tecnica/01-arquitectura.md) · [Modelo de dominio](docs/tecnica/02-dominio.md) · [Persistencia](docs/tecnica/03-datos-y-persistencia.md) |
+| Contribuir o verificar           | [Proceso](docs/desarrollo/01-proceso-y-decisiones.md) · [Entorno y calidad](docs/desarrollo/02-entorno-y-verificacion.md)                                               |
+| Consultar una función específica | [Índice y guías de uso](docs/README.md)                                                                                                                                 |
 
-## Licencia y créditos
+## Autoría, uso y licencias
 
-Código y documentación propios: [PolyForm Noncommercial 1.0.0](LICENSE), con [atribución](NOTICE). Uso comercial fuera de sus permisos: acuerdo previo de créditos y compensación. [Alcance y contacto](LICENSING.md).
+Creado por Pablo Guzmán ([NicoCG32](https://github.com/NicoCG32)) como proyecto personal e independiente.
+
+Código y documentación original sujetos a [PolyForm Noncommercial 1.0.0](LICENSE), con [condiciones y créditos](LICENSING.md) y [avisos](NOTICE). Las dependencias y recursos de terceros conservan sus licencias.

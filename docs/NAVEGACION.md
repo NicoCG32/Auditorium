@@ -1,6 +1,6 @@
 # Navegación, contexto y borradores
 
-Esta guía describe la implementación de UX-04. Complementa el [diseño del recorrido](EXPERIENCIA_USUARIO.md) y los [contratos propuestos](CONTRATOS_EXPERIENCIA.md); no convierte sus ampliaciones futuras de datos en funciones disponibles.
+Esta guía describe los destinos, el regreso con contexto y la protección de borradores. Las guías de [Biblioteca](BIBLIOTECA.md), [Mi experiencia](MI_EXPERIENCIA.md) y [Mi colección](MI_COLECCION.md) detallan el uso de cada pantalla.
 
 ## Destinos y rutas
 

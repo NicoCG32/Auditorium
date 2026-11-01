@@ -29,4 +29,4 @@ La inspección usa los [nombres de índices nativos de IndexedDB](https://develo
 
 Conservar filas dañadas y presentar un error deja disponible la información para una recuperación explícita. Los [respaldos JSON](RESPALDOS_JSON.md) permiten restauración validada y atómica en una biblioteca vacía. No se reparan datos corruptos ni se sustituyen bibliotecas existentes automáticamente; la [validación ampliada de migraciones](MIGRACIONES_RECUPERACION.md) detalla resultados y límites. Tampoco se ha medido el rendimiento con colecciones grandes ni se promete conservación si el navegador elimina IndexedDB.
 
-Fase 1 se cerró tras integrar DATA-03. Fase 4 permanece abierta hasta su validación final y entrega, siguiendo la [definición de terminado](PLAN_DESARROLLO.md#definición-de-terminado).
+Fase 1 se cerró tras integrar DATA-03. La [validación del MVP](VALIDACION_MVP.md) completa la Fase 4; la [definición de terminado](PLAN_DESARROLLO.md#definición-de-terminado) reúne los criterios de entrega.

@@ -1,12 +1,10 @@
 # Migraciones, persistencia y recuperación
 
-DB10/nativa100 añade las tablas locales de audio. Su barrera de actualización valida el snapshot y todos los documentos del checkpoint con el schema actual de DB9, incluidas las referencias opcionales de nota; no los degrada a un lector heredado. Una incoherencia conserva la versión y los registros previos. Los adjuntos anteriores a DB10 empiezan vacíos; las recuperaciones JSON no contienen audio. [Contrato de audio y ZIP](AUDIO_LOCAL.md).
-
-El incremento UX-01 usa IndexedDB v5 (nativa 50), con esquemas históricos v1 a v4. v2 incorpora ejemplares, v3 deseos y v4 la referencia opcional `Album.catalogReference`. v5 mantiene las trece tablas e índices y establece una barrera de compatibilidad para país de artista, géneros y portada local. No cambia identidad, IDs, notas, valoraciones, ediciones o pistas ni completa metadatos mediante red. El [respaldo JSON v3](RESPALDOS_JSON.md) se versiona por separado y admite importar los contratos v1/v2 estrictos.
+La base vigente usa Dexie v11, versión nativa 110. Cada actualización valida la estructura anterior y conserva identidad y relaciones. DB10 incorporó el [audio local](AUDIO_LOCAL.md); DB11 añadió las [notas por género](VALORACIONES_POR_GENERO.md) y la migración de los documentos del checkpoint. Los respaldos JSON usan su propio contrato, actualmente v7. El [modelo de datos](MODELO_DATOS.md) detalla el historial de ambos formatos.
 
 ## Antes y durante una actualización
 
-La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Solo admite versiones nativas 10, 20, 30, 40 y 50, equivalentes a las versiones Dexie 1 a 5. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
+La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Admite los esquemas nativos declarados de 10 a 110, en pasos de diez, equivalentes a las versiones Dexie 1 a 11. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
 
 La transacción de lectura que comprueba el esquema termina antes de cerrar su conexión y abrir la actualización. Así no compite con la migración. Si la inspección aborta, la apertura informa el fallo y admite reintento.
 
@@ -18,7 +16,7 @@ Referencias: [actualización de IndexedDB](https://developer.mozilla.org/en-US/d
 
 ## Matriz de aceptación
 
-La evidencia del MVP y de AI-01/CAT-01 corresponde a sus revisiones anteriores. UX-01 amplía esta matriz a v5 y respaldo v3; su validación y revisión están en curso en la [issue #59](https://github.com/NicoCG32/Auditorium/issues/59). La enumeración de comprobaciones no acredita por sí sola la nueva entrega.
+La matriz reúne las comprobaciones de migración y recuperación. El caso v1–4 → v5 conserva la regresión de aquella actualización; las ampliaciones de clasificación, audio y notas por género tienen pruebas específicas enlazadas en sus guías.
 
 | Situación                                                            | Comprobación                                                                                                                                                                                |
 | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -52,4 +50,4 @@ Los fallos de cuota y aborto se inyectan en transacciones IndexedDB reales; no s
 - **Versión incompatible o datos inválidos:** conserva el perfil original y los respaldos. Reintentar no repara los datos. Usa una versión compatible o una recuperación específica; si tienes un respaldo válido, restáuralo en otro perfil o navegador con biblioteca vacía. La aplicación actual no exporta datos que no puede validar ni reemplaza el destino existente.
 - **Protección denegada o no disponible:** continúa con la biblioteca local y guarda respaldos periódicos fuera del dispositivo. La protección concedida tampoco evita el borrado manual o la pérdida del dispositivo.
 
-Esta aceptación no incorpora un reparador de datos corruptos, una importación que mezcle bibliotecas ni sincronización. Tampoco promete conservación frente a la eliminación de datos por el navegador. La validación final y entrega del MVP corresponde a MVP-05.
+La recuperación no incluye reparación automática de datos corruptos. Para añadir registros a una biblioteca existente, consulta la [importación JSON](IMPORTACION_JSON.md); para compartir metadatos entre dispositivos, la [sincronización opcional](SINCRONIZACION_SUPABASE.md). Mantén respaldos fuera del navegador.

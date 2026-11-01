@@ -2,7 +2,7 @@
 
 MVP-05 completó la aceptación de las Fases 0–4 mediante la PR #46 integrada. La versión `1.0.0` distribuye ese MVP local, con su guía y la evidencia de validación. La preparación de cada release verifica el commit exacto de entrega antes de etiquetarlo y publicar el paquete.
 
-La [validación del recorrido principal posterior al MVP](VALIDACION_RECORRIDO.md) incorpora enlaces, clasificación, notas por género, Mi colección, reproducción y audio local. Su aceptación comunicada de escritorio se completó el 28 de octubre, sin atribuir observación directa ni pruebas físicas móviles. La [distribución actual 1.1.0](ENTREGA.md) incluye el informe ampliado; v1.0.0 conserva su paquete y alcance originales.
+La [validación del recorrido principal posterior al MVP](VALIDACION_RECORRIDO.md) incorpora enlaces, clasificación, notas por género, Mi colección, reproducción y audio local. El autor aceptó el recorrido de escritorio el 28 de octubre; las pruebas físicas móviles siguen pendientes. La [distribución 1.1.0](ENTREGA.md) incluye el informe ampliado; v1.0.0 conserva su paquete y alcance originales.
 
 ## Matriz de aceptación reproducible
 
