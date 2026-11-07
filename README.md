@@ -25,6 +25,21 @@ Auditorium es una fonoteca digital para organizar álbumes, ediciones, escuchas,
 
 Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La versión publicada es la 1.1.0; los cambios posteriores se describen en el [changelog](CHANGELOG.md).
 
+## Estado real del proyecto
+
+| Nivel | Alcance de esta versión |
+| --- | --- |
+| ✅ **Implementado** | Fonoteca web/PWA con álbumes, ediciones, colección y experiencia de escucha; persistencia local, importación/respaldo y sincronización **opcional** de metadatos. |
+| 🧪 **En validación** | Compatibilidad y recuperación de datos en distintos dispositivos, límites de integración con proveedores externos y experiencia de uso prolongada. |
+| 🧭 **Evolución futura** | Ampliaciones descritas en el plan de desarrollo. No debe entenderse que todos los prototipos, proveedores o integraciones opcionales estén configurados para cada instalación. |
+
+<details>
+<summary><strong>¿Qué significa cada estado?</strong></summary>
+
+«Implementado» describe algo respaldado por código o una entrega identificable; no garantiza una validación completa. «En validación» necesita pruebas adicionales, y «propuesto» es una aspiración, no una función disponible. Las notas de versión y los documentos especializados detallan los límites concretos.
+
+</details>
+
 ## ¿Por qué hice Auditorium?
 
 Quería una fonoteca digital que no me obligara a reducir mi relación con la música a una lista de canciones guardadas en un servicio. Un álbum puede tener distintas ediciones; una edición, distintas pistas; y yo puedo haberlo escuchado, valorado o coleccionado sin que todo eso sea lo mismo.
