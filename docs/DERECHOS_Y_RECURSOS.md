@@ -6,12 +6,12 @@
 
 Auditorium es una aplicación **personal e independiente**, desarrollada por **un solo participante humano**, con apoyo de herramientas de inteligencia artificial bajo sus decisiones e instrucciones. Esta descripción acredita la forma de trabajo del proyecto; **no convierte obras musicales de terceros ni todos los recursos externos en propiedad del desarrollador**.
 
-| Material | Procedencia y uso | Qué autoriza la documentación |
-| --- | --- | --- |
-| **Código y documentación originales** | Trabajo del proyecto; paquete distribuido con `LICENSE`, `NOTICE`, `LICENSING.md` | **PolyForm Noncommercial 1.0.0**, dentro de los derechos de quien licencia |
-| **Identidad gráfica Auditorium** | Logos, banners, fondos, iconos y texturas en `branding/` y `public/auditorium/` | **No se ha inventariado por pieza** el proceso de creación ni los eventuales materiales de partida. No presumir permiso general de marcas/insumos ajenos |
-| **Álbumes, canciones y portadas** | Obras, grabaciones, nombres, imágenes y enlaces que cada persona registra o consulta | **No** quedan cubiertos por la licencia de código; usar la aplicación no concede derechos para reproducir, modificar, publicar o compartir música de terceros |
-| **Bibliotecas de software y servicios** | React, Dexie, Supabase, Vite, Spotify/YouTube, Wikidata, Gemini/Groq y otros | Licencias de paquetes, derechos de base de datos y términos de servicio **independientes** del proyecto |
+| Material                                | Procedencia y uso                                                                    | Qué autoriza la documentación                                                                                                                                 |
+| --------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Código y documentación originales**   | Trabajo del proyecto; paquete distribuido con `LICENSE`, `NOTICE`, `LICENSING.md`    | **PolyForm Noncommercial 1.0.0**, dentro de los derechos de quien licencia                                                                                    |
+| **Identidad gráfica Auditorium**        | Logos, banners, fondos, iconos y texturas en `branding/` y `public/auditorium/`      | **No se ha inventariado por pieza** el proceso de creación ni los eventuales materiales de partida. No presumir permiso general de marcas/insumos ajenos      |
+| **Álbumes, canciones y portadas**       | Obras, grabaciones, nombres, imágenes y enlaces que cada persona registra o consulta | **No** quedan cubiertos por la licencia de código; usar la aplicación no concede derechos para reproducir, modificar, publicar o compartir música de terceros |
+| **Bibliotecas de software y servicios** | React, Dexie, Supabase, Vite, Spotify/YouTube, Wikidata, Gemini/Groq y otros         | Licencias de paquetes, derechos de base de datos y términos de servicio **independientes** del proyecto                                                       |
 
 ## Audio local: conservar no es distribuir
 

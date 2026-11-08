@@ -58,14 +58,14 @@ Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos 
 
 ## Guías específicas, sin duplicar el índice principal
 
-| Quiero… | Documento especializado |
-| --- | --- |
-| **Registrar y clasificar música** | [Catálogo](DOMINIO_CATALOGO.md) · [Edición](EDICION_CATALOGO.md) · [Ficha de álbum](FICHA_ALBUM.md) |
-| **Guardar mi experiencia** | [Biblioteca](BIBLIOTECA.md) · [Valoraciones de pistas](CALIFICACIONES_PISTAS.md) · [Por género](VALORACIONES_POR_GENERO.md) |
-| **Administrar mis discos** | [Colección](MI_COLECCION.md) · [Ejemplares](EJEMPLARES.md) · [Deseos](DESEOS_COMPRA.md) |
-| **Conservar mis datos** | [JSON](RESPALDOS_JSON.md) · [Audio](AUDIO_LOCAL.md) · [Importación](IMPORTACION_JSON.md) |
-| **Reproducir o buscar** | [Enlaces](REPRODUCCION.md) · [Integraciones](INTEGRACIONES_OPCIONALES.md) |
-| **Instalar y actualizar** | [Entrega 1.1.0](ENTREGA.md) · [PWA](PWA_OFFLINE.md) · [Publicación](PUBLICACION_WEB.md) |
+| Quiero…                           | Documento especializado                                                                                                     |
+| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Registrar y clasificar música** | [Catálogo](DOMINIO_CATALOGO.md) · [Edición](EDICION_CATALOGO.md) · [Ficha de álbum](FICHA_ALBUM.md)                         |
+| **Guardar mi experiencia**        | [Biblioteca](BIBLIOTECA.md) · [Valoraciones de pistas](CALIFICACIONES_PISTAS.md) · [Por género](VALORACIONES_POR_GENERO.md) |
+| **Administrar mis discos**        | [Colección](MI_COLECCION.md) · [Ejemplares](EJEMPLARES.md) · [Deseos](DESEOS_COMPRA.md)                                     |
+| **Conservar mis datos**           | [JSON](RESPALDOS_JSON.md) · [Audio](AUDIO_LOCAL.md) · [Importación](IMPORTACION_JSON.md)                                    |
+| **Reproducir o buscar**           | [Enlaces](REPRODUCCION.md) · [Integraciones](INTEGRACIONES_OPCIONALES.md)                                                   |
+| **Instalar y actualizar**         | [Entrega 1.1.0](ENTREGA.md) · [PWA](PWA_OFFLINE.md) · [Publicación](PUBLICACION_WEB.md)                                     |
 
 <details>
 <summary><strong>Documentos históricos, prototipos y decisiones arquitectónicas</strong></summary>

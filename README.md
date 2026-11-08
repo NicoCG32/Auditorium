@@ -74,12 +74,12 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 ## Dónde viven tus datos
 
-| Elemento | Almacenamiento | Transporte |
-| --- | --- | --- |
-| Álbumes, ediciones, notas y colección | IndexedDB local, mediante Dexie 4 | Respaldo JSON7 o snapshot remoto opcional |
-| Audio que asocias | IndexedDB del dispositivo | **ZIP1 completo**, no JSON ni Supabase |
-| Recursos para abrir la PWA sin conexión | Cache Storage del navegador | Se descargan de nuevo al instalar/actualizar |
-| Clave de recomendaciones | Memoria de la sesión | No se incluye en respaldos |
+| Elemento                                | Almacenamiento                    | Transporte                                   |
+| --------------------------------------- | --------------------------------- | -------------------------------------------- |
+| Álbumes, ediciones, notas y colección   | IndexedDB local, mediante Dexie 4 | Respaldo JSON7 o snapshot remoto opcional    |
+| Audio que asocias                       | IndexedDB del dispositivo         | **ZIP1 completo**, no JSON ni Supabase       |
+| Recursos para abrir la PWA sin conexión | Cache Storage del navegador       | Se descargan de nuevo al instalar/actualizar |
+| Clave de recomendaciones                | Memoria de la sesión              | No se incluye en respaldos                   |
 
 El esquema local utiliza **Dexie DB11 con 17 almacenes**. No confundas esa versión con el formato JSON7 del respaldo o el ZIP1 de audio. **Guarda una copia fuera del navegador**: cambiar de origen, limpiar datos o agotar la cuota puede dejarte sin la biblioteca local. [Guía de respaldos](docs/RESPALDOS_JSON.md).
 
