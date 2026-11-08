@@ -2,103 +2,135 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="branding/banners/auditorium-banner-oscuro.png" />
-  <img src="branding/banners/auditorium-banner-claro.png" alt="Auditorium: identidad de la fonoteca digital" width="100%" />
+  <img src="branding/banners/auditorium-banner-claro.png" alt="Auditorium: fonoteca de estética gótica con el vinilo como símbolo central" width="100%" />
 </picture>
 
 # Auditorium
 
-**Tu música. Tu criterio. Tu colección.**
+**Una fonoteca digital donde el álbum es una obra, las ediciones tienen identidad y la colección cuenta su propia historia.**
 
-[![React 19](https://img.shields.io/badge/React-19-263244?logo=react&logoColor=white)](package.json)
-[![TypeScript 6](https://img.shields.io/badge/TypeScript-6-263244?logo=typescript&logoColor=white)](package.json)
-[![Dexie 4](https://img.shields.io/badge/Dexie-4-8D343A)](package.json)
-[![Web / PWA](https://img.shields.io/badge/Plataforma-Web%20%2F%20PWA-8D343A)](docs/tecnica/01-arquitectura.md)
-[![PolyForm NC](https://img.shields.io/badge/Licencia-PolyForm%20NC-596273)](LICENSE)
+[![Estado](https://img.shields.io/badge/Estado-Web%20%2F%20PWA%201.1.0-8D343A?style=flat-square)](CHANGELOG.md)
+[![Biblioteca](https://img.shields.io/badge/Biblioteca-Local%20first-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
+[![Datos](https://img.shields.io/badge/Datos-DB11%20%2F%20JSON7%20%2F%20ZIP1-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
+[![Licencia](https://img.shields.io/badge/C%C3%B3digo-PolyForm%20NC-596273?style=flat-square)](LICENSING.md)
 
-[**Abrir la aplicación**](https://nicocg32.github.io/Auditorium/) · [**Documentación**](docs/README.md) · [**Descargas del proyecto**](https://github.com/NicoCG32/Auditorium/releases) · [**Código fuente**](https://github.com/NicoCG32/Auditorium)
+[**Abrir Auditorium**](https://nicocg32.github.io/Auditorium/) · [**Guía de uso**](docs/general/02-uso-y-limites.md) · [**Documentación**](docs/README.md) · [**Versión 1.1.0**](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0)
 
 </div>
 
-## Resumen ejecutivo
+---
 
-Auditorium es una fonoteca digital para organizar álbumes, ediciones, escuchas, valoraciones y adquisiciones en un mismo lugar. Separa el catálogo musical de la experiencia personal y de la colección, para reconocer tanto una obra como las distintas ediciones y copias que tienes.
+## Por qué quise construirlo
 
-Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La versión publicada es la 1.1.0; los cambios posteriores se describen en el [changelog](CHANGELOG.md).
+Siempre he visto un álbum como algo más que una lista de canciones. Una misma obra puede tener un lanzamiento original, reediciones, pistas adicionales y distintas presentaciones; además, **escucharla, valorarla y poseer un ejemplar son experiencias diferentes**.
 
-## Estado real del proyecto
+Desarrollé Auditorium para organizar esas relaciones en mi propia fonoteca, sin depender de una plataforma de streaming para conservar mis datos. Quería un espacio que se sintiera como una colección física: discos, portadas y notas que uno vuelve a explorar. De ahí surgieron su estética **gótica y metalera**, los fondos tipo santuario y el **vinilo como pieza central**.
 
-| Nivel | Alcance de esta versión |
-| --- | --- |
-| ✅ **Implementado** | Fonoteca web/PWA con álbumes, ediciones, colección y experiencia de escucha; persistencia local, importación/respaldo y sincronización **opcional** de metadatos. |
-| 🧪 **En validación** | Compatibilidad y recuperación de datos en distintos dispositivos, límites de integración con proveedores externos y experiencia de uso prolongada. |
-| 🧭 **Evolución futura** | Ampliaciones descritas en el plan de desarrollo. No debe entenderse que todos los prototipos, proveedores o integraciones opcionales estén configurados para cada instalación. |
+Este es **mi proyecto personal e independiente**. Soy su **único participante humano** y lo he desarrollado con apoyo de herramientas de inteligencia artificial, bajo mis decisiones e instrucciones. No hubo un equipo humano adicional.
+
+## Tres cosas distintas, conectadas
+
+- **Catálogo musical:** artistas, álbumes, ediciones, pistas y apariciones de pistas. Una canción puede formar parte del álbum y aparecer en varias ediciones, incluso con distinta posición o material adicional.
+- **Mi experiencia:** estado de escucha, notas, valoraciones generales, de pistas y por género. Una valoración no demuestra que haya comprado el álbum.
+- **Mi colección:** ejemplares físicos, compras digitales y deseos de adquisición. Puedo tener varias copias de una edición o querer conseguir otra.
 
 <details>
-<summary><strong>¿Qué significa cada estado?</strong></summary>
+<summary><strong>Ver cómo se relacionan álbum, edición y colección</strong></summary>
 
-«Implementado» describe algo respaldado por código o una entrega identificable; no garantiza una validación completa. «En validación» necesita pruebas adicionales, y «propuesto» es una aspiración, no una función disponible. Las notas de versión y los documentos especializados detallan los límites concretos.
+```mermaid
+flowchart LR
+    A["Álbum · obra musical"] --> T["Pistas · identidad"]
+    A --> E["Ediciones · vinilo, CD,<br/>casete, digital"]
+    E --> ET["Lista de pistas<br/>de cada edición"]
+    T --> ET
+    A --> U["Mi entrada personal"]
+    U --> V["Escuchas, notas<br/>y valoraciones"]
+    U --> C["Ejemplares y deseos"]
+    C -. "Puede referir" .-> E
+```
+
+Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md) define las relaciones y la integridad. Las pistas de una reedición no se duplican automáticamente como obras independientes.
 
 </details>
 
-## ¿Por qué hice Auditorium?
+## Qué puedes hacer
 
-Quería una fonoteca digital que no me obligara a reducir mi relación con la música a una lista de canciones guardadas en un servicio. Un álbum puede tener distintas ediciones; una edición, distintas pistas; y yo puedo haberlo escuchado, valorado o coleccionado sin que todo eso sea lo mismo.
+**Biblioteca y catálogo.** Registrar álbumes manualmente, artistas, créditos, géneros, ediciones, pistas y variantes; revisar candidatos de Wikidata cuando lo solicites, sin copiar cambios automáticamente.
 
-Esa diferencia fue el punto de partida. Diseñé Auditorium para reunir **el catálogo musical, mi experiencia de escucha y mi colección** sin depender de una cuenta ni de una plataforma de streaming. El vinilo también forma parte de su identidad visual: representa el valor que puede tener una obra completa, tanto en formato físico como digital.
+**Experiencia y colección.** Anotar escuchas y valoraciones independientes; registrar formatos físicos o digitales, varias copias y deseos de compra; conservar enlaces personales.
 
-## Qué puedo hacer
+**Reproducción.** Asociar audio propio a este navegador, o cargar los reproductores oficiales de Spotify y YouTube desde enlaces admitidos. Ninguna de esas opciones convierte Auditorium en un servicio de streaming ni concede permisos para redistribuir música.
 
-- **Catalogar:** registrar artistas, álbumes, ediciones, pistas, géneros y referencias; buscar y filtrar.
-- **Llevar mi experiencia:** anotar estados de escucha, comentarios y valoraciones del álbum, de pistas y por género, sin confundir unas con otras.
-- **Administrar la colección:** registrar ejemplares físicos, compras digitales y deseos de adquisición.
-- **Escuchar o consultar:** abrir enlaces personales, utilizar reproductores externos compatibles o vincular audio propio guardado en el dispositivo.
-- **Conservar mis datos:** trabajar localmente y exportar respaldos; optar por una cuenta con sincronización de metadatos cuando la aplicación esté configurada para ello.
+**Conservación de datos.** Exportar un JSON de metadatos, o un ZIP completo que incluya archivos de audio propios. Existe cuenta **opcional** para sincronizar metadatos con Supabase; **los bytes de audio no se suben a Supabase**.
 
-Puedes [abrir la web](https://nicocg32.github.io/Auditorium/) o [descargar el paquete web 1.1.0](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0). La [guía de entrega](docs/ENTREGA.md) explica la instalación como PWA, los respaldos y las actualizaciones.
+**Recomendaciones opcionales.** Pedir a Gemini o Groq una selección para reescuchar o reevaluar, usando una clave que introduces para esa sesión. La IA no escribe tus notas.
 
-## Cómo está construida
+## Qué está listo y qué no
 
-| Capa                 | Implementación                         | Para qué se usa                                               |
-| -------------------- | -------------------------------------- | ------------------------------------------------------------- |
-| Interfaz             | React 19, TypeScript 6, Tailwind CSS 4 | Formularios, vistas, experiencia y navegación                 |
-| Construcción / PWA   | Vite 8, vite-plugin-pwa                | Compilación, recursos y funcionamiento sin conexión preparado |
-| Dominio y validación | TypeScript y Zod 4                     | Identidades, relaciones y reglas de integridad                |
-| Persistencia local   | IndexedDB con Dexie 4                  | Catálogo, biblioteca y audio por dispositivo                  |
-| Cuenta opcional      | Supabase Auth y PostgreSQL             | Sincronización privada de _snapshots_ sin bytes de audio      |
-| Calidad              | Vitest, Testing Library, Playwright    | Pruebas unitarias, de interfaz, navegador y accesibilidad     |
+- **Implementado en código:** web/PWA, catálogo y experiencia personal, ejemplares y deseos, audio local, respaldos JSON7/ZIP1, fuentes de reproducción externas, consultas opcionales y sincronización de metadatos si el alojamiento está configurado.
+- **En validación:** persistencia y recuperación bajo cuotas reales del navegador, grandes bibliotecas, servicio externo, compatibilidad móvil, accesibilidad y conflictos entre dispositivos.
+- **Sin publicar en la versión 1.1.0:** importación aditiva de respaldos e importación de un catálogo musical JSON. Ya figuran en el código y el [changelog](CHANGELOG.md), pero no deben confundirse con una funcionalidad distribuida en la release 1.1.0.
+- **Futuro:** empaquetado nativo de escritorio y Android. La PWA existente **no** es una APK ni una aplicación de escritorio independiente.
 
-> La biblioteca se guarda en este navegador. Exporta un respaldo antes de cambiar de dispositivo u origen: JSON para metadatos y ZIP completo para incluir el audio propio.
+## Dónde viven tus datos
 
-## Empezar desde el código
+| Elemento | Almacenamiento | Transporte |
+| --- | --- | --- |
+| Álbumes, ediciones, notas y colección | IndexedDB local, mediante Dexie 4 | Respaldo JSON7 o snapshot remoto opcional |
+| Audio que asocias | IndexedDB del dispositivo | **ZIP1 completo**, no JSON ni Supabase |
+| Recursos para abrir la PWA sin conexión | Cache Storage del navegador | Se descargan de nuevo al instalar/actualizar |
+| Clave de recomendaciones | Memoria de la sesión | No se incluye en respaldos |
 
-Requisitos: **Node 24.15+ dentro de la rama 24, o Node 26+**, con **npm 12.2.x**.
+El esquema local utiliza **Dexie DB11 con 17 almacenes**. No confundas esa versión con el formato JSON7 del respaldo o el ZIP1 de audio. **Guarda una copia fuera del navegador**: cambiar de origen, limpiar datos o agotar la cuota puede dejarte sin la biblioteca local. [Guía de respaldos](docs/RESPALDOS_JSON.md).
 
-```bash
+## Arquitectura en una mirada
+
+<details>
+<summary><strong>Mostrar componentes principales</strong></summary>
+
+```mermaid
+flowchart TB
+    UI["React / TypeScript<br/>Biblioteca y fichas"] --> USE["Casos de uso"]
+    USE --> DOMAIN["Dominio<br/>catálogo + experiencia"]
+    USE --> LOCAL["Dexie / IndexedDB<br/>biblioteca + audio"]
+    UI --> PWA["Service worker<br/>recursos sin conexión"]
+    USE -. "Solo metadatos, opcional" .-> CLOUD["Supabase<br/>snapshot por cuenta"]
+    UI -. "Bajo petición" .-> EXT["Wikidata · Gemini/Groq<br/>Spotify/YouTube"]
+```
+
+[Arquitectura C1–C4](docs/tecnica/01-arquitectura.md) · [Modelo de dominio](docs/tecnica/02-dominio.md) · [Esquema y versiones](docs/tecnica/03-datos-y-persistencia.md) · [Flujos y estados](docs/tecnica/04-flujos-y-estados.md).
+
+</details>
+
+## Ejecutarlo desde el repositorio
+
+Requiere Node.js **24.15+ dentro de la rama 24**, o **26+**, y npm **12.2.x**. El proyecto fija versiones en `package-lock.json`.
+
+```sh
 npm ci
 npm run dev
 ```
 
-Vite muestra la dirección local. Para calidad y compilación:
+Para revisar un cambio:
 
-```bash
+```sh
 npm run check
 npm run test:e2e
 npm run build:pages
 ```
 
-La biblioteca local funciona sin claves. Para habilitar cuentas y sincronización, consulta la [configuración de Supabase](docs/tecnica/05-integraciones-y-seguridad.md).
+La biblioteca local funciona sin configurar Supabase. Las pruebas end-to-end necesitan navegadores Playwright instalados. [Preparación y pruebas](docs/desarrollo/02-entorno-y-verificacion.md).
 
-## Leer la documentación
+## Leer según lo que necesites
 
-| Quiero…                          | Leer                                                                                                                                                                    |
-| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Comprender el origen y uso       | [General](docs/general/01-origen-y-alcance.md) · [Recorrido](docs/general/02-uso-y-limites.md)                                                                          |
-| Entender el sistema              | [Arquitectura y diagramas](docs/tecnica/01-arquitectura.md) · [Modelo de dominio](docs/tecnica/02-dominio.md) · [Persistencia](docs/tecnica/03-datos-y-persistencia.md) |
-| Contribuir o verificar           | [Proceso](docs/desarrollo/01-proceso-y-decisiones.md) · [Entorno y calidad](docs/desarrollo/02-entorno-y-verificacion.md)                                               |
-| Consultar una función específica | [Índice y guías de uso](docs/README.md)                                                                                                                                 |
+- **General:** [origen](docs/general/01-origen-y-alcance.md), [uso y límites](docs/general/02-uso-y-limites.md), [identidad visual](docs/general/03-diseno-e-identidad.md).
+- **Técnica:** [arquitectura](docs/tecnica/01-arquitectura.md), [dominio](docs/tecnica/02-dominio.md), [datos](docs/tecnica/03-datos-y-persistencia.md), [integraciones](docs/tecnica/05-integraciones-y-seguridad.md).
+- **Desarrollo:** [metodología](docs/desarrollo/01-proceso-y-decisiones.md), [verificación](docs/desarrollo/02-entorno-y-verificacion.md), [pendientes](docs/desarrollo/03-evolucion-y-pendientes.md).
 
-## Autoría, uso y licencias
+[**Índice completo, guías especializadas y ADR**](docs/README.md).
 
-Creado por Pablo Guzmán ([NicoCG32](https://github.com/NicoCG32)) como proyecto personal e independiente.
+## Autoría, licencia y contenido musical
 
-Código y documentación original sujetos a [PolyForm Noncommercial 1.0.0](LICENSE), con [condiciones y créditos](LICENSING.md) y [avisos](NOTICE). Las dependencias y recursos de terceros conservan sus licencias.
+El **código y la documentación originales** se distribuyen bajo [PolyForm Noncommercial 1.0.0](LICENSE), dentro de los derechos que su titular puede conceder. Los [avisos propios](NOTICE), [condiciones](LICENSING.md) y [derechos sobre recursos y contenido musical](docs/DERECHOS_Y_RECURSOS.md) se consultan por separado.
+
+**Las canciones, portadas, grabaciones, marcas y metadatos de terceros no pasan a ser míos por aparecer enlazados o guardados en Auditorium.** La licencia del programa no autoriza compartir archivos musicales ajenos. Los archivos de prueba de audio son tonos sintéticos documentados por separado.
