@@ -4,6 +4,8 @@
 
 ## El vinilo como centro visual
 
+La identidad visual fue orientada por mis decisiones de diseño dentro de un desarrollo personal asistido por IA. Eso describe el proceso general del proyecto; la procedencia y los permisos de cada imagen o textura se revisan por separado en [Derechos y recursos](../DERECHOS_Y_RECURSOS.md).
+
 Pensé la identidad de Auditorium desde el gusto por los álbumes como obras completas. El vinilo funciona como símbolo reconocible y como punto de encuentro entre catálogo y colección. Busqué una estética oscura, con elementos góticos y metaleros, pero sin hacer que leer, buscar o llenar formularios resulte difícil.
 
 ## La estética al servicio de la biblioteca

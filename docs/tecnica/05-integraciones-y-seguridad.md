@@ -48,6 +48,12 @@ VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_replace_me
 
 Una cuenta introduce nuevas responsabilidades: reautenticación, fallos de red, concurrencia y límites de tamaño. La experiencia local sin cuenta no debe quedar bloqueada por falta de configuración o indisponibilidad del servicio.
 
+## Datos y derechos de contenidos de terceros
+
+La biblioteca local no almacena música de un servicio de streaming: Spotify y YouTube se utilizan mediante marcos oficiales o enlaces externos. El audio propio que adjunta la persona permanece en IndexedDB y solo puede trasladarse mediante un ZIP completo que exporta voluntariamente; **no se incluye en la sincronización de Supabase**.
+
+**La licencia del software no autoriza publicar canciones, grabaciones o portadas ajenas.** Las referencias de Wikidata y las imágenes de URL externas mantienen sus propios requisitos de procedencia y términos de servicio. Los tonos sintéticos de los tests constituyen un caso diferente: su documentación específica declara CC0. [Derechos, atribuciones y recursos](../DERECHOS_Y_RECURSOS.md).
+
 ## Alcance de los servicios
 
 - **Spotify y YouTube:** reproducción mediante sus marcos oficiales y apertura de enlaces, sujeta a disponibilidad y conexión.

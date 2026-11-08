@@ -2,7 +2,7 @@
 
 ## Autoría y forma de trabajo
 
-Desarrollo Auditorium como proyecto personal. Trabajo por capacidades completas: defino el comportamiento, reviso su efecto en los datos, lo llevo a la interfaz y compruebo que conserve la biblioteca existente.
+Desarrollo Auditorium como **proyecto personal e independiente**. Soy **el único participante humano** y utilizo herramientas de IA como apoyo para iterar, bajo mis instrucciones, decisiones y revisión. No hubo un equipo humano adicional. Trabajo por capacidades completas: defino el comportamiento, reviso su efecto en los datos, lo llevo a la interfaz y compruebo que conserve la biblioteca existente.
 
 ## Cómo llegó Auditorium a este punto
 
