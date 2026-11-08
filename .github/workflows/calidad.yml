@@ -13,49 +13,6 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
-  format-docs-once:
-    name: Normalizar tres documentos (una vez)
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && github.head_ref == 'docs/estado-visible-2026'
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    permissions:
-      contents: write
-    steps:
-      - name: Obtener rama documental
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: ${{ github.head_ref }}
-          persist-credentials: true
-      - name: Preparar Node
-        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: 24.19.0
-          cache: npm
-      - name: Preparar npm
-        run: npm install --global npm@12.2.0
-      - name: Instalar dependencias fijadas
-        run: npm ci
-      - name: Aplicar Prettier solo a los documentos cambiados
-        run: npx prettier --write README.md docs/README.md docs/DERECHOS_Y_RECURSOS.md
-      - name: Comprobar formato, lint, tipos, pruebas y build
-        run: npm run check
-      - name: Guardar cambios mecánicos de formato
-        shell: bash
-        env:
-          PR_BRANCH: ${{ github.head_ref }}
-        run: |
-          set -euo pipefail
-          if git diff --quiet; then
-            echo "Sin cambios pendientes"
-            exit 0
-          fi
-          git diff --name-only
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add README.md docs/README.md docs/DERECHOS_Y_RECURSOS.md
-          git commit -m "docs(style): aplicar formato oficial al índice, portada y derechos"
-          git push origin "HEAD:refs/heads/$PR_BRANCH"
-
   quality:
     name: Verificar calidad
     runs-on: ubuntu-latest
