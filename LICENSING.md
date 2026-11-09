@@ -6,6 +6,12 @@ El código y la documentación originales sobre los que NicoCG32 puede conceder 
 
 Esta autorización no cambia licencias de dependencias, código ajeno, recursos visuales o sonoros, fuentes, datos, marcas ni materiales incorporados de terceros. Sus avisos y permisos se conservan. No concede derechos que correspondan a otros titulares ni retira permisos concedidos previamente mediante otros acuerdos.
 
+## Contenido musical y otros recursos
+
+La licencia se aplica al código y documentación originales **dentro de los derechos que el titular pueda conceder**. **No concede derechos sobre música, grabaciones, portadas, marcas, metadatos ajenos, recursos incorporados por usuarios ni imágenes con derechos de terceros**. El audio que cada usuario adjunta se guarda por dispositivo y se exporta voluntariamente; la aplicación no autoriza compartir obras protegidas ni las sincroniza con Supabase.
+
+El paquete de entrega genera `THIRD_PARTY_NOTICES.md` con los avisos de las dependencias de ejecución. Consulta también [Derechos y recursos](https://github.com/NicoCG32/Auditorium/blob/main/docs/DERECHOS_Y_RECURSOS.md) y el [catálogo de identidad](branding/README.md).
+
 ## Uso sin compensación económica
 
 Se permite usar, modificar y distribuir para los fines autorizados por LICENSE. Incluye usos no comerciales y los permisos específicos para usos personales y organizaciones que define ese texto. No se exige pago por esos usos.

@@ -1,6 +1,10 @@
 # Identidad visual de Auditorium
 
-Este catálogo reúne los originales y variantes de la identidad. Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; en PNG, WebP y JPG son píxeles.
+Este catálogo reúne originales y variantes de la identidad visual de Auditorium, con el vinilo como símbolo central y una estética gótica y metalera.
+
+Para reutilizar imágenes, marcas o materiales de terceros, consulta sus condiciones y avisos de atribución. [Derechos y recursos](https://github.com/NicoCG32/Auditorium/blob/main/docs/DERECHOS_Y_RECURSOS.md).
+
+Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; en PNG, WebP y JPG son píxeles.
 
 - [Banner claro](banners/auditorium-banner-claro.png) · [Banner oscuro](banners/auditorium-banner-oscuro.png).
 - Utiliza logos horizontales en cabeceras, isotipos en espacios compactos y banners en presentaciones. Conserva la proporción y deja espacio alrededor de la marca.

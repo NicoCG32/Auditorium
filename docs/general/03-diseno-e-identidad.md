@@ -15,6 +15,8 @@ Pensé la identidad de Auditorium desde el gusto por los álbumes como obras com
 
 Los recursos maestros están en [`branding/`](../../branding/README.md); las versiones optimizadas que carga la interfaz están en `public/auditorium/`. Los banners del README son presentación del proyecto y no se fuerzan íntegros al caché offline.
 
+La guía de [derechos y recursos](../DERECHOS_Y_RECURSOS.md) reúne las condiciones de reutilización y atribución.
+
 ## Criterios al diseñar o modificar
 
 Al cambiar una pantalla, mantengo visibles los estados de carga, error y guardado. También cuido el regreso a una búsqueda, la distinción de acciones destructivas y el uso moderado de animaciones.
