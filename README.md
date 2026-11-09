@@ -7,7 +7,7 @@
 
 # Auditorium
 
-**Una fonoteca digital donde el álbum es una obra, las ediciones tienen identidad y la colección cuenta su propia historia.**
+**Tu música. Tu criterio. Tu colección.**
 
 [![Estado](https://img.shields.io/badge/Estado-Web%20%2F%20PWA%201.1.0-8D343A?style=flat-square)](CHANGELOG.md)
 [![Biblioteca](https://img.shields.io/badge/Biblioteca-Local%20first-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
@@ -20,13 +20,17 @@
 
 ---
 
+## Resumen ejecutivo
+
+Auditorium es una fonoteca digital para organizar álbumes, ediciones, escuchas, valoraciones y adquisiciones en un mismo lugar. Separa el catálogo musical de la experiencia personal y de la colección, para reconocer tanto una obra como las distintas ediciones y copias que tienes.
+
+Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La versión publicada es la 1.1.0; los cambios posteriores se describen en el [changelog](CHANGELOG.md).
+
 ## Por qué quise construirlo
 
 Siempre he visto un álbum como algo más que una lista de canciones. Una misma obra puede tener un lanzamiento original, reediciones, pistas adicionales y distintas presentaciones; además, **escucharla, valorarla y poseer un ejemplar son experiencias diferentes**.
 
 Desarrollé Auditorium para organizar esas relaciones en mi propia fonoteca, sin depender de una plataforma de streaming para conservar mis datos. Quería un espacio que se sintiera como una colección física: discos, portadas y notas que uno vuelve a explorar. De ahí surgieron su estética **gótica y metalera**, los fondos tipo santuario y el **vinilo como pieza central**.
-
-Este es **mi proyecto personal e independiente**. Soy su **único participante humano** y lo he desarrollado con apoyo de herramientas de inteligencia artificial, bajo mis decisiones e instrucciones. No hubo un equipo humano adicional.
 
 ## Tres cosas distintas, conectadas
 
@@ -59,18 +63,18 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 **Experiencia y colección.** Anotar escuchas y valoraciones independientes; registrar formatos físicos o digitales, varias copias y deseos de compra; conservar enlaces personales.
 
-**Reproducción.** Asociar audio propio a este navegador, o cargar los reproductores oficiales de Spotify y YouTube desde enlaces admitidos. Ninguna de esas opciones convierte Auditorium en un servicio de streaming ni concede permisos para redistribuir música.
+**Reproducción.** Asociar audio propio a este navegador o cargar los reproductores oficiales de Spotify y YouTube desde enlaces admitidos.
 
 **Conservación de datos.** Exportar un JSON de metadatos, o un ZIP completo que incluya archivos de audio propios. Existe cuenta **opcional** para sincronizar metadatos con Supabase; **los bytes de audio no se suben a Supabase**.
 
 **Recomendaciones opcionales.** Pedir a Gemini o Groq una selección para reescuchar o reevaluar, usando una clave que introduces para esa sesión. La IA no escribe tus notas.
 
-## Qué está listo y qué no
+## Estado del proyecto
 
-- **Implementado en código:** web/PWA, catálogo y experiencia personal, ejemplares y deseos, audio local, respaldos JSON7/ZIP1, fuentes de reproducción externas, consultas opcionales y sincronización de metadatos si el alojamiento está configurado.
-- **En validación:** persistencia y recuperación bajo cuotas reales del navegador, grandes bibliotecas, servicio externo, compatibilidad móvil, accesibilidad y conflictos entre dispositivos.
-- **Sin publicar en la versión 1.1.0:** importación aditiva de respaldos e importación de un catálogo musical JSON. Ya figuran en el código y el [changelog](CHANGELOG.md), pero no deben confundirse con una funcionalidad distribuida en la release 1.1.0.
-- **Futuro:** empaquetado nativo de escritorio y Android. La PWA existente **no** es una APK ni una aplicación de escritorio independiente.
+- **Disponible en 1.1.0:** web/PWA, catálogo, experiencia personal, colección, reproducción, audio local, respaldos y cuenta opcional.
+- **Validación pendiente:** pruebas físicas móviles y de rendimiento con bibliotecas grandes y almacenamiento limitado. La [guía de validación](docs/VALIDACION_RECORRIDO.md) detalla la cobertura actual.
+- **Cambios posteriores a 1.1.0:** importación aditiva de respaldos y catálogo musical JSON, en la sección «Sin publicar» del [changelog](CHANGELOG.md).
+- **Líneas de evolución:** empaquetado nativo de escritorio y Android.
 
 ## Dónde viven tus datos
 
@@ -81,7 +85,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 | Recursos para abrir la PWA sin conexión | Cache Storage del navegador       | Se descargan de nuevo al instalar/actualizar |
 | Clave de recomendaciones                | Memoria de la sesión              | No se incluye en respaldos                   |
 
-El esquema local utiliza **Dexie DB11 con 17 almacenes**. No confundas esa versión con el formato JSON7 del respaldo o el ZIP1 de audio. **Guarda una copia fuera del navegador**: cambiar de origen, limpiar datos o agotar la cuota puede dejarte sin la biblioteca local. [Guía de respaldos](docs/RESPALDOS_JSON.md).
+La base local usa **Dexie DB11 con 17 almacenes**; el respaldo JSON7 y el ZIP1 tienen versiones propias. Guarda una copia fuera del navegador antes de cambiar de origen o limpiar sus datos. [Guía de respaldos](docs/RESPALDOS_JSON.md).
 
 ## Arquitectura en una mirada
 
@@ -98,7 +102,7 @@ flowchart TB
     UI -. "Bajo petición" .-> EXT["Wikidata · Gemini/Groq<br/>Spotify/YouTube"]
 ```
 
-[Arquitectura C1–C4](docs/tecnica/01-arquitectura.md) · [Modelo de dominio](docs/tecnica/02-dominio.md) · [Esquema y versiones](docs/tecnica/03-datos-y-persistencia.md) · [Flujos y estados](docs/tecnica/04-flujos-y-estados.md).
+[Arquitectura por niveles](docs/tecnica/01-arquitectura.md) · [Modelo de dominio](docs/tecnica/02-dominio.md) · [Esquema y versiones](docs/tecnica/03-datos-y-persistencia.md) · [Flujos y estados](docs/tecnica/04-flujos-y-estados.md).
 
 </details>
 
@@ -131,6 +135,8 @@ La biblioteca local funciona sin configurar Supabase. Las pruebas end-to-end nec
 
 ## Autoría, licencia y contenido musical
 
+Creado por Pablo Guzmán ([NicoCG32](https://github.com/NicoCG32)) como proyecto personal e independiente.
+
 El **código y la documentación originales** se distribuyen bajo [PolyForm Noncommercial 1.0.0](LICENSE), dentro de los derechos que su titular puede conceder. Los [avisos propios](NOTICE), [condiciones](LICENSING.md) y [derechos sobre recursos y contenido musical](docs/DERECHOS_Y_RECURSOS.md) se consultan por separado.
 
-**Las canciones, portadas, grabaciones, marcas y metadatos de terceros no pasan a ser míos por aparecer enlazados o guardados en Auditorium.** La licencia del programa no autoriza compartir archivos musicales ajenos. Los archivos de prueba de audio son tonos sintéticos documentados por separado.
+La música, las portadas y otros recursos de terceros conservan sus derechos y condiciones de uso. La licencia del programa no autoriza su redistribución.

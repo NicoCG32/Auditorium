@@ -50,9 +50,9 @@ Una cuenta introduce nuevas responsabilidades: reautenticación, fallos de red, 
 
 ## Datos y derechos de contenidos de terceros
 
-La biblioteca local no almacena música de un servicio de streaming: Spotify y YouTube se utilizan mediante marcos oficiales o enlaces externos. El audio propio que adjunta la persona permanece en IndexedDB y solo puede trasladarse mediante un ZIP completo que exporta voluntariamente; **no se incluye en la sincronización de Supabase**.
+Spotify y YouTube se utilizan mediante marcos oficiales o enlaces externos. El audio adjunto permanece en IndexedDB y se puede trasladar mediante un ZIP completo; queda fuera de la sincronización de Supabase.
 
-**La licencia del software no autoriza publicar canciones, grabaciones o portadas ajenas.** Las referencias de Wikidata y las imágenes de URL externas mantienen sus propios requisitos de procedencia y términos de servicio. Los tonos sintéticos de los tests constituyen un caso diferente: su documentación específica declara CC0. [Derechos, atribuciones y recursos](../DERECHOS_Y_RECURSOS.md).
+La música, las portadas y los metadatos de terceros conservan sus condiciones de uso. La guía de [derechos y recursos](../DERECHOS_Y_RECURSOS.md) reúne las referencias y los avisos de atribución.
 
 ## Alcance de los servicios
 

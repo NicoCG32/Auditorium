@@ -2,7 +2,7 @@
 
 ## Una fonoteca que se parece a mi manera de escuchar
 
-Empecé Auditorium como un proyecto personal e independiente, **sin otros integrantes humanos**, con herramientas de IA que me ayudan a desarrollar y revisar el software bajo mi dirección. Quería un lugar donde pudiera reconocer una obra musical completa, sus distintas ediciones y mi propia relación con ella, más allá de las listas guardadas en una plataforma de streaming.
+Empecé Auditorium como un proyecto personal e independiente. Quería un lugar donde pudiera reconocer una obra musical completa, sus distintas ediciones y mi propia relación con ella, más allá de las listas guardadas en una plataforma de streaming.
 
 La idea de catálogo se apoya en una diferencia que para mí importa: **un álbum no es una edición, una edición no es un ejemplar y poseer un disco no equivale a haberlo escuchado o valorado**. Si registro esas cosas por separado, puedo entender mejor qué conozco, qué tengo y qué me gustaría conseguir.
 

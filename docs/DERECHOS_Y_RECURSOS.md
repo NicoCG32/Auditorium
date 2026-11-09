@@ -1,54 +1,42 @@
-# Derechos de autor, recursos y contenido musical
+# Derechos y recursos
 
-[← Índice](README.md) · [Licencia del código](../LICENSE) · [LICENSING.md](../LICENSING.md) · [Avisos](../NOTICE)
+[Índice](README.md) · [Licencia del código](../LICENSE) · [Condiciones de uso](../LICENSING.md) · [Avisos](../NOTICE)
 
-## Cuatro clases de material que no hay que confundir
+## Código, identidad y contenido musical
 
-Auditorium es una aplicación **personal e independiente**, desarrollada por **un solo participante humano**, con apoyo de herramientas de inteligencia artificial bajo sus decisiones e instrucciones. Esta descripción acredita la forma de trabajo del proyecto; **no convierte obras musicales de terceros ni todos los recursos externos en propiedad del desarrollador**.
+La licencia del software y los permisos del contenido que guardas en la biblioteca tienen alcances distintos.
 
-| Material                                | Procedencia y uso                                                                    | Qué autoriza la documentación                                                                                                                                 |
-| --------------------------------------- | ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Código y documentación originales**   | Trabajo del proyecto; paquete distribuido con `LICENSE`, `NOTICE`, `LICENSING.md`    | **PolyForm Noncommercial 1.0.0**, dentro de los derechos de quien licencia                                                                                    |
-| **Identidad gráfica Auditorium**        | Logos, banners, fondos, iconos y texturas en `branding/` y `public/auditorium/`      | **No se ha inventariado por pieza** el proceso de creación ni los eventuales materiales de partida. No presumir permiso general de marcas/insumos ajenos      |
-| **Álbumes, canciones y portadas**       | Obras, grabaciones, nombres, imágenes y enlaces que cada persona registra o consulta | **No** quedan cubiertos por la licencia de código; usar la aplicación no concede derechos para reproducir, modificar, publicar o compartir música de terceros |
-| **Bibliotecas de software y servicios** | React, Dexie, Supabase, Vite, Spotify/YouTube, Wikidata, Gemini/Groq y otros         | Licencias de paquetes, derechos de base de datos y términos de servicio **independientes** del proyecto                                                       |
+| Material                          | Referencia y condiciones                                                                                                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Código y documentación originales | [PolyForm Noncommercial 1.0.0](../LICENSE), con las condiciones de [LICENSING.md](../LICENSING.md) y los avisos de [NOTICE](../NOTICE)                                    |
+| Identidad visual                  | El [catálogo de marca](../branding/README.md) reúne logos, banners e iconos. Los materiales de terceros que se utilicen en una composición conservan sus propios derechos |
+| Música, grabaciones y portadas    | Conservan los derechos de sus titulares. Registrarlas, enlazarlas o adjuntarlas a Auditorium no concede permiso para redistribuirlas                                      |
+| Dependencias de software          | Sus licencias y avisos se incluyen en `THIRD_PARTY_NOTICES.md` al generar el paquete web                                                                                  |
+| Servicios externos                | El uso de cada servicio está sujeto a sus términos y a las condiciones del contenido que ofrece                                                                           |
 
-## Audio local: conservar no es distribuir
+## Audio local y respaldos
 
-La aplicación permite que cada persona **adjunte archivos de audio propios** a su biblioteca y los transporte mediante un ZIP completo. Eso **no implica** que esos archivos sean necesariamente composiciones propias o estén autorizados para redistribución.
+El audio adjunto se guarda en IndexedDB del dispositivo. El respaldo completo ZIP1 permite trasladarlo junto con la biblioteca; el JSON7 y la sincronización de cuenta transportan metadatos y excluyen esos archivos.
 
-- El audio se guarda en **IndexedDB del dispositivo** y puede incluirse en un **ZIP1 exportado por la persona**. **El JSON7 y la sincronización Supabase excluyen los bytes de audio**.
-- Para importar, escuchar, copiar o compartir una grabación, corresponde contar con los derechos o permisos aplicables. La función de respaldo no concede permiso para compartir públicamente un ZIP musical.
-- El código permite enlazar **Spotify y YouTube** mediante sus reproductores y flujos oficiales. El acceso depende de los proveedores y sus condiciones; no hay un servidor de Auditorium que distribuya pistas.
-- Un enlace de descarga o una portada externa **no prueba** titularidad ni autorización para republicar el recurso.
-- Los ZIP completos **no están cifrados**. No deben publicarse accidentalmente como adjuntos de issues, ejemplos o paquetes de distribución.
+Conserva los permisos aplicables a cada grabación antes de copiarla o compartirla. Un archivo guardado localmente puede seguir perteneciendo a un tercero; el respaldo no cambia sus condiciones de uso.
 
-## La excepción de los archivos de prueba
+Los ZIP completos no están cifrados y pueden incluir notas personales y archivos musicales. Guárdalos en un lugar privado y evita adjuntarlos a issues o ejemplos públicos. La [guía de audio](AUDIO_LOCAL.md) detalla el formato y sus límites.
 
-Los ocho archivos `tone-*` incluidos en [`prototypes/audio-01/fixtures/`](../prototypes/audio-01/fixtures/README.md) son **tonos sintéticos de 440 Hz** generados mediante un script, no canciones, interpretaciones ni grabaciones de artistas. Su documentación los ofrece como **CC0-1.0**. El código del generador y el resto del proyecto conservan sus licencias respectivas.
+## Archivos sintéticos de prueba
 
-**No** extrapolar el permiso CC0 de estos tonos a archivos que un usuario adjunte ni a imágenes de portadas.
+Los ocho archivos `tone-*` de [las muestras de audio](../prototypes/audio-01/fixtures/README.md) son tonos de 440 Hz generados por un script. Se ofrecen bajo [CC0-1.0](https://creativecommons.org/publicdomain/zero/1.0/); el código del generador conserva la licencia del repositorio. Esta condición corresponde a esas muestras, no a los archivos que se adjunten a una biblioteca.
 
-## Metadatos y servicios externos
+## Portadas, metadatos y servicios
 
-- **Wikidata**: las referencias y candidatos llegan mediante consulta voluntaria; el resultado se revisa antes de incorporarlo. Las licencias y condiciones de las fuentes deben conservarse según el material usado.
-- **MusicBrainz**: existe una evaluación técnica de correspondencias, pero no se debe presentar como una importación remota plenamente habilitada por esa investigación. [Estudio histórico](METADATOS_EXTERNOS.md).
-- **Gemini/Groq**: recomendaciones voluntarias con clave del usuario en memoria y contexto acotado; la salida propuesta **no** modifica notas ni adquiere derechos sobre datos de terceros.
-- **Spotify/YouTube**: marcos y enlaces oficiales, sin extracción ni redistribución de la señal musical desde Auditorium.
-- **Portadas**: pueden provenir de URL o de un archivo seleccionado por la persona. La portada es un recurso distinto de la propiedad de `Album`; su visualización en una fonoteca **no la relicencia**.
+- **Portadas:** pueden provenir de una URL o de un archivo seleccionado. Su almacenamiento y visualización conservan los derechos y permisos de la imagen original.
+- **Wikidata:** aporta candidatos de metadatos que se revisan antes de incorporarlos. Las fuentes y sus avisos se conservan según el material utilizado.
+- **Spotify y YouTube:** se abren mediante enlaces o reproductores oficiales. Auditorium no extrae ni redistribuye su señal musical.
+- **Gemini y Groq:** reciben un contexto acotado para proponer recomendaciones; sus términos se aplican a esas solicitudes.
 
-## Dependencias y paquete de distribución
+La [guía de integraciones](tecnica/05-integraciones-y-seguridad.md) explica los datos transmitidos y los controles de cada función. La [evaluación de MusicBrainz](METADATOS_EXTERNOS.md) conserva la investigación de ese proveedor.
 
-El script [`scripts/package.mjs`](../scripts/package.mjs) prepara la release web e incluye `LICENSE`, `NOTICE`, `LICENSING.md`, `branding/` y un **`THIRD_PARTY_NOTICES.md` generado** a partir de las licencias y avisos encontrados en paquetes de ejecución. Ese archivo es una ayuda técnica concreta, **no prueba que todo recurso visual, todos los metadatos o los términos de los proveedores externos estén auditados**.
+## Distribución y atribución
 
-Para cambios nuevos, verificar:
+El [generador del paquete web](../scripts/package.mjs) incluye `LICENSE`, `NOTICE`, `LICENSING.md`, el catálogo `branding/` y `THIRD_PARTY_NOTICES.md`. Este último reúne las licencias y los avisos encontrados en las dependencias de ejecución; las imágenes, la música y los servicios externos tienen condiciones propias.
 
-1. Si el recurso es código, tipografía, portada, audio, logo, diseño, base de datos o dato textual.
-2. Quién lo proporcionó, si contiene materiales externos y qué términos aplican a su reproducción y distribución.
-3. Si se incluye **realmente en el bundle**, en los originales de `branding/` o solo como enlace externo.
-4. Qué atribución o aviso debe conservarse antes de modificar `NOTICE` u otros archivos.
-5. Que capturas, pruebas y respaldos usados públicamente no expongan colecciones privadas ni audio protegido.
-
-## Decisión actual
-
-Se mantiene el texto de [PolyForm Noncommercial 1.0.0](../LICENSE) para el código original, con [NOTICE](../NOTICE). **No se modifica por esta revisión ni se concede licencia sobre obras musicales ajenas.** La autoría de las piezas visuales individuales y las obligaciones adicionales de recursos externos deben verificarse con evidencia, no rellenarse por analogía.
+Al incorporar o redistribuir un recurso, conserva su origen, licencia y atribuciones. Las condiciones del código y las solicitudes de uso comercial se detallan en [LICENSING.md](../LICENSING.md).

@@ -1,8 +1,8 @@
 # Identidad visual de Auditorium
 
-Este catálogo reúne originales y variantes de la **identidad visual de Auditorium**, con su vinilo central y estética gótico–metalera. Es un proyecto personal de un único desarrollador humano, realizado con apoyo de herramientas de IA bajo su dirección. **Esa forma de trabajo no determina por sí sola la procedencia o los permisos de cada elemento gráfico**: no se ha inventariado qué piezas utilizaron recursos preexistentes o qué condiciones adicionales pueden aplicar.
+Este catálogo reúne originales y variantes de la identidad visual de Auditorium, con el vinilo como símbolo central y una estética gótica y metalera.
 
-La presencia de un logo, textura, banner o fondo en el repositorio **no concede derechos sobre marcas, fotografías o materiales externos de terceros**. Su revisión se documenta en [Derechos y recursos](../docs/DERECHOS_Y_RECURSOS.md).
+Para reutilizar imágenes, marcas o materiales de terceros, consulta sus condiciones y avisos de atribución. [Derechos y recursos](https://github.com/NicoCG32/Auditorium/blob/main/docs/DERECHOS_Y_RECURSOS.md).
 
 Las dimensiones indican el lienzo del archivo: en SVG son unidades vectoriales; en PNG, WebP y JPG son píxeles.
 

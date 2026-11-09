@@ -6,13 +6,11 @@ El código y la documentación originales sobre los que NicoCG32 puede conceder 
 
 Esta autorización no cambia licencias de dependencias, código ajeno, recursos visuales o sonoros, fuentes, datos, marcas ni materiales incorporados de terceros. Sus avisos y permisos se conservan. No concede derechos que correspondan a otros titulares ni retira permisos concedidos previamente mediante otros acuerdos.
 
-## Autoría humana, apoyo de IA y contenido musical
-
-**Auditorium es un proyecto personal e independiente desarrollado por un único participante humano, con apoyo de herramientas de IA bajo su dirección.** No existieron otros integrantes humanos ni se atribuyen trabajos a personas que no participaron.
+## Contenido musical y otros recursos
 
 La licencia se aplica al código y documentación originales **dentro de los derechos que el titular pueda conceder**. **No concede derechos sobre música, grabaciones, portadas, marcas, metadatos ajenos, recursos incorporados por usuarios ni imágenes con derechos de terceros**. El audio que cada usuario adjunta se guarda por dispositivo y se exporta voluntariamente; la aplicación no autoriza compartir obras protegidas ni las sincroniza con Supabase.
 
-El paquete de entrega genera `THIRD_PARTY_NOTICES.md` para dependencias de ejecución, sin que ello sustituya la comprobación del origen de cada recurso gráfico o material de terceros. Consulta [Derechos y recursos](docs/DERECHOS_Y_RECURSOS.md) y el [catálogo de identidad](branding/README.md).
+El paquete de entrega genera `THIRD_PARTY_NOTICES.md` con los avisos de las dependencias de ejecución. Consulta también [Derechos y recursos](https://github.com/NicoCG32/Auditorium/blob/main/docs/DERECHOS_Y_RECURSOS.md) y el [catálogo de identidad](branding/README.md).
 
 ## Uso sin compensación económica
 
@@ -22,7 +20,7 @@ Al entregar copias, conserva la licencia y todas las líneas `Required Notice:` 
 
 ## Uso comercial mediante acuerdo separado
 
-Para un uso comercial fuera de los permisos expresos de LICENSE, solicita una autorización escrita antes de comenzar. Los créditos y cualquier compensación económica se negocian, si corresponde, **con los titulares que estén facultados para conceder esos derechos**; no existe obligación o porcentaje económico automático por el mero uso permitido en LICENSE. No hay una tarifa, porcentaje ni autorización comercial automática establecidos en este repositorio.
+Para un uso comercial fuera de los permisos expresos de LICENSE, solicita una autorización escrita antes de comenzar. Esa autorización deberá acordar los créditos y una compensación económica proporcional al objetivo y alcance. No hay una tarifa, porcentaje ni autorización comercial automática establecidos en este repositorio.
 
 La solicitud debe indicar producto/servicio, finalidad, partes reutilizadas, distribución prevista y escala aproximada. El acuerdo puede establecer un pago único, regalías u otra modalidad, su moneda (CLP o USD), período, atribución, actualizaciones y soporte. Ninguna modalidad se considera aceptada hasta que ambas partes la acuerden. Contacto: [perfil de NicoCG32](https://github.com/NicoCG32); no publiques información confidencial en issues.
 

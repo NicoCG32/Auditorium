@@ -4,8 +4,6 @@
 
 ## El vinilo como centro visual
 
-La identidad visual fue orientada por mis decisiones de diseño dentro de un desarrollo personal asistido por IA. Eso describe el proceso general del proyecto; la procedencia y los permisos de cada imagen o textura se revisan por separado en [Derechos y recursos](../DERECHOS_Y_RECURSOS.md).
-
 Pensé la identidad de Auditorium desde el gusto por los álbumes como obras completas. El vinilo funciona como símbolo reconocible y como punto de encuentro entre catálogo y colección. Busqué una estética oscura, con elementos góticos y metaleros, pero sin hacer que leer, buscar o llenar formularios resulte difícil.
 
 ## La estética al servicio de la biblioteca
@@ -16,6 +14,8 @@ Pensé la identidad de Auditorium desde el gusto por los álbumes como obras com
 - **Diseño adaptable:** navegación y formularios para pantallas pequeñas, controles de teclado y foco visible.
 
 Los recursos maestros están en [`branding/`](../../branding/README.md); las versiones optimizadas que carga la interfaz están en `public/auditorium/`. Los banners del README son presentación del proyecto y no se fuerzan íntegros al caché offline.
+
+La guía de [derechos y recursos](../DERECHOS_Y_RECURSOS.md) reúne las condiciones de reutilización y atribución.
 
 ## Criterios al diseñar o modificar
 

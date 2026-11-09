@@ -29,7 +29,7 @@
 - [**Integraciones y seguridad**](tecnica/05-integraciones-y-seguridad.md): Wikidata, Gemini/Groq, reproducción externa, claves de sesión y RLS.
 
 <details>
-<summary><strong>Ver cómo se conectan los tres dominios personales</strong></summary>
+<summary><strong>Ver la relación entre catálogo y biblioteca personal</strong></summary>
 
 ```mermaid
 flowchart TD
@@ -51,12 +51,12 @@ Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos 
 
 ### 03 · Desarrollo — mantenerlo sin perder información
 
-- [**Proceso y decisiones**](desarrollo/01-proceso-y-decisiones.md): autoría individual con asistencia de IA, evolución y criterio para cambios.
+- [**Proceso y decisiones**](desarrollo/01-proceso-y-decisiones.md): evolución del proyecto y criterios para los cambios.
 - [**Entorno y verificación**](desarrollo/02-entorno-y-verificacion.md): comandos, CI, pruebas unitarias, navegador y entrega.
 - [**Evolución y pendientes**](desarrollo/03-evolucion-y-pendientes.md): versión publicada frente a código aún sin distribuir.
 - [**Derechos y recursos**](DERECHOS_Y_RECURSOS.md): código, diseños, audio, portadas, fuentes y atribuciones.
 
-## Guías específicas, sin duplicar el índice principal
+## Guías de consulta
 
 | Quiero…                           | Documento especializado                                                                                                     |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -67,24 +67,27 @@ Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos 
 | **Reproducir o buscar**           | [Enlaces](REPRODUCCION.md) · [Integraciones](INTEGRACIONES_OPCIONALES.md)                                                   |
 | **Instalar y actualizar**         | [Entrega 1.1.0](ENTREGA.md) · [PWA](PWA_OFFLINE.md) · [Publicación](PUBLICACION_WEB.md)                                     |
 
-<details>
-<summary><strong>Documentos históricos, prototipos y decisiones arquitectónicas</strong></summary>
+## Decisiones de arquitectura
 
-- Las [ADR](adr/) recogen decisiones y contexto histórico. **Una ADR aceptada en una versión antigua no reemplaza el contrato vigente** de código y migraciones.
-- Los estudios [MusicBrainz](METADATOS_EXTERNOS.md) y [proveedores de streaming](PROVEEDORES_STREAMING.md) conservan evaluaciones y propuestas, **no prometen integraciones adicionales activas**.
-- Los [prototipos de audio](../prototypes/audio-01/README.md) y [proveedores](../prototypes/media-01/README.md) prueban capacidades aisladas; **no equivalen a una función habilitada en la aplicación**.
-- Las guías [Modelo de datos](MODELO_DATOS.md), [Dominio](MODELO_DOMINIO.md), [Arquitectura](ARQUITECTURA.md) y [Plan de desarrollo](PLAN_DESARROLLO.md) conservan detalles y evolución que pueden ser específicos de un incremento.
+Las [ADR](adr/) recogen las decisiones y su contexto histórico. Incluyen el [MVP local](adr/001-mvp-local.md), la [separación álbum/edición/pista](adr/002-album-edicion-pista.md), la [sincronización opcional](adr/011-supabase-sincronizacion.md), el [audio local](adr/012-audio-local-respaldo.md) y las [notas por género](adr/013-valoraciones-por-genero.md).
+
+<details>
+<summary><strong>Estudios, prototipos y referencias de implementación</strong></summary>
+
+- Las evaluaciones de [MusicBrainz](METADATOS_EXTERNOS.md) y [proveedores de streaming](PROVEEDORES_STREAMING.md) conservan los resultados y las propuestas de integración.
+- Los [prototipos de audio](../prototypes/audio-01/README.md) y [proveedores](../prototypes/media-01/README.md) permiten reproducir pruebas aisladas.
+- Las guías de [datos](MODELO_DATOS.md), [dominio](MODELO_DOMINIO.md), [arquitectura](ARQUITECTURA.md) y el [plan de desarrollo](PLAN_DESARROLLO.md) detallan la implementación y su evolución.
 
 </details>
 
 ## Qué versión estás leyendo
 
-La última release identificada en el repositorio es **1.1.0, del 29 de octubre de 2026**. El código también contiene trabajo marcado **Sin publicar** en [CHANGELOG.md](../CHANGELOG.md), especialmente importación aditiva y catálogo JSON. **Implementado en una rama o en `main` no significa incluido en la release instalada**.
+La versión publicada es **1.1.0, del 29 de octubre de 2026**. La importación aditiva y el catálogo JSON figuran como **Sin publicar** en el [changelog](../CHANGELOG.md). Consulta las notas de la versión instalada para conocer sus funciones.
 
 Los formatos de datos tienen versiones diferentes: **Dexie DB11, respaldo JSON7 y respaldo de audio ZIP1**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
 
-## Autoría y alcance de derechos
+## Licencias y recursos
 
-Auditorium tiene **un único participante humano**, su desarrollador, con asistencia de herramientas de IA bajo su dirección. No hubo un equipo humano adicional. La licencia del código no se extiende automáticamente a canciones, álbumes de terceros, portadas, marcas o servicios de streaming.
+La música, las portadas y otros recursos de terceros conservan sus condiciones de uso, separadas de la licencia del software.
 
 [**Revisar licencias y recursos**](DERECHOS_Y_RECURSOS.md) · [**LICENSING.md**](../LICENSING.md).
