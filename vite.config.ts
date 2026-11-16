@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { createMusicBrainzProxy } from './scripts/musicbrainz-proxy.mjs'
 
 export default defineConfig(({ mode }) => {
   const base = mode === 'pages' ? '/Auditorium/' : '/'
@@ -9,6 +10,15 @@ export default defineConfig(({ mode }) => {
   return {
     base,
     plugins: [
+      {
+        name: 'musicbrainz-development-proxy',
+        configureServer(server) {
+          const proxy = createMusicBrainzProxy()
+          server.middlewares.use((request, response, next) => {
+            void proxy(request, response, next)
+          })
+        },
+      },
       react(),
       tailwindcss(),
       VitePWA({

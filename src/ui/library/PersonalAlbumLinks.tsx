@@ -24,11 +24,17 @@ export function PersonalAlbumLinks({
   const target = chosen ? inspectPlaybackLink(chosen.url) : undefined
   return (
     <section
-      className="catalog-links personal-album-links"
+      className={`catalog-links personal-album-links${hasLinks ? '' : ' empty-links'}`}
       aria-label="Tus enlaces personales"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h3 className="text-lg font-semibold">Tus enlaces personales</h3>
+        <h3
+          className={hasLinks ? 'text-lg font-semibold' : 'text-sm text-muted'}
+        >
+          {hasLinks
+            ? 'Tus enlaces personales'
+            : 'Enlaces para escuchar o comprar (opcionales)'}
+        </h3>
         <button
           id="album-links-edit-button"
           type="button"

@@ -2,7 +2,7 @@
 
 Diseño de referencia de UX-03, 18 de octubre de 2026. La implementación posterior se documenta en [Biblioteca](BIBLIOTECA.md), [Mi experiencia](MI_EXPERIENCIA.md) y [Mi colección](MI_COLECCION.md). Este documento y sus bocetos conservan el diseño inicial. Referencias: [UX-02 #60](https://github.com/NicoCG32/Auditorium/issues/60), [UX-03 #61](https://github.com/NicoCG32/Auditorium/issues/61) y [ADR-010](adr/010-navegacion-experiencia.md).
 
-El diseño inicial partía de DB5/respaldo3; los contratos actuales usan DB11/JSON7/ZIP1. Los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) separan música, experiencia, enlaces y posesión. Los [bocetos navegables](prototipos/experiencia/index.html) permiten comparar las pantallas en escritorio y móvil con datos ficticios; no acceden a la biblioteca real ni guardan cambios.
+El diseño inicial partía de DB5/respaldo3; los contratos actuales usan DB12/JSON8/ZIP1. Los [contratos propuestos](CONTRATOS_EXPERIENCIA.md) separan música, experiencia, enlaces y posesión. Los [bocetos navegables](prototipos/experiencia/index.html) permiten comparar las pantallas en escritorio y móvil con datos ficticios; no acceden a la biblioteca real ni guardan cambios.
 
 La [navegación, el contexto y los borradores](NAVEGACION.md) se incorporaron en UX-04. Los incrementos posteriores completaron el editor conjunto, la referencia de edición, las notas por género y Mi colección. La [validación del recorrido](VALIDACION_RECORRIDO.md) describe el resultado.
 

@@ -2,8 +2,11 @@
 
 ## Sin publicar
 
+- Interfaz orientada a la colección: ejemplares y deseos al principio de la ficha, guardado manual junto a artista y título, detalles del ejemplar y metadatos desplegables, y tarjetas con adquisiciones y deseos sin filas de datos ausentes. Escucha, notas y audio siguen siendo opcionales; se conserva la protección de borradores.
+- Búsqueda de artistas y discografías MusicBrainz con paginación, filtros y selección múltiple. Revisión explícita de homónimos y posibles duplicados, importación atómica, referencias persistentes y protección de experiencia y álbumes retirados. Servicio de consulta identificado con cola global por proceso, caché acotada y errores recuperables; integración de desarrollo y configuración opcional para sitios estáticos.
+- «Añadir música» reúne búsqueda de discografía, alta manual compacta e importación JSON. Las referencias se conservan al editar metadatos y se desvinculan al cambiar la identidad de la obra. DB12/nativa120 y JSON/snapshot8 incorporan procedencia MusicBrainz; migración desde DB11, lectura estricta de JSON1–7 y migración SQL para sincronización. ZIP1 conserva su formato.
 - Importación aditiva de respaldos JSON sobre bibliotecas existentes, con vista previa, decisiones explícitas de conflictos e identidades coincidentes, confirmación atómica y detección de cambios concurrentes. Conserva identidad de destino, registros ausentes, audio y experiencia; recuperación de lectura sin repetir importación.
-- Catálogo musical JSON versionado para incorporar discografías sin notas, escuchas o adquisiciones inferidas. Plantilla exportable con identificadores y créditos principales, sin identidad ni experiencia personal; contrato y guía de importación. DB11/JSON7/ZIP1 sin cambios.
+- Catálogo musical JSON versionado para incorporar discografías sin notas, escuchas o adquisiciones inferidas. Plantilla exportable con identificadores y créditos principales, sin identidad ni experiencia personal; contrato y guía de importación. Su formato sencillo continúa en versión 1.
 
 ## 1.1.0 — 2026-10-29
 

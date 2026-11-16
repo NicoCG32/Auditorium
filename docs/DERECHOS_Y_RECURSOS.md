@@ -16,7 +16,7 @@ La licencia del software y los permisos del contenido que guardas en la bibliote
 
 ## Audio local y respaldos
 
-El audio adjunto se guarda en IndexedDB del dispositivo. El respaldo completo ZIP1 permite trasladarlo junto con la biblioteca; el JSON7 y la sincronización de cuenta transportan metadatos y excluyen esos archivos.
+El audio adjunto se guarda en IndexedDB del dispositivo. El respaldo completo ZIP1 permite trasladarlo junto con la biblioteca; el JSON8 y la sincronización de cuenta transportan metadatos y excluyen esos archivos.
 
 Conserva los permisos aplicables a cada grabación antes de copiarla o compartirla. Un archivo guardado localmente puede seguir perteneciendo a un tercero; el respaldo no cambia sus condiciones de uso.
 

@@ -8,11 +8,13 @@ export function AlbumCard({
   view,
   onOpen,
   ratingGenre,
+  collection,
 }: {
   album: LibraryAlbum
   view: 'grid' | 'list'
   onOpen: () => void
   ratingGenre?: string
+  collection?: { copies: number; wishes: number }
 }) {
   const score = albumScore(album, ratingGenre)
   const context = ratingGenre
@@ -58,9 +60,22 @@ export function AlbumCard({
         <p className="album-artist mt-2 text-sm leading-relaxed wrap-anywhere">
           {album.artist}
         </p>
-        <p className="mt-2 text-xs tracking-wider text-muted">
-          {album.originalYear ?? 'Año sin registrar'}
-        </p>
+        {album.originalYear ? (
+          <p className="mt-2 text-xs tracking-wider text-muted">
+            {album.originalYear}
+          </p>
+        ) : null}
+        {collection ? (
+          <ul className="album-collection-badges" aria-label="En tu colección">
+            {collection.copies > 0 ? (
+              <li>
+                {collection.copies}{' '}
+                {collection.copies === 1 ? 'ejemplar' : 'ejemplares'}
+              </li>
+            ) : null}
+            {collection.wishes > 0 ? <li>En deseos</li> : null}
+          </ul>
+        ) : null}
         {album.countries?.length ? (
           <p className="mt-2 text-xs text-muted wrap-anywhere">
             País de origen: {album.countries.join(' · ')}
@@ -78,29 +93,41 @@ export function AlbumCard({
             ))}
           </ul>
         ) : null}
-        <dl className="album-personal">
-          <div>
-            <dt>Escucha</dt>
-            <dd className="listening-badge">
-              {listeningLabels[album.listeningStatus]}
-            </dd>
-          </div>
-          <div>
-            <dt className="wrap-anywhere">Mi nota · {context}</dt>
-            <dd className="text-sm font-semibold">
-              {score === undefined ? (
-                <span className="font-normal text-muted">
-                  {ratingGenre ? 'Sin valoración en este género' : 'Sin nota'}
-                </span>
-              ) : (
-                <>
-                  <span className="text-accent-text">{formatScore(score)}</span>
-                  <span className="text-muted"> / 10</span>
-                </>
-              )}
-            </dd>
-          </div>
-        </dl>
+        {album.listeningStatus !== 'untracked' ||
+        score !== undefined ||
+        ratingGenre ? (
+          <dl className="album-personal">
+            {album.listeningStatus !== 'untracked' ? (
+              <div>
+                <dt>Escucha</dt>
+                <dd className="listening-badge">
+                  {listeningLabels[album.listeningStatus]}
+                </dd>
+              </div>
+            ) : null}
+            {score !== undefined || ratingGenre ? (
+              <div>
+                <dt className="wrap-anywhere">Mi nota · {context}</dt>
+                <dd className="text-sm font-semibold">
+                  {score === undefined ? (
+                    <span className="font-normal text-muted">
+                      {ratingGenre
+                        ? 'Sin valoración en este género'
+                        : 'Sin nota'}
+                    </span>
+                  ) : (
+                    <>
+                      <span className="text-accent-text">
+                        {formatScore(score)}
+                      </span>
+                      <span className="text-muted"> / 10</span>
+                    </>
+                  )}
+                </dd>
+              </div>
+            ) : null}
+          </dl>
+        ) : null}
       </div>
     </li>
   )

@@ -109,6 +109,21 @@ export function AlbumSummary({
   const releaseNames = releaseLabels(
     catalog.releases.filter((release) => release.albumId === album.id),
   )
+  const copies = ownedItems.filter(
+    (item) => item.userAlbumId === personalEntry.id,
+  )
+  const wishes = purchaseWishes.filter(
+    (wish) => wish.userAlbumId === personalEntry.id && wish.status === 'active',
+  )
+  const hasExperience = Boolean(
+    rating ||
+    personalEntry.personalNotes ||
+    personalEntry.listeningStatus !== 'untracked' ||
+    personalLibrary.albumGenreRatings.some(
+      (row) => row.userAlbumId === personalEntry.id,
+    ),
+  )
+  const [experienceOpen, setExperienceOpen] = useState(hasExperience)
   if (editing)
     return (
       <AlbumEditPanel
@@ -168,11 +183,63 @@ export function AlbumSummary({
           <p className="mt-3 text-lg text-muted wrap-anywhere">
             {entry.artist}
           </p>
-          <p className="mt-4 text-sm">{classificationLabel(album)}</p>
-          <p className="mt-2 text-sm text-muted">
-            Año original: {album.originalYear ?? 'Sin registrar'}
-          </p>
+          {album.primaryType !== 'unspecified' ||
+          album.categories.length > 0 ? (
+            <p className="mt-4 text-sm">{classificationLabel(album)}</p>
+          ) : null}
+          {album.originalYear ? (
+            <p className="mt-2 text-sm text-muted">{album.originalYear}</p>
+          ) : null}
         </div>
+      </div>
+      <div className="album-collector-areas">
+        <details
+          className="album-area"
+          data-album-area="collection"
+          open={collectionEditing || undefined}
+        >
+          <summary ref={collectionHeading}>
+            <span>Mi colección</span>
+            <span className="area-description">
+              {copies.length
+                ? `${copies.length} ${copies.length === 1 ? 'ejemplar' : 'ejemplares'}`
+                : 'Vinilos, CDs y compras digitales'}
+            </span>
+          </summary>
+          <OwnedItemsPanel
+            entryId={personalEntry.id}
+            items={ownedItems}
+            releases={catalog.releases.filter(
+              (release) => release.albumId === album.id,
+            )}
+            library={library}
+            blocked={busy}
+            onBusyChange={onBusyChange}
+            onCommitted={onExperienceCommitted}
+          />
+        </details>
+        <details className="album-area" data-album-area="wishes">
+          <summary>
+            <span>Deseos de compra</span>
+            <span className="area-description">
+              {wishes.length
+                ? `${wishes.length} ${wishes.length === 1 ? 'deseo activo' : 'deseos activos'}`
+                : 'Lo que te gustaría conseguir'}
+            </span>
+          </summary>
+          <PurchaseWishesPanel
+            entryId={personalEntry.id}
+            wishes={purchaseWishes}
+            items={ownedItems}
+            releases={catalog.releases.filter(
+              (release) => release.albumId === album.id,
+            )}
+            library={library}
+            blocked={busy}
+            onBusyChange={onBusyChange}
+            onCommitted={onExperienceCommitted}
+          />
+        </details>
       </div>
       <PersonalAlbumLinks
         key={JSON.stringify([
@@ -187,84 +254,95 @@ export function AlbumSummary({
         }}
         disabled={busy}
       />
-      {experienceEditing ? (
-        <AlbumExperienceForm
-          key={personalEntry.id}
-          snapshot={snapshot}
-          entryId={personalEntry.id}
-          library={library}
-          blocked={busy}
-          onCommitted={onExperienceCommitted}
-          onBusyChange={onBusyChange}
-          onComplete={onExperienceComplete}
-          onCancel={onExperienceCancel}
-          {...(ratingGenre ? { initialGenre: ratingGenre } : {})}
-        />
-      ) : (
-        <section
-          className="experience-panel experience-summary"
-          aria-labelledby="experience-summary-title"
-        >
-          <h3 id="experience-summary-title" className="text-xl font-semibold">
-            Mi experiencia
-          </h3>
-          <div className="experience-summary-values">
-            <p>
-              Escucha guardada:{' '}
-              <strong>{listeningLabels[personalEntry.listeningStatus]}</strong>
-            </p>
-            <p>
-              Nota general guardada:{' '}
-              <strong className="text-accent-text">
-                {rating
-                  ? formatScore(unitsToScore(rating.scoreUnits)) + ' / 10'
-                  : 'Sin nota'}
-              </strong>
-            </p>
-          </div>
-          <p className="mt-3 text-sm text-muted">
-            Edición de referencia:{' '}
-            {rating?.referenceReleaseId
-              ? releaseNames.get(rating.referenceReleaseId)
-              : 'Sin edición de referencia'}
-          </p>
-          <GenreRatingsSummary
-            labels={album.genres ?? []}
-            ratings={personalLibrary.albumGenreRatings.filter(
-              (row) => row.userAlbumId === personalEntry.id,
-            )}
-            releases={releaseNames}
-            {...(ratingGenre ? { selected: ratingGenre } : {})}
+      <details
+        className="album-area"
+        data-album-area="experience"
+        open={experienceEditing || experienceOpen}
+        onToggle={(event) => setExperienceOpen(event.currentTarget.open)}
+      >
+        <summary>
+          <span>Mi experiencia</span>
+          <span className="area-description">
+            Escucha, notas y comentarios opcionales
+          </span>
+        </summary>
+        {experienceEditing ? (
+          <AlbumExperienceForm
+            key={personalEntry.id}
+            snapshot={snapshot}
+            entryId={personalEntry.id}
+            library={library}
+            blocked={busy}
+            onCommitted={onExperienceCommitted}
+            onBusyChange={onBusyChange}
+            onComplete={onExperienceComplete}
+            onCancel={onExperienceCancel}
+            {...(ratingGenre ? { initialGenre: ratingGenre } : {})}
           />
-          {personalEntry.personalNotes ? (
-            <p className="mt-4 whitespace-pre-wrap wrap-anywhere">
-              {personalEntry.personalNotes}
-            </p>
-          ) : (
-            <p className="mt-3 text-sm text-muted">
-              Aún no has escrito un comentario.
-            </p>
-          )}
-          <div className="mt-5 flex flex-wrap gap-3">
-            <button
-              type="button"
-              className="primary-button"
-              disabled={busy}
-              onClick={onExperienceOpen}
-            >
-              {rating ? 'Recalificar álbum' : 'Calificar álbum'}
-            </button>
-            <button
-              type="button"
-              className="action-button"
-              disabled={busy}
-              onClick={onExperienceOpen}
-            >
-              Editar experiencia
-            </button>
-          </div>
-        </section>
-      )}
+        ) : (
+          <section
+            className="experience-panel experience-summary"
+            aria-labelledby="experience-summary-title"
+          >
+            <h3 id="experience-summary-title" className="sr-only">
+              Mi experiencia
+            </h3>
+            <div className="experience-summary-values">
+              <p>
+                Escucha guardada:{' '}
+                <strong>
+                  {listeningLabels[personalEntry.listeningStatus]}
+                </strong>
+              </p>
+              <p>
+                Nota general guardada:{' '}
+                <strong className="text-accent-text">
+                  {rating
+                    ? formatScore(unitsToScore(rating.scoreUnits)) + ' / 10'
+                    : 'Sin nota'}
+                </strong>
+              </p>
+            </div>
+            {rating?.referenceReleaseId ? (
+              <p className="mt-3 text-sm text-muted">
+                Edición de referencia:{' '}
+                {releaseNames.get(rating.referenceReleaseId)}
+              </p>
+            ) : null}
+            <GenreRatingsSummary
+              labels={album.genres ?? []}
+              ratings={personalLibrary.albumGenreRatings.filter(
+                (row) => row.userAlbumId === personalEntry.id,
+              )}
+              releases={releaseNames}
+              {...(ratingGenre ? { selected: ratingGenre } : {})}
+            />
+            {personalEntry.personalNotes ? (
+              <p className="mt-4 whitespace-pre-wrap wrap-anywhere">
+                {personalEntry.personalNotes}
+              </p>
+            ) : null}
+            <div className="mt-5 flex flex-wrap gap-3">
+              <button
+                type="button"
+                className="action-button"
+                disabled={busy}
+                onClick={onExperienceOpen}
+              >
+                {rating ? 'Recalificar álbum' : 'Calificar álbum'}
+              </button>
+              <button
+                type="button"
+                className="action-button"
+                disabled={busy}
+                onClick={onExperienceOpen}
+              >
+                Editar experiencia
+              </button>
+            </div>
+          </section>
+        )}
+      </details>
       {library.audio ? (
         <AudioPanel
           key={personalEntry.id + snapshot.identity.createdAt}
@@ -344,38 +422,8 @@ export function AlbumSummary({
           onCommitted={onExperienceCommitted}
         />
       </details>
-      <details
-        className="album-area"
-        data-album-area="collection"
-        open={collectionEditing || undefined}
-      >
-        <summary ref={collectionHeading}>Mi colección</summary>
-        <OwnedItemsPanel
-          entryId={personalEntry.id}
-          items={ownedItems}
-          releases={catalog.releases.filter(
-            (release) => release.albumId === album.id,
-          )}
-          library={library}
-          blocked={busy}
-          onBusyChange={onBusyChange}
-          onCommitted={onExperienceCommitted}
-        />
-      </details>
       <details className="album-area" data-album-area="actions">
-        <summary>Más acciones: deseos y retirada</summary>
-        <PurchaseWishesPanel
-          entryId={personalEntry.id}
-          wishes={purchaseWishes}
-          items={ownedItems}
-          releases={catalog.releases.filter(
-            (release) => release.albumId === album.id,
-          )}
-          library={library}
-          blocked={busy}
-          onBusyChange={onBusyChange}
-          onCommitted={onExperienceCommitted}
-        />
+        <summary>Administrar álbum</summary>
         <RemoveAlbumPanel
           entryId={personalEntry.id}
           title={album.title}

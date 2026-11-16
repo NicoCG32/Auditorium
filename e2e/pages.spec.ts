@@ -1,4 +1,7 @@
-import { openExperience } from './helpers/library-navigation'
+import {
+  openExperience,
+  openAlbumEditorDetails,
+} from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -162,6 +165,7 @@ test('rutas de navegación y borradores conservan base Pages y query después de
   await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Borrador ficticio Pages')
@@ -222,7 +226,7 @@ async function exportedBackup(page: Page) {
   const text = await readFile(path, 'utf8')
   const document: unknown = JSON.parse(text)
   expect(document).toMatchObject({
-    schemaVersion: 7,
+    schemaVersion: 8,
     data: { library: { albumGenreRatings: [] } },
   })
   return parseBackupText(text)

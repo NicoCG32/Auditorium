@@ -1,6 +1,6 @@
 # Cuenta y biblioteca entre dispositivos
 
-RATE-01 eleva snapshot/RPC a7 y la base local a DB11/nativa110. Las notas por género viajan en `library.albumGenreRatings`, con clave compuesta, referencia propia y validación de integridad. El servidor acepta 3–7 y rechaza escribir un formato anterior sobre uno nuevo. Los cinco documentos del checkpoint se migran atómicamente. [Contrato detallado](VALORACIONES_POR_GENERO.md).
+El incremento [Discografías por artista](DISCOGRAFIAS.md) eleva snapshot/RPC a8 y la base local a DB12/nativa120. La migración SQL nueva admite referencias MusicBrainz de artista y obra, y conserva el control de propietario, revisión y versiones anteriores. Las notas por género de RATE-01 continúan en `library.albumGenreRatings`. El servidor actualizado acepta 3–8 y rechaza escribir un formato anterior sobre uno nuevo. [Contrato de notas por género](VALORACIONES_POR_GENERO.md).
 
 El audio conserva sus dos tablas locales, separado por proyecto, cuenta e identidad musical. No se envía en snapshots, RPC, checkpoints ni Storage; no requiere tablas SQL o buckets nuevos. En otro dispositivo hay que volver a adjuntar los originales o restaurar el ZIP completo en un destino vacío antes de poblarlo con la biblioteca sincronizada. [Límites y traslado](AUDIO_LOCAL.md).
 

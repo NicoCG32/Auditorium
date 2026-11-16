@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { catalogSchema } from './catalog/catalog'
-import { artistSchema, catalogDataSchema } from './catalog/schemas'
+import { artistSchema, albumSchema, catalogDataSchema } from './catalog/schemas'
+import { getCatalogIssues } from './catalog/integrity'
 import {
   legacyAlbumV4Schema,
   migrateLegacyAlbum,
@@ -18,7 +19,7 @@ import { purchaseWishSchema } from './library/purchase-wishes'
 import { utcTimestampSchema } from './shared/scalars'
 import type { LocalSnapshot } from './repositories/local-repository'
 
-export const BACKUP_SCHEMA_VERSION = 7
+export const BACKUP_SCHEMA_VERSION = 8
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
 
 export const localSnapshotSchema = z
@@ -54,12 +55,40 @@ export const backupSchema = z.strictObject({
 })
 
 // Historical wire contracts reject fields introduced by later versions.
+const legacyCatalogV7DataSchema = catalogDataSchema.extend({
+  artists: z.array(artistSchema.omit({ musicBrainz: true })),
+  albums: z.array(albumSchema.omit({ musicBrainz: true })),
+})
+const legacyCatalogV7Schema = legacyCatalogV7DataSchema.superRefine(
+  (catalog, context) => {
+    for (const issue of getCatalogIssues(catalog))
+      context.addIssue({
+        code: 'custom',
+        path: issue.path,
+        message: issue.message,
+        params: { rule: issue.rule },
+      })
+  },
+)
+export const legacySnapshotV7Schema = localSnapshotSchema.safeExtend({
+  catalog: legacyCatalogV7Schema,
+})
+export function migrateSnapshotV7(input: unknown): LocalSnapshot {
+  return localSnapshotSchema.parse(legacySnapshotV7Schema.parse(input))
+}
+const legacyBackupV7Schema = z.strictObject({
+  format: z.literal('auditorium-backup'),
+  schemaVersion: z.literal(7),
+  exportedAt: utcTimestampSchema,
+  data: legacySnapshotV7Schema,
+})
 const legacyLibraryV6Schema = localSnapshotSchema.shape.library.omit({
   albumGenreRatings: true,
 })
 export const legacySnapshotV6Schema = z
   .strictObject({
     ...localSnapshotSchema.shape,
+    catalog: legacyCatalogV7Schema,
     library: legacyLibraryV6Schema,
   })
   .superRefine((snapshot, context) => {
@@ -121,15 +150,20 @@ const legacyLibrarySchema = legacyRatingsLibrarySchema.extend({
 export const legacySnapshotV3Schema = z.strictObject({
   ...localSnapshotSchema.shape,
   library: legacyLibrarySchema,
-  catalog: catalogDataSchema.extend({ albums: z.array(legacyAlbumV4Schema) }),
+  catalog: legacyCatalogV7DataSchema.extend({
+    albums: z.array(legacyAlbumV4Schema),
+  }),
 })
 export const legacySnapshotV4Schema = z.strictObject({
   ...localSnapshotSchema.shape,
   library: legacyRatingsLibrarySchema,
-  catalog: catalogDataSchema.extend({ albums: z.array(legacyAlbumV4Schema) }),
+  catalog: legacyCatalogV7DataSchema.extend({
+    albums: z.array(legacyAlbumV4Schema),
+  }),
 })
 export const legacySnapshotV5Schema = z.strictObject({
   ...localSnapshotSchema.shape,
+  catalog: legacyCatalogV7Schema,
   library: legacyRatingsLibrarySchema,
 })
 const legacyBackupV5Schema = z.strictObject({
@@ -168,8 +202,8 @@ const legacyBackupV3Schema = z.strictObject({
 const legacyData = z.strictObject({
   ...localSnapshotSchema.shape,
   library: legacyLibrarySchema,
-  catalog: catalogDataSchema.extend({
-    artists: z.array(artistSchema.omit({ country: true })),
+  catalog: legacyCatalogV7DataSchema.extend({
+    artists: z.array(artistSchema.omit({ country: true, musicBrainz: true })),
     albums: z.array(legacyAlbumSchema),
   }),
 })
@@ -227,7 +261,8 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
     input.schemaVersion !== 3 &&
     input.schemaVersion !== 4 &&
     input.schemaVersion !== 5 &&
-    input.schemaVersion !== 6
+    input.schemaVersion !== 6 &&
+    input.schemaVersion !== 7
   )
     throw new BackupError(
       'unsupported_version',
@@ -243,7 +278,8 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
       input.schemaVersion === 3 ||
       input.schemaVersion === 4 ||
       input.schemaVersion === 5 ||
-      input.schemaVersion === 6)
+      input.schemaVersion === 6 ||
+      input.schemaVersion === 7)
   ) {
     const legacy = (
       input.schemaVersion === 1
@@ -256,7 +292,9 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
               ? legacyBackupV4Schema
               : input.schemaVersion === 5
                 ? legacyBackupV5Schema
-                : legacyBackupV6Schema
+                : input.schemaVersion === 6
+                  ? legacyBackupV6Schema
+                  : legacyBackupV7Schema
     ).safeParse(input)
     if (!legacy.success)
       throw new BackupError(
@@ -268,9 +306,11 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
         ...legacy.data,
         schemaVersion: BACKUP_SCHEMA_VERSION,
         data:
-          legacy.data.schemaVersion >= 5
-            ? migrateSnapshotV6(legacy.data.data)
-            : migrateLegacySnapshot(legacy.data.data),
+          legacy.data.schemaVersion === 7
+            ? migrateSnapshotV7(legacy.data.data)
+            : legacy.data.schemaVersion >= 5
+              ? migrateSnapshotV6(legacy.data.data)
+              : migrateLegacySnapshot(legacy.data.data),
       }
     } catch {
       throw new BackupError(

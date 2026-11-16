@@ -1,4 +1,8 @@
-import { openAlbumArea, openExperience } from './helpers/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openOwnedDetails,
+} from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -247,6 +251,7 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await page
     .getByRole('button', { name: 'Registrar ejemplar', exact: true })
     .click()
+  await openOwnedDetails(page)
   await page
     .getByRole('button', { name: 'Guardar ejemplar', exact: true })
     .click()
@@ -254,7 +259,7 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await expect(
     page.getByRole('list', { name: 'Ejemplares de este álbum' }),
   ).toContainText('CD')
-  await openAlbumArea(page, 'actions')
+  await openAlbumArea(page, 'wishes')
   await page
     .getByRole('button', { name: 'Registrar deseo', exact: true })
     .click()
@@ -262,7 +267,7 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
     .getByRole('combobox', { name: 'Formato deseado', exact: true })
     .selectOption('vinyl')
   await page.getByRole('button', { name: 'Guardar deseo', exact: true }).click()
-  await openAlbumArea(page, 'actions')
+  await openAlbumArea(page, 'wishes')
   await expect(
     page.getByRole('list', { name: 'Deseos de este álbum' }),
   ).toContainText('Vinilo')

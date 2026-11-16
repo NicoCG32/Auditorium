@@ -454,7 +454,6 @@ test('tipo y metadatos opcionales se guardan; año inválido conserva el formula
   fireEvent.change(screen.getByLabelText('Tipo principal'), {
     target: { value: 'ep' },
   })
-  fireEvent.click(screen.getByText('Más datos (opcionales)'))
   fireEvent.change(screen.getByLabelText('Año original'), {
     target: { value: '1998.5' },
   })

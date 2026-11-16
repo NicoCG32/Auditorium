@@ -2,7 +2,7 @@
 
 COL-05 completa [Mi colección](MI_COLECCION.md): proyección de adquisiciones con búsqueda y filtros, operaciones de copias independientes y actualización con comparación del registro completo dentro de una transacción. No cambia catálogo, experiencia ni contratos de almacenamiento o sincronización.
 
-RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB11/nativa110 y JSON/snapshot7 conservan su compatibilidad; ZIP1 mantiene el audio separado.
+RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB12/nativa120 y JSON/snapshot8 conservan su compatibilidad; ZIP1 mantiene el audio separado.
 
 El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
@@ -86,7 +86,7 @@ flowchart TB
     HTTP <-->|Solicitud explícita y respuesta validada| Proveedores
 ```
 
-IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v11/nativa110 conserva los registros musicales, sus notas por género, identidad, portadas locales y dos tablas separadas de audio. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
+IndexedDB y Cache Storage tienen responsabilidades diferentes. IndexedDB v12/nativa120 conserva los registros musicales, sus notas por género, identidad, portadas locales y dos tablas separadas de audio. La precaché conserva el código y los recursos propios necesarios para reabrir la aplicación sin conexión; no copia imágenes remotas. El service worker y `OfflineController` no leen ni migran la biblioteca musical.
 
 Las referencias de catálogo seleccionadas pertenecen a `Album` y se guardan con el alta local. Las claves y recomendaciones viven sólo en memoria, sin tablas, respaldo o caché. Las consultas se realizan fuera de cualquier transacción IndexedDB; el modelo no recibe un repositorio ni ejecuta escrituras.
 

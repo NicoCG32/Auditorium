@@ -1,3 +1,4 @@
+import { openAlbumEditorDetails } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { fixtureId } from '../src/domain/catalog/catalog.fixture'
@@ -89,6 +90,7 @@ test('edición conjunta, formato inválido y cancelar conservan el archivo anter
     source = await restoreAudio(page)
   const before = await audioInventory(page)
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await page.getByText('Archivos de audio propios', { exact: true }).click()
   await expect(
     page.getByLabel('Seleccionar archivo de audio propio', { exact: true }),
@@ -121,6 +123,7 @@ test('edición conjunta, formato inválido y cancelar conservan el archivo anter
     page.getByRole('heading', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await page.getByText('Archivos de audio propios', { exact: true }).click()
   await expect(
     page.getByLabel('Seleccionar archivo de audio propio', { exact: true }),

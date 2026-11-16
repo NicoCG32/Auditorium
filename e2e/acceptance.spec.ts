@@ -1,4 +1,8 @@
-import { openAlbumArea, openExperience } from './helpers/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openOwnedDetails,
+} from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
@@ -165,7 +169,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await expect(page.getByRole('list', { name: /CD ficticio/ })).toContainText(
     '8,5',
   )
-  await openAlbumArea(page, 'actions')
+  await openAlbumArea(page, 'wishes')
   await page.getByRole('button', { name: 'Registrar deseo' }).click()
   await page
     .getByRole('combobox', { name: 'Formato deseado', exact: true })
@@ -177,6 +181,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   for (const note of ['Primera copia ficticia', 'Segunda copia ficticia']) {
     await openAlbumArea(page, 'collection')
     await page.getByRole('button', { name: 'Registrar ejemplar' }).click()
+    await openOwnedDetails(page)
     await page.getByRole('textbox', { name: 'Notas del ejemplar' }).fill(note)
     await page
       .getByRole('button', { name: 'Guardar ejemplar', exact: true })
@@ -187,7 +192,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
     ).toContainText(note)
   }
   await page.getByRole('button', { name: /Marcar cumplido Deseo/ }).click()
-  await openAlbumArea(page, 'actions')
+  await openAlbumArea(page, 'wishes')
   await expect(
     page.getByRole('list', { name: 'Deseos de este álbum' }),
   ).toContainText('Cumplido')
@@ -297,11 +302,12 @@ test('auditoría de accesibilidad en vacío, formularios, ficha y confirmaciones
     .click()
   await openAlbumArea(page, 'collection')
   await page.getByRole('button', { name: 'Registrar ejemplar' }).click()
+  await openOwnedDetails(page)
   await accessible(page)
   await page
     .getByRole('button', { name: 'Cancelar registro', exact: true })
     .click()
-  await openAlbumArea(page, 'actions')
+  await openAlbumArea(page, 'wishes')
   await page.getByRole('button', { name: 'Registrar deseo' }).click()
   await accessible(page)
   await page
@@ -345,6 +351,10 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
     await page.keyboard.press(tabKey)
     await expect(
       page.getByRole('button', { name: 'Biblioteca', exact: true }),
+    ).toBeFocused()
+    await page.keyboard.press(tabKey)
+    await expect(
+      page.getByRole('button', { name: 'Mi colección', exact: true }),
     ).toBeFocused()
     await page.keyboard.press(tabKey)
   }
@@ -417,6 +427,7 @@ test('pantallas a 320, 768 y 1280 px y texto al 200 % permiten operar sin desbor
     await noOverflow(page)
     await openAlbumArea(page, 'collection')
     await page.getByRole('button', { name: 'Registrar ejemplar' }).click()
+    await openOwnedDetails(page)
     await noOverflow(page)
     await page
       .getByRole('button', { name: 'Cancelar registro', exact: true })

@@ -14,6 +14,8 @@ Las integraciones externas cumplen funciones distintas. Esta guía resume cuánd
 
 ## Recorrido de solicitudes externas
 
+El incremento [Discografías por artista](../DISCOGRAFIAS.md), todavía sin publicar, añade consultas MusicBrainz mediante un servicio de Auditorium configurado al compilar. El servicio y MusicBrainz reciben sólo el texto o MBID solicitado; las notas y la biblioteca no forman parte de esa consulta. El transporte limita destinos, tráfico, bytes y caché; no requiere cuenta de Auditorium.
+
 ```mermaid
 flowchart LR
     UI["Interfaz · acción explícita"]
@@ -57,7 +59,7 @@ La música, las portadas y los metadatos de terceros conservan sus condiciones d
 ## Alcance de los servicios
 
 - **Spotify y YouTube:** reproducción mediante sus marcos oficiales y apertura de enlaces, sujeta a disponibilidad y conexión.
-- **Metadatos:** Wikidata es el proveedor activo. La evaluación de MusicBrainz se conserva como referencia de diseño.
+- **Metadatos:** Wikidata ofrece referencias por álbum. MusicBrainz permite buscar artistas e incorporar discografías cuando el servicio de consulta está configurado; su evaluación previa se conserva como estudio histórico.
 - **Recomendaciones:** proponen un orden para revisar álbumes; la persona decide sus valoraciones.
 - **Almacenamiento:** IndexedDB depende de la protección del perfil del navegador. La sincronización transporta metadatos; el audio se traslada mediante ZIP completo.
 

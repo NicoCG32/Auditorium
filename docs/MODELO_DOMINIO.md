@@ -2,7 +2,7 @@
 
 [Mi colección](MI_COLECCION.md) incorpora edición y eliminación protegida de adquisiciones: OwnedItem conserva identidad y fecha de alta, cambia sólo sus datos personales y exige el estado completo esperado. Release continúa siendo una edición compartida opcional, independiente de propiedad y referencias de valoración.
 
-RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB11/nativa110 y JSON/snapshot7 conservan su compatibilidad; ZIP1 mantiene el audio separado.
+RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB12/nativa120 y JSON/snapshot8 conservan su compatibilidad; ZIP1 mantiene el audio separado.
 
 El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 

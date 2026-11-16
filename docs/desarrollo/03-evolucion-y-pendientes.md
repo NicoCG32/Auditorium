@@ -12,6 +12,8 @@ El [changelog](../../CHANGELOG.md) mantiene como **Sin publicar** la importació
 
 La preparación de esa release requiere comprobar compatibilidad de archivos, conflictos, recuperación y conservación de identidad sobre el paquete generado.
 
+También queda sin publicar [Discografías por artista](../DISCOGRAFIAS.md): búsqueda MusicBrainz, selección múltiple y procedencia DB12/JSON8. La publicación necesita configurar el servicio HTTPS de consultas y aplicar la migración de sincronización en el entorno elegido. Las siguientes ampliaciones son selección de ediciones, pistas, portadas y pantalla propia de artista.
+
 ## Líneas de evolución
 
 - Empaquetado de **escritorio** y **Android** separado de la PWA.

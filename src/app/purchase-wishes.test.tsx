@@ -58,7 +58,7 @@ async function open(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
   fireEvent.click(await screen.findByRole('button', { name: 'Eclipse' }))
   openAlbumArea('collection')
-  openAlbumArea('actions')
+  openAlbumArea('wishes')
   openExperience()
 }
 function change(label: string, value: string) {

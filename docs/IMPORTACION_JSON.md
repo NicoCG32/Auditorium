@@ -18,7 +18,7 @@ Los posibles duplicados con identificadores distintos no se unen automáticament
 
 ### Respaldo musical
 
-Se aceptan los [respaldos JSON](RESPALDOS_JSON.md) de versiones1–7 mediante sus contratos estrictos. Se conserva el contenido válido del archivo, incluidas sus relaciones, pero no se adopta su identidad: las entradas se asignan a la identidad de destino. Para el mismo álbum conocido se reutiliza la entrada personal activa existente antes de comparar los datos asociados. Las ausencias no significan borrado ni retirada.
+Se aceptan los [respaldos JSON](RESPALDOS_JSON.md) de versiones1–8 mediante sus contratos estrictos. Se conserva el contenido válido del archivo, incluidas sus relaciones, pero no se adopta su identidad: las entradas se asignan a la identidad de destino. Para el mismo álbum conocido se reutiliza la entrada personal activa existente antes de comparar los datos asociados. Las ausencias no significan borrado ni retirada.
 
 La restauración original en destino completamente vacío sigue disponible por separado y mantiene su contrato de adopción de identidad. El respaldo completo ZIP conserva su recorrido de [audio y restauración](AUDIO_LOCAL.md); esta importación no lee binarios.
 
@@ -99,4 +99,4 @@ sequenceDiagram
 
 La vista previa no es una autorización permanente. Antes de escribir, una transacción compara la biblioteca actual con la revisada; una edición o sincronización concurrente obliga a seleccionar de nuevo el archivo. Un fallo de cuota o aborto revierte todas las filas del intento. Las relaciones y el audio existente se validan también en la transacción.
 
-Después de confirmar, si falla la lectura, se bloquean navegación y escrituras hasta **Reintentar lectura tras importación**. Ese botón no vuelve a importar. Tras recuperar la lectura, la biblioteca se puede abrir y evaluar normalmente, también offline cuando la aplicación esté preparada. No se modifica el esquema DB11/nativa110 ni los formatos de respaldo JSON7/ZIP1.
+Después de confirmar, si falla la lectura, se bloquean navegación y escrituras hasta **Reintentar lectura tras importación**. Ese botón no vuelve a importar. Tras recuperar la lectura, la biblioteca se puede abrir y evaluar normalmente, también offline cuando la aplicación esté preparada. No se modifica el esquema DB12/nativa120 ni los formatos de respaldo JSON8/ZIP1.

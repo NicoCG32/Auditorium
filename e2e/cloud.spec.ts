@@ -1,6 +1,7 @@
 import {
   openLibraryOptions,
   openExperience,
+  openAlbumArea,
 } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { readFile } from 'node:fs/promises'
@@ -19,6 +20,7 @@ test('audio queda en su cuenta y dispositivo; la sincronización sólo transfier
   context,
   browser,
 }) => {
+  test.setTimeout(90_000)
   const state = new Map<string, RemoteLibrary>(),
     uploads: string[] = []
   await mock(context, state)
@@ -55,6 +57,7 @@ test('audio queda en su cuenta y dispositivo; la sincronización sólo transfier
       .click()
     await other.getByRole('button', { name: 'Biblioteca', exact: true }).click()
     await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
+    await openAlbumArea(other, 'audio')
     await expect(
       other.getByText('Aún no hay archivos propios asociados a este álbum.', {
         exact: true,
@@ -74,6 +77,7 @@ test('audio queda en su cuenta y dispositivo; la sincronización sólo transfier
     .click()
   await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
+  await openAlbumArea(page, 'audio')
   await expect(
     page.getByText('Aún no hay archivos propios asociados a este álbum.', {
       exact: true,
@@ -234,7 +238,7 @@ async function mock(
           value
             ? url.searchParams.get('select') === 'revision'
               ? { revision: value.revision }
-              : { ...value, schema_version: 7 }
+              : { ...value, schema_version: 8 }
             : null,
         )
       }
@@ -245,7 +249,7 @@ async function mock(
           document: unknown
           schema_version: number
         }
-        expect(input.schema_version).toBe(7)
+        expect(input.schema_version).toBe(8)
         const current = state.get(input.account_id)
         if (input.expected_revision !== (current?.revision ?? 0))
           return reply({ code: '40001', message: 'Revision conflict' }, 409)

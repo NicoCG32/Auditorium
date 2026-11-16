@@ -7,9 +7,12 @@ import {
 } from '../../application/library-query'
 import { AlbumCard } from './AlbumCard'
 import { LibraryControls } from './LibraryControls'
+import { useMemo } from 'react'
+import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 
 export function LibraryView({
   albums,
+  snapshot,
   filters,
   onFiltersChange,
   view,
@@ -18,6 +21,7 @@ export function LibraryView({
   onAdd,
 }: {
   albums: LibraryAlbum[]
+  snapshot: LocalSnapshot
   filters: LibraryFilters
   onFiltersChange: (filters: LibraryFilters) => void
   view: 'grid' | 'list'
@@ -25,6 +29,21 @@ export function LibraryView({
   onOpen: (id: string) => void
   onAdd: () => void
 }) {
+  const collection = useMemo(() => {
+    const counts = new Map<string, { copies: number; wishes: number }>()
+    for (const item of snapshot.library.ownedItems) {
+      const row = counts.get(item.userAlbumId) ?? { copies: 0, wishes: 0 }
+      row.copies++
+      counts.set(item.userAlbumId, row)
+    }
+    for (const wish of snapshot.library.purchaseWishes) {
+      if (wish.status !== 'active') continue
+      const row = counts.get(wish.userAlbumId) ?? { copies: 0, wishes: 0 }
+      row.wishes++
+      counts.set(wish.userAlbumId, row)
+    }
+    return counts
+  }, [snapshot.library.ownedItems, snapshot.library.purchaseWishes])
   const visible = queryLibrary(albums, filters)
   const context = ratingGenre(filters)
   const narrowed = Boolean(
@@ -78,7 +97,6 @@ export function LibraryView({
         <p role="status" className="text-sm text-muted">
           {visible.length} de {albums.length}{' '}
           {albums.length === 1 ? 'álbum' : 'álbumes'}
-          {!context ? ' · Valoración general' : ''}
         </p>
         {narrowed ? (
           <button
@@ -116,6 +134,9 @@ export function LibraryView({
               key={album.id}
               album={album}
               view={view}
+              {...(collection.has(album.id)
+                ? { collection: collection.get(album.id)! }
+                : {})}
               {...(context ? { ratingGenre: context } : {})}
               onOpen={() => onOpen(album.id)}
             />

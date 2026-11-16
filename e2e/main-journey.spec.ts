@@ -8,6 +8,8 @@ import {
   openExperience,
   openLibraryFilters,
   openLibraryOptions,
+  openOwnedDetails,
+  openAlbumEditorDetails,
 } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block', actionTimeout: 10_000 })
@@ -73,9 +75,6 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('horizonte de prueba')
   await page
-    .getByRole('button', { name: 'Continuar con el registro manual' })
-    .click()
-  await page
     .getByText('Detalles del álbum (opcionales)', { exact: true })
     .click()
   await page
@@ -108,6 +107,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     .getByRole('button', { name: 'Horizonte De Prueba', exact: true })
     .click()
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   const title = page.getByRole('textbox', { name: 'Título', exact: true })
   await title.fill('horizonte corregido de prueba')
   await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
@@ -179,6 +179,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     await page
       .getByRole('button', { name: 'Registrar ejemplar', exact: true })
       .click()
+    await openOwnedDetails(page)
     await page
       .getByRole('combobox', { name: 'Medio del ejemplar', exact: true })
       .selectOption(medium)
@@ -192,7 +193,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
       page.getByRole('button', { name: 'Guardar ejemplar', exact: true }),
     ).toHaveCount(0)
   }
-  await openAlbumArea(page, 'actions')
+  await openAlbumArea(page, 'wishes')
   await page
     .getByRole('button', { name: 'Registrar deseo', exact: true })
     .click()

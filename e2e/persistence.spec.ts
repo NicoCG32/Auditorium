@@ -205,7 +205,7 @@ async function downloadBackup(page: Page, path: string) {
   const text = await readFile(path, 'utf8')
   const document: unknown = JSON.parse(text)
   expect(document).toMatchObject({
-    schemaVersion: 7,
+    schemaVersion: 8,
     data: { library: { albumGenreRatings: [] } },
   })
   return parseBackupText(text)
@@ -246,7 +246,7 @@ for (const version of [1, 2] as const) {
         }),
       ).toBeVisible()
       const migrated = await audit(page)
-      expect(migrated.version).toBe(110)
+      expect(migrated.version).toBe(120)
       expect(migrated.stores).toHaveLength(17)
       expect(migrated.rows['albumGenreRatings']).toEqual([])
       for (const [name, rows] of Object.entries(before.rows))
@@ -258,13 +258,38 @@ for (const version of [1, 2] as const) {
           store.name === 'albums'
             ? {
                 ...store,
-                indexes: store.indexes.map((index) =>
-                  index.name === 'releaseType'
-                    ? { ...index, name: 'primaryType', keyPath: 'primaryType' }
-                    : index,
-                ),
+                indexes: [
+                  {
+                    name: 'musicBrainz.id',
+                    keyPath: 'musicBrainz.id',
+                    unique: true,
+                    multiEntry: false,
+                  },
+                  ...store.indexes.map((index) =>
+                    index.name === 'releaseType'
+                      ? {
+                          ...index,
+                          name: 'primaryType',
+                          keyPath: 'primaryType',
+                        }
+                      : index,
+                  ),
+                ],
               }
-            : store,
+            : store.name === 'artists'
+              ? {
+                  ...store,
+                  indexes: [
+                    {
+                      name: 'musicBrainz.id',
+                      keyPath: 'musicBrainz.id',
+                      unique: true,
+                      multiEntry: false,
+                    },
+                    ...store.indexes,
+                  ],
+                }
+              : store,
         )
       expect(migrated.rows['purchaseWishes']).toEqual([])
       expect(migrated.rows['ownedItems']).toHaveLength(version === 2 ? 1 : 0)
@@ -365,7 +390,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 110)
+        if (name === 'auditorium' && version === 120)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -393,7 +418,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(110)
+    expect(after.version).toBe(120)
     expect(after.rows['albumGenreRatings']).toEqual([])
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(

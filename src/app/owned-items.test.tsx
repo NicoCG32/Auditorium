@@ -1,4 +1,8 @@
-import { openAlbumArea, openExperience } from '../test/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openOwnedDetails,
+} from '../test/library-navigation'
 import {
   render,
   screen,
@@ -62,6 +66,7 @@ async function open(repository: IndexedDbRepository) {
 }
 function begin() {
   fireEvent.click(screen.getByRole('button', { name: 'Registrar ejemplar' }))
+  openOwnedDetails()
 }
 function change(label: string, value: string) {
   fireEvent.change(screen.getByLabelText(label), { target: { value } })

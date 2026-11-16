@@ -6,6 +6,10 @@ La edición de metadatos y los formularios de UX-05 están integrados en main. L
 
 Desde la ficha, «Editar álbum» abre los metadatos actuales: título, artistas acreditados, tipo principal, categorías, publicación, año original, géneros, país de origen de cada artista, portada y descripción. Cancelar descarta el borrador. Guardar valida y confirma una sola escritura local; no crea otra entrada de biblioteca ni cambia el ID del álbum.
 
+El título y los nombres de artista permanecen visibles. **Datos del álbum (opcionales)** reúne clasificación, año, géneros y descripción; **Crédito y país (opcional)** precisa cada artista, y **Portada y enlaces (opcionales)** agrupa esos recursos. Abrir, cerrar o dejar vacíos estos apartados no elimina datos. Un error de validación abre el apartado correspondiente y enfoca el campo cuando está identificado. Elegir **Editar enlaces** desde la ficha abre directamente su apartado.
+
+El título y los nombres de artistas están a la vista. **Datos del álbum (opcionales)** agrupa clasificación, año, géneros y descripción; **Crédito y país (opcional)** precisa cada artista; **Portada y enlaces (opcionales)** reúne los recursos externos. Cerrar un apartado no borra lo escrito. Un error de validación abre el apartado del campo afectado. Guardar un cambio de título no exige completar los demás metadatos.
+
 Se mantienen listas, pistas, ediciones, escucha, notas personales, valoraciones, ejemplares, deseos y retirada. Cambiar el nombre de un artista crea un registro de artista para ese crédito del álbum; no renombra al artista usado por otros álbumes. Si se conserva su identidad y se corrige su país, el dato cambia también donde se acredita ese mismo artista. El editor informa de ese alcance antes de guardar. No hay fusión automática por nombre.
 
 Título, nombre, alias o papel de los créditos forman parte de la identidad musical que ampara la referencia externa. Cambiarlos descarta `catalogReference` para evitar atribuir una coincidencia anterior al nuevo contenido. Corregir año, descripción, géneros, país o portada conserva la referencia. La edición no inicia consultas ni enriquecimiento automático en Wikidata.

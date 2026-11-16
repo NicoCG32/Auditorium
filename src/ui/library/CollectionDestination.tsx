@@ -61,9 +61,8 @@ export function CollectionDestination({
       aria-label="Adquisiciones de mi colección"
     >
       <p className="text-sm text-muted">
-        Tus copias y compras individuales, agrupadas en una sola colección. Una
-        suscripción, un enlace o un archivo de audio no registran una
-        adquisición.
+        Tus vinilos, CDs y compras digitales, reunidos aquí. Registra cada copia
+        y completa sólo los detalles que quieras conservar.
       </p>
       <dl className="collection-counts">
         <div>
@@ -79,6 +78,83 @@ export function CollectionDestination({
           <dd>{result.albumCount}</dd>
         </div>
       </dl>
+      <div className="collection-wishes">
+        <button
+          type="button"
+          className="text-button"
+          onClick={(event) => {
+            event.currentTarget.focus()
+            onWishes()
+          }}
+        >
+          Consultar deseos de compra
+        </button>
+      </div>
+      <details
+        className="collection-register"
+        open={registerOpen}
+        onToggle={(event) => onRegisterOpen(event.currentTarget.open)}
+      >
+        <summary>Registrar una adquisición</summary>
+        <p className="mt-3 text-sm text-muted">
+          Elige el álbum y registra cada copia por separado. La edición es
+          opcional y puede compartirse entre varias copias.
+        </p>
+        {!albums.length ? (
+          <button
+            type="button"
+            className="action-button mt-4"
+            onClick={(event) => {
+              event.currentTarget.focus()
+              onAdd()
+            }}
+          >
+            Añadir un álbum a la biblioteca
+          </button>
+        ) : (
+          <>
+            <label className="mt-4 block">
+              <span className="field-label">
+                Buscar álbum para registrar una adquisición
+              </span>
+              <input
+                type="search"
+                value={albumSearch}
+                onChange={(event) => onAlbumSearch(event.target.value)}
+              />
+            </label>
+            {!choices.length ? (
+              <p role="status" className="mt-3 text-muted">
+                No hay álbumes que coincidan.
+              </p>
+            ) : (
+              <ul
+                className="destination-list"
+                aria-label="Elegir álbum para la colección"
+              >
+                {choices.map((album) => (
+                  <li key={album.id}>
+                    <span>
+                      {album.title} · {album.artist}
+                    </span>
+                    <button
+                      type="button"
+                      className="text-button"
+                      data-focus-key={`collection-${album.id}`}
+                      onClick={(event) => {
+                        event.currentTarget.focus()
+                        onOpen(album.id)
+                      }}
+                    >
+                      Abrir colección de {album.title}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
+        )}
+      </details>
       <div className="collection-filters">
         <label className="collection-search">
           <span className="field-label">Buscar en mi colección</span>
@@ -231,87 +307,6 @@ export function CollectionDestination({
           ))}
         </ul>
       )}
-      <details
-        className="collection-register"
-        open={registerOpen}
-        onToggle={(event) => onRegisterOpen(event.currentTarget.open)}
-      >
-        <summary>Registrar una adquisición</summary>
-        <p className="mt-3 text-sm text-muted">
-          Elige el álbum y registra cada copia por separado. La edición es
-          opcional y puede compartirse entre varias copias.
-        </p>
-        {!albums.length ? (
-          <button
-            type="button"
-            className="action-button mt-4"
-            onClick={(event) => {
-              event.currentTarget.focus()
-              onAdd()
-            }}
-          >
-            Añadir un álbum a la biblioteca
-          </button>
-        ) : (
-          <>
-            <label className="mt-4 block">
-              <span className="field-label">
-                Buscar álbum para registrar una adquisición
-              </span>
-              <input
-                type="search"
-                value={albumSearch}
-                onChange={(event) => onAlbumSearch(event.target.value)}
-              />
-            </label>
-            {!choices.length ? (
-              <p role="status" className="mt-3 text-muted">
-                No hay álbumes que coincidan.
-              </p>
-            ) : (
-              <ul
-                className="destination-list"
-                aria-label="Elegir álbum para la colección"
-              >
-                {choices.map((album) => (
-                  <li key={album.id}>
-                    <span>
-                      {album.title} · {album.artist}
-                    </span>
-                    <button
-                      type="button"
-                      className="text-button"
-                      data-focus-key={`collection-${album.id}`}
-                      onClick={(event) => {
-                        event.currentTarget.focus()
-                        onOpen(album.id)
-                      }}
-                    >
-                      Abrir colección de {album.title}
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </>
-        )}
-      </details>
-      <div className="collection-wishes">
-        <p className="text-sm text-muted">
-          Los deseos conservan su espacio aparte y no se cuentan como
-          adquisiciones.
-        </p>
-        <button
-          type="button"
-          className="text-button mt-2"
-          onClick={(event) => {
-            event.currentTarget.focus()
-            onWishes()
-          }}
-        >
-          Consultar deseos de compra
-        </button>
-      </div>
     </section>
   )
 }

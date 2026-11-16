@@ -25,7 +25,13 @@ export const albumEditExpectedSchema = z.strictObject({
 export type AlbumEditExpected = z.output<typeof albumEditExpectedSchema>
 
 const editArtistSchema = artistSchema
-  .omit({ id: true, sortName: true, catalogScope: true, createdBy: true })
+  .omit({
+    id: true,
+    sortName: true,
+    catalogScope: true,
+    createdBy: true,
+    musicBrainz: true,
+  })
   .extend({
     name: catalogNameInputSchema,
     artistId: entityIdSchema.optional(),
@@ -33,7 +39,7 @@ const editArtistSchema = artistSchema
     creditedAs: catalogNameInputSchema.optional(),
   })
 export const updateAlbumInputSchema = albumSchema
-  .omit({ id: true, catalogScope: true, createdBy: true })
+  .omit({ id: true, catalogScope: true, createdBy: true, musicBrainz: true })
   .extend({
     personalLinks: personalLinksInputSchema.optional(),
     expectedLinks: personalLinksExpectedSchema.optional(),
@@ -164,11 +170,14 @@ export function editedAlbumFields(
   )
   const updated = albumSchema.parse({
     ...fields,
+    ...(existing.musicBrainz ? { musicBrainz: existing.musicBrainz } : {}),
     id: existing.id,
     catalogScope: existing.catalogScope,
     createdBy: existing.createdBy,
   })
-  if (albumIdentityChanged(request.expected, request))
+  if (albumIdentityChanged(request.expected, request)) {
     delete updated.catalogReference
+    delete updated.musicBrainz
+  }
   return updated
 }

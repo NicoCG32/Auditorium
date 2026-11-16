@@ -90,7 +90,6 @@ export function App({
           loading="lazy"
         />
         <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
-          <p>Tu música. Tu criterio. Tu colección.</p>
           <p>
             Guardada en este navegador
             {account ? ', con cuenta opcional entre dispositivos' : ''}.

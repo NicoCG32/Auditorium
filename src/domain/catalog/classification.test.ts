@@ -71,7 +71,7 @@ test.each(legacyReleaseTypeSchema.options)(
     old.data.catalog.albums[0]!.releaseType = type
     const before = structuredClone(old)
     const migrated = parseBackupDocument(old)
-    expect(migrated.schemaVersion).toBe(7)
+    expect(migrated.schemaVersion).toBe(8)
     expect(migrated.data).toEqual({
       ...current.data,
       catalog: {

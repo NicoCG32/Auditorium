@@ -65,11 +65,11 @@ const credit = {
 const artistInput = z.union([
   z.strictObject({ artistId: entityIdSchema, ...credit }),
   artistSchema
-    .omit({ id: true, catalogScope: true, createdBy: true })
+    .omit({ id: true, catalogScope: true, createdBy: true, musicBrainz: true })
     .extend({ ...credit, name: catalogNameInputSchema }),
 ])
 const albumInputSchema = albumSchema
-  .omit({ id: true, catalogScope: true, createdBy: true })
+  .omit({ id: true, catalogScope: true, createdBy: true, musicBrainz: true })
   .extend({
     personalLinks: personalLinksInputSchema.optional(),
     title: catalogNameInputSchema,

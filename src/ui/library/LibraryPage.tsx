@@ -18,7 +18,7 @@ import type {
   BackupLocalRepository,
 } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
-import { AlbumForm } from './AlbumForm'
+import { AddMusicPage } from './AddMusicPage'
 import { AlbumSummary } from './AlbumSummary'
 import { RemovedAlbumsPanel } from './RemovedAlbumsPanel'
 import { BackupPanel } from './BackupPanel'
@@ -60,9 +60,9 @@ function errorMessage(error: unknown) {
 
 const mainRoutes: Route[] = [
   { kind: 'library' },
+  { kind: 'collection' },
   { kind: 'add' },
   { kind: 'ratings' },
-  { kind: 'collection' },
 ]
 const optionRoutes: Route[] = [
   { kind: 'options', section: 'recommendations' },
@@ -303,7 +303,7 @@ function LibraryContent({
             className="library-title font-display font-black"
           >
             {route.kind === 'add'
-              ? 'Registrar un álbum'
+              ? 'Añadir música'
               : route.kind === 'options' && route.section === 'removed'
                 ? 'Tu archivo retirado'
                 : routeTitle(route)}
@@ -387,9 +387,20 @@ function LibraryContent({
           </button>
         </section>
       ) : route.kind === 'add' ? (
-        <AlbumForm
+        <AddMusicPage
           snapshot={state.snapshot}
+          repository={repository}
           library={library}
+          onBusyChange={setDetailBusy}
+          onImported={(result) => {
+            setFilters(defaultLibraryFilters)
+            setNotice(
+              result
+                ? `${result.added} álbumes incorporados y ${result.linked} vinculados. Tu experiencia se conserva.`
+                : 'Datos incorporados a tu biblioteca.',
+            )
+            navigation.completed({ kind: 'library' }, 'discography')
+          }}
           onComplete={complete}
           onCommitted={synchronizeDetail}
           onCancel={() => go({ kind: 'library' })}
@@ -470,6 +481,7 @@ function LibraryContent({
       ) : route.kind === 'library' ? (
         <LibraryView
           albums={state.albums}
+          snapshot={state.snapshot}
           filters={filters}
           onFiltersChange={setFilters}
           view={view}

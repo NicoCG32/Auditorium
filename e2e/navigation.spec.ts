@@ -1,4 +1,7 @@
-import { openLibraryOptions } from './helpers/library-navigation'
+import {
+  openLibraryOptions,
+  openAlbumEditorDetails,
+} from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -44,6 +47,7 @@ async function seed(page: Page) {
 async function edit(page: Page) {
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await expect(
     page.getByRole('textbox', { name: 'Título', exact: true }),
   ).toHaveValue('Eclipse')

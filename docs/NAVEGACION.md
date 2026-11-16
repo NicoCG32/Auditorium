@@ -4,12 +4,12 @@ Esta guía describe los destinos, el regreso con contexto y la protección de bo
 
 ## Destinos y rutas
 
-El menú principal sigue Biblioteca → Añadir álbum → Calificaciones → Mi colección. Recomendaciones, Respaldos, Álbumes retirados, Deseos de compra y Cuenta y dispositivos se agrupan en navegación secundaria bajo Más opciones. Este menú se despliega a petición y se cierra con Escape, clic fuera o navegación; Escape devuelve el foco a su control de apertura. La [guía de Biblioteca](BIBLIOTECA.md) detalla búsqueda, filtros y tarjetas.
+El menú principal sigue Biblioteca → Mi colección → Añadir álbum → Calificaciones. Recomendaciones, Respaldos, Álbumes retirados, Deseos de compra y Cuenta y dispositivos se agrupan en navegación secundaria bajo Más opciones. Los deseos tienen además acceso directo desde Mi colección y un apartado propio en cada ficha. Este menú se despliega a petición y se cierra con Escape, clic fuera o navegación; Escape devuelve el foco a su control de apertura. La [guía de Biblioteca](BIBLIOTECA.md) detalla búsqueda, filtros y tarjetas.
 
 | Fragmento                               | Destino                                                          |
 | --------------------------------------- | ---------------------------------------------------------------- |
 | `#/biblioteca`                          | Biblioteca, búsqueda, filtros, orden y vista                     |
-| `#/anadir`                              | Registro manual y selección opcional de referencia externa       |
+| `#/anadir`                              | Registro manual, búsqueda de discografía y acceso a JSON         |
 | `#/album/{userAlbumId}`                 | Ficha de la entrada personal                                     |
 | `#/album/{userAlbumId}/editar`          | Editor de metadatos                                              |
 | `#/album/{userAlbumId}/experiencia`     | Entrada a la ficha desde la tarea de valoración                  |

@@ -1,3 +1,4 @@
+import { openAlbumEditorDetails } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { fixtureId } from '../src/domain/catalog/catalog.fixture'
@@ -263,6 +264,7 @@ test('salida genérica, desconexión y fallo de script permiten continuar y rein
     page.getByText('YouTube está listo. Pulsa reproducir en sus controles.'),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await expect(page.locator('iframe')).toHaveCount(0)
   await page
     .getByRole('textbox', { name: 'Título', exact: true })

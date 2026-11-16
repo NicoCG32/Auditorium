@@ -26,6 +26,9 @@ for (const version of ['a', 'b']) {
       'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
         cloud ? 'sb_publishable_fictitious_test_key' : '',
       ),
+      'import.meta.env.VITE_MUSICBRAINZ_PROXY_URL': JSON.stringify(
+        'https://catalog-test.example/api/musicbrainz',
+      ),
     },
     build: { outDir: `${buildRoot}/${version}`, emptyOutDir: true },
     plugins: [

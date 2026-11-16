@@ -2,15 +2,17 @@
 
 UX-06 organiza la consulta del álbum y permite guardar su experiencia personal como una sola operación. El álbum conceptual, sus ediciones, la opinión personal y las adquisiciones mantienen responsabilidades distintas.
 
-RATE-02 amplía el editor con **Valorar por género (opcional)**: notas independientes de la general y referencias de edición propias. Guarda el conjunto de forma atómica, con comparación del estado esperado y de las etiquetas del álbum. La [guía contextual](VALORACIONES_POR_GENERO.md) explica la comparación en Biblioteca/Calificaciones, ausencia explícita y renombrado protegido. DB11/JSON7/ZIP1 se mantienen sin migración nueva.
+RATE-02 amplía el editor con **Valorar por género (opcional)**: notas independientes de la general y referencias de edición propias. Guarda el conjunto de forma atómica, con comparación del estado esperado y de las etiquetas del álbum. La [guía contextual](VALORACIONES_POR_GENERO.md) explica la comparación en Biblioteca/Calificaciones, ausencia explícita y renombrado protegido. DB12/JSON8/ZIP1 se mantienen sin migración nueva.
 
 ## Recorrido
 
-La ficha empieza con portada, título, artista, clasificación, año, enlaces de escucha o compra y un resumen de **Mi experiencia**. **Calificar álbum**, **Recalificar álbum** y **Editar experiencia** abren el mismo editor. **Editar álbum** abre los metadatos de catálogo por separado.
+La ficha empieza con portada, título, artista y los metadatos disponibles. **Mi colección** y **Deseos de compra** aparecen antes de los enlaces y la experiencia. **Calificar álbum**, **Recalificar álbum** y **Editar experiencia**, dentro de Mi experiencia, abren el mismo editor. **Editar álbum** abre los metadatos de catálogo por separado.
 
-**Datos del álbum**, **Pistas y ediciones**, **Mi colección** y **Más acciones: deseos y retirada** empiezan plegados. Abrir la ficha o un enlace de reproducción no cambia el estado de escucha. Las pistas conservan sus notas independientes; no se promedian para obtener la nota del álbum.
+**Mi colección**, **Deseos de compra**, **Datos del álbum**, **Pistas y ediciones** y **Administrar álbum** empiezan plegados; el acceso contextual de colección abre ese apartado. Abrir la ficha o un enlace de reproducción no cambia el estado de escucha. Las pistas conservan sus notas independientes; no se promedian para obtener la nota del álbum.
 
 Desde **Calificaciones** se puede buscar y alternar entre **Por calificar** y **Calificados**. Al volver desde la ficha se conservan la búsqueda y la selección. Una obra con Original, Deluxe y Aniversario aparece una sola vez.
+
+El refinamiento de interfaz posterior a 1.1.0 sitúa primero **Mi colección** y **Deseos de compra** en la ficha. **Mi experiencia** empieza plegada cuando no hay escucha, notas o comentarios guardados, y se abre al elegir editar o cuando ya contiene experiencia. El audio sin archivos también empieza plegado. Los deseos tienen un apartado propio; **Administrar álbum** contiene la retirada. Los datos ausentes no se convierten en una lista de tareas obligatorias.
 
 ## Una experiencia, un guardado
 

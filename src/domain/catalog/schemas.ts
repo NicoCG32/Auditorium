@@ -4,6 +4,7 @@ export { primaryTypeSchema } from './classification'
 import { entityIdSchema as id } from '../shared/scalars'
 import { catalogReferenceSchema } from './catalog-reference'
 import { countrySchema, coverImageSchema, genresSchema } from './metadata'
+import { musicBrainzReferenceSchema } from './musicbrainz-reference'
 
 export {
   catalogReferenceSchema,
@@ -44,6 +45,7 @@ export const artistSchema = z.strictObject({
   name: text,
   sortName: text.optional(),
   country: countrySchema.optional(),
+  musicBrainz: musicBrainzReferenceSchema.optional(),
   ...personalCatalog,
 })
 export const albumSchema = z.strictObject({
@@ -55,6 +57,7 @@ export const albumSchema = z.strictObject({
   coverImage: coverImageSchema.optional(),
   genres: genresSchema.optional(),
   catalogReference: catalogReferenceSchema.optional(),
+  musicBrainz: musicBrainzReferenceSchema.optional(),
   description: text.optional(),
   ...personalCatalog,
 })

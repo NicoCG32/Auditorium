@@ -1,6 +1,6 @@
 # Migraciones, persistencia y recuperación
 
-La base vigente usa Dexie v11, versión nativa 110. Cada actualización valida la estructura anterior y conserva identidad y relaciones. DB10 incorporó el [audio local](AUDIO_LOCAL.md); DB11 añadió las [notas por género](VALORACIONES_POR_GENERO.md) y la migración de los documentos del checkpoint. Los respaldos JSON usan su propio contrato, actualmente v7. El [modelo de datos](MODELO_DATOS.md) detalla el historial de ambos formatos.
+La base vigente usa Dexie v12, versión nativa 120. Cada actualización valida la estructura anterior y conserva identidad y relaciones. DB10 incorporó el [audio local](AUDIO_LOCAL.md); DB11 añadió las [notas por género](VALORACIONES_POR_GENERO.md) y la migración de los documentos del checkpoint. DB12 añade referencias e índices MusicBrainz; valida el origen DB11 y sus checkpoints antes de completar la actualización. Los respaldos JSON usan su propio contrato, actualmente v8. El [modelo de datos](MODELO_DATOS.md) detalla el historial de ambos formatos.
 
 ## Antes y durante una actualización
 
