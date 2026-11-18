@@ -174,7 +174,7 @@ test('ficha y Calificaciones mantienen una nota y una referencia opcional entre 
     .click()
   await saved(page)
   const after = await backup(page)
-  expect(after.schemaVersion).toBe(8)
+  expect(after.schemaVersion).toBe(9)
   expect(after.data.catalog).toEqual(before.data.catalog)
   expect(
     after.data.library.albumRatings.filter(

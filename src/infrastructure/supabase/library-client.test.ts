@@ -9,13 +9,13 @@ import {
 } from '../../test/legacy-backup.fixture'
 import { fixtureId, ids } from '../../domain/catalog/catalog.fixture'
 
-test.each([5, 6, 7, 8])(
+test.each([5, 6, 7, 8, 9])(
   'lector remoto v%s conserva el contrato de referencia correspondiente',
   async (schema_version) => {
     const snapshot = makeBackup().data
     if (schema_version >= 6)
       snapshot.library.albumRatings[0]!.referenceReleaseId = ids.deluxe
-    if (schema_version === 8) {
+    if (schema_version >= 8) {
       snapshot.catalog.artists[0]!.musicBrainz = {
         id: fixtureId(9000),
         retrievedAt: snapshot.identity.createdAt,
@@ -147,7 +147,7 @@ test('un envío histórico ya confirmado se reconoce después de migrar sin dupl
   expect(requests).toEqual([
     expect.objectContaining({
       operation_id: operationId,
-      schema_version: 8,
+      schema_version: 9,
       document: snapshot,
     }),
   ])
@@ -162,7 +162,7 @@ test('una versión remota futura se rechaza sin convertirla en una biblioteca va
           Promise.resolve(
             Response.json({
               revision: 3,
-              schema_version: 9,
+              schema_version: 10,
               snapshot: makeBackup().data,
             }),
           ),

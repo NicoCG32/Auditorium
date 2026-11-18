@@ -149,6 +149,31 @@ export function createMusicBrainzProxy({
       upstream.searchParams.set('offset', offset)
       upstream.searchParams.set('limit', '100')
       upstream.searchParams.set('inc', 'artist-credits')
+    } else if (
+      endpoint === 'release' &&
+      [...params.keys()].every((key) => key === 'group' || key === 'offset')
+    ) {
+      const group = params.get('group') ?? ''
+      const offset = params.get('offset') ?? '0'
+      if (
+        !mbid.test(group) ||
+        !/^(0|[1-9]\d{0,4})$/.test(offset) ||
+        params.getAll('group').length !== 1 ||
+        params.getAll('offset').length > 1
+      ) {
+        response.writeHead(400).end()
+        return
+      }
+      upstream.searchParams.set('release-group', group.toLowerCase())
+      upstream.searchParams.set('offset', offset)
+      upstream.searchParams.set('limit', '100')
+      upstream.searchParams.set('inc', 'labels+media')
+    } else if (
+      /^release\/[0-9a-f-]+$/i.test(endpoint) &&
+      mbid.test(endpoint.slice(8)) &&
+      ![...params.keys()].length
+    ) {
+      upstream.searchParams.set('inc', 'recordings+release-groups+labels')
     } else {
       response.writeHead(400).end()
       return

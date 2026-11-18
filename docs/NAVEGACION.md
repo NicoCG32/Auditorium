@@ -10,6 +10,7 @@ El menú principal sigue Biblioteca → Mi colección → Añadir álbum → Cal
 | --------------------------------------- | ---------------------------------------------------------------- |
 | `#/biblioteca`                          | Biblioteca, búsqueda, filtros, orden y vista                     |
 | `#/anadir`                              | Registro manual, búsqueda de discografía y acceso a JSON         |
+| `#/artista/{artistId}`                  | Álbumes locales, colección y comparación de discografía          |
 | `#/album/{userAlbumId}`                 | Ficha de la entrada personal                                     |
 | `#/album/{userAlbumId}/editar`          | Editor de metadatos                                              |
 | `#/album/{userAlbumId}/experiencia`     | Entrada a la ficha desde la tarea de valoración                  |

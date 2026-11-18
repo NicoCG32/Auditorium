@@ -1,10 +1,10 @@
 # Migraciones, persistencia y recuperación
 
-La base vigente usa Dexie v12, versión nativa 120. Cada actualización valida la estructura anterior y conserva identidad y relaciones. DB10 incorporó el [audio local](AUDIO_LOCAL.md); DB11 añadió las [notas por género](VALORACIONES_POR_GENERO.md) y la migración de los documentos del checkpoint. DB12 añade referencias e índices MusicBrainz; valida el origen DB11 y sus checkpoints antes de completar la actualización. Los respaldos JSON usan su propio contrato, actualmente v8. El [modelo de datos](MODELO_DATOS.md) detalla el historial de ambos formatos.
+La base vigente usa Dexie v13, versión nativa 130. Cada actualización valida la estructura anterior y conserva identidad y relaciones. DB10 incorporó el [audio local](AUDIO_LOCAL.md); DB11 añadió las [notas por género](VALORACIONES_POR_GENERO.md). DB12 añadió referencias MusicBrainz de artista y obra; DB13 incorpora edición y grabación. Antes de completar DB13 se validan el snapshot DB12 y todos sus checkpoints con el contrato JSON8, incluyendo documentos base, pendientes y de recuperación. Los respaldos actuales usan JSON9; ZIP1 conserva su formato. [Identidad y ediciones](ARTISTAS_Y_EDICIONES.md#persistencia-y-recuperación).
 
 ## Antes y durante una actualización
 
-La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Admite los esquemas nativos declarados de 10 a 110, en pasos de diez, equivalentes a las versiones Dexie 1 a 11. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
+La apertura inspecciona versión, tablas, claves e índices nativos antes de permitir una migración. Admite los esquemas nativos declarados de 10 a 130, en pasos de diez, equivalentes a las versiones Dexie 1 a 13. Una versión futura o intermedia desconocida se rechaza, conservando los datos; un esquema histórico alterado se informa sin repararlo automáticamente.
 
 La transacción de lectura que comprueba el esquema termina antes de cerrar su conexión y abrir la actualización. Así no compite con la migración. Si la inspección aborta, la apertura informa el fallo y admite reintento.
 

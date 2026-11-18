@@ -6,7 +6,7 @@ La web/PWA utiliza la misma aplicación local de Auditorium, compilada para **`/
 
 ## Uso y datos locales
 
-Para el incremento sin publicar de [Discografías por artista](DISCOGRAFIAS.md), configurar además `MUSICBRAINZ_PROXY_URL` con el endpoint HTTPS del servicio de catálogo. El workflow lo pasa como `VITE_MUSICBRAINZ_PROXY_URL`. El servidor estático de Pages no ejecuta ese servicio; sin configuración, el registro manual y JSON siguen disponibles. Si se habilita la cuenta, aplicar primero la migración SQL de JSON8 en el entorno correspondiente.
+Para el incremento sin publicar de [Discografías por artista](DISCOGRAFIAS.md), configurar además `MUSICBRAINZ_PROXY_URL` con el endpoint HTTPS del servicio de catálogo. El workflow lo pasa como `VITE_MUSICBRAINZ_PROXY_URL`. El servidor estático de Pages no ejecuta ese servicio; sin configuración, el registro manual y JSON siguen disponibles. Si se habilita la cuenta, aplicar primero la migración SQL de JSON9 en el entorno correspondiente.
 
 Abre la dirección con conexión y espera **«Aplicación preparada para usar sin conexión»**. Después puedes reabrirla sin red. El panel «Aplicación y almacenamiento» ofrece instalación cuando el navegador lo permite; también puedes usar su menú. Véanse los [alcances de la PWA](PWA_OFFLINE.md).
 

@@ -1,5 +1,101 @@
 @import 'tailwindcss';
 
+.artist-link {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+.artist-link:hover {
+  color: var(--accent-text);
+  text-decoration-color: currentColor;
+}
+.artist-albums,
+.catalog-editions {
+  list-style: none;
+  padding: 0;
+  margin-block: 1rem;
+}
+.artist-albums > li,
+.catalog-editions > li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-block-end: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.artist-albums > li > div,
+.catalog-editions > li > div {
+  min-inline-size: 0;
+}
+.artist-catalog-section {
+  margin-block-start: 2rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid var(--border);
+}
+.artist-catalog-section .catalog-search-panel {
+  margin-block-start: 1.5rem;
+}
+.catalog-details-panel {
+  padding-block: 1rem;
+  min-inline-size: 0;
+}
+.catalog-details-panel select,
+.artist-page input[type='search'] {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--muted);
+  color: var(--foreground);
+  background: var(--background);
+}
+.catalog-details-toggle {
+  margin-block-end: 1.5rem;
+}
+.catalog-track-preview {
+  max-block-size: 20rem;
+  overflow-y: auto;
+  padding-inline-start: 1.5rem;
+  margin-block: 1rem;
+  font-size: 0.875rem;
+}
+.catalog-track-preview li {
+  margin-block: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.catalog-cover-preview {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  margin-block: 1rem;
+}
+.catalog-cover-preview img {
+  inline-size: min(100%, 16rem);
+  margin-block: 1rem;
+}
+.discography-library-state {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+@media (max-width: 36rem) {
+  .artist-albums > li,
+  .catalog-editions > li {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 .add-mode-switch {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

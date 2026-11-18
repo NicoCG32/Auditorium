@@ -75,6 +75,7 @@ export const trackSchema = z.strictObject({
   variantOfTrackId: id.optional(),
   versionLabel: text.optional(),
   referenceDurationMs: duration.optional(),
+  musicBrainz: musicBrainzReferenceSchema.optional(),
 })
 export const coreTrackSchema = z.strictObject({
   albumId: id,
@@ -97,6 +98,7 @@ export const releaseSchema = z.strictObject({
     .regex(/^[A-Z]{2}$/)
     .optional(),
   mediaDescription: text.optional(),
+  musicBrainz: musicBrainzReferenceSchema.optional(),
 })
 export const releaseTrackSchema = z.strictObject({
   id,

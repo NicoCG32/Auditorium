@@ -191,7 +191,7 @@ test.each(['invalid_json', 'invalid_version', 'too_large'])(
       kind === 'invalid_json'
         ? file('{')
         : kind === 'invalid_version'
-          ? file(JSON.stringify({ ...makeBackup(), schemaVersion: 9 }))
+          ? file(JSON.stringify({ ...makeBackup(), schemaVersion: 10 }))
           : file('x', MAX_BACKUP_BYTES + 1),
     )
     await screen.findByRole('alert')

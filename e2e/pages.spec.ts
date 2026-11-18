@@ -226,7 +226,7 @@ async function exportedBackup(page: Page) {
   const text = await readFile(path, 'utf8')
   const document: unknown = JSON.parse(text)
   expect(document).toMatchObject({
-    schemaVersion: 8,
+    schemaVersion: 9,
     data: { library: { albumGenreRatings: [] } },
   })
   return parseBackupText(text)

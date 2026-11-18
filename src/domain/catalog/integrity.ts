@@ -45,11 +45,11 @@ export function getCatalogIssues(catalog: Catalog): CatalogIssue[] {
   const releases = indexById(catalog.releases, 'releases')
   indexById(catalog.releaseTracks, 'releaseTracks')
 
-  for (const table of ['artists', 'albums'] as const) {
+  for (const table of ['artists', 'albums', 'releases', 'tracks'] as const) {
     const references = new Set<string>()
     catalog[table].forEach((row, index) => {
       if (!row.musicBrainz) return
-      const id = row.musicBrainz.id.toLowerCase()
+      const id = `${table === 'tracks' && 'albumId' in row ? row.albumId + ':' : ''}${row.musicBrainz.id.toLowerCase()}`
       if (references.has(id))
         report(
           'duplicate_external_reference',

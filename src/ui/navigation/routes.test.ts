@@ -19,6 +19,7 @@ test.each([
   '#/opciones/recomendaciones',
   '#/opciones/deseos',
   `#/album/${id}`,
+  `#/artista/${id}`,
   `#/album/${id}/editar`,
   `#/album/${id}/experiencia`,
   `#/coleccion/nueva?album=${id}`,
@@ -28,6 +29,8 @@ test.each([
 
 test.each([
   '#/album/no-existe',
+  '#/artista/no-existe',
+  '#/artista/11111111-1111-4111-8111-111111111111?guardar=true',
   '#/album/%zz/editar',
   '#/album/11111111-1111-4111-8111-111111111111/eliminar',
   '#/opciones/desconocida',

@@ -6,6 +6,7 @@ import {
   migrateLegacySnapshotToV6,
   migrateSnapshotV6,
   legacySnapshotV7Schema,
+  legacySnapshotV8Schema,
 } from '../../domain/backup'
 import { fromStoredUserAlbum, identityRecordSchema } from './records'
 import { LocalStorageError } from './errors'
@@ -33,11 +34,12 @@ import type { SyncCheckpoint } from '../../domain/sync'
 import {
   legacySyncCheckpointV6Schema,
   legacySyncCheckpointV7Schema,
+  legacySyncCheckpointV8Schema,
 } from '../../domain/sync'
 import type { AudioAttachment, AudioFileRecord } from '../../domain/audio'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 12
+export const DATABASE_VERSION = 13
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -90,6 +92,25 @@ export const SCHEMA_V12 = {
   artists: 'id, name, &musicBrainz.id',
   albums: 'id, title, primaryType, originalYear, &musicBrainz.id',
 } as const
+export const SCHEMA_V13 = {
+  ...SCHEMA_V12,
+  releases: 'id, albumId, format, &musicBrainz.id',
+  tracks: 'id, albumId, title, variantOfTrackId, &[albumId+musicBrainz.id]',
+} as const
+
+async function validateEditionUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction, true)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local del checkpoint. Los datos se conservan.',
+    )
+  if (snapshot) legacySnapshotV8Schema.parse(snapshot)
+  checkpoints.forEach((row) => legacySyncCheckpointV8Schema.parse(row))
+}
 
 async function validateMusicBrainzUpgrade(transaction: Transaction) {
   const snapshot = await readUpgradeSnapshot(transaction, true)
@@ -271,6 +292,7 @@ export class AuditoriumDatabase extends Dexie {
     this.version(10).stores(SCHEMA_V10).upgrade(validateBeforeAudioUpgrade)
     this.version(11).stores(SCHEMA_V11).upgrade(migrateGenreRatings)
     this.version(12).stores(SCHEMA_V12).upgrade(validateMusicBrainzUpgrade)
+    this.version(13).stores(SCHEMA_V13).upgrade(validateEditionUpgrade)
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.audioAttachments = this.table<AudioAttachment, [string, string]>(
       'audioAttachments',

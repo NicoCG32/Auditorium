@@ -16,7 +16,7 @@ La licencia del software y los permisos del contenido que guardas en la bibliote
 
 ## Audio local y respaldos
 
-El audio adjunto se guarda en IndexedDB del dispositivo. El respaldo completo ZIP1 permite trasladarlo junto con la biblioteca; el JSON8 y la sincronización de cuenta transportan metadatos y excluyen esos archivos.
+El audio adjunto se guarda en IndexedDB del dispositivo. El respaldo completo ZIP1 permite trasladarlo junto con la biblioteca; el JSON9 y la sincronización de cuenta transportan metadatos y excluyen esos archivos.
 
 Conserva los permisos aplicables a cada grabación antes de copiarla o compartirla. Un archivo guardado localmente puede seguir perteneciendo a un tercero; el respaldo no cambia sus condiciones de uso.
 
@@ -28,6 +28,7 @@ Los ocho archivos `tone-*` de [las muestras de audio](../prototypes/audio-01/fix
 
 ## Portadas, metadatos y servicios
 
+- **MusicBrainz y Cover Art Archive:** las consultas de artista y edición se revisan antes de guardar. La portada se carga explícitamente desde Cover Art Archive/Internet Archive y se conserva como enlace; sus derechos son independientes de las licencias de metadatos. [Recorrido y fuentes](ARTISTAS_Y_EDICIONES.md).
 - **Portadas:** pueden provenir de una URL o de un archivo seleccionado. Su almacenamiento y visualización conservan los derechos y permisos de la imagen original.
 - **Wikidata:** aporta candidatos de metadatos que se revisan antes de incorporarlos. Las fuentes y sus avisos se conservan según el material utilizado.
 - **Spotify y YouTube:** se abren mediante enlaces o reproductores oficiales. Auditorium no extrae ni redistribuye su señal musical.

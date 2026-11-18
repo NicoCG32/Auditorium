@@ -1,6 +1,12 @@
 import { z } from 'zod'
 import { catalogSchema } from './catalog/catalog'
-import { artistSchema, albumSchema, catalogDataSchema } from './catalog/schemas'
+import {
+  artistSchema,
+  albumSchema,
+  catalogDataSchema,
+  releaseSchema,
+  trackSchema,
+} from './catalog/schemas'
 import { getCatalogIssues } from './catalog/integrity'
 import {
   legacyAlbumV4Schema,
@@ -19,7 +25,7 @@ import { purchaseWishSchema } from './library/purchase-wishes'
 import { utcTimestampSchema } from './shared/scalars'
 import type { LocalSnapshot } from './repositories/local-repository'
 
-export const BACKUP_SCHEMA_VERSION = 8
+export const BACKUP_SCHEMA_VERSION = 9
 export const MAX_BACKUP_BYTES = 20 * 1024 * 1024
 
 export const localSnapshotSchema = z
@@ -55,7 +61,34 @@ export const backupSchema = z.strictObject({
 })
 
 // Historical wire contracts reject fields introduced by later versions.
-const legacyCatalogV7DataSchema = catalogDataSchema.extend({
+const legacyCatalogV8DataSchema = catalogDataSchema.extend({
+  releases: z.array(releaseSchema.omit({ musicBrainz: true })),
+  tracks: z.array(trackSchema.omit({ musicBrainz: true })),
+})
+const legacyCatalogV8Schema = legacyCatalogV8DataSchema.superRefine(
+  (catalog, context) => {
+    for (const issue of getCatalogIssues(catalog))
+      context.addIssue({
+        code: 'custom',
+        path: issue.path,
+        message: issue.message,
+        params: { rule: issue.rule },
+      })
+  },
+)
+export const legacySnapshotV8Schema = localSnapshotSchema.safeExtend({
+  catalog: legacyCatalogV8Schema,
+})
+export function migrateSnapshotV8(input: unknown): LocalSnapshot {
+  return localSnapshotSchema.parse(legacySnapshotV8Schema.parse(input))
+}
+const legacyBackupV8Schema = z.strictObject({
+  format: z.literal('auditorium-backup'),
+  schemaVersion: z.literal(8),
+  exportedAt: utcTimestampSchema,
+  data: legacySnapshotV8Schema,
+})
+const legacyCatalogV7DataSchema = legacyCatalogV8DataSchema.extend({
   artists: z.array(artistSchema.omit({ musicBrainz: true })),
   albums: z.array(albumSchema.omit({ musicBrainz: true })),
 })
@@ -262,7 +295,8 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
     input.schemaVersion !== 4 &&
     input.schemaVersion !== 5 &&
     input.schemaVersion !== 6 &&
-    input.schemaVersion !== 7
+    input.schemaVersion !== 7 &&
+    input.schemaVersion !== 8
   )
     throw new BackupError(
       'unsupported_version',
@@ -279,7 +313,8 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
       input.schemaVersion === 4 ||
       input.schemaVersion === 5 ||
       input.schemaVersion === 6 ||
-      input.schemaVersion === 7)
+      input.schemaVersion === 7 ||
+      input.schemaVersion === 8)
   ) {
     const legacy = (
       input.schemaVersion === 1
@@ -294,7 +329,9 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
                 ? legacyBackupV5Schema
                 : input.schemaVersion === 6
                   ? legacyBackupV6Schema
-                  : legacyBackupV7Schema
+                  : input.schemaVersion === 7
+                    ? legacyBackupV7Schema
+                    : legacyBackupV8Schema
     ).safeParse(input)
     if (!legacy.success)
       throw new BackupError(
@@ -306,11 +343,13 @@ export function parseBackupDocument(input: unknown): LibraryBackup {
         ...legacy.data,
         schemaVersion: BACKUP_SCHEMA_VERSION,
         data:
-          legacy.data.schemaVersion === 7
-            ? migrateSnapshotV7(legacy.data.data)
-            : legacy.data.schemaVersion >= 5
-              ? migrateSnapshotV6(legacy.data.data)
-              : migrateLegacySnapshot(legacy.data.data),
+          legacy.data.schemaVersion === 8
+            ? migrateSnapshotV8(legacy.data.data)
+            : legacy.data.schemaVersion === 7
+              ? migrateSnapshotV7(legacy.data.data)
+              : legacy.data.schemaVersion >= 5
+                ? migrateSnapshotV6(legacy.data.data)
+                : migrateLegacySnapshot(legacy.data.data),
       }
     } catch {
       throw new BackupError(

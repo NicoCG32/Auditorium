@@ -70,7 +70,7 @@ test.each([false, true])(
           checkpoint,
         })
         const after = await inspectNativeStorage({ name, factory })
-        expect(after.version).toBe(120)
+        expect(after.version).toBe(130)
         expect(after.rows).toEqual(before.rows)
         for (const name of ['artists', 'albums'])
           expect(

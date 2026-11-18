@@ -14,11 +14,11 @@ Incremento **sin publicar** posterior a 1.1.0. La búsqueda está disponible cua
 
 Las obras ya vinculadas se identifican mediante su referencia externa y no se vuelven a importar. Vincular una obra manual conserva sus metadatos, UUID, notas, valoraciones y ediciones; también conserva una retirada previa. Las obras nuevas quedan con escucha **Sin registrar**, sin notas, valoraciones, compras ni deseos inferidos.
 
-Esta primera versión incorpora artistas, créditos, título, año disponible, clasificación y procedencia. Las ediciones, pistas y portadas se completan desde la ficha; no se descarga ni incorpora música. Los enlaces de origen se encuentran en **Datos del álbum → Referencias del catálogo**.
+La importación de obras incorpora artistas, créditos, título, año disponible, clasificación y procedencia. La [pantalla de artista y la selección de ediciones](ARTISTAS_Y_EDICIONES.md) permiten comparar la colección y completar pistas o portadas opcionalmente desde la ficha; no se descarga ni incorpora música. Los enlaces de origen se encuentran en **Datos del álbum → Referencias del catálogo**.
 
 ## Conservación y recuperación
 
-DB12/nativa120 guarda `musicBrainz: { id, retrievedAt }` en artistas y álbumes. Estos MBIDs son referencias externas: no sustituyen UUID locales. Los índices únicos y la integridad evitan asignar una referencia a dos artistas o a dos obras. JSON8 y la sincronización nueva conservan los vínculos; los respaldos JSON1–7 se validan con sus contratos históricos antes de migrar. ZIP1 mantiene su formato e incluye el JSON actual.
+DB13/nativa130 guarda `musicBrainz: { id, retrievedAt }` en artistas, álbumes, ediciones y pistas. Estos MBIDs son referencias externas: no sustituyen UUID locales. Artistas, obras y ediciones tienen referencias únicas; las grabaciones son únicas por álbum. JSON9 y la sincronización nueva conservan los vínculos; los respaldos JSON1–8 se validan con sus contratos históricos antes de migrar. DB12/JSON8 conserva su contrato de referencias sólo para artista y obra. ZIP1 mantiene su formato e incluye el JSON actual.
 
 Editar metadatos conserva el vínculo de la obra. Cambiar su título o identidad de créditos lo desvincula, igual que la referencia Wikidata, para evitar mantener una identidad externa incorrecta. Las pistas, notas y ejemplares mantienen sus identidades locales.
 
@@ -28,14 +28,14 @@ La confirmación relee y compara la biblioteca revisada dentro de una transacci�
 
 La PWA consulta un servicio acotado de Auditorium que envía nombre o MBID a MusicBrainz. Ese intermediario y MusicBrainz reciben las consultas; no reciben la biblioteca, identidad local, notas, valoraciones, compras o audio. La caché temporal contiene sólo respuestas de catálogo, sin persistir búsquedas en la biblioteca.
 
-MusicBrainz exige identificación de la aplicación y limita el tráfico, generalmente a una petición por segundo por IP. El navegador no permite garantizar el User-Agent necesario en todos los motores. Por eso el servicio controla el encabezado, una cola compartida por proceso, timeout, tamaño de respuesta y caché. Acepta exclusivamente búsqueda de artistas y listado paginado de grupos; nunca una URL de destino arbitraria.
+MusicBrainz exige identificación de la aplicación y limita el tráfico, generalmente a una petición por segundo por IP. El navegador no permite garantizar el User-Agent necesario en todos los motores. Por eso el servicio controla el encabezado, una cola compartida por proceso, timeout, tamaño de respuesta y caché. Acepta exclusivamente búsqueda de artistas, listados paginados de grupos o ediciones y consulta de una edición por MBID; nunca una URL de destino arbitraria.
 
 En desarrollo, `npm run dev` incluye `/api/musicbrainz` sin claves adicionales. Para una instalación estática:
 
 1. Ejecuta `npm run catalog:serve` en un host con Node compatible. Configura `CATALOG_HOST`, `CATALOG_PORT` y `CATALOG_ALLOWED_ORIGINS` según `.env.example`; el valor por defecto escucha sólo en loopback.
 2. Publica el servicio detrás de HTTPS y configura `VITE_MUSICBRAINZ_PROXY_URL=https://tu-servicio/api/musicbrainz` al compilar la PWA. En el workflow de Pages corresponde a la variable de repositorio `MUSICBRAINZ_PROXY_URL`.
 3. Usa **un único proceso** para cada IP de salida. Varias réplicas requieren una cola y caché coordinadas entre ellas; aumentar réplicas no aumenta el límite del proveedor. Si comparte IP con otros servicios, deben coordinar el tráfico agregado.
-4. Antes de publicar una variante con cuenta, aplica `supabase/migrations/20261115222457_musicbrainz_references_v8.sql` en el entorno elegido. No es necesaria para el funcionamiento local sin cuenta. Verifica `supabase/tests/musicbrainz_references.sql` y la batería de sincronización del proyecto antes de habilitar usuarios.
+4. Antes de publicar una variante con cuenta, aplica las migraciones en orden, incluidas `20261115222457_musicbrainz_references_v8.sql` y `20261116231510_edition_recording_references_v9.sql`. No son necesarias para el funcionamiento local sin cuenta. Verifica los tests SQL `musicbrainz_references.sql` y `edition_recording_references.sql`, además de la batería de sincronización, antes de habilitar usuarios.
 
 La caché guarda hasta 128 respuestas durante seis horas. Hay un máximo de 32 solicitudes pendientes; la cola y errores 503 no se interpretan como ausencia de discos. La actualización de la discografía depende de una consulta del usuario, sin sondeo periódico.
 

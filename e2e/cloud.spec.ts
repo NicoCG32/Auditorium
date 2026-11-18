@@ -238,7 +238,7 @@ async function mock(
           value
             ? url.searchParams.get('select') === 'revision'
               ? { revision: value.revision }
-              : { ...value, schema_version: 8 }
+              : { ...value, schema_version: 9 }
             : null,
         )
       }
@@ -249,7 +249,7 @@ async function mock(
           document: unknown
           schema_version: number
         }
-        expect(input.schema_version).toBe(8)
+        expect(input.schema_version).toBe(9)
         const current = state.get(input.account_id)
         if (input.expected_revision !== (current?.revision ?? 0))
           return reply({ code: '40001', message: 'Revision conflict' }, 409)

@@ -146,7 +146,7 @@ test.each([1, 2, 3, 4, 5, 6, 7, 8, 9, 10])(
           recovery: { local: expected, remote: expected },
         })
       const after = await inspectNativeStorage({ name, factory })
-      expect(after.version).toBe(120)
+      expect(after.version).toBe(130)
       expect(after.rows['albumGenreRatings']).toEqual([])
       for (const [table, rows] of Object.entries(before.rows))
         if (table !== 'albums' && table !== 'syncCheckpoint')

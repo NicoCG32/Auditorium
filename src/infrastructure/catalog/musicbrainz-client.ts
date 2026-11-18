@@ -8,6 +8,15 @@ import {
   type DiscographyPage,
 } from '../../application/discography-catalog'
 import { entityIdSchema } from '../../domain/shared/scalars'
+import {
+  editionDetailsFrom,
+  editionSummaryFrom,
+  releaseWireSchema,
+} from './musicbrainz-editions'
+import type {
+  EditionCatalog,
+  EditionPage,
+} from '../../application/edition-catalog'
 
 const artistWire = z.object({
   id: entityIdSchema,
@@ -37,7 +46,7 @@ function artistFrom(row: z.output<typeof artistWire>): DiscographyArtist {
       : {}),
   })
 }
-export class MusicBrainzClient implements DiscographyCatalog {
+export class MusicBrainzClient implements DiscographyCatalog, EditionCatalog {
   readonly available: boolean
   private readonly base: string | undefined
   private readonly fetcher: typeof fetch
@@ -100,6 +109,47 @@ export class MusicBrainzClient implements DiscographyCatalog {
       .object({ artists: z.array(artistWire).max(12) })
       .parse(await this.request('artist', { query: value }, signal))
     return body.artists.map(artistFrom)
+  }
+  async browseEditions(
+    groupId: string,
+    offset: number,
+    signal: AbortSignal,
+  ): Promise<EditionPage> {
+    entityIdSchema.parse(groupId)
+    if (!Number.isInteger(offset) || offset < 0 || offset > 99999)
+      throw new DiscographyError()
+    const body = z
+      .object({
+        'release-count': z.int().nonnegative().max(100000),
+        'release-offset': z.int().nonnegative(),
+        releases: z.array(releaseWireSchema).max(100),
+      })
+      .parse(
+        await this.request(
+          'release',
+          { group: groupId, offset: String(offset) },
+          signal,
+        ),
+      )
+    const next = offset + body.releases.length
+    if (
+      body['release-offset'] !== offset ||
+      (next < body['release-count'] && next === offset)
+    )
+      throw new DiscographyError()
+    return {
+      total: body['release-count'],
+      editions: body.releases.map(editionSummaryFrom),
+      ...(next < body['release-count'] ? { nextOffset: next } : {}),
+    }
+  }
+  async edition(id: string, signal: AbortSignal) {
+    entityIdSchema.parse(id)
+    const result = editionDetailsFrom(
+      await this.request(`release/${id}`, {}, signal),
+    )
+    if (result.id !== id.toLowerCase()) throw new DiscographyError()
+    return result
   }
   async browseAlbums(
     artistId: string,

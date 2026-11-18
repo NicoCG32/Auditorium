@@ -2,6 +2,8 @@ import { albumScore, type LibraryAlbum } from '../../application/library-query'
 import { genreKey } from '../../domain/catalog/genre-key'
 import { AlbumCover } from './AlbumCover'
 import { formatScore, listeningLabels } from './labels'
+import { ArtistLinks } from './ArtistLinks'
+import type { Artist } from '../../domain/catalog/schemas'
 
 export function AlbumCard({
   album,
@@ -9,12 +11,16 @@ export function AlbumCard({
   onOpen,
   ratingGenre,
   collection,
+  artists,
+  onArtist,
 }: {
   album: LibraryAlbum
   view: 'grid' | 'list'
   onOpen: () => void
   ratingGenre?: string
   collection?: { copies: number; wishes: number }
+  artists: Artist[]
+  onArtist: (id: string) => void
 }) {
   const score = albumScore(album, ratingGenre)
   const context = ratingGenre
@@ -58,7 +64,12 @@ export function AlbumCard({
           </button>
         </h2>
         <p className="album-artist mt-2 text-sm leading-relaxed wrap-anywhere">
-          {album.artist}
+          <ArtistLinks
+            artists={artists}
+            fallback={album.artist}
+            onOpen={onArtist}
+            focusKey={`album-${album.id}`}
+          />
         </p>
         {album.originalYear ? (
           <p className="mt-2 text-xs tracking-wider text-muted">

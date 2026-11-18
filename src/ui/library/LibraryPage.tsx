@@ -33,6 +33,7 @@ import { LibraryView } from './LibraryView'
 import { RatingsDestination, WishesDestination } from './LibraryDestinations'
 import { CollectionDestination } from './CollectionDestination'
 import { defaultCollectionFilters } from '../../application/collection-query'
+import { ArtistPage } from './ArtistPage'
 
 type LoadState =
   | { status: 'loading' }
@@ -304,9 +305,13 @@ function LibraryContent({
           >
             {route.kind === 'add'
               ? 'Añadir música'
-              : route.kind === 'options' && route.section === 'removed'
-                ? 'Tu archivo retirado'
-                : routeTitle(route)}
+              : route.kind === 'artist' && state.status === 'ready'
+                ? (state.snapshot.catalog.artists.find(
+                    (row) => row.id === route.id,
+                  )?.name ?? 'Artista')
+                : route.kind === 'options' && route.section === 'removed'
+                  ? 'Tu archivo retirado'
+                  : routeTitle(route)}
           </h1>
           {route.kind === 'library' ? (
             <p className="library-description text-muted">
@@ -410,6 +415,8 @@ function LibraryContent({
           <AlbumSummary
             key={selected.id}
             snapshot={state.snapshot}
+            repository={repository}
+            onArtist={(id) => go({ kind: 'artist', id })}
             album={selectedAlbum}
             entry={selected}
             {...(comparisonGenre ? { ratingGenre: comparisonGenre } : {})}
@@ -449,9 +456,11 @@ function LibraryContent({
             }}
             onEditCancel={() => go({ kind: 'album', id: selected.id })}
             backLabel={
-              from.kind === 'library'
-                ? 'Volver a biblioteca'
-                : `Volver a ${routeTitle(from).toLocaleLowerCase()}`
+              from.kind === 'artist'
+                ? `Volver a ${state.snapshot.catalog.artists.find((row) => row.id === from.id)?.name ?? 'artista'}`
+                : from.kind === 'library'
+                  ? 'Volver a biblioteca'
+                  : `Volver a ${routeTitle(from).toLocaleLowerCase()}`
             }
             onBack={() => go(from)}
             onRemoved={() => {
@@ -478,6 +487,29 @@ function LibraryContent({
             </button>
           </section>
         )
+      ) : route.kind === 'artist' ? (
+        <ArtistPage
+          key={route.id}
+          artistId={route.id}
+          snapshot={state.snapshot}
+          repository={repository}
+          onBack={() => go({ kind: 'library' })}
+          onOpenAlbum={(id) => navigation.openAlbum(id)}
+          onBusyChange={setDetailBusy}
+          onCommitted={synchronizeDetail}
+          onLinked={() =>
+            navigation.completed(
+              { kind: 'artist', id: route.id },
+              'artist-link',
+            )
+          }
+          onImported={() =>
+            navigation.completed(
+              { kind: 'artist', id: route.id },
+              'discography',
+            )
+          }
+        />
       ) : route.kind === 'library' ? (
         <LibraryView
           albums={state.albums}
@@ -488,6 +520,7 @@ function LibraryContent({
           onViewChange={setView}
           onOpen={(id) => navigation.openAlbum(id)}
           onAdd={() => go({ kind: 'add' })}
+          onArtist={(id) => go({ kind: 'artist', id })}
         />
       ) : route.kind === 'ratings' ? (
         <RatingsDestination

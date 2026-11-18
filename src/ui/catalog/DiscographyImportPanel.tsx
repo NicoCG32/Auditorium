@@ -13,6 +13,7 @@ import {
   type DiscographyArtist,
   type DiscographyCatalog,
   type DiscographyFilter,
+  type DiscographyPage,
 } from '../../application/discography-catalog'
 import {
   DiscographyImports,
@@ -32,6 +33,9 @@ export function DiscographyImportPanel({
   onCommitted,
   onImported,
   client = musicBrainzCatalog,
+  initial,
+  stayOpen = false,
+  onOpenAlbum,
 }: {
   snapshot: LocalSnapshot
   repository: TransactionalLocalRepository
@@ -39,13 +43,22 @@ export function DiscographyImportPanel({
   onCommitted: () => Promise<LocalSnapshot>
   onImported: (result: { added: number; linked: number }) => void
   client?: DiscographyCatalog
+  initial?: { artist: DiscographyArtist; page: DiscographyPage }
+  stayOpen?: boolean
+  onOpenAlbum?: (entryId: string) => void
 }) {
   const [query, setQuery] = useState('')
   const [artists, setArtists] = useState<DiscographyArtist[]>([])
-  const [artist, setArtist] = useState<DiscographyArtist>()
-  const [albums, setAlbums] = useState<DiscographyAlbum[]>([])
-  const [total, setTotal] = useState(0)
-  const [nextOffset, setNextOffset] = useState<number>()
+  const [artist, setArtist] = useState<DiscographyArtist | undefined>(
+    initial?.artist,
+  )
+  const [albums, setAlbums] = useState<DiscographyAlbum[]>(
+    initial?.page.albums ?? [],
+  )
+  const [total, setTotal] = useState(initial?.page.total ?? 0)
+  const [nextOffset, setNextOffset] = useState<number | undefined>(
+    initial?.page.nextOffset,
+  )
   const [filter, setFilter] = useState<DiscographyFilter>('studio')
   const [selected, setSelected] = useState<string[]>([])
   const [choices, setChoices] = useState<DiscographyChoices>(
@@ -236,6 +249,15 @@ export function DiscographyImportPanel({
       await onCommitted()
       onBusyChange(false)
       onImported({ added: prepared!.added, linked: prepared!.linked })
+      if (stayOpen) {
+        setCommitted(false)
+        setPrepared(undefined)
+        setSelected([])
+        setChoices(emptyDiscographyChoices)
+        setNotice(
+          'Selección incorporada. Puedes seguir consultando la discografía.',
+        )
+      }
     } catch {
       setFailure(
         'La importación se guardó, pero no pudimos actualizar la biblioteca. Reintenta sólo la lectura para continuar.',
@@ -293,43 +315,50 @@ export function DiscographyImportPanel({
       aria-labelledby="discography-title"
     >
       <h2 id="discography-title" className="text-xl font-semibold">
-        Busca una banda y elige sus discos
+        {initial
+          ? 'Comparar con tu biblioteca'
+          : 'Busca una banda y elige sus discos'}
       </h2>
       <p className="mt-2 mb-5 text-sm text-muted">
         Consulta MusicBrainz para incorporar varias obras de una vez. Se envía
         el nombre o el identificador del artista. Tus notas y valoraciones no
         forman parte de la consulta.
       </p>
-      <form className="artist-search-form" onSubmit={search}>
-        <label className="min-w-0">
-          <span className="field-label">Banda o artista</span>
-          <input
-            ref={input}
-            type="search"
-            required
-            maxLength={120}
-            value={query}
-            placeholder="Opeth, Iron Maiden, Pink Floyd…"
+      {!initial ? (
+        <form className="artist-search-form" onSubmit={search}>
+          <label className="min-w-0">
+            <span className="field-label">Banda o artista</span>
+            <input
+              ref={input}
+              type="search"
+              required
+              maxLength={120}
+              value={query}
+              placeholder="Opeth, Iron Maiden, Pink Floyd…"
+              disabled={
+                blocked ||
+                networkBusy ||
+                selected.length > 0 ||
+                Boolean(prepared)
+              }
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </label>
+          <button
+            className="primary-button"
+            type="submit"
             disabled={
-              blocked || networkBusy || selected.length > 0 || Boolean(prepared)
+              blocked ||
+              networkBusy ||
+              !query.trim() ||
+              selected.length > 0 ||
+              Boolean(prepared)
             }
-            onChange={(event) => setQuery(event.target.value)}
-          />
-        </label>
-        <button
-          className="primary-button"
-          type="submit"
-          disabled={
-            blocked ||
-            networkBusy ||
-            !query.trim() ||
-            selected.length > 0 ||
-            Boolean(prepared)
-          }
-        >
-          Buscar artista
-        </button>
-      </form>
+          >
+            Buscar artista
+          </button>
+        </form>
+      ) : null}
       {networkBusy ? (
         <button
           type="button"
@@ -509,6 +538,21 @@ export function DiscographyImportPanel({
                         )
                       : []
                     const active = entries.some((entry) => !entry.deletedAt)
+                    const activeEntry = entries.find(
+                      (entry) => !entry.deletedAt,
+                    )
+                    const copies = activeEntry
+                      ? snapshot.library.ownedItems.filter(
+                          (row) => row.userAlbumId === activeEntry.id,
+                        ).length
+                      : 0
+                    const wished =
+                      activeEntry &&
+                      snapshot.library.purchaseWishes.some(
+                        (row) =>
+                          row.userAlbumId === activeEntry.id &&
+                          row.status === 'active',
+                      )
                     const retired =
                       !active && entries.some((entry) => entry.deletedAt)
                     return (
@@ -555,6 +599,27 @@ export function DiscographyImportPanel({
                               ? 'Revisar coincidencia'
                               : 'Nuevo'}
                         </span>
+                        {initial && activeEntry ? (
+                          <div className="discography-library-state">
+                            {copies ? (
+                              <span>
+                                {copies}{' '}
+                                {copies === 1 ? 'ejemplar' : 'ejemplares'}
+                              </span>
+                            ) : null}
+                            {wished ? <span>En deseos</span> : null}
+                            {onOpenAlbum ? (
+                              <button
+                                type="button"
+                                className="text-button"
+                                disabled={blocked}
+                                onClick={() => onOpenAlbum(activeEntry.id)}
+                              >
+                                Abrir {album.title}
+                              </button>
+                            ) : null}
+                          </div>
+                        ) : null}
                       </li>
                     )
                   })}

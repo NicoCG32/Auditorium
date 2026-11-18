@@ -30,6 +30,9 @@ import { useNavigation } from '../navigation/navigation-context'
 import { AudioPanel } from './AudioPanel'
 import { GenreRatingsSummary } from './GenreRatingsSummary'
 import { GenreRenameForm } from './GenreRenameForm'
+import { ArtistLinks } from './ArtistLinks'
+import { AlbumCatalogDetailsPanel } from '../catalog/AlbumCatalogDetailsPanel'
+import type { TransactionalLocalRepository } from '../../domain/repositories/local-repository'
 
 export function AlbumSummary({
   snapshot,
@@ -58,6 +61,8 @@ export function AlbumSummary({
   onExperienceComplete,
   onExperienceCancel,
   ratingGenre,
+  repository,
+  onArtist,
 }: {
   experienceEditing: boolean
   collectionEditing: boolean
@@ -65,6 +70,8 @@ export function AlbumSummary({
   onExperienceComplete: () => void
   onExperienceCancel: () => void
   ratingGenre?: string
+  repository: TransactionalLocalRepository
+  onArtist: (id: string) => void
   snapshot: LocalSnapshot
   album: Album
   entry: LibraryAlbum
@@ -181,7 +188,13 @@ export function AlbumSummary({
             {album.title}
           </h2>
           <p className="mt-3 text-lg text-muted wrap-anywhere">
-            {entry.artist}
+            <ArtistLinks
+              artists={creditedArtists}
+              fallback={entry.artist}
+              onOpen={onArtist}
+              disabled={busy}
+              focusKey={`album-summary-${personalEntry.id}`}
+            />
           </p>
           {album.primaryType !== 'unspecified' ||
           album.categories.length > 0 ? (
@@ -411,6 +424,17 @@ export function AlbumSummary({
       </details>
       <details className="album-area" data-album-area="tracks">
         <summary>Pistas y ediciones</summary>
+        <details className="optional-fields catalog-details-toggle">
+          <summary>Buscar ediciones, pistas o portada (opcional)</summary>
+          <AlbumCatalogDetailsPanel
+            albumId={album.id}
+            snapshot={snapshot}
+            repository={repository}
+            onBusyChange={onBusyChange}
+            onCommitted={onExperienceCommitted}
+            onArtist={onArtist}
+          />
+        </details>
         <AlbumTrackLists
           albumId={album.id}
           catalog={catalog}

@@ -24,7 +24,7 @@
 
 - [**Arquitectura por niveles**](tecnica/01-arquitectura.md): contexto, contenedores, componentes y despliegue web/PWA.
 - [**Dominio y relaciones**](tecnica/02-dominio.md): álbum, edición, pista, catálogo, escucha y ejemplar; modelo lógico.
-- [**Persistencia**](tecnica/03-datos-y-persistencia.md): 17 almacenes IndexedDB DB12, snapshot JSON8, ZIP1 de audio y cuenta Supabase opcional.
+- [**Persistencia**](tecnica/03-datos-y-persistencia.md): 17 almacenes IndexedDB DB13, snapshot JSON9, ZIP1 de audio y cuenta Supabase opcional.
 - [**Flujos y estados**](tecnica/04-flujos-y-estados.md): registro, valoración, retirada, deseos, respaldos, conflictos y sincronización.
 - [**Integraciones y seguridad**](tecnica/05-integraciones-y-seguridad.md): Wikidata, Gemini/Groq, reproducción externa, claves de sesión y RLS.
 
@@ -37,11 +37,11 @@ flowchart TD
     U --> E["Experiencia · escucha y notas"]
     U --> C["Colección · ejemplares y deseos"]
     U --> L["Audio asociado localmente"]
-    A --> B[("IndexedDB DB12")]
+    A --> B[("IndexedDB DB13")]
     E --> B
     C --> B
     L --> B
-    B -. "Snapshot JSON8 sin audio" .-> R[("Supabase opcional")]
+    B -. "Snapshot JSON9 sin audio" .-> R[("Supabase opcional")]
     B --> Z["ZIP1 · audio + biblioteca"]
 ```
 
@@ -58,7 +58,7 @@ Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos 
 
 ## Guías de consulta
 
-El incremento [Discografías por artista](DISCOGRAFIAS.md), todavía sin publicar, incorpora MusicBrainz y DB12/JSON8. Los estudios y documentos de incrementos anteriores conservan sus versiones históricas.
+El incremento [Discografías por artista](DISCOGRAFIAS.md), todavía sin publicar, incorpora MusicBrainz y DB13/JSON9. La guía de [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) explica la comparación de colección, pistas y portada opcionales. Los estudios y documentos de incrementos anteriores conservan sus versiones históricas.
 
 | Quiero…                           | Documento especializado                                                                                                     |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -86,7 +86,7 @@ Las [ADR](adr/) recogen las decisiones y su contexto histórico. Incluyen el [MV
 
 La versión publicada es **1.1.0, del 29 de octubre de 2026**. La importación aditiva y el catálogo JSON figuran como **Sin publicar** en el [changelog](../CHANGELOG.md). Consulta las notas de la versión instalada para conocer sus funciones.
 
-Los formatos de datos tienen versiones diferentes: **Dexie DB12, respaldo JSON8 y respaldo de audio ZIP1**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
+Los formatos de datos tienen versiones diferentes: **Dexie DB13, respaldo JSON9 y respaldo de audio ZIP1**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
 
 ## Licencias y recursos
 

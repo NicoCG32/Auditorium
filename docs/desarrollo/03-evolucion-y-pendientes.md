@@ -12,7 +12,7 @@ El [changelog](../../CHANGELOG.md) mantiene como **Sin publicar** la importació
 
 La preparación de esa release requiere comprobar compatibilidad de archivos, conflictos, recuperación y conservación de identidad sobre el paquete generado.
 
-También queda sin publicar [Discografías por artista](../DISCOGRAFIAS.md): búsqueda MusicBrainz, selección múltiple y procedencia DB12/JSON8. La publicación necesita configurar el servicio HTTPS de consultas y aplicar la migración de sincronización en el entorno elegido. Las siguientes ampliaciones son selección de ediciones, pistas, portadas y pantalla propia de artista.
+También quedan sin publicar [Discografías por artista](../DISCOGRAFIAS.md) y [Artistas y ediciones](../ARTISTAS_Y_EDICIONES.md): búsqueda MusicBrainz, selección múltiple, comparación con la colección y elección opcional de edición, pistas y portada con DB13/JSON9. La publicación necesita configurar el servicio HTTPS y aplicar las migraciones de sincronización en el entorno elegido. Continúa pendiente verificar esos servicios en producción.
 
 ## Líneas de evolución
 

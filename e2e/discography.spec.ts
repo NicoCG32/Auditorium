@@ -111,7 +111,7 @@ test('busca, pagina, confirma un lote y reconoce los vínculos al repetir sin du
     page.getByRole('heading', { name: 'Tu biblioteca', exact: true }),
   ).toBeVisible()
   const first = await backup(page)
-  expect(first.schemaVersion).toBe(8)
+  expect(first.schemaVersion).toBe(9)
   expect(first.data.catalog.albums).toHaveLength(2)
   expect(
     first.data.library.userAlbums.every(

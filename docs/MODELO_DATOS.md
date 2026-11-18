@@ -1,5 +1,7 @@
 # Modelo de datos y persistencia
 
+El incremento vigente [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) usa DB13/nativa130 y JSON/snapshot9; incorpora referencias MusicBrainz opcionales de edición y grabación, conservando ZIP1. Los apartados de incrementos anteriores mantienen su contexto histórico.
+
 COL-05 completa [Mi colección](MI_COLECCION.md) sin campos persistentes nuevos: actualización y retirada de filas OwnedItem con estado completo esperado y transacción local. Conserva DB12/nativa120, JSON/snapshot8, ZIP1 y sincronización; los nombres legibles se derivan en la presentación.
 
 RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB12/nativa120 y JSON/snapshot8 conservan su compatibilidad; ZIP1 mantiene el audio separado.
@@ -14,7 +16,7 @@ UX-05 separa la clasificación en Album y migra las filas y los documentos del c
 
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia desde el MVP **v1.0.0** hasta RATE-01 de DB12/respaldo7 y ZIP completo1. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia desde el MVP **v1.0.0** hasta los incrementos de artistas y ediciones de DB13/respaldo9 y ZIP completo1. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 

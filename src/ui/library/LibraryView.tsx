@@ -9,6 +9,7 @@ import { AlbumCard } from './AlbumCard'
 import { LibraryControls } from './LibraryControls'
 import { useMemo } from 'react'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
+import { albumArtistIndex } from '../../application/catalog-artists'
 
 export function LibraryView({
   albums,
@@ -19,6 +20,7 @@ export function LibraryView({
   onViewChange,
   onOpen,
   onAdd,
+  onArtist,
 }: {
   albums: LibraryAlbum[]
   snapshot: LocalSnapshot
@@ -28,7 +30,12 @@ export function LibraryView({
   onViewChange: (view: 'grid' | 'list') => void
   onOpen: (id: string) => void
   onAdd: () => void
+  onArtist: (id: string) => void
 }) {
+  const artists = useMemo(
+    () => albumArtistIndex(snapshot.catalog),
+    [snapshot.catalog],
+  )
   const collection = useMemo(() => {
     const counts = new Map<string, { copies: number; wishes: number }>()
     for (const item of snapshot.library.ownedItems) {
@@ -134,6 +141,8 @@ export function LibraryView({
               key={album.id}
               album={album}
               view={view}
+              artists={artists.get(album.albumId) ?? []}
+              onArtist={onArtist}
               {...(collection.has(album.id)
                 ? { collection: collection.get(album.id)! }
                 : {})}

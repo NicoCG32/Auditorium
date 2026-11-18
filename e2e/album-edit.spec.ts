@@ -562,7 +562,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     page.getByText('Umbral Eléctrico: Chile', { exact: true }),
   ).toBeVisible()
   const after = await exportBackup(page)
-  expect(after.schemaVersion).toBe(8)
+  expect(after.schemaVersion).toBe(9)
   expect(after.data.identity).toEqual(before.data.identity)
   expect(after.data.library).toEqual(before.data.library)
   for (const key of [
@@ -718,7 +718,7 @@ test('PNG local se valida, carga automáticamente, persiste al recargar y restau
   await expect(cover).toBeVisible()
   await context.setOffline(true)
   const backup = await exportBackup(page)
-  expect(backup.schemaVersion).toBe(8)
+  expect(backup.schemaVersion).toBe(9)
   expect(
     backup.data.catalog.albums.find((album) => album.id === ids.album)
       ?.coverImage,

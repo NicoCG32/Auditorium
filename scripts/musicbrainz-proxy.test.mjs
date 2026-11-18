@@ -72,6 +72,11 @@ test('rejects arbitrary upstreams, unsupported methods, parameters and origins',
     'artist?query=abc&inc=tags',
     'release-group?artist=invalid',
     'artist?query=a&query=b',
+    'release?group=invalid',
+    'release?group=00000000-0000-4000-8000-000000009000&offset=-1',
+    'release?group=00000000-0000-4000-8000-000000009000&group=00000000-0000-4000-8000-000000009001',
+    'release/00000000-0000-4000-8000-000000009000?inc=url-rels',
+    'release/invalid',
   ])
     assert.equal((await fetch(base + path)).status, 400)
   assert.equal(
@@ -87,6 +92,34 @@ test('rejects arbitrary upstreams, unsupported methods, parameters and origins',
     403,
   )
   assert.equal(calls, 0)
+})
+
+test('edition browsing and lookup use fixed bounded endpoints and the shared cache', async (t) => {
+  const requests = []
+  const base = await serve(t, {
+    fetchImpl: async (url) => {
+      requests.push(url)
+      return Response.json({ releases: [] })
+    },
+  })
+  const id = '00000000-0000-4000-8000-000000009000'
+  assert.equal(
+    (await fetch(`${base}release?group=${id}&offset=100`)).status,
+    200,
+  )
+  assert.equal((await fetch(`${base}release/${id}`)).status, 200)
+  assert.equal((await fetch(`${base}release/${id}`)).status, 200)
+  assert.equal(requests.length, 2)
+  assert.equal(requests[0].origin, 'https://musicbrainz.org')
+  assert.equal(requests[0].searchParams.get('release-group'), id)
+  assert.equal(requests[0].searchParams.get('limit'), '100')
+  assert.equal(requests[0].searchParams.get('offset'), '100')
+  assert.equal(requests[0].searchParams.get('inc'), 'labels+media')
+  assert.equal(requests[1].pathname, `/ws/2/release/${id}/`)
+  assert.equal(
+    requests[1].searchParams.get('inc'),
+    'recordings+release-groups+labels',
+  )
 })
 test('upstream errors are recoverable and are not cached', async (t) => {
   let calls = 0

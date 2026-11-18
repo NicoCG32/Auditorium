@@ -23,7 +23,7 @@ export const saveTrackListInputSchema = z.strictObject({
     z.union([
       appearance.extend({ trackId: entityIdSchema }),
       appearance.extend({
-        track: trackSchema.omit({ id: true, albumId: true }),
+        track: trackSchema.omit({ id: true, albumId: true, musicBrainz: true }),
       }),
     ]),
   ),

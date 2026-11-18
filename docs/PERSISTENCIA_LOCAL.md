@@ -1,6 +1,6 @@
-# Persistencia local — esquemas v1 a v11
+# Persistencia local — esquemas v1 a v13
 
-El esquema vigente es v11, versión nativa 110, con diecisiete tablas. Añade `albumGenreRatings` para las [notas por género](VALORACIONES_POR_GENERO.md) y migra los snapshots locales y los documentos del checkpoint. Los bytes de [audio local](AUDIO_LOCAL.md) permanecen separados del snapshot y de la sincronización. Las cachés conectadas se separan por proyecto y cuenta; los apartados de v5 conservan el detalle de aquella migración.
+El esquema vigente es v13, versión nativa 130, con diecisiete tablas. Añade un índice único de referencia MusicBrainz en ediciones y otro por álbum/grabación en pistas. DB12 incorporó los vínculos de artista y obra; DB11 añadió `albumGenreRatings` para las [notas por género](VALORACIONES_POR_GENERO.md). Cada paso valida los snapshots y documentos históricos del checkpoint antes de actualizar. Los bytes de [audio local](AUDIO_LOCAL.md) permanecen separados del snapshot y de la sincronización. Las cachés conectadas se separan por proyecto y cuenta; los apartados de v5 conservan el detalle de aquella migración. [Ediciones y compatibilidad](ARTISTAS_Y_EDICIONES.md#persistencia-y-recuperación).
 
 DATA-01 implementa el esquema IndexedDB con Dexie, la identidad local y un contrato de lectura consistente. DATA-02 incorpora [casos de uso y escrituras transaccionales](CASOS_DE_USO.md) sobre el mismo esquema. LIB-01 conecta la [consulta de biblioteca](CONSULTA_BIBLIOTECA.md) con su lectura validada.
 
