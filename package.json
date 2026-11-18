@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "catalog:serve": "node scripts/catalog-server.mjs",
-    "test:catalog": "node --test scripts/musicbrainz-proxy.test.mjs",
+    "test:catalog": "node --test scripts/musicbrainz-proxy.test.mjs scripts/musicbrainz-gateway.test.mjs",
     "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc -b",
     "test": "vitest run",

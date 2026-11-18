@@ -8,11 +8,11 @@ La web/PWA incluye biblioteca local, catálogo, experiencia, ejemplares, deseos,
 
 ## Cambios posteriores a 1.1.0
 
-El [changelog](../../CHANGELOG.md) mantiene como **Sin publicar** la importación aditiva de respaldos y el formato JSON de catálogo musical. La [guía de importación](../IMPORTACION_JSON.md) explica su uso y sus conflictos. Estos cambios se incorporarán a una release posterior a 1.1.0.
+La web incluye importación aditiva de respaldos y el formato JSON de catálogo musical desde la actualización del 17 de noviembre. La [guía de importación](../IMPORTACION_JSON.md) explica su uso y sus conflictos. El ZIP descargable de la release 1.1.0 conserva sus archivos originales.
 
 La preparación de esa release requiere comprobar compatibilidad de archivos, conflictos, recuperación y conservación de identidad sobre el paquete generado.
 
-También quedan sin publicar [Discografías por artista](../DISCOGRAFIAS.md) y [Artistas y ediciones](../ARTISTAS_Y_EDICIONES.md): búsqueda MusicBrainz, selección múltiple, comparación con la colección y elección opcional de edición, pistas y portada con DB13/JSON9. La publicación necesita configurar el servicio HTTPS y aplicar las migraciones de sincronización en el entorno elegido. Continúa pendiente verificar esos servicios en producción.
+La misma actualización incorpora [Discografías por artista](../DISCOGRAFIAS.md) y [Artistas y ediciones](../ARTISTAS_Y_EDICIONES.md): búsqueda MusicBrainz, selección múltiple, comparación con la colección y elección opcional de edición, pistas y portada con DB13/JSON9. El [servicio HTTPS en Supabase](../CATALOGO_SUPABASE.md) y las migraciones JSON8/9 se verificaron en el proyecto publicado.
 
 ## Líneas de evolución
 

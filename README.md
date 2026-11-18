@@ -22,7 +22,7 @@
 
 Auditorium es una fonoteca digital para organizar álbumes, ediciones, escuchas, valoraciones y adquisiciones en un mismo lugar. Separa el catálogo musical de la experiencia personal y de la colección, para reconocer tanto una obra como las distintas ediciones y copias que tienes.
 
-Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La versión publicada es la 1.1.0; los cambios posteriores se describen en el [changelog](CHANGELOG.md).
+Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La web incluye la actualización de discografías y ediciones del 17 de noviembre; el ZIP descargable sigue en 1.1.0. Los detalles están en el [changelog](CHANGELOG.md).
 
 ## Por qué quise construirlo
 
@@ -59,9 +59,9 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 **Biblioteca y catálogo.** Registrar álbumes manualmente, artistas, créditos, géneros, ediciones, pistas y variantes; revisar candidatos de Wikidata cuando lo solicites, sin copiar cambios automáticamente.
 
-**Discografías por artista (sin publicar).** Buscar una banda en MusicBrainz, seleccionar varias obras y revisar coincidencias antes de incorporarlas. Incluye servicio de consulta para desarrollo y hosting independiente; la instalación estática necesita configurar ese servicio. [Recorrido y configuración](docs/DISCOGRAFIAS.md).
+**Discografías por artista.** Buscar una banda en MusicBrainz, seleccionar varias obras y revisar coincidencias antes de incorporarlas. El servicio de consulta está configurado en la web; otras instalaciones necesitan alojarlo. [Recorrido y configuración](docs/DISCOGRAFIAS.md).
 
-**Artistas y ediciones (sin publicar).** Abrir la colección de un artista, compararla con su discografía y elegir ediciones con pistas y portada opcionales. Los datos manuales se conservan y los vínculos se revisan antes de guardar. [Guía de artista y edición](docs/ARTISTAS_Y_EDICIONES.md).
+**Artistas y ediciones.** Abrir la colección de un artista, compararla con su discografía y elegir ediciones con pistas y portada opcionales. Los datos manuales se conservan y los vínculos se revisan antes de guardar. [Guía de artista y edición](docs/ARTISTAS_Y_EDICIONES.md).
 
 **Experiencia y colección.** Anotar escuchas y valoraciones independientes; registrar formatos físicos o digitales, varias copias y deseos de compra; conservar enlaces personales.
 
@@ -75,7 +75,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 - **Disponible en 1.1.0:** web/PWA, catálogo, experiencia personal, colección, reproducción, audio local, respaldos y cuenta opcional.
 - **Validación pendiente:** pruebas físicas móviles y de rendimiento con bibliotecas grandes y almacenamiento limitado. La [guía de validación](docs/VALIDACION_RECORRIDO.md) detalla la cobertura actual.
-- **Cambios posteriores a 1.1.0:** importación aditiva de respaldos, catálogo musical JSON, artistas y discografías MusicBrainz, ediciones, pistas y portadas opcionales con DB13/JSON9, en la sección «Sin publicar» del [changelog](CHANGELOG.md).
+- **Web actualizada el 17 de noviembre:** importación aditiva de respaldos, catálogo musical JSON, artistas y discografías MusicBrainz, ediciones, pistas y portadas opcionales con DB13/JSON9. [Cambios de la web](CHANGELOG.md).
 - **Líneas de evolución:** empaquetado nativo de escritorio y Android.
 
 ## Dónde viven tus datos

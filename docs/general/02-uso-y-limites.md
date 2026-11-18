@@ -27,7 +27,7 @@
 - **Respaldo de metadatos:** hasta 20 MiB por documento JSON/snapshot, según validación del código.
 - **Streaming externo:** depende de sus proveedores y sus condiciones; una ficha no garantiza reproducción offline de sus servicios.
 - **Cuenta:** existe solo si se ha configurado el proyecto Supabase. Con cuenta, los cambios entre dispositivos pueden generar conflictos que requieren revisión.
-- **Versiones:** la importación aditiva y de catálogo figura en la sección «Sin publicar» del [changelog](../../CHANGELOG.md). Consulta las notas de tu versión antes de usar esos formatos.
+- **Versiones:** la web incluye la importación aditiva y de catálogo desde la actualización del 17 de noviembre; el ZIP 1.1.0 conserva sus funciones originales. Consulta el [changelog](../../CHANGELOG.md) de tu instalación antes de usar esos formatos.
 
 ## Importante antes de restaurar
 

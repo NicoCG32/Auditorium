@@ -14,7 +14,7 @@ Las integraciones externas cumplen funciones distintas. Esta guía resume cuánd
 
 ## Recorrido de solicitudes externas
 
-El incremento [Discografías por artista](../DISCOGRAFIAS.md), todavía sin publicar, añade consultas MusicBrainz mediante un servicio de Auditorium configurado al compilar. El servicio y MusicBrainz reciben sólo el texto o MBID solicitado; las notas y la biblioteca no forman parte de esa consulta. El transporte limita destinos, tráfico, bytes y caché; no requiere cuenta de Auditorium.
+Las [Discografías por artista](../DISCOGRAFIAS.md) consultan MusicBrainz mediante un [servicio de Auditorium en Supabase](../CATALOGO_SUPABASE.md), configurado al compilar. El servicio y MusicBrainz reciben sólo el texto o MBID solicitado; las notas y la biblioteca no forman parte de esa consulta. El transporte limita destinos, tráfico, bytes y caché; no requiere cuenta de Auditorium.
 
 ```mermaid
 flowchart LR

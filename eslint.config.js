@@ -36,6 +36,10 @@ export default defineConfig([
     languageOptions: { globals: globals.browser },
   },
   {
+    files: ['supabase/functions/**/index.mjs'],
+    languageOptions: { globals: { Deno: 'readonly' } },
+  },
+  {
     files: [
       'prototypes/media-01/{app,probe}.mjs',
       'prototypes/audio-01/{app,audio,storage,probe}.mjs',

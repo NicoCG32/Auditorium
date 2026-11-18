@@ -58,7 +58,7 @@ Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos 
 
 ## Guías de consulta
 
-El incremento [Discografías por artista](DISCOGRAFIAS.md), todavía sin publicar, incorpora MusicBrainz y DB13/JSON9. La guía de [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) explica la comparación de colección, pistas y portada opcionales. Los estudios y documentos de incrementos anteriores conservan sus versiones históricas.
+La web incorpora [Discografías por artista](DISCOGRAFIAS.md), MusicBrainz y DB13/JSON9. La guía de [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) explica la comparación de colección, pistas y portada opcionales. El [servicio de catálogo en Supabase](CATALOGO_SUPABASE.md) describe su despliegue y límites. Los estudios y documentos de incrementos anteriores conservan sus versiones históricas.
 
 | Quiero…                           | Documento especializado                                                                                                     |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
@@ -84,7 +84,7 @@ Las [ADR](adr/) recogen las decisiones y su contexto histórico. Incluyen el [MV
 
 ## Qué versión estás leyendo
 
-La versión publicada es **1.1.0, del 29 de octubre de 2026**. La importación aditiva y el catálogo JSON figuran como **Sin publicar** en el [changelog](../CHANGELOG.md). Consulta las notas de la versión instalada para conocer sus funciones.
+La web incluye la actualización del **17 de noviembre de 2026**, descrita en el [changelog](../CHANGELOG.md). El ZIP descargable sigue en **1.1.0, del 29 de octubre de 2026** y conserva sus archivos originales. Consulta las notas de la versión instalada para conocer sus funciones.
 
 Los formatos de datos tienen versiones diferentes: **Dexie DB13, respaldo JSON9 y respaldo de audio ZIP1**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
 

@@ -1,6 +1,6 @@
 # Incorporar una discografía
 
-Incremento **sin publicar** posterior a 1.1.0. La búsqueda está disponible cuando la instalación tiene configurado el servicio de catálogo; el registro manual y la importación JSON siguen disponibles.
+La web de Auditorium permite buscar discografías sin iniciar sesión. Otras instalaciones necesitan configurar el servicio de catálogo; el registro manual y la importación JSON siguen disponibles.
 
 ## Buscar y seleccionar
 
@@ -28,16 +28,16 @@ La confirmación relee y compara la biblioteca revisada dentro de una transacci�
 
 La PWA consulta un servicio acotado de Auditorium que envía nombre o MBID a MusicBrainz. Ese intermediario y MusicBrainz reciben las consultas; no reciben la biblioteca, identidad local, notas, valoraciones, compras o audio. La caché temporal contiene sólo respuestas de catálogo, sin persistir búsquedas en la biblioteca.
 
-MusicBrainz exige identificación de la aplicación y limita el tráfico, generalmente a una petición por segundo por IP. El navegador no permite garantizar el User-Agent necesario en todos los motores. Por eso el servicio controla el encabezado, una cola compartida por proceso, timeout, tamaño de respuesta y caché. Acepta exclusivamente búsqueda de artistas, listados paginados de grupos o ediciones y consulta de una edición por MBID; nunca una URL de destino arbitraria.
+MusicBrainz exige identificación de la aplicación y limita el tráfico, generalmente a una petición por segundo por IP. El navegador no permite garantizar el User-Agent necesario en todos los motores. Por eso el servicio controla el encabezado, una cola compartida, timeout, tamaño de respuesta y caché. Acepta exclusivamente búsqueda de artistas, listados paginados de grupos o ediciones y consulta de una edición por MBID; nunca una URL de destino arbitraria.
 
-En desarrollo, `npm run dev` incluye `/api/musicbrainz` sin claves adicionales. Para una instalación estática:
+En desarrollo, `npm run dev` incluye `/api/musicbrainz` sin claves adicionales. La web publicada utiliza una [función de Supabase con coordinación en PostgreSQL](CATALOGO_SUPABASE.md). Para alojar una instalación estática con un servicio Node independiente:
 
 1. Ejecuta `npm run catalog:serve` en un host con Node compatible. Configura `CATALOG_HOST`, `CATALOG_PORT` y `CATALOG_ALLOWED_ORIGINS` según `.env.example`; el valor por defecto escucha sólo en loopback.
 2. Publica el servicio detrás de HTTPS y configura `VITE_MUSICBRAINZ_PROXY_URL=https://tu-servicio/api/musicbrainz` al compilar la PWA. En el workflow de Pages corresponde a la variable de repositorio `MUSICBRAINZ_PROXY_URL`.
 3. Usa **un único proceso** para cada IP de salida. Varias réplicas requieren una cola y caché coordinadas entre ellas; aumentar réplicas no aumenta el límite del proveedor. Si comparte IP con otros servicios, deben coordinar el tráfico agregado.
 4. Antes de publicar una variante con cuenta, aplica las migraciones en orden, incluidas `20261115222457_musicbrainz_references_v8.sql` y `20261116231510_edition_recording_references_v9.sql`. No son necesarias para el funcionamiento local sin cuenta. Verifica los tests SQL `musicbrainz_references.sql` y `edition_recording_references.sql`, además de la batería de sincronización, antes de habilitar usuarios.
 
-La caché guarda hasta 128 respuestas durante seis horas. Hay un máximo de 32 solicitudes pendientes; la cola y errores 503 no se interpretan como ausencia de discos. La actualización de la discografía depende de una consulta del usuario, sin sondeo periódico.
+La caché guarda hasta 128 respuestas durante seis horas. Hay un máximo de 32 solicitudes pendientes; la cola y errores 503 no se interpretan como ausencia de discos. En Supabase también se limita la caché a 16 MiB y se coordina entre todas las instancias. La actualización de la discografía depende de una consulta del usuario, sin sondeo periódico.
 
 ## Verificación
 

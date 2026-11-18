@@ -50,10 +50,16 @@ export class MusicBrainzClient implements DiscographyCatalog, EditionCatalog {
   readonly available: boolean
   private readonly base: string | undefined
   private readonly fetcher: typeof fetch
-  constructor(base: string | undefined, fetcher: typeof fetch = fetch) {
+  private readonly apiKey: string | undefined
+  constructor(
+    base: string | undefined,
+    fetcher: typeof fetch = fetch,
+    apiKey?: string,
+  ) {
     this.fetcher = (...args) => fetcher(...args)
     this.base = base?.replace(/\/$/, '')
     this.available = Boolean(this.base)
+    this.apiKey = apiKey
   }
   private async request(
     endpoint: string,
@@ -67,7 +73,10 @@ export class MusicBrainzClient implements DiscographyCatalog, EditionCatalog {
     const url = `${this.base}/${endpoint}?${new URLSearchParams(parameters)}`
     const response = await this.fetcher(url, {
       signal: AbortSignal.any([signal, AbortSignal.timeout(50000)]),
-      headers: { Accept: 'application/json' },
+      headers: {
+        Accept: 'application/json',
+        ...(this.apiKey ? { apikey: this.apiKey } : {}),
+      },
       credentials: 'omit',
       referrerPolicy: 'no-referrer',
       redirect: 'error',
@@ -220,4 +229,42 @@ function configuredProxy(value: unknown) {
 const proxyBase =
   configuredProxy(configured) ??
   (import.meta.env.DEV ? '/api/musicbrainz' : undefined)
-export const musicBrainzCatalog = new MusicBrainzClient(proxyBase)
+export function catalogApiKey(
+  base: string | undefined,
+  project: unknown,
+  key: unknown,
+) {
+  if (
+    !base ||
+    typeof project !== 'string' ||
+    typeof key !== 'string' ||
+    !key.startsWith('sb_publishable_')
+  )
+    return
+  try {
+    const endpoint = new URL(base),
+      expected = new URL(project)
+    if (
+      endpoint.protocol === 'https:' &&
+      expected.protocol === 'https:' &&
+      endpoint.origin === expected.origin &&
+      endpoint.pathname === '/functions/v1/musicbrainz' &&
+      !endpoint.username &&
+      !endpoint.password &&
+      !endpoint.search &&
+      !endpoint.hash
+    )
+      return key
+  } catch {
+    /* Other catalog hosts do not receive the Supabase project key. */
+  }
+}
+export const musicBrainzCatalog = new MusicBrainzClient(
+  proxyBase,
+  fetch,
+  catalogApiKey(
+    proxyBase,
+    import.meta.env.VITE_SUPABASE_URL,
+    import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+  ),
+)

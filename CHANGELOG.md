@@ -1,12 +1,16 @@
 # Changelog
 
-## Sin publicar
+## Web — 2026-11-17
+
+Actualización de la web publicada. El ZIP de la release 1.1.0 conserva sus archivos originales.
+
+- Servicio MusicBrainz alojado en el Supabase existente, con cola, concesiones y caché coordinadas entre instancias. Consulta sin cuenta mediante clave publicable, sin enviar la biblioteca. Tablas y RPC exclusivas del servidor, límites de memoria y caducidad, y pruebas SQL con rollback. Guía en `docs/CATALOGO_SUPABASE.md`.
 
 - Pantalla de artista desde las tarjetas y fichas: álbumes locales, copias y deseos, comparación explícita con MusicBrainz e incorporación de discos sin salir de la comparación. Los artistas manuales se vinculan tras revisar su identidad y conservan su nombre local.
 - Selección de ediciones con pistas opcionales por disco, reutilización explícita de pistas manuales y reconocimiento de referencias ya guardadas. Se conservan listas anteriores, UUID, valoraciones, copias, deseos, enlaces y audio; no se infieren compras. Vista previa opcional de Cover Art Archive y sustitución de portada confirmada.
 - DB13/nativa130 y JSON/snapshot9 añaden referencias MusicBrainz de edición y grabación, con unicidad de grabación por álbum. Migración estricta desde DB12 y sus checkpoints, lectores JSON1–8, actualización SQL para sincronización y recuperación de lectura sin repetir escrituras. ZIP1 conserva su formato. Guía en `docs/ARTISTAS_Y_EDICIONES.md`.
 - Interfaz orientada a la colección: ejemplares y deseos al principio de la ficha, guardado manual junto a artista y título, detalles del ejemplar y metadatos desplegables, y tarjetas con adquisiciones y deseos sin filas de datos ausentes. Escucha, notas y audio siguen siendo opcionales; se conserva la protección de borradores.
-- Búsqueda de artistas y discografías MusicBrainz con paginación, filtros y selección múltiple. Revisión explícita de homónimos y posibles duplicados, importación atómica, referencias persistentes y protección de experiencia y álbumes retirados. Servicio de consulta identificado con cola global por proceso, caché acotada y errores recuperables; integración de desarrollo y configuración opcional para sitios estáticos.
+- Búsqueda de artistas y discografías MusicBrainz con paginación, filtros y selección múltiple. Revisión explícita de homónimos y posibles duplicados, importación atómica, referencias persistentes y protección de experiencia y álbumes retirados. Servicio de consulta identificado con cola compartida, caché acotada y errores recuperables; integración de desarrollo y configuración para sitios estáticos.
 - «Añadir música» reúne búsqueda de discografía, alta manual compacta e importación JSON. Las referencias se conservan al editar metadatos y se desvinculan al cambiar la identidad de la obra. DB12/nativa120 y JSON/snapshot8 incorporan procedencia MusicBrainz; migración desde DB11, lectura estricta de JSON1–7 y migración SQL para sincronización. ZIP1 conserva su formato.
 - Importación aditiva de respaldos JSON sobre bibliotecas existentes, con vista previa, decisiones explícitas de conflictos e identidades coincidentes, confirmación atómica y detección de cambios concurrentes. Conserva identidad de destino, registros ausentes, audio y experiencia; recuperación de lectura sin repetir importación.
 - Catálogo musical JSON versionado para incorporar discografías sin notas, escuchas o adquisiciones inferidas. Plantilla exportable con identificadores y créditos principales, sin identidad ni experiencia personal; contrato y guía de importación. Su formato sencillo continúa en versión 1.

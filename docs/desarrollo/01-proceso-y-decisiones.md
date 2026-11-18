@@ -10,11 +10,11 @@ No comencé por intentar integrar todos los servicios musicales posibles. Lo fun
 
 El desarrollo se organiza en estos hitos:
 
-| Hito                               | Evidencia                                                         | Resultado documentado                                                                                                       |
-| ---------------------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **MVP local v1.0.0** — 14 oct 2026 | `CHANGELOG.md`, guías de MVP                                      | Registro manual, catálogo, experiencia, copias, deseos, respaldo, PWA y pruebas                                             |
-| **v1.1.0** — 29 oct 2026           | `CHANGELOG.md`, `package.json`                                    | Navegación consolidada, edición, audio local, reproducción desde enlaces, cuenta opcional, clasificación y notas por género |
-| **Trabajo sin publicar**           | Sección «Sin publicar» de `CHANGELOG.md`; archivos de importación | Importación aditiva y catálogo musical JSON; existe código y pruebas, pero su estado de release debe comprobarse            |
+| Hito                               | Evidencia                                    | Resultado documentado                                                                                                       |
+| ---------------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **MVP local v1.0.0** — 14 oct 2026 | `CHANGELOG.md`, guías de MVP                 | Registro manual, catálogo, experiencia, copias, deseos, respaldo, PWA y pruebas                                             |
+| **v1.1.0** — 29 oct 2026           | `CHANGELOG.md`, `package.json`               | Navegación consolidada, edición, audio local, reproducción desde enlaces, cuenta opcional, clasificación y notas por género |
+| **Actualización web**              | Sección «Web — 2026-11-17» de `CHANGELOG.md` | Discografías, ediciones e importación aditiva disponibles en la web; el ZIP 1.1.0 conserva sus archivos originales          |
 
 Las notas de cada versión están en el [changelog](../../CHANGELOG.md).
 

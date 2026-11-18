@@ -1,6 +1,6 @@
 # Artistas, ediciones, pistas y portadas
 
-Ampliación **sin publicar** posterior a 1.1.0. La consulta externa necesita el [servicio MusicBrainz](DISCOGRAFIAS.md#transporte-y-configuración). La biblioteca y el registro manual siguen disponibles sin él.
+La consulta externa utiliza el [servicio MusicBrainz](DISCOGRAFIAS.md#transporte-y-configuración), configurado en la web publicada. La biblioteca y el registro manual siguen disponibles sin él.
 
 ## Abrir un artista
 
@@ -42,7 +42,7 @@ La confirmación compara el snapshot revisado dentro de una transacción. Si la 
 
 - El catálogo puede estar incompleto. No se prometen todas las ediciones ni sus portadas.
 - La consulta comparte cola y caché con las discografías. Máximo 100 ediciones por página, respuesta de 2 MiB y 1000 pistas por edición; los resultados que exceden el contrato se rechazan para conservar la biblioteca.
-- Antes de habilitar la sincronización de esta versión, aplica las migraciones en orden, incluida `20261116231510_edition_recording_references_v9.sql`, y ejecuta `supabase/tests/edition_recording_references.sql`. La migración está preparada en el repositorio; modificar una cuenta remota es una operación de publicación aparte.
+- En otras instalaciones con cuenta, aplica las migraciones en orden, incluida `20261116231510_edition_recording_references_v9.sql`, y ejecuta `supabase/tests/edition_recording_references.sql`. Las migraciones JSON8/9 ya están aplicadas y verificadas en el Supabase de la web publicada.
 - Las pruebas automatizadas usan datos ficticios y perfiles aislados. No sustituyen la comprobación del servicio HTTPS y del entorno Supabase que se vaya a publicar.
 
 Fuentes: [MusicBrainz API](https://musicbrainz.org/doc/MusicBrainz_API), [ediciones](https://musicbrainz.org/doc/Release), [Cover Art Archive](https://musicbrainz.org/doc/Cover_Art_Archive) y [licencias de datos](https://musicbrainz.org/doc/About/Data_License).
