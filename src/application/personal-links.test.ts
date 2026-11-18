@@ -326,5 +326,5 @@ test('migrar DB6 al esquema actual conserva todos los datos y el checkpoint sin 
     revision: 2,
     base: snapshot,
   })
-  expect(current.database.verno).toBe(11)
+  expect(current.database.verno).toBe(13)
 })

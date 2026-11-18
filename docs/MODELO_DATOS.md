@@ -1,8 +1,10 @@
 # Modelo de datos y persistencia
 
-COL-05 completa [Mi colección](MI_COLECCION.md) sin campos persistentes nuevos: actualización y retirada de filas OwnedItem con estado completo esperado y transacción local. Conserva DB11/nativa110, JSON/snapshot7, ZIP1 y sincronización; los nombres legibles se derivan en la presentación.
+El incremento vigente [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) usa DB13/nativa130 y JSON/snapshot9; incorpora referencias MusicBrainz opcionales de edición y grabación, conservando ZIP1. Los apartados de incrementos anteriores mantienen su contexto histórico.
 
-RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB11/nativa110 y JSON/snapshot7 conservan su compatibilidad; ZIP1 mantiene el audio separado.
+COL-05 completa [Mi colección](MI_COLECCION.md) sin campos persistentes nuevos: actualización y retirada de filas OwnedItem con estado completo esperado y transacción local. Conserva DB12/nativa120, JSON/snapshot8, ZIP1 y sincronización; los nombres legibles se derivan en la presentación.
+
+RATE-01/02 incorporan [valoraciones por género](VALORACIONES_POR_GENERO.md), independientes de la general: editor conjunto con control concurrente, referencia de edición propia, renombrado protegido y comparación explícita en Biblioteca, ficha y Calificaciones. DB12/nativa120 y JSON/snapshot8 conservan su compatibilidad; ZIP1 mantiene el audio separado.
 
 El [audio personal persistente](AUDIO_LOCAL.md) se conserva por dispositivo y se traslada mediante ZIP1. Archivos y descriptores permanecen fuera de JSON, RPC y checkpoints; la actualización conserva sus bytes y asociaciones.
 
@@ -14,7 +16,7 @@ UX-05 separa la clasificación en Album y migra las filas y los documentos del c
 
 ## Propósito y alcance
 
-Este documento describe la representación física y los contratos de persistencia desde el MVP **v1.0.0** hasta RATE-01 de DB11/respaldo7 y ZIP completo1. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
+Este documento describe la representación física y los contratos de persistencia desde el MVP **v1.0.0** hasta los incrementos de artistas y ediciones de DB13/respaldo9 y ZIP completo1. La release original conserva sus contratos anteriores. Esta vista complementa el modelo conceptual del catálogo y la biblioteca; aquí se especifican claves, índices, transformaciones, validación, transacciones y recuperación.
 
 La información musical y personal reside en IndexedDB, en la base `auditorium` del origen y perfil de navegador utilizados. El repositorio implementa los contratos del dominio mediante Dexie. La caché de recursos de la aplicación pertenece al service worker y se explica en [PWA y uso sin conexión](PWA_OFFLINE.md); no sustituye esta base ni contiene el respaldo de la biblioteca.
 
@@ -83,19 +85,20 @@ La retirada de un álbum personal no elimina su catálogo ni los registros perso
 
 ### Historial de esquema
 
-| Versión Dexie | Versión nativa IndexedDB | Incorporación                                                                                         |
-| ------------- | ------------------------ | ----------------------------------------------------------------------------------------------------- |
-| 1             | 10                       | `metadata`, las siete tablas de catálogo, `userAlbums`, `albumRatings` y `trackRatings`               |
-| 2             | 20                       | Añade `ownedItems`                                                                                    |
-| 3             | 30                       | Añade `purchaseWishes`                                                                                |
-| 4             | 40                       | Admite `Album.catalogReference`; conserva las trece tablas y todos los índices de v3                  |
-| 5             | 50                       | Admite `Artist.country`, `Album.genres` y `Album.coverImage`; conserva tablas e índices               |
-| 6             | 60                       | Añade `syncCheckpoint` para la sincronización opcional                                                |
-| 7             | 70                       | Admite enlaces y favorito en `UserAlbum`; conserva tablas, índices y checkpoints                      |
-| 8             | 80                       | Clasificación independiente de Album e índice primaryType; migra filas y checkpoint                   |
-| 9             | 90                       | Referencia opcional de AlbumRating; valida filas y todos los documentos del checkpoint                |
-| 10            | 100                      | Audio local en dos tablas; valida snapshot y documentos actuales del checkpoint sin inventar adjuntos |
-| 11            | 110                      | Notas por género en tabla compuesta; convierte los cinco documentos del checkpoint a snapshot7        |
+| Versión Dexie | Versión nativa IndexedDB | Incorporación                                                                                                   |
+| ------------- | ------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| 1             | 10                       | `metadata`, las siete tablas de catálogo, `userAlbums`, `albumRatings` y `trackRatings`                         |
+| 2             | 20                       | Añade `ownedItems`                                                                                              |
+| 3             | 30                       | Añade `purchaseWishes`                                                                                          |
+| 4             | 40                       | Admite `Album.catalogReference`; conserva las trece tablas y todos los índices de v3                            |
+| 5             | 50                       | Admite `Artist.country`, `Album.genres` y `Album.coverImage`; conserva tablas e índices                         |
+| 6             | 60                       | Añade `syncCheckpoint` para la sincronización opcional                                                          |
+| 7             | 70                       | Admite enlaces y favorito en `UserAlbum`; conserva tablas, índices y checkpoints                                |
+| 8             | 80                       | Clasificación independiente de Album e índice primaryType; migra filas y checkpoint                             |
+| 9             | 90                       | Referencia opcional de AlbumRating; valida filas y todos los documentos del checkpoint                          |
+| 10            | 100                      | Audio local en dos tablas; valida snapshot y documentos actuales del checkpoint sin inventar adjuntos           |
+| 11            | 110                      | Notas por género en tabla compuesta; convierte los cinco documentos del checkpoint a snapshot7                  |
+| 12            | 120                      | Referencias MusicBrainz opcionales en artistas/obras; índices únicos; valida DB11 y checkpoints sin cambiar IDs |
 
 Las migraciones mantienen claves, índices y registros históricos; v2/v3 crean las nuevas tablas vacías. v4 y v5 no crean tablas ni transforman filas: establecen barreras de compatibilidad para sus campos opcionales, evitando que una versión anterior los interprete como corrupción. No hay una conversión de notas, regeneración de identificadores ni enriquecimiento de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
 
@@ -189,9 +192,9 @@ Los errores propios de los casos de uso y de las confirmaciones se mantienen com
 
 ## Contrato de respaldo JSON
 
-El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 7`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las seis de biblioteca, incluida `albumGenreRatings`, aunque estén vacías. Incluye portadas locales y enlaces remotos. Excluye índices técnicos, checkpoint, audio y claves o resultados de recomendaciones. Los contratos históricos 1–6 se validan antes de convertirlos.
+El [contrato de respaldo](../src/domain/backup.ts) usa `format: "auditorium-backup"`, `schemaVersion: 8`, `exportedAt` y `data: LocalSnapshot`. Exige las siete colecciones de catálogo y las seis de biblioteca, incluida `albumGenreRatings`, aunque estén vacías. Incluye portadas locales y enlaces remotos. Excluye índices técnicos, checkpoint, audio y claves o resultados de recomendaciones. Los contratos históricos 1–7 se validan antes de convertirlos.
 
-La versión **7 del respaldo** es independiente de IndexedDB **11**. Incorpora las notas por género al snapshot; el formato 6 añadió la referencia opcional de la nota general, el 5 separó la clasificación del álbum y el 4 incorporó enlaces personales y favorito. Los formatos 1–6 mantienen sus schemas históricos estrictos antes de normalizar al formato vigente: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y v1–3 no admiten los campos de enlaces. Las migraciones conservan los datos existentes y validan referencias, propietario, duplicados y fechas. El archivo de respaldo usa su propio contrato, separado del volcado de tablas nativas.
+La versión **8 del respaldo** es independiente de IndexedDB **12**. Añade referencias MusicBrainz opcionales a artistas y álbumes; los formatos 1–7 no admiten esos campos nuevos. Incorpora las notas por género al snapshot; el formato 6 añadió la referencia opcional de la nota general, el 5 separó la clasificación del álbum y el 4 incorporó enlaces personales y favorito. Los formatos 1–7 mantienen sus schemas históricos estrictos antes de normalizar al formato vigente: v1 no acepta `catalogReference`, v1/v2 no aceptan `country`, `genres` ni `coverImage`, y v1–3 no admiten los campos de enlaces. Las migraciones conservan los datos existentes y validan referencias, propietario, duplicados y fechas. El archivo de respaldo usa su propio contrato, separado del volcado de tablas nativas.
 
 [`LibraryBackups`](../src/application/library-backups.ts) aplica un límite de **20 MiB**, medido en bytes:
 
@@ -259,4 +262,4 @@ El modo sin cuenta conserva su biblioteca local. [SYNC-01](SINCRONIZACION_SUPABA
 
 ## Audio fuera de los snapshots
 
-`AudioLocalRepository` amplía el repositorio de respaldo con lectura local, restauración completa y borrado de audio. `SnapshotMutation.audio` es un plan de escritura aparte; no es un campo de `LocalSnapshot`. El repositorio aplica música y audio en la misma transacción. JSON y SyncFrame excluyen bytes y descriptores de audio. El checkpoint usa snapshot7. La [guía de audio](AUDIO_LOCAL.md#persistencia-y-formato-completo) especifica tablas, ámbito, índices y ZIP1.
+`AudioLocalRepository` amplía el repositorio de respaldo con lectura local, restauración completa y borrado de audio. `SnapshotMutation.audio` es un plan de escritura aparte; no es un campo de `LocalSnapshot`. El repositorio aplica música y audio en la misma transacción. JSON y SyncFrame excluyen bytes y descriptores de audio. El checkpoint usa snapshot8. La [guía de audio](AUDIO_LOCAL.md#persistencia-y-formato-completo) especifica tablas, ámbito, índices y ZIP1.

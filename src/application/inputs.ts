@@ -65,11 +65,11 @@ const credit = {
 const artistInput = z.union([
   z.strictObject({ artistId: entityIdSchema, ...credit }),
   artistSchema
-    .omit({ id: true, catalogScope: true, createdBy: true })
+    .omit({ id: true, catalogScope: true, createdBy: true, musicBrainz: true })
     .extend({ ...credit, name: catalogNameInputSchema }),
 ])
 const albumInputSchema = albumSchema
-  .omit({ id: true, catalogScope: true, createdBy: true })
+  .omit({ id: true, catalogScope: true, createdBy: true, musicBrainz: true })
   .extend({
     personalLinks: personalLinksInputSchema.optional(),
     title: catalogNameInputSchema,
@@ -94,7 +94,7 @@ export type CreateAlbumInput = z.output<typeof createAlbumInputSchema>
 export type ManualAlbumInput = z.output<typeof manualAlbumInputSchema>
 
 export const addReleaseInputSchema = releaseSchema
-  .omit({ id: true })
+  .omit({ id: true, musicBrainz: true })
   .extend({ copyCoreTracks: z.boolean().default(true) })
 
 const appearance = releaseTrackSchema.omit({ id: true, trackId: true }).extend({
@@ -107,5 +107,7 @@ const appearance = releaseTrackSchema.omit({ id: true, trackId: true }).extend({
 })
 export const addTrackInputSchema = z.union([
   appearance.extend({ trackId: entityIdSchema }),
-  appearance.extend({ track: trackSchema.omit({ id: true, albumId: true }) }),
+  appearance.extend({
+    track: trackSchema.omit({ id: true, albumId: true, musicBrainz: true }),
+  }),
 ])

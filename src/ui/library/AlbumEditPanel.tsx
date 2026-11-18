@@ -379,39 +379,51 @@ export function AlbumEditPanel({
               required
             />
           </label>
-          <div className="form-grid">
-            <AlbumClassificationFields value={draft} onChange={edit} />
+          <details className="optional-fields album-edit-details">
+            <summary>Datos del álbum (opcionales)</summary>
+            <div className="form-grid mt-5">
+              <AlbumClassificationFields value={draft} onChange={edit} />
+              <label>
+                <span className="field-label">Año original</span>
+                <input
+                  name="originalYear"
+                  inputMode="numeric"
+                  value={draft.originalYear}
+                  onChange={(event) =>
+                    edit({ originalYear: event.target.value })
+                  }
+                />
+              </label>
+            </div>
             <label>
-              <span className="field-label">Año original</span>
-              <input
-                name="originalYear"
-                inputMode="numeric"
-                value={draft.originalYear}
-                onChange={(event) => edit({ originalYear: event.target.value })}
+              <span id="edit-genres-label" className="field-label">
+                Géneros (separados por comas)
+              </span>
+              <CatalogNameInput
+                name="genres"
+                aria-labelledby="edit-genres-label"
+                genres
+                options={suggestions.genres}
+                suggestionsLabel="Géneros del catálogo local"
+                value={draft.genres}
+                placeholder="Rock, jazz, metal…"
+                onChange={(genres) => edit({ genres })}
               />
             </label>
-          </div>
-          <label>
-            <span id="edit-genres-label" className="field-label">
-              Géneros (separados por comas)
-            </span>
-            <CatalogNameInput
-              name="genres"
-              aria-labelledby="edit-genres-label"
-              genres
-              options={suggestions.genres}
-              suggestionsLabel="Géneros del catálogo local"
-              value={draft.genres}
-              placeholder="Rock, jazz, metal…"
-              onChange={(genres) => edit({ genres })}
-            />
-          </label>
+            <label>
+              <span className="field-label">Descripción del álbum</span>
+              <textarea
+                rows={4}
+                value={draft.description}
+                onChange={(event) => edit({ description: event.target.value })}
+              />
+            </label>
+          </details>
           <fieldset className="edit-artists">
-            <legend className="font-semibold">Artistas y país de origen</legend>
+            <legend className="font-semibold">Artistas</legend>
             <p className="mt-3 text-xs text-muted">
-              El país de un artista se comparte con sus otros álbumes. Cambiar
-              el nombre crea un crédito separado para este álbum y conserva los
-              demás.
+              El nombre basta. Puedes precisar el crédito y el país si lo
+              deseas.
             </p>
             {draft.artists.map((artist, index) => (
               <div key={artist.key} className="edit-artist-row">
@@ -456,54 +468,64 @@ export function AlbumEditPanel({
                     required
                   />
                 </label>
-                <label>
-                  <span className="field-label">
-                    País de origen {index + 1}
-                  </span>
-                  <input
-                    value={artist.country}
-                    disabled={Boolean(artist.reuseExpected)}
-                    maxLength={100}
-                    onChange={(event) =>
-                      editArtist(artist.key, { country: event.target.value })
-                    }
-                  />
-                </label>
-                <label>
-                  <span className="field-label">Rol {index + 1}</span>
-                  <select
-                    value={artist.role}
-                    onChange={(event) =>
-                      editArtist(artist.key, {
-                        role: artistRoleSchema.parse(event.target.value),
-                      })
-                    }
-                  >
-                    {artistRoleSchema.options.map((role) => (
-                      <option key={role} value={role}>
-                        {
+                <details className="optional-fields album-edit-details">
+                  <summary>Crédito y país (opcional)</summary>
+                  <p className="optional-help">
+                    El país se comparte con los otros álbumes del artista.
+                    Cambiar el nombre conserva los créditos de los demás
+                    álbumes.
+                  </p>
+                  <label>
+                    <span className="field-label">
+                      País de origen {index + 1}
+                    </span>
+                    <input
+                      value={artist.country}
+                      disabled={Boolean(artist.reuseExpected)}
+                      maxLength={100}
+                      onChange={(event) =>
+                        editArtist(artist.key, { country: event.target.value })
+                      }
+                    />
+                  </label>
+                  <label>
+                    <span className="field-label">Rol {index + 1}</span>
+                    <select
+                      value={artist.role}
+                      onChange={(event) =>
+                        editArtist(artist.key, {
+                          role: artistRoleSchema.parse(event.target.value),
+                        })
+                      }
+                    >
+                      {artistRoleSchema.options.map((role) => (
+                        <option key={role} value={role}>
                           {
-                            primary: 'Principal',
-                            collaborator: 'Colaborador',
-                            featured: 'Invitado',
-                            other: 'Otro',
-                          }[role]
-                        }
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span className="field-label">
-                    Nombre acreditado {index + 1} (opcional)
-                  </span>
-                  <input
-                    value={artist.creditedAs}
-                    onChange={(event) =>
-                      editArtist(artist.key, { creditedAs: event.target.value })
-                    }
-                  />
-                </label>
+                            {
+                              primary: 'Principal',
+                              collaborator: 'Colaborador',
+                              featured: 'Invitado',
+                              other: 'Otro',
+                            }[role]
+                          }
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label>
+                    <span className="field-label">
+                      Nombre acreditado {index + 1} (opcional)
+                    </span>
+                    <input
+                      value={artist.creditedAs}
+                      onChange={(event) =>
+                        editArtist(artist.key, {
+                          creditedAs: event.target.value,
+                        })
+                      }
+                    />
+                  </label>
+                </details>
                 <button
                   type="button"
                   className="text-button"
@@ -542,17 +564,23 @@ export function AlbumEditPanel({
               Añadir artista
             </button>
           </fieldset>
-          <CoverFields
-            url={draft.coverUrl}
-            {...(draft.coverImage ? { image: draft.coverImage } : {})}
-            onChange={edit}
-            onBusyChange={setCoverBusy}
-            disabled={disabled}
-          />
-          <PersonalLinksEditor
-            value={draft.personalLinks}
-            onChange={(personalLinks) => edit({ personalLinks })}
-          />
+          <details
+            className="optional-fields album-edit-details"
+            open={focusLinks || undefined}
+          >
+            <summary>Portada y enlaces (opcionales)</summary>
+            <CoverFields
+              url={draft.coverUrl}
+              {...(draft.coverImage ? { image: draft.coverImage } : {})}
+              onChange={edit}
+              onBusyChange={setCoverBusy}
+              disabled={disabled}
+            />
+            <PersonalLinksEditor
+              value={draft.personalLinks}
+              onChange={(personalLinks) => edit({ personalLinks })}
+            />
+          </details>
           {library.audio ? (
             <details className="optional-fields">
               <summary>Archivos de audio propios</summary>
@@ -572,14 +600,6 @@ export function AlbumEditPanel({
               />
             </details>
           ) : null}
-          <label>
-            <span className="field-label">Descripción del álbum</span>
-            <textarea
-              rows={4}
-              value={draft.description}
-              onChange={(event) => edit({ description: event.target.value })}
-            />
-          </label>
           {expected.album.catalogReference ? (
             <label className="checkbox-option">
               <input

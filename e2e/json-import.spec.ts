@@ -34,7 +34,9 @@ function catalog() {
   }
 }
 async function upload(page: Page, value: unknown) {
-  await page.locator('#json-import-file').setInputFiles({
+  const input = page.locator('#json-import-file')
+  await expect(input).toBeEnabled()
+  await input.setInputFiles({
     name: 'catalogo-ficticio.json',
     mimeType: 'application/json',
     buffer: Buffer.from(JSON.stringify(value)),

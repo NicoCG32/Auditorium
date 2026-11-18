@@ -6,6 +6,8 @@ La web/PWA utiliza la misma aplicación local de Auditorium, compilada para **`/
 
 ## Uso y datos locales
 
+Las [Discografías por artista](DISCOGRAFIAS.md) usan `MUSICBRAINZ_PROXY_URL` con el endpoint HTTPS del [servicio de catálogo en Supabase](CATALOGO_SUPABASE.md). El workflow lo pasa como `VITE_MUSICBRAINZ_PROXY_URL`; las dos variables públicas de Supabase deben pertenecer al mismo proyecto. Pages sirve la PWA y Supabase ejecuta las consultas. Otras instalaciones deben desplegar el servicio y aplicar las migraciones SQL antes de habilitar catálogo y sincronización; el registro manual y JSON funcionan sin el servicio.
+
 Abre la dirección con conexión y espera **«Aplicación preparada para usar sin conexión»**. Después puedes reabrirla sin red. El panel «Aplicación y almacenamiento» ofrece instalación cuando el navegador lo permite; también puedes usar su menú. Véanse los [alcances de la PWA](PWA_OFFLINE.md).
 
 La biblioteca se guarda en IndexedDB del origen y perfil del navegador. La publicación distribuye HTML, JS, CSS, manifest y recursos visuales propios. No envía al repositorio la colección, notas, valoraciones o respaldos. Cada persona gestiona su almacenamiento local; el hosting no crea una cuenta ni sincronización. Las preferencias de apariencia se conservan en el navegador; una foto de fondo elegida desde un archivo local permanece sólo como vista previa de esa apertura y se descarta al recargar. Véase [diseño base](DISENO_BASE.md).

@@ -122,13 +122,60 @@ test.each([1, 2, 3, 4, 5] as const)(
         definition.name === 'albums'
           ? {
               ...definition,
-              indexes: definition.indexes.map((index) =>
-                index.name === 'releaseType'
-                  ? { ...index, name: 'primaryType', keyPath: 'primaryType' }
-                  : index,
-              ),
+              indexes: [
+                {
+                  name: 'musicBrainz.id',
+                  keyPath: 'musicBrainz.id',
+                  unique: true,
+                  multiEntry: false,
+                },
+                ...definition.indexes.map((index) =>
+                  index.name === 'releaseType'
+                    ? { ...index, name: 'primaryType', keyPath: 'primaryType' }
+                    : index,
+                ),
+              ],
             }
-          : definition,
+          : definition.name === 'artists'
+            ? {
+                ...definition,
+                indexes: [
+                  {
+                    name: 'musicBrainz.id',
+                    keyPath: 'musicBrainz.id',
+                    unique: true,
+                    multiEntry: false,
+                  },
+                  ...definition.indexes,
+                ],
+              }
+            : definition.name === 'releases'
+              ? {
+                  ...definition,
+                  indexes: [
+                    ...definition.indexes,
+                    {
+                      name: 'musicBrainz.id',
+                      keyPath: 'musicBrainz.id',
+                      unique: true,
+                      multiEntry: false,
+                    },
+                  ],
+                }
+              : definition.name === 'tracks'
+                ? {
+                    ...definition,
+                    indexes: [
+                      {
+                        name: '[albumId+musicBrainz.id]',
+                        keyPath: ['albumId', 'musicBrainz.id'],
+                        unique: true,
+                        multiEntry: false,
+                      },
+                      ...definition.indexes,
+                    ],
+                  }
+                : definition,
       )
     expect(migrated.identity).toEqual(snapshot.identity)
     expect(
@@ -226,14 +273,14 @@ test('v5 conserva las trece tablas e índices v4 y persiste metadatos y portada 
         : album,
     ),
   })
-  expect(DATABASE_VERSION).toBe(11)
+  expect(DATABASE_VERSION).toBe(13)
   expect(SCHEMA_V4).toEqual(SCHEMA_V3)
   expect(SCHEMA_V5).toEqual(SCHEMA_V4)
   const native = await inspectNativeStorage({
     name: 'migration-recovery',
     factory,
   })
-  expect(native.version).toBe(110)
+  expect(native.version).toBe(130)
   expect(native.stores).toHaveLength(17)
   expect(native.rows['albumGenreRatings']).toEqual([])
   const openedAsV3 = factory.open('migration-recovery', 40)

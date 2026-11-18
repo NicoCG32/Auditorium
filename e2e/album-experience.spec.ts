@@ -8,6 +8,7 @@ import {
   openAlbumArea,
   openExperience,
   openLibraryOptions,
+  openAlbumEditorDetails,
 } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
@@ -173,7 +174,7 @@ test('ficha y Calificaciones mantienen una nota y una referencia opcional entre 
     .click()
   await saved(page)
   const after = await backup(page)
-  expect(after.schemaVersion).toBe(7)
+  expect(after.schemaVersion).toBe(9)
   expect(after.data.catalog).toEqual(before.data.catalog)
   expect(
     after.data.library.albumRatings.filter(
@@ -213,6 +214,7 @@ test('modelo de notas por género restaura7, conserva la general y protege etiqu
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await page
     .getByRole('combobox', { name: 'Géneros (separados por comas)' })
     .fill('Power Metal')

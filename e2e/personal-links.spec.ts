@@ -1,4 +1,7 @@
-import { openAlbumArea } from './helpers/library-navigation'
+import {
+  openAlbumArea,
+  openAlbumEditorDetails,
+} from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -108,7 +111,7 @@ test('alta, edición coordinada, favoritos, cancelación y proveedor genérico c
     }),
   ).not.toContainText('Favorito de reproducción')
   const before = await backup(page)
-  expect(before.schemaVersion).toBe(7)
+  expect(before.schemaVersion).toBe(9)
   expect(before.data.library.albumRatings).toEqual([])
   expect(before.data.library.ownedItems).toEqual([])
   expect(before.data.library.userAlbums[0]!.listeningStatus).toBe('untracked')
@@ -137,6 +140,7 @@ test('alta, edición coordinada, favoritos, cancelación y proveedor genérico c
   expect((await backup(page)).data).toEqual(before.data)
   await openAlbum(page)
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Umbral Ficticio Corregido')

@@ -74,6 +74,11 @@ export function OwnedItemsPanel({
     '',
   )
   const [notes, setNotes] = useDraftState(draftId, 'notes', '')
+  const [detailsOpen, setDetailsOpen] = useDraftState(
+    draftId,
+    'details-open',
+    false,
+  )
   const [deleting, setDeleting] = useState<OwnedItem>()
   const [busy, setBusy] = useState(false)
   const [pending, setPending] = useState<ConfirmedChange>()
@@ -149,6 +154,16 @@ export function OwnedItemsPanel({
     setNotes(item?.notes ?? '')
     setMediaCondition(item?.mediaCondition ?? '')
     setSleeveCondition(item?.sleeveCondition ?? '')
+    setDetailsOpen(
+      Boolean(
+        item &&
+        (item.releaseId ||
+          item.acquiredAt ||
+          item.mediaCondition ||
+          item.sleeveCondition ||
+          item.notes),
+      ),
+    )
     setDeleting(undefined)
     setFailure('')
     setNotice('')
@@ -281,9 +296,8 @@ export function OwnedItemsPanel({
         Tu colección
       </h3>
       <p className="mt-3 text-sm text-muted">
-        Cada copia se registra por separado. La propiedad no cambia tu escucha
-        ni tus valoraciones. Streaming y descargas gratuitas no representan una
-        compra digital.
+        Registra cada copia por separado. Basta con elegir su formato; la
+        edición, el estado y la fecha pueden esperar.
       </p>
       <p className="mt-4 text-sm">
         {visibleItems.length}{' '}
@@ -431,84 +445,94 @@ export function OwnedItemsPanel({
                     ))}
                 </select>
               </label>
-              <label className="field-label">
-                Edición del ejemplar
-                <select
-                  value={releaseId}
-                  onChange={(event) => setReleaseId(event.target.value)}
-                >
-                  <option value="">Sin edición determinada</option>
-                  {releaseId &&
-                  !compatible.some((release) => release.id === releaseId) ? (
-                    <option value={releaseId}>
-                      Edición no disponible: revisa la selección
-                    </option>
-                  ) : null}
-                  {compatible.map((release) => (
-                    <option key={release.id} value={release.id}>
-                      {releaseNames.get(release.id)}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="field-label">
-                Fecha de adquisición
-                <input
-                  type="date"
-                  value={acquiredAt}
-                  onChange={(event) => setAcquiredAt(event.target.value)}
-                  onInput={(event) => setAcquiredAt(event.currentTarget.value)}
+            </div>
+            <details
+              className="optional-fields owned-details"
+              open={detailsOpen}
+              onToggle={(event) => setDetailsOpen(event.currentTarget.open)}
+            >
+              <summary>Detalles del ejemplar (opcionales)</summary>
+              <div className="owned-fields mt-4">
+                <label className="field-label">
+                  Edición del ejemplar
+                  <select
+                    value={releaseId}
+                    onChange={(event) => setReleaseId(event.target.value)}
+                  >
+                    <option value="">Sin edición determinada</option>
+                    {releaseId &&
+                    !compatible.some((release) => release.id === releaseId) ? (
+                      <option value={releaseId}>
+                        Edición no disponible: revisa la selección
+                      </option>
+                    ) : null}
+                    {compatible.map((release) => (
+                      <option key={release.id} value={release.id}>
+                        {releaseNames.get(release.id)}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="field-label">
+                  Fecha de adquisición
+                  <input
+                    type="date"
+                    value={acquiredAt}
+                    onChange={(event) => setAcquiredAt(event.target.value)}
+                    onInput={(event) =>
+                      setAcquiredAt(event.currentTarget.value)
+                    }
+                  />
+                </label>
+                {medium === 'physical' ? (
+                  <>
+                    <label className="field-label">
+                      Estado del soporte
+                      <select
+                        value={mediaCondition}
+                        onChange={(event) =>
+                          setMediaCondition(event.target.value)
+                        }
+                      >
+                        <option value="">Sin registrar</option>
+                        {conditionSchema.options.map((value) => (
+                          <option key={value} value={value}>
+                            {conditionLabels[value]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="field-label">
+                      Estado de la funda
+                      <select
+                        value={sleeveCondition}
+                        onChange={(event) =>
+                          setSleeveCondition(event.target.value)
+                        }
+                      >
+                        <option value="">Sin registrar</option>
+                        {conditionSchema.options.map((value) => (
+                          <option key={value} value={value}>
+                            {conditionLabels[value]}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </>
+                ) : null}
+              </div>
+              <label className="field-label mt-4">
+                Notas del ejemplar
+                <textarea
+                  rows={3}
+                  value={notes}
+                  onChange={(event) => setNotes(event.target.value)}
                 />
               </label>
-              {medium === 'physical' ? (
-                <>
-                  <label className="field-label">
-                    Estado del soporte
-                    <select
-                      value={mediaCondition}
-                      onChange={(event) =>
-                        setMediaCondition(event.target.value)
-                      }
-                    >
-                      <option value="">Sin registrar</option>
-                      {conditionSchema.options.map((value) => (
-                        <option key={value} value={value}>
-                          {conditionLabels[value]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="field-label">
-                    Estado de la funda
-                    <select
-                      value={sleeveCondition}
-                      onChange={(event) =>
-                        setSleeveCondition(event.target.value)
-                      }
-                    >
-                      <option value="">Sin registrar</option>
-                      {conditionSchema.options.map((value) => (
-                        <option key={value} value={value}>
-                          {conditionLabels[value]}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </>
-              ) : null}
-            </div>
-            <label className="field-label mt-4">
-              Notas del ejemplar
-              <textarea
-                rows={3}
-                value={notes}
-                onChange={(event) => setNotes(event.target.value)}
-              />
-            </label>
-            <p id="owned-help" className="mt-2 text-xs text-muted">
-              Fecha, condiciones, notas y edición son opcionales. Se conservan
-              los espacios y saltos de línea de tus notas.
-            </p>
+              <p id="owned-help" className="mt-2 text-xs text-muted">
+                Completa sólo lo que quieras conservar. Puedes editarlo después.
+              </p>
+            </details>
             <div className="mt-4 flex flex-wrap gap-3">
               <button
                 type="submit"

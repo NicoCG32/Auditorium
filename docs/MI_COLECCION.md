@@ -1,6 +1,10 @@
 # Mi colección: ejemplares y compras digitales
 
-COL-05 #71 · 27 de octubre de 2026. Mi colección es el último destino principal, después de Biblioteca, Añadir álbum y Calificaciones. Registra las adquisiciones explícitas: cada ejemplar físico y cada compra individual digital tienen su propio registro.
+COL-05 #71 · 27 de octubre de 2026, con refinamiento de interfaz posterior a 1.1.0. Mi colección se encuentra junto a Biblioteca en el menú principal. Registra las adquisiciones explícitas: cada ejemplar físico y cada compra individual digital tienen su propio registro.
+
+**Registrar una adquisición** y **Consultar deseos de compra** aparecen antes del listado. En la ficha del álbum, **Mi colección** y **Deseos de compra** son los primeros apartados y muestran sus recuentos. Los deseos permanecen separados de **Administrar álbum**, donde se encuentra la retirada.
+
+Para guardar una copia basta con medio y formato. **Detalles del ejemplar (opcionales)** despliega edición, fecha, condiciones y notas; puedes completarlos más adelante. Cerrar el desplegable conserva lo escrito. Al editar una copia con detalles existentes, se muestran para facilitar su revisión. Ningún registro de ejemplar crea una valoración o cambia la escucha.
 
 ## Consultar y localizar
 

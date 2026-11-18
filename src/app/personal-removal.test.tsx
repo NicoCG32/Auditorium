@@ -79,6 +79,7 @@ async function open(repository: IndexedDbRepository) {
   openAlbumArea('tracks')
   openAlbumArea('collection')
   openAlbumArea('actions')
+  openAlbumArea('wishes')
   openExperience()
 }
 function begin() {

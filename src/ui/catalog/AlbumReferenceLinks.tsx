@@ -8,6 +8,8 @@ export function AlbumReferenceLinks({
   artist: string
 }) {
   const reference = album.catalogReference
+  const musicBrainzId =
+    album.musicBrainz?.id ?? reference?.musicBrainzReleaseGroupId
   const query = encodeURIComponent(`${artist} ${album.title}`)
   const links = [
     ...(reference
@@ -18,11 +20,11 @@ export function AlbumReferenceLinks({
           },
         ]
       : []),
-    ...(reference?.musicBrainzReleaseGroupId
+    ...(musicBrainzId
       ? [
           {
             label: 'MusicBrainz · grupo de ediciones',
-            url: `https://musicbrainz.org/release-group/${reference.musicBrainzReleaseGroupId}`,
+            url: `https://musicbrainz.org/release-group/${musicBrainzId}`,
           },
         ]
       : []),
@@ -47,6 +49,9 @@ export function AlbumReferenceLinks({
     <section className="catalog-links" aria-label="Referencias del catálogo">
       <h3 className="text-lg font-semibold">Referencias del catálogo</h3>
       <p className="mt-2 text-sm text-muted">
+        {album.musicBrainz
+          ? `MusicBrainz consultado el ${album.musicBrainz.retrievedAt.slice(0, 10)}. `
+          : ''}
         {reference
           ? `Referencia consultada el ${reference.retrievedAt.slice(0, 10)}. Los enlaces del catálogo pueden corresponder a distintas ediciones. `
           : ''}

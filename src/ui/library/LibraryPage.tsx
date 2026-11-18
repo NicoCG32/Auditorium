@@ -18,7 +18,7 @@ import type {
   BackupLocalRepository,
 } from '../../domain/repositories/local-repository'
 import { LocalStorageError } from '../../infrastructure/db/errors'
-import { AlbumForm } from './AlbumForm'
+import { AddMusicPage } from './AddMusicPage'
 import { AlbumSummary } from './AlbumSummary'
 import { RemovedAlbumsPanel } from './RemovedAlbumsPanel'
 import { BackupPanel } from './BackupPanel'
@@ -33,6 +33,7 @@ import { LibraryView } from './LibraryView'
 import { RatingsDestination, WishesDestination } from './LibraryDestinations'
 import { CollectionDestination } from './CollectionDestination'
 import { defaultCollectionFilters } from '../../application/collection-query'
+import { ArtistPage } from './ArtistPage'
 
 type LoadState =
   | { status: 'loading' }
@@ -60,9 +61,9 @@ function errorMessage(error: unknown) {
 
 const mainRoutes: Route[] = [
   { kind: 'library' },
+  { kind: 'collection' },
   { kind: 'add' },
   { kind: 'ratings' },
-  { kind: 'collection' },
 ]
 const optionRoutes: Route[] = [
   { kind: 'options', section: 'recommendations' },
@@ -303,10 +304,14 @@ function LibraryContent({
             className="library-title font-display font-black"
           >
             {route.kind === 'add'
-              ? 'Registrar un álbum'
-              : route.kind === 'options' && route.section === 'removed'
-                ? 'Tu archivo retirado'
-                : routeTitle(route)}
+              ? 'Añadir música'
+              : route.kind === 'artist' && state.status === 'ready'
+                ? (state.snapshot.catalog.artists.find(
+                    (row) => row.id === route.id,
+                  )?.name ?? 'Artista')
+                : route.kind === 'options' && route.section === 'removed'
+                  ? 'Tu archivo retirado'
+                  : routeTitle(route)}
           </h1>
           {route.kind === 'library' ? (
             <p className="library-description text-muted">
@@ -387,9 +392,20 @@ function LibraryContent({
           </button>
         </section>
       ) : route.kind === 'add' ? (
-        <AlbumForm
+        <AddMusicPage
           snapshot={state.snapshot}
+          repository={repository}
           library={library}
+          onBusyChange={setDetailBusy}
+          onImported={(result) => {
+            setFilters(defaultLibraryFilters)
+            setNotice(
+              result
+                ? `${result.added} álbumes incorporados y ${result.linked} vinculados. Tu experiencia se conserva.`
+                : 'Datos incorporados a tu biblioteca.',
+            )
+            navigation.completed({ kind: 'library' }, 'discography')
+          }}
           onComplete={complete}
           onCommitted={synchronizeDetail}
           onCancel={() => go({ kind: 'library' })}
@@ -399,6 +415,8 @@ function LibraryContent({
           <AlbumSummary
             key={selected.id}
             snapshot={state.snapshot}
+            repository={repository}
+            onArtist={(id) => go({ kind: 'artist', id })}
             album={selectedAlbum}
             entry={selected}
             {...(comparisonGenre ? { ratingGenre: comparisonGenre } : {})}
@@ -438,9 +456,11 @@ function LibraryContent({
             }}
             onEditCancel={() => go({ kind: 'album', id: selected.id })}
             backLabel={
-              from.kind === 'library'
-                ? 'Volver a biblioteca'
-                : `Volver a ${routeTitle(from).toLocaleLowerCase()}`
+              from.kind === 'artist'
+                ? `Volver a ${state.snapshot.catalog.artists.find((row) => row.id === from.id)?.name ?? 'artista'}`
+                : from.kind === 'library'
+                  ? 'Volver a biblioteca'
+                  : `Volver a ${routeTitle(from).toLocaleLowerCase()}`
             }
             onBack={() => go(from)}
             onRemoved={() => {
@@ -467,15 +487,40 @@ function LibraryContent({
             </button>
           </section>
         )
+      ) : route.kind === 'artist' ? (
+        <ArtistPage
+          key={route.id}
+          artistId={route.id}
+          snapshot={state.snapshot}
+          repository={repository}
+          onBack={() => go({ kind: 'library' })}
+          onOpenAlbum={(id) => navigation.openAlbum(id)}
+          onBusyChange={setDetailBusy}
+          onCommitted={synchronizeDetail}
+          onLinked={() =>
+            navigation.completed(
+              { kind: 'artist', id: route.id },
+              'artist-link',
+            )
+          }
+          onImported={() =>
+            navigation.completed(
+              { kind: 'artist', id: route.id },
+              'discography',
+            )
+          }
+        />
       ) : route.kind === 'library' ? (
         <LibraryView
           albums={state.albums}
+          snapshot={state.snapshot}
           filters={filters}
           onFiltersChange={setFilters}
           view={view}
           onViewChange={setView}
           onOpen={(id) => navigation.openAlbum(id)}
           onAdd={() => go({ kind: 'add' })}
+          onArtist={(id) => go({ kind: 'artist', id })}
         />
       ) : route.kind === 'ratings' ? (
         <RatingsDestination

@@ -6,6 +6,8 @@ RATE-01 actualiza la biblioteca musical a DB11/JSON7 sin cambiar las dos tablas 
 
 ## Recorrido implementado
 
+La web actual usa DB13/JSON9 con [discografías](DISCOGRAFIAS.md) y [ediciones](ARTISTAS_Y_EDICIONES.md). Las tablas de audio y ZIP1 mantienen su formato y los paquetes históricos siguen siendo legibles. El ZIP de la release 1.1.0 conserva DB11/JSON7.
+
 1. En **Añadir álbum**, abre **Archivos de audio propios (opcional)**. En **Editar álbum** también puedes añadir, retirar o reemplazar archivos. La selección valida los bytes que se decodificarán; sólo queda guardada cuando confirmas el formulario. Cancelar conserva los datos anteriores.
 2. En la ficha, **Audio en este dispositivo** aparece después de **Mi experiencia**. **Gestionar audio** permite elegir opcionalmente una pista del mismo álbum. Guardar audio no cambia el álbum abstracto, sus notas, la escucha, las ediciones ni las adquisiciones.
 3. **Cargar audio** comprueba el archivo guardado y prepara el control nativo sin autoplay. **Reproducir audio** requiere una acción propia. El deslizador **Posición** permite buscar con teclado también cuando el navegador reduce sus controles; el volumen mantiene los controles nativos o del dispositivo. Al cargar otro audio o un reproductor de streaming se libera el anterior; cerrar o salir de la ficha retira su origen y revoca la URL.

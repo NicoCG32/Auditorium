@@ -9,6 +9,7 @@ export type CatalogRule =
   | 'wrong_album'
   | 'cyclic_variant'
   | 'conflicting_cover'
+  | 'duplicate_external_reference'
 
 export interface CatalogIssue {
   rule: CatalogRule
@@ -43,6 +44,21 @@ export function getCatalogIssues(catalog: Catalog): CatalogIssue[] {
   const tracks = indexById(catalog.tracks, 'tracks')
   const releases = indexById(catalog.releases, 'releases')
   indexById(catalog.releaseTracks, 'releaseTracks')
+
+  for (const table of ['artists', 'albums', 'releases', 'tracks'] as const) {
+    const references = new Set<string>()
+    catalog[table].forEach((row, index) => {
+      if (!row.musicBrainz) return
+      const id = `${table === 'tracks' && 'albumId' in row ? row.albumId + ':' : ''}${row.musicBrainz.id.toLowerCase()}`
+      if (references.has(id))
+        report(
+          'duplicate_external_reference',
+          [table, index, 'musicBrainz'],
+          'Esta referencia MusicBrainz ya está vinculada a otro registro.',
+        )
+      references.add(id)
+    })
+  }
 
   function requireReference(
     exists: boolean,

@@ -130,7 +130,7 @@ flowchart TD
     class JSON,ZIP,RESTORE main;
 ```
 
-El archivo JSON nunca reemplaza el ZIP completo para transportar los bytes de audio. La restauración de un respaldo completo y la **importación aditiva** son procesos distintos: el segundo aparece como cambio _sin publicar_ en `CHANGELOG` y exige revisión de conflictos.
+El archivo JSON nunca reemplaza el ZIP completo para transportar los bytes de audio. La restauración de un respaldo completo y la **importación aditiva** son procesos distintos: la segunda está disponible en la web desde la actualización del 17 de noviembre y exige revisión de conflictos.
 
 ## Flujo 4 — Sincronización opcional
 

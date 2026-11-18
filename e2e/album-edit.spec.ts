@@ -1,4 +1,8 @@
-import { openAlbumArea, openExperience } from './helpers/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openAlbumEditorDetails,
+} from './helpers/library-navigation'
 import {
   openLibraryOptions,
   openLibraryFilters,
@@ -230,6 +234,9 @@ test('sugerencias accesibles a320px en ambos temas y créditos múltiples con se
       fullPage: true,
     })
     await artist.press('Escape')
+    await page
+      .getByText('Detalles del álbum (opcionales)', { exact: true })
+      .click()
     await page.getByRole('button', { name: 'Añadir otro artista' }).click()
     const credit = page.getByRole('combobox', {
       name: 'Nombre del artista 2',
@@ -415,6 +422,7 @@ async function editor(page: Page, title = 'Eclipse') {
   await expect(
     page.getByRole('heading', { name: 'Editar álbum', exact: true }),
   ).toBeFocused()
+  await openAlbumEditorDetails(page)
 }
 
 async function save(page: Page) {
@@ -554,7 +562,7 @@ test('cancelar no escribe y corregir metadatos conserva identidad, notas, valora
     page.getByText('Umbral Eléctrico: Chile', { exact: true }),
   ).toBeVisible()
   const after = await exportBackup(page)
-  expect(after.schemaVersion).toBe(7)
+  expect(after.schemaVersion).toBe(9)
   expect(after.data.identity).toEqual(before.data.identity)
   expect(after.data.library).toEqual(before.data.library)
   for (const key of [
@@ -710,7 +718,7 @@ test('PNG local se valida, carga automáticamente, persiste al recargar y restau
   await expect(cover).toBeVisible()
   await context.setOffline(true)
   const backup = await exportBackup(page)
-  expect(backup.schemaVersion).toBe(7)
+  expect(backup.schemaVersion).toBe(9)
   expect(
     backup.data.catalog.albums.find((album) => album.id === ids.album)
       ?.coverImage,

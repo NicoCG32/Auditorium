@@ -201,10 +201,10 @@ function CatalogSearchSession({
             })}
           </ul>
         ) : null}
+        <button type="button" disabled={disabled} onClick={manual}>
+          Continuar con el registro manual
+        </button>
       </details>
-      <button type="button" disabled={disabled} onClick={manual}>
-        Continuar con el registro manual
-      </button>
     </section>
   )
 }

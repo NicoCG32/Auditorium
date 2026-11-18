@@ -1,5 +1,321 @@
 @import 'tailwindcss';
 
+.artist-link {
+  color: inherit;
+  text-decoration-line: underline;
+  text-decoration-color: var(--border);
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  overflow-wrap: anywhere;
+  text-align: start;
+}
+.artist-link:hover {
+  color: var(--accent-text);
+  text-decoration-color: currentColor;
+}
+.artist-albums,
+.catalog-editions {
+  list-style: none;
+  padding: 0;
+  margin-block: 1rem;
+}
+.artist-albums > li,
+.catalog-editions > li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-block-end: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.artist-albums > li > div,
+.catalog-editions > li > div {
+  min-inline-size: 0;
+}
+.artist-catalog-section {
+  margin-block-start: 2rem;
+  padding-block-start: 1.5rem;
+  border-block-start: 1px solid var(--border);
+}
+.artist-catalog-section .catalog-search-panel {
+  margin-block-start: 1.5rem;
+}
+.catalog-details-panel {
+  padding-block: 1rem;
+  min-inline-size: 0;
+}
+.catalog-details-panel select,
+.artist-page input[type='search'] {
+  inline-size: 100%;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 1rem;
+  border: 1px solid var(--muted);
+  color: var(--foreground);
+  background: var(--background);
+}
+.catalog-details-toggle {
+  margin-block-end: 1.5rem;
+}
+.catalog-track-preview {
+  max-block-size: 20rem;
+  overflow-y: auto;
+  padding-inline-start: 1.5rem;
+  margin-block: 1rem;
+  font-size: 0.875rem;
+}
+.catalog-track-preview li {
+  margin-block: 0.5rem;
+  overflow-wrap: anywhere;
+}
+.catalog-cover-preview {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  margin-block: 1rem;
+}
+.catalog-cover-preview img {
+  inline-size: min(100%, 16rem);
+  margin-block: 1rem;
+}
+.discography-library-state {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+@media (max-width: 36rem) {
+  .artist-albums > li,
+  .catalog-editions > li {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+.add-mode-switch {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-block: 1rem;
+}
+.add-mode-card {
+  display: grid;
+  gap: 0.3rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--foreground);
+  text-align: start;
+  cursor: pointer;
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+}
+.add-mode-card > span {
+  font-weight: 600;
+}
+.add-mode-card small {
+  color: var(--muted);
+  line-height: 1.5;
+}
+.add-mode-card:hover {
+  border-color: var(--accent-text);
+}
+.add-other-methods {
+  margin-block: 0.5rem 1.5rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+.add-other-methods > summary {
+  cursor: pointer;
+  min-block-size: 2.75rem;
+  align-content: center;
+}
+.add-other-methods button {
+  margin-block: 0.5rem;
+}
+.quick-save-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding-block-end: 1rem;
+  border-block-end: 1px solid var(--border);
+}
+.quick-save-actions > p {
+  flex-basis: 100%;
+}
+.optional-help {
+  margin-block: 0.75rem 1rem;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+.area-description {
+  display: inline-block;
+  margin-inline-start: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+}
+.album-collector-areas {
+  display: grid;
+  align-items: start;
+  gap: 0 1rem;
+  margin-block: 0.5rem 1rem;
+}
+.album-collection-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block-start: 0.75rem;
+  list-style: none;
+  padding: 0;
+  color: var(--accent-text);
+  font-size: 0.8rem;
+}
+.album-collection-badges li {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: 0.25rem;
+}
+.personal-album-links.empty-links {
+  padding-block: 0.75rem;
+  border: 0;
+}
+.owned-details {
+  margin-block-start: 1.25rem;
+}
+@media (min-width: 56rem) {
+  .album-collector-areas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .album-collector-areas:has(> details[open]) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.add-mode-switch [aria-pressed='true'] {
+  border-color: var(--accent-text);
+  background: var(--surface-raised);
+  color: var(--accent-text);
+}
+.catalog-search-panel {
+  padding: clamp(1rem, 3vw, 2rem);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  min-inline-size: 0;
+}
+.artist-search-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 0.75rem;
+}
+.artist-candidates,
+.discography-albums {
+  padding: 0;
+  list-style: none;
+  margin-block-start: 1rem;
+}
+.artist-candidates > li,
+.discography-albums > li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+  border-block-end: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.artist-candidates > li > div {
+  min-inline-size: 0;
+}
+.discography-heading,
+.discography-toolbar,
+.discography-selection {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+.discography-toolbar {
+  justify-content: flex-start;
+  align-items: end;
+  margin-block-start: 1.25rem;
+}
+.discography-album-choice {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  min-inline-size: 0;
+  min-block-size: 2.75rem;
+  cursor: pointer;
+}
+.discography-album-choice input {
+  flex: 0 0 auto;
+  inline-size: 1.25rem;
+  block-size: 1.25rem;
+  accent-color: var(--accent);
+}
+.discography-album-meta {
+  display: block;
+  margin-block-start: 0.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.discography-state {
+  color: var(--accent-text);
+  font-size: 0.8rem;
+  text-align: end;
+  flex: 0 0 8rem;
+}
+.discography-matches,
+.discography-confirm {
+  display: grid;
+  gap: 1rem;
+  border: 1px solid var(--border);
+  padding: clamp(1rem, 3vw, 1.5rem);
+  background: var(--surface-raised);
+}
+@media (max-width: 36rem) {
+  .artist-search-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .artist-candidates > li {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .discography-albums > li {
+    gap: 0.5rem;
+    align-items: start;
+    flex-direction: column;
+  }
+  .discography-state {
+    flex-basis: auto;
+    text-align: start;
+    margin-inline-start: 2.1rem;
+  }
+  .add-mode-switch {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .add-mode-card {
+    padding: 0.8rem;
+    font-size: 0.875rem;
+  }
+  .add-mode-card small {
+    display: none;
+  }
+  .area-description {
+    display: block;
+    margin-block-start: 0.3rem;
+    margin-inline-start: 1rem;
+  }
+}
+
 .catalog-name-input {
   display: block;
   position: relative;
@@ -1795,6 +2111,28 @@
   }
   .library-utilities {
     justify-self: end;
+  }
+}
+@media (max-width: 36rem) {
+  .library-heading {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .library-intro {
+    display: contents;
+  }
+  .library-kicker {
+    grid-column: 1;
+    margin-block-end: 0;
+  }
+  .library-title {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .library-utilities {
+    grid-column: 2;
+    grid-row: 1;
   }
 }
 @media (max-width: 39.99rem) {

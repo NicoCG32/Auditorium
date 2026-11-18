@@ -16,15 +16,15 @@ Las [issues](https://github.com/NicoCG32/Auditorium/issues) detallan alcance, de
 
 ## Roadmap
 
-| Etapa                       | Resultado                                                                                          | Referencias                                                                                          |
-| --------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| Base local y MVP 1.0.0      | Catálogo, identidad, experiencia, ejemplares, deseos, respaldo JSON y PWA                          | [Entrega del MVP](ENTREGA_MVP.md) · [Validación](VALIDACION_MVP.md)                                  |
-| Cuenta opcional             | Autenticación, sincronización de metadatos, conflictos y recuperación de acceso                    | [Sincronización](SINCRONIZACION_SUPABASE.md) · [ADR-011](adr/011-supabase-sincronizacion.md)         |
-| Experiencia y colección     | Navegación, edición, enlaces, clasificación, referencia de edición y organización de adquisiciones | [Mi experiencia](MI_EXPERIENCIA.md) · [Mi colección](MI_COLECCION.md)                                |
-| Reproducción y archivos     | Reproductores externos, audio por dispositivo y respaldo completo ZIP                              | [Reproducción](REPRODUCCION.md) · [Audio local](AUDIO_LOCAL.md)                                      |
-| Notas por género            | Valoraciones independientes, edición conjunta y comparación contextual                             | [Valoraciones por género](VALORACIONES_POR_GENERO.md)                                                |
-| Release 1.1.0               | Consolidación del recorrido y distribución web/PWA                                                 | [Entrega](ENTREGA.md) · [Validación del recorrido](VALIDACION_RECORRIDO.md)                          |
-| Cambios posteriores a 1.1.0 | Importación aditiva y catálogo JSON, registrados en «Sin publicar»                                 | [Importación](IMPORTACION_JSON.md) · [DATA-01 #83](https://github.com/NicoCG32/Auditorium/issues/83) |
+| Etapa                   | Resultado                                                                                          | Referencias                                                                                                            |
+| ----------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Base local y MVP 1.0.0  | Catálogo, identidad, experiencia, ejemplares, deseos, respaldo JSON y PWA                          | [Entrega del MVP](ENTREGA_MVP.md) · [Validación](VALIDACION_MVP.md)                                                    |
+| Cuenta opcional         | Autenticación, sincronización de metadatos, conflictos y recuperación de acceso                    | [Sincronización](SINCRONIZACION_SUPABASE.md) · [ADR-011](adr/011-supabase-sincronizacion.md)                           |
+| Experiencia y colección | Navegación, edición, enlaces, clasificación, referencia de edición y organización de adquisiciones | [Mi experiencia](MI_EXPERIENCIA.md) · [Mi colección](MI_COLECCION.md)                                                  |
+| Reproducción y archivos | Reproductores externos, audio por dispositivo y respaldo completo ZIP                              | [Reproducción](REPRODUCCION.md) · [Audio local](AUDIO_LOCAL.md)                                                        |
+| Notas por género        | Valoraciones independientes, edición conjunta y comparación contextual                             | [Valoraciones por género](VALORACIONES_POR_GENERO.md)                                                                  |
+| Release 1.1.0           | Consolidación del recorrido y distribución web/PWA                                                 | [Entrega](ENTREGA.md) · [Validación del recorrido](VALIDACION_RECORRIDO.md)                                            |
+| Web del 17 de noviembre | Importación aditiva, catálogo JSON, discografías y ediciones; DB13/JSON9                           | [Importación](IMPORTACION_JSON.md) · [Discografías](DISCOGRAFIAS.md) · [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) |
 
 La base vigente usa IndexedDB 11, snapshot JSON 7 y ZIP 1. Las [migraciones](MIGRACIONES_RECUPERACION.md) y los lectores históricos mantienen la compatibilidad de los datos.
 

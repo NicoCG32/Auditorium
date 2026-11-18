@@ -32,6 +32,7 @@ import { AudioEditor } from './AudioEditor'
 import { AudioError } from '../../domain/audio'
 
 interface Props {
+  compact?: boolean
   snapshot: LocalSnapshot
   library: MusicLibrary
   onComplete: (entryId: string, openExisting: boolean) => void
@@ -39,6 +40,7 @@ interface Props {
   onCommitted: () => Promise<LocalSnapshot>
 }
 export function AlbumForm({
+  compact = false,
   snapshot,
   library,
   onComplete,
@@ -327,14 +329,24 @@ export function AlbumForm({
   }
   return (
     <section className="album-form-panel" aria-labelledby="add-album-title">
-      <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
+      <p
+        className={
+          compact
+            ? 'sr-only'
+            : 'mb-3 text-xs tracking-widest text-accent-text uppercase'
+        }
+      >
         Tu catálogo
       </p>
-      <h2 id="add-album-title" className="text-3xl font-semibold">
+      <h2
+        id="add-album-title"
+        className={compact ? 'sr-only' : 'text-3xl font-semibold'}
+      >
         Añadir álbum
       </h2>
       <p className="mt-3 mb-7 text-sm text-muted">
-        Artista y título son suficientes. Los demás datos pueden esperar.
+        Artista y título son suficientes. Puedes completar los detalles cuando
+        quieras, también después de guardar.
       </p>
       <form ref={formRef} onSubmit={submit} noValidate autoComplete="off">
         <fieldset
@@ -392,6 +404,26 @@ export function AlbumForm({
               />
               {errorFor('title')}
             </label>
+          </div>
+          <div className="quick-save-actions">
+            <h3 ref={saveHeading} tabIndex={-1} className="sr-only">
+              Guardar álbum
+            </h3>
+            {review.length === 0 ? (
+              <button
+                type="submit"
+                className="primary-button"
+                disabled={coverBusy || audioBusy}
+              >
+                Guardar álbum
+              </button>
+            ) : null}
+            <button type="button" className="action-button" onClick={onCancel}>
+              Cancelar
+            </button>
+            <p className="text-sm text-muted">
+              Los ejemplares, deseos y notas se añaden desde la ficha.
+            </p>
           </div>
           {values.catalogArtists && values.catalogArtists.length > 1 ? (
             <p className="text-sm text-muted">
@@ -477,48 +509,52 @@ export function AlbumForm({
               }}
             />
           ) : null}
-          <button
-            type="button"
-            className="text-button"
-            disabled={(values.catalogArtists?.length ?? 1) >= 50}
-            onClick={() => {
-              const credits = values.catalogArtists ?? [values.artist]
-              edit({
-                catalogArtists: [...credits, ''],
-                catalogArtistIds: [
-                  ...(values.catalogArtistIds ?? [values.artistId]),
-                  undefined,
-                ],
-                catalogArtistConfirmed: [
-                  ...(values.catalogArtistConfirmed ?? [
-                    values.newArtistConfirmed,
-                  ]),
-                  false,
-                ],
-                catalogCountries: [
-                  ...(values.catalogCountries ?? [values.country]),
-                  '',
-                ],
-                catalogReference: undefined,
-              })
-              const details =
-                formRef.current?.querySelector<HTMLDetailsElement>(
-                  'details.album-details',
-                )
-              if (details) details.open = true
-              requestAnimationFrame(() =>
-                formRef.current
-                  ?.querySelector<HTMLInputElement>(
-                    `[name="credit-name-${credits.length}"]`,
-                  )
-                  ?.focus(),
-              )
-            }}
-          >
-            Añadir otro artista
-          </button>
           <details className="optional-fields album-details">
             <summary>Detalles del álbum (opcionales)</summary>
+            <p className="optional-help">
+              Año, géneros, clasificación, créditos, portada y enlaces. Abre
+              sólo lo que quieras completar.
+            </p>
+            <button
+              type="button"
+              className="text-button"
+              disabled={(values.catalogArtists?.length ?? 1) >= 50}
+              onClick={() => {
+                const credits = values.catalogArtists ?? [values.artist]
+                edit({
+                  catalogArtists: [...credits, ''],
+                  catalogArtistIds: [
+                    ...(values.catalogArtistIds ?? [values.artistId]),
+                    undefined,
+                  ],
+                  catalogArtistConfirmed: [
+                    ...(values.catalogArtistConfirmed ?? [
+                      values.newArtistConfirmed,
+                    ]),
+                    false,
+                  ],
+                  catalogCountries: [
+                    ...(values.catalogCountries ?? [values.country]),
+                    '',
+                  ],
+                  catalogReference: undefined,
+                })
+                const details =
+                  formRef.current?.querySelector<HTMLDetailsElement>(
+                    'details.album-details',
+                  )
+                if (details) details.open = true
+                requestAnimationFrame(() =>
+                  formRef.current
+                    ?.querySelector<HTMLInputElement>(
+                      `[name="credit-name-${credits.length}"]`,
+                    )
+                    ?.focus(),
+                )
+              }}
+            >
+              Añadir otro artista
+            </button>
             <div className="mt-5 grid gap-5">
               <AlbumClassificationFields value={values} onChange={edit} />
               <label>
@@ -725,45 +761,42 @@ export function AlbumForm({
                   ? { error: errors.coverUrl ?? errors.coverImage }
                   : {})}
               />
-              <details className="optional-fields">
-                <summary>Más datos (opcionales)</summary>
-                <div className="mt-5 grid gap-5">
-                  <label>
-                    <span id="form-year-label" className="field-label">
-                      Año original
-                    </span>
-                    <input
-                      name="originalYear"
-                      aria-labelledby="form-year-label"
-                      inputMode="numeric"
-                      value={values.originalYear}
-                      aria-invalid={Boolean(errors.originalYear)}
-                      aria-describedby={
-                        errors.originalYear ? 'error-originalYear' : undefined
-                      }
-                      onChange={(event) =>
-                        edit({ originalYear: event.target.value })
-                      }
-                    />
-                    {errorFor('originalYear')}
-                  </label>
-                  <label>
-                    <span id="form-description-label" className="field-label">
-                      Descripción del álbum
-                    </span>
-                    <textarea
-                      name="description"
-                      aria-labelledby="form-description-label"
-                      rows={3}
-                      value={values.description}
-                      onChange={(event) =>
-                        edit({ description: event.target.value })
-                      }
-                    />
-                    {errorFor('description')}
-                  </label>
-                </div>
-              </details>
+              <div className="form-grid">
+                <label>
+                  <span id="form-year-label" className="field-label">
+                    Año original
+                  </span>
+                  <input
+                    name="originalYear"
+                    aria-labelledby="form-year-label"
+                    inputMode="numeric"
+                    value={values.originalYear}
+                    aria-invalid={Boolean(errors.originalYear)}
+                    aria-describedby={
+                      errors.originalYear ? 'error-originalYear' : undefined
+                    }
+                    onChange={(event) =>
+                      edit({ originalYear: event.target.value })
+                    }
+                  />
+                  {errorFor('originalYear')}
+                </label>
+                <label>
+                  <span id="form-description-label" className="field-label">
+                    Descripción del álbum
+                  </span>
+                  <textarea
+                    name="description"
+                    aria-labelledby="form-description-label"
+                    rows={3}
+                    value={values.description}
+                    onChange={(event) =>
+                      edit({ description: event.target.value })
+                    }
+                  />
+                  {errorFor('description')}
+                </label>
+              </div>
             </div>
           </details>
           {library.audio ? (
@@ -783,16 +816,6 @@ export function AlbumForm({
               />
             </details>
           ) : null}
-          <h3 ref={saveHeading} tabIndex={-1} className="font-semibold">
-            Revisar y guardar
-          </h3>
-          <p className="text-sm text-muted">
-            {(values.catalogArtists?.join(' · ') ?? values.artist) ||
-              'Artista pendiente'}{' '}
-            · {values.title || 'Título pendiente'} ·{' '}
-            {classificationLabel(values)}. Podrás calificarlo y añadir ediciones
-            desde su ficha.
-          </p>
           {review.length > 0 ? (
             <section
               className="duplicate-review"
@@ -876,20 +899,6 @@ export function AlbumForm({
               Guardando…
             </p>
           ) : null}
-          <div className="mt-7 flex flex-wrap gap-3">
-            {review.length === 0 ? (
-              <button
-                type="submit"
-                className="primary-button"
-                disabled={coverBusy || audioBusy}
-              >
-                Guardar álbum
-              </button>
-            ) : null}
-            <button type="button" className="action-button" onClick={onCancel}>
-              Cancelar
-            </button>
-          </div>
         </fieldset>
       </form>
       {pending ? (

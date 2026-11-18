@@ -100,7 +100,7 @@ test.each(legacyReleaseTypeSchema.options)(
         name: 'classification',
         factory,
       })
-      expect(after.version).toBe(110)
+      expect(after.version).toBe(130)
       expect(after.rows['albumGenreRatings']).toEqual([])
       for (const [name, rows] of Object.entries(before.rows))
         if (name !== 'albums' && name !== 'syncCheckpoint')
@@ -110,7 +110,7 @@ test.each(legacyReleaseTypeSchema.options)(
           .find((store) => store.name === 'albums')
           ?.indexes.map((index) => index.name)
           .sort(),
-      ).toEqual(['originalYear', 'primaryType', 'title'])
+      ).toEqual(['musicBrainz.id', 'originalYear', 'primaryType', 'title'])
     } finally {
       database.close()
       await database.delete()

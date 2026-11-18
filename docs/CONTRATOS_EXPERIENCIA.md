@@ -2,7 +2,7 @@
 
 Documento de diseño de UX-03, 18 de octubre de 2026. Conserva las propuestas de enlaces, experiencia, reproducción y audio que orientaron los incrementos posteriores. La [ADR-010](adr/010-navegacion-experiencia.md) recoge la decisión de interacción.
 
-Los contratos implementados se detallan en [enlaces personales](ENLACES_PERSONALES.md), [clasificación](CLASIFICACION_ALBUM.md), [Mi experiencia](MI_EXPERIENCIA.md), [reproducción](REPRODUCCION.md), [audio local](AUDIO_LOCAL.md) y [notas por género](VALORACIONES_POR_GENERO.md). La base vigente usa DB11/JSON7/ZIP1; las versiones y tipos propuestos en este documento pertenecen al diseño inicial.
+Los contratos implementados se detallan en [enlaces personales](ENLACES_PERSONALES.md), [clasificación](CLASIFICACION_ALBUM.md), [Mi experiencia](MI_EXPERIENCIA.md), [reproducción](REPRODUCCION.md), [audio local](AUDIO_LOCAL.md) y [notas por género](VALORACIONES_POR_GENERO.md). La base vigente usa DB12/JSON8/ZIP1; las versiones y tipos propuestos en este documento pertenecen al diseño inicial.
 
 ## 1. Responsabilidades y relaciones
 

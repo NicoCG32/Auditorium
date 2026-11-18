@@ -82,7 +82,7 @@ test.each([
           pending: { ...checkpoint.pending, snapshot, localSnapshot: snapshot },
           recovery: { local: snapshot, remote: snapshot },
         })
-        expect(database.verno).toBe(11)
+        expect(database.verno).toBe(13)
         expect(frame.snapshot.library.albumGenreRatings).toEqual([])
         expect(frame.snapshot.library.albumRatings[0]).not.toHaveProperty(
           'referenceReleaseId',

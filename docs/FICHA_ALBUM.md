@@ -2,6 +2,8 @@
 
 LIB-03 amplía la ficha abierta desde el título de una tarjeta o al usar un álbum existente en el registro manual. Muestra título, artistas acreditados, tipo, año original disponible, escucha y descripción. Los campos ausentes no se rellenan con metadatos inventados.
 
+El refinamiento posterior a 1.1.0 sitúa **Mi colección** y **Deseos de compra** al principio de la ficha. Los datos disponibles se muestran sin exigir completar el resto; la experiencia sin registrar y el audio sin archivos empiezan plegados. **Administrar álbum** reúne la retirada por separado de los deseos. Consulta [Mi colección](MI_COLECCION.md) y [Mi experiencia](MI_EXPERIENCIA.md) para el recorrido actual.
+
 ## Portada
 
 Sin portada guardada, se muestra una representación local de vinilo y «Sin portada registrada». Si existe un enlace HTTPS o una imagen local validada, se carga automáticamente al abrir la ficha. La imagen tiene texto alternativo, tamaño reservado y política de referrer sin referencia de la aplicación. Un fallo de carga vuelve a la representación local y ofrece reintento. También se conserva el enlace directo a la portada.

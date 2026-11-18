@@ -5,6 +5,8 @@ import {
   legacySnapshotV6Schema,
   migrateLegacySnapshotToV6,
   migrateSnapshotV6,
+  legacySnapshotV7Schema,
+  legacySnapshotV8Schema,
 } from '../../domain/backup'
 import { fromStoredUserAlbum, identityRecordSchema } from './records'
 import { LocalStorageError } from './errors'
@@ -29,11 +31,15 @@ import { validateRatingUpgradeCheckpoint } from './validate-rating-upgrade'
 import { migrateLegacyCheckpoint } from './migrate-classification'
 import { migrateGenreRatingsCheckpoint } from './migrate-genre-ratings'
 import type { SyncCheckpoint } from '../../domain/sync'
-import { legacySyncCheckpointV6Schema } from '../../domain/sync'
+import {
+  legacySyncCheckpointV6Schema,
+  legacySyncCheckpointV7Schema,
+  legacySyncCheckpointV8Schema,
+} from '../../domain/sync'
 import type { AudioAttachment, AudioFileRecord } from '../../domain/audio'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 11
+export const DATABASE_VERSION = 13
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -81,6 +87,44 @@ export const SCHEMA_V11 = {
   ...SCHEMA_V10,
   albumGenreRatings: '[userAlbumId+genreKey], userAlbumId, genreKey',
 } as const
+export const SCHEMA_V12 = {
+  ...SCHEMA_V11,
+  artists: 'id, name, &musicBrainz.id',
+  albums: 'id, title, primaryType, originalYear, &musicBrainz.id',
+} as const
+export const SCHEMA_V13 = {
+  ...SCHEMA_V12,
+  releases: 'id, albumId, format, &musicBrainz.id',
+  tracks: 'id, albumId, title, variantOfTrackId, &[albumId+musicBrainz.id]',
+} as const
+
+async function validateEditionUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction, true)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local del checkpoint. Los datos se conservan.',
+    )
+  if (snapshot) legacySnapshotV8Schema.parse(snapshot)
+  checkpoints.forEach((row) => legacySyncCheckpointV8Schema.parse(row))
+}
+
+async function validateMusicBrainzUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction, true)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local del checkpoint. Los datos se conservan.',
+    )
+  if (snapshot) legacySnapshotV7Schema.parse(snapshot)
+  checkpoints.forEach((row) => legacySyncCheckpointV7Schema.parse(row))
+}
 
 async function validateBeforeAudioUpgrade(transaction: Transaction) {
   const snapshot = await readUpgradeSnapshot(transaction)
@@ -112,9 +156,15 @@ async function migrateGenreRatings(transaction: Transaction) {
     await transaction.table('syncCheckpoint').bulkPut(migrated)
 }
 
-async function readUpgradeSnapshot(transaction: Transaction) {
+async function readUpgradeSnapshot(
+  transaction: Transaction,
+  includeGenres = false,
+) {
   const rows = new Map<string, unknown[]>()
-  for (const name of Object.keys(SCHEMA_V5)) {
+  for (const name of [
+    ...Object.keys(SCHEMA_V5),
+    ...(includeGenres ? ['albumGenreRatings'] : []),
+  ]) {
     const values: unknown[] = await transaction.table(name).toArray()
     rows.set(name, values)
   }
@@ -148,6 +198,9 @@ async function readUpgradeSnapshot(transaction: Transaction) {
       ].map((name) => [name, rows.get(name)]),
     ),
     library: {
+      ...(includeGenres
+        ? { albumGenreRatings: rows.get('albumGenreRatings') }
+        : {}),
       ...Object.fromEntries(
         ['albumRatings', 'trackRatings', 'ownedItems', 'purchaseWishes'].map(
           (name) => [name, rows.get(name)],
@@ -238,6 +291,8 @@ export class AuditoriumDatabase extends Dexie {
     this.version(9).stores(SCHEMA_V9).upgrade(validateBeforeRatingUpgrade)
     this.version(10).stores(SCHEMA_V10).upgrade(validateBeforeAudioUpgrade)
     this.version(11).stores(SCHEMA_V11).upgrade(migrateGenreRatings)
+    this.version(12).stores(SCHEMA_V12).upgrade(validateMusicBrainzUpgrade)
+    this.version(13).stores(SCHEMA_V13).upgrade(validateEditionUpgrade)
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.audioAttachments = this.table<AudioAttachment, [string, string]>(
       'audioAttachments',

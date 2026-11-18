@@ -1,5 +1,7 @@
 # Listas originales y ediciones
 
+La [consulta de ediciones MusicBrainz](ARTISTAS_Y_EDICIONES.md#completar-un-álbum) permite revisar e incorporar una lista sin escribir cada pista. Las listas existentes se conservan; el registro manual descrito aquí sigue disponible.
+
 La ficha reúne una lista original de referencia y las publicaciones del mismo álbum. «Lista que quieres consultar» alterna entre ellas sin crear otro álbum ni otra relación personal. Una edición requiere formato; nombre y año son opcionales. «Copiar lista original» reutiliza los IDs de sus pistas y sus posiciones al crear la edición. Desmarcarlo permite empezar con una lista vacía.
 
 ## Editar una lista

@@ -1,8 +1,10 @@
 # Biblioteca: búsqueda, filtros y consulta
 
-RATE-02 incorpora [comparación por género](VALORACIONES_POR_GENERO.md): elegir un género usa su nota contextual y permite General de forma explícita. Tarjetas, orden por nota, umbral y Con/Sin nota comparten la base visible; una nota ausente no se sustituye. Las preferencias de consulta siguen siendo temporales y los datos guardados conservan DB11/JSON7/ZIP1.
+RATE-02 incorpora [comparación por género](VALORACIONES_POR_GENERO.md): elegir un género usa su nota contextual y permite General de forma explícita. Tarjetas, orden por nota, umbral y Con/Sin nota comparten la base visible; una nota ausente no se sustituye. Las preferencias de consulta siguen siendo temporales y los datos guardados conservan DB12/JSON8/ZIP1.
 
-La Biblioteca es la entrada principal a la música guardada. El menú mantiene el recorrido **Biblioteca → Añadir álbum → Calificaciones → Mi colección**. Añadir álbum permanece visible; las utilidades se abren desde **Más opciones**.
+La Biblioteca es la entrada principal a la música guardada. El menú mantiene el recorrido **Biblioteca → Mi colección → Añadir álbum → Calificaciones**. Añadir álbum permanece visible; las utilidades se abren desde **Más opciones**.
+
+El refinamiento de interfaz posterior a 1.1.0 permite empezar con lo mínimo y completar los detalles después. Añadir música presenta búsqueda de discografía y registro manual; JSON se encuentra en **Otras formas de añadir**. En el registro manual, **Guardar álbum** está junto a artista y título. Año, géneros, créditos adicionales, portada, enlaces y audio se despliegan a petición.
 
 ## Encontrar un álbum
 
@@ -16,7 +18,7 @@ El total indica cuántos álbumes coinciden respecto de la biblioteca completa. 
 
 ## Abrir y regresar
 
-La portada y el título abren la misma ficha. Cada tarjeta distingue artista, año, país, géneros, estado de escucha y **Mi nota**; carecer de nota no equivale a cero. Sin portada se utiliza una composición de disco, manteniendo el acceso a la ficha.
+La portada y el título abren la misma ficha. Cada tarjeta muestra artista y los datos disponibles, además del número de ejemplares y la indicación **En deseos** cuando corresponda. Año, escucha y nota ausentes no ocupan filas vacías en la vista general. Al comparar por género, una valoración contextual ausente sigue identificada explícitamente y no se sustituye por otra nota. Sin portada se utiliza una composición de disco, manteniendo el acceso a la ficha.
 
 Al volver se conservan búsqueda, filtros, orden, vista, posición y foco mientras siga viva la pestaña. El panel de filtros puede cerrarse sin perder selecciones. Recargar recupera los datos guardados, pero no promete recuperar el contexto temporal de consulta. La [guía de navegación](NAVEGACION.md) explica rutas y borradores.
 

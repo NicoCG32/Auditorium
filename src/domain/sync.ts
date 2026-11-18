@@ -1,5 +1,10 @@
 import { z } from 'zod'
-import { legacySnapshotV6Schema, localSnapshotSchema } from './backup'
+import {
+  legacySnapshotV6Schema,
+  legacySnapshotV7Schema,
+  legacySnapshotV8Schema,
+  localSnapshotSchema,
+} from './backup'
 import type { LocalSnapshot } from './repositories/local-repository'
 
 export function canonical(value: unknown): string {
@@ -142,6 +147,39 @@ export const syncCheckpointSchema = z.strictObject({
     .optional(),
 })
 export type SyncCheckpoint = z.output<typeof syncCheckpointSchema>
+export const legacySyncCheckpointV8Schema = syncCheckpointSchema.extend({
+  base: legacySnapshotV8Schema.optional(),
+  pending: syncCheckpointSchema.shape.pending
+    .unwrap()
+    .extend({
+      snapshot: legacySnapshotV8Schema,
+      localSnapshot: legacySnapshotV8Schema,
+    })
+    .optional(),
+  recovery: z
+    .strictObject({
+      local: legacySnapshotV8Schema,
+      remote: legacySnapshotV8Schema,
+    })
+    .optional(),
+})
+/** DB11 checkpoints predate external MusicBrainz references. */
+export const legacySyncCheckpointV7Schema = syncCheckpointSchema.extend({
+  base: legacySnapshotV7Schema.optional(),
+  pending: syncCheckpointSchema.shape.pending
+    .unwrap()
+    .extend({
+      snapshot: legacySnapshotV7Schema,
+      localSnapshot: legacySnapshotV7Schema,
+    })
+    .optional(),
+  recovery: z
+    .strictObject({
+      local: legacySnapshotV7Schema,
+      remote: legacySnapshotV7Schema,
+    })
+    .optional(),
+})
 /** DB10 and earlier checkpoints have strict v6 documents at every location. */
 export const legacySyncCheckpointV6Schema = syncCheckpointSchema.extend({
   base: legacySnapshotV6Schema.optional(),

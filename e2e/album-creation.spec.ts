@@ -2,7 +2,10 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { parseBackupText } from '../src/domain/backup'
-import { openLibraryOptions } from './helpers/library-navigation'
+import {
+  openLibraryOptions,
+  openAlbumEditorDetails,
+} from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
 
@@ -21,12 +24,9 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Ecos Del Sur')
-  await page
-    .getByRole('button', { name: 'Continuar con el registro manual' })
-    .click()
   await expect(
-    page.getByRole('heading', { name: 'Revisar y guardar' }),
-  ).toBeFocused()
+    page.getByRole('button', { name: 'Guardar álbum', exact: true }),
+  ).toBeVisible()
   await page.evaluate(() => window.scrollTo(0, 0))
   await page.screenshot({
     path: info.outputPath('alta-minima.png'),
@@ -35,6 +35,9 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
   await page
     .getByRole('region', { name: 'Añadir álbum', exact: true })
     .screenshot({ path: info.outputPath('alta-formulario.png') })
+  await page
+    .getByText('Detalles del álbum (opcionales)', { exact: true })
+    .click()
   await page.getByRole('button', { name: 'Añadir otro artista' }).click()
   await expect(
     page.getByRole('combobox', { name: 'Nombre del artista 2', exact: true }),
@@ -76,6 +79,7 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
     fullPage: true,
   })
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
+  await openAlbumEditorDetails(page)
   await page
     .getByRole('combobox', { name: 'Tipo principal' })
     .selectOption('full_length')

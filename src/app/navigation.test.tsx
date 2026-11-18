@@ -103,7 +103,7 @@ test('menú principal ordenado, rutas y contexto propio de calificaciones', asyn
     within(nav)
       .getAllByRole('button')
       .map((button) => button.textContent),
-  ).toEqual(['Biblioteca', 'Añadir álbum', 'Calificaciones', 'Mi colección'])
+  ).toEqual(['Biblioteca', 'Mi colección', 'Añadir álbum', 'Calificaciones'])
   fireEvent.click(screen.getByRole('button', { name: 'Calificaciones' }))
   expect(location.hash).toBe('#/calificaciones')
   fireEvent.click(screen.getByRole('button', { name: 'Calificados' }))

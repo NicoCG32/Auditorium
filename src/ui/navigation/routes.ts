@@ -3,6 +3,7 @@ import { entityIdSchema } from '../../domain/shared/scalars'
 export type Route =
   | { kind: 'library' | 'add' | 'ratings' | 'collection' }
   | { kind: 'album'; id: string; editor?: 'edit' | 'experience' | 'collection' }
+  | { kind: 'artist'; id: string }
   | {
       kind: 'options'
       section: 'backups' | 'removed' | 'recommendations' | 'wishes' | 'account'
@@ -29,6 +30,9 @@ export function parseRoute(hash: string): Route {
   if (hash === '#/anadir') return { kind: 'add' }
   if (hash === '#/calificaciones') return { kind: 'ratings' }
   if (hash === '#/coleccion') return { kind: 'collection' }
+  const artist = /^#\/artista\/([^/?#]+)$/u.exec(hash)
+  if (artist && entityIdSchema.safeParse(artist[1]).success)
+    return { kind: 'artist', id: artist[1]! }
   const option = /^#\/opciones\/([^/?#]+)$/u.exec(hash)?.[1]
   if (option && Object.hasOwn(options, option))
     return { kind: 'options', section: options[option as keyof typeof options] }
@@ -58,6 +62,8 @@ export function routeHash(route: Route): string {
       return '#/calificaciones'
     case 'collection':
       return '#/coleccion'
+    case 'artist':
+      return `#/artista/${route.id}`
     case 'album':
       return route.editor === 'collection'
         ? `#/coleccion/nueva?album=${route.id}`
@@ -79,6 +85,8 @@ export function routeTitle(route: Route) {
       return 'Calificaciones'
     case 'collection':
       return 'Mi colección'
+    case 'artist':
+      return 'Artista'
     case 'album':
       return route.editor === 'edit'
         ? 'Editar datos del álbum'

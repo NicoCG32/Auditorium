@@ -4,13 +4,13 @@
 
 ## Una base de datos en el navegador
 
-La base local se llama `auditorium`, se gestiona con Dexie e IndexedDB y tiene **versión Dexie 11** (`SCHEMA_V11`). El navegador utiliza el origen web y su perfil como frontera de almacenamiento: es distinto de una base PostgreSQL remota.
+La base local se llama `auditorium`, se gestiona con Dexie e IndexedDB y tiene **versión Dexie 13** (`SCHEMA_V13`). El navegador utiliza el origen web y su perfil como frontera de almacenamiento: es distinto de una base PostgreSQL remota.
 
 ### Diagrama físico simplificado de IndexedDB
 
 ```mermaid
 flowchart TB
-  subgraph DB["IndexedDB · auditorium · DB11"]
+  subgraph DB["IndexedDB · auditorium · DB13"]
     ID["metadata · identidad local"]
     subgraph CAT["Catálogo"]
       A[artists]
@@ -67,13 +67,15 @@ Las flechas punteadas expresan **dependencias lógicas**, no claves foráneas ad
 
 ## Tres formatos con finalidades diferentes
 
+DB13 conserva los índices únicos `musicBrainz.id` en artistas y álbumes de DB12 y añade uno en ediciones y otro compuesto `[albumId+musicBrainz.id]` en pistas. Una grabación puede aparecer en álbumes locales distintos. El snapshot JSON9 conserva identificador de origen y fecha de consulta; estos vínculos no sustituyen UUID locales. [Importación y compatibilidad](../DISCOGRAFIAS.md).
+
 | Contrato                   | Versión en código   | Incluye                                                           | Excluye                                    |
 | -------------------------- | ------------------- | ----------------------------------------------------------------- | ------------------------------------------ |
-| Base local IndexedDB       | DB11                | Metadatos, biblioteca, checkpoints, descriptores y bytes de audio | No es un archivo transportable por sí sola |
-| Respaldo/snapshot          | `schemaVersion = 7` | Identidad, catálogo y biblioteca                                  | Bytes y descriptores de audio; caché PWA   |
+| Base local IndexedDB       | DB13                | Metadatos, biblioteca, checkpoints, descriptores y bytes de audio | No es un archivo transportable por sí sola |
+| Respaldo/snapshot          | `schemaVersion = 9` | Identidad, catálogo y biblioteca                                  | Bytes y descriptores de audio; caché PWA   |
 | Respaldo completo de audio | ZIP1                | Snapshot y archivos con manifiesto e integridad                   | No crea una cuenta remota                  |
 
-Cada contrato tiene su propia versión: IndexedDB (`11`), snapshot (`7`), ZIP (`1`) y aplicación (`1.1.0`). Los validadores mantienen lectores de versiones anteriores y migraciones específicas.
+Cada contrato tiene su propia versión: IndexedDB (`13`), snapshot (`9`), ZIP (`1`) y aplicación (`1.1.0`). Los validadores mantienen lectores de versiones anteriores y migraciones específicas.
 
 ## PostgreSQL opcional en Supabase
 
@@ -93,7 +95,7 @@ Cada contrato tiene su propia versión: IndexedDB (`11`), snapshot (`7`), ZIP (`
     }
 ```
 
-El dato remoto está modelado como **un documento JSONB por cuenta**, en `public.library_snapshots`, no como las 17 tablas locales replicadas en SQL. La tabla utiliza `owner_id`, RLS y funciones RPC con control de revisión para evitar sobrescrituras concurrentes. El código admite versiones históricas y crea el formato vigente `schema_version = 7` al guardar. **No almacena audio propio**.
+El dato remoto está modelado como **un documento JSONB por cuenta**, en `public.library_snapshots`, no como las 17 tablas locales replicadas en SQL. La tabla utiliza `owner_id`, RLS y funciones RPC con control de revisión para evitar sobrescrituras concurrentes. El código admite versiones históricas y crea el formato vigente `schema_version = 9` al guardar. **No almacena audio propio**.
 
 La base local conserva las transacciones de la experiencia en este dispositivo. Un checkpoint permite razonar sobre qué snapshot fue confirmado remotamente; las operaciones de red no se ejecutan dentro de una transacción IndexedDB abierta.
 
