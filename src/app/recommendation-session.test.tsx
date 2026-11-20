@@ -10,6 +10,7 @@ import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import * as ai from '../infrastructure/ai/recommendation-client'
 import { APPEARANCE_STORAGE_KEY } from '../ui/appearance/use-appearance'
+import { COLLECTION_VIEW_STORAGE_KEY } from '../ui/appearance/use-collection-preferences'
 import { App } from './App'
 
 const fictitiousKey = 'clave-ficticia-no-es-una-credencial'
@@ -113,7 +114,10 @@ test('la clave de sesión permanece al cerrar el panel, visitar respaldos y abri
   expect(await repository.readSnapshot()).toEqual(before)
   expect(storage.mock.calls.length).toBeGreaterThan(0)
   expect(
-    storage.mock.calls.every(([key]) => key === APPEARANCE_STORAGE_KEY),
+    storage.mock.calls.every(
+      ([key]) =>
+        key === APPEARANCE_STORAGE_KEY || key === COLLECTION_VIEW_STORAGE_KEY,
+    ),
   ).toBe(true)
   expect(JSON.stringify(storage.mock.calls)).not.toContain(fictitiousKey)
 })

@@ -148,9 +148,9 @@ test('errores, callbacks tardíos, lista y navegación liberan YouTube sin autop
     fullPage: true,
   })
   const appearance = page.locator('details.appearance-panel')
-  await appearance.locator('summary').click()
+  await appearance.locator(':scope > summary').click()
   await appearance.getByRole('radio', { name: 'Claro', exact: true }).check()
-  await appearance.locator('summary').click()
+  await appearance.locator(':scope > summary').click()
   await page.setViewportSize({ width: 1280, height: 900 })
   expect(
     (
@@ -214,7 +214,7 @@ test('errores, callbacks tardíos, lista y navegación liberan YouTube sin autop
   await expect(
     page.getByText('Reproducción iniciada en YouTube.'),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(page.locator('iframe')).toHaveCount(0)
   const result = await page.evaluate(() => {
     const host = window as MockYouTubeHost

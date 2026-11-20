@@ -242,6 +242,7 @@ test('Biblioteca y Calificaciones comparan un género explícito sin rellenar co
     .click()
   await openLibraryFilters(page)
   await expect(genre).toHaveValue('power metal')
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Calificaciones', exact: true })
     .click()
@@ -297,14 +298,14 @@ test('conflicto conserva borrador, renombrado protege notas y formularios son ac
   await page.getByText('Valorar por género', { exact: false }).click()
   for (const theme of ['dark', 'light']) {
     const appearance = page.locator('details.appearance-panel')
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     expect(
       (
         await new AxeBuilder({ page })

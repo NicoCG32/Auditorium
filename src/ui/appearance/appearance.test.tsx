@@ -274,15 +274,15 @@ test('controles etiquetados permiten ajustar foto, ocultarla con el ambiente y q
     )
   }
   const { container } = render(<Controls />)
-  fireEvent.click(screen.getByText('Apariencia'))
-  const fileInput = screen.getByLabelText('Foto de fondo opcional')
+  fireEvent.click(screen.getByText('Personalizar'))
+  const fileInput = screen.getByLabelText('Foto de fondo (opcional)')
   fireEvent.change(fileInput, { target: { files: [rasterFile()] } })
   await waitFor(() => expect(PreviewImage.instances).toHaveLength(1))
   await act(async () => {
     lastImage().onload?.()
     await Promise.resolve()
   })
-  expect(screen.getByText(/Vista previa temporal/)).toBeVisible()
+  expect(screen.getByText(/La foto se usa durante esta apertura/)).toBeVisible()
   fireEvent.change(
     screen.getByRole('slider', { name: /Opacidad de la foto/ }),
     {
@@ -299,15 +299,11 @@ test('controles etiquetados permiten ajustar foto, ocultarla con el ambiente y q
     opacity: '0.25',
     backgroundPosition: 'right center',
   })
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: 'Ambientación decorativa' }),
-  )
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Fondo decorativo' }))
   expect(container.querySelector('.appearance-poster')).toBeNull()
   expect(screen.getByText(/La foto está oculta/)).toBeVisible()
   expect(PreviewURL.revokeObjectURL).not.toHaveBeenCalled()
-  fireEvent.click(
-    screen.getByRole('checkbox', { name: 'Ambientación decorativa' }),
-  )
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Fondo decorativo' }))
   expect(container.querySelector('.appearance-poster')).toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Quitar foto' }))
   expect(container.querySelector('.appearance-poster')).toBeNull()

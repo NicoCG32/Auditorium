@@ -225,7 +225,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await expect(
     page.getByRole('button', { name: 'Volver a álbumes retirados' }),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.reload()
   await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
@@ -320,7 +320,7 @@ test('auditoría de accesibilidad en vacío, formularios, ficha y confirmaciones
   await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Álbumes retirados (2)' }).click()
   await accessible(page)
-  await page.getByText('Aplicación y almacenamiento', { exact: true }).click()
+  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
   await accessible(page)
 })
 
@@ -348,10 +348,6 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
   })
   if (limitedTabs) await addButton.focus()
   else {
-    await page.keyboard.press(tabKey)
-    await expect(
-      page.getByRole('button', { name: 'Biblioteca', exact: true }),
-    ).toBeFocused()
     await page.keyboard.press(tabKey)
     await expect(
       page.getByRole('button', { name: 'Mi colección', exact: true }),
@@ -400,7 +396,7 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
   await page
     .getByRole('button', { name: 'Descartar cambios', exact: true })
     .click()
-  const summary = page.getByText('Aplicación y almacenamiento', { exact: true })
+  const summary = page.getByText('Ajustes de la aplicación', { exact: true })
   await summary.focus()
   await summary.press('Enter')
   await expect(

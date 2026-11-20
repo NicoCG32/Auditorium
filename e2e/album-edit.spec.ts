@@ -134,7 +134,7 @@ test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugere
 }) => {
   await suggestionSeed(page, true)
   const original = await exportBackup(page)
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await editor(page)
   const artist = page.getByRole('combobox', { name: 'Artista 1', exact: true })
   await artist.press('End')
@@ -157,7 +157,7 @@ test('edición reutiliza otra banda sin duplicarla y cancelar no persiste sugere
     .getByRole('button', { name: 'Descartar cambios', exact: true })
     .click()
   expect((await exportBackup(page)).data).toEqual(original.data)
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await editor(page)
   await artist.press('End')
   await artist.press('ArrowDown')
@@ -215,14 +215,14 @@ test('sugerencias accesibles a320px en ambos temas y créditos múltiples con se
   await suggestionSeed(page)
   for (const theme of ['dark', 'light'] as const) {
     const appearance = page.locator('details.appearance-panel')
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await page
       .getByRole('button', { name: 'Añadir álbum', exact: true })
       .click()
@@ -257,7 +257,9 @@ test('sugerencias accesibles a320px en ambos temas y créditos múltiples con se
       await dialog
         .getByRole('button', { name: 'Descartar cambios', exact: true })
         .click()
-    await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+    await page
+      .getByRole('button', { name: 'Mi colección', exact: true })
+      .click()
   }
   if (browserName === 'chromium') {
     const touch = await browser.newContext({
@@ -332,7 +334,7 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
     'EDM',
   ])
   expect(before.data.catalog.artists[0]!.name).toBe('Conjunto Del Sur')
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await editor(page, 'Canción Del Océano')
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
@@ -342,7 +344,7 @@ test('capitaliza alta y edición, conserva IDs al recargar y revisa coincidencia
   const after = await exportBackup(page)
   expect(after.data).toEqual(before.data)
   await page.reload()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Canción Del Océano', exact: true }),
   ).toBeVisible()
@@ -751,14 +753,14 @@ test('edición y nuevos filtros son accesibles a360px en los dos temas', async (
   await seed(page)
   for (const theme of ['dark', 'light'] as const) {
     const appearance = page.locator('details.appearance-panel')
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await editor(page)
     await page
       .getByRole('combobox', { name: 'Géneros (separados por comas)' })

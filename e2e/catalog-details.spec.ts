@@ -449,7 +449,7 @@ test('un artista manual necesita confirmar su identidad y mantiene el nombre y l
       name: 'Vincular Umbral Eléctrico con Umbral Eléctrico',
     }),
   ).toBeFocused()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Seguir editando' }).click()
   await page
@@ -522,12 +522,12 @@ test('a 320 px la selección protege la salida, conserva el foco y es accesible 
   await mockCatalog(page)
   await seed(page)
   const panel = await choose(page)
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).focus()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).focus()
   await page.keyboard.press('Enter')
   await page.getByRole('button', { name: 'Seguir editando' }).click()
   await expect(
     page.getByRole('button', {
-      name: 'Biblioteca',
+      name: 'Mi colección',
       exact: true,
     }),
   ).toBeFocused()
@@ -537,6 +537,7 @@ test('a 320 px la selección protege la salida, conserva el foco y es accesible 
     if ((await appearance.getAttribute('open')) === null)
       await appearance.locator(':scope > summary').click()
     await page.getByRole('radio', { name: theme, exact: true }).check()
+    await appearance.locator(':scope > summary').click()
     await page.locator('details.library-utilities > summary').click()
     expect(
       await page.evaluate(
@@ -556,6 +557,6 @@ test('a 320 px la selección protege la salida, conserva el foco y es accesible 
     })
   }
   await panel.getByRole('button', { name: 'Cancelar selección' }).click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 })

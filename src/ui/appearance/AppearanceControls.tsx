@@ -1,6 +1,11 @@
-import { useId } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import type { Appearance } from './use-appearance'
 import type { PosterPreview, PosterPosition } from './use-poster-preview'
+import { CollectionPreferences } from './CollectionPreferences'
+import {
+  useCollectionPreferences,
+  type CollectionPreferences as Preferences,
+} from './use-collection-preferences'
 
 export function AppearanceControls({
   appearance,
@@ -9,15 +14,105 @@ export function AppearanceControls({
   appearance: Appearance
   preview: PosterPreview
 }) {
+  return (
+    <CollectionPreferences>
+      <Personalization appearance={appearance} preview={preview} />
+    </CollectionPreferences>
+  )
+}
+function Personalization({
+  appearance,
+  preview,
+}: {
+  appearance: Appearance
+  preview: PosterPreview
+}) {
+  const preferences = useCollectionPreferences()
+  const panel = useRef<HTMLDetailsElement>(null)
+  useEffect(() => {
+    const dismiss = (event: PointerEvent) => {
+      if (
+        panel.current?.open &&
+        event.target instanceof Node &&
+        !panel.current.contains(event.target)
+      )
+        panel.current.open = false
+    }
+    document.addEventListener('pointerdown', dismiss)
+    return () => document.removeEventListener('pointerdown', dismiss)
+  }, [])
   const id = useId()
   const fileId = `${id}-poster`
   const noteId = `${id}-note`
   const errorId = `${id}-error`
 
   return (
-    <details className="appearance-panel">
-      <summary>Apariencia</summary>
+    <details
+      ref={panel}
+      className="appearance-panel"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape' && panel.current?.open) {
+          event.preventDefault()
+          panel.current.open = false
+          panel.current.querySelector('summary')?.focus()
+        }
+      }}
+    >
+      <summary>Personalizar</summary>
       <div className="appearance-content">
+        <label className="appearance-label">
+          Nombre de tu colección
+          <input
+            type="text"
+            maxLength={60}
+            value={preferences.name}
+            onChange={(event) =>
+              preferences.update({ name: event.currentTarget.value })
+            }
+          />
+        </label>
+        <fieldset className="appearance-group">
+          <legend>Tus portadas</legend>
+          <label className="appearance-label">
+            Vista
+            <select
+              value={preferences.view}
+              onChange={(event) =>
+                preferences.update({
+                  view: event.currentTarget.value as Preferences['view'],
+                })
+              }
+            >
+              <option value="grid">Portadas</option>
+              <option value="list">Lista</option>
+            </select>
+          </label>
+          <label className="appearance-label">
+            Tamaño de las portadas
+            <select
+              value={preferences.covers}
+              onChange={(event) =>
+                preferences.update({
+                  covers: event.currentTarget.value as Preferences['covers'],
+                })
+              }
+            >
+              <option value="small">Pequeñas</option>
+              <option value="medium">Medianas</option>
+              <option value="large">Grandes</option>
+            </select>
+          </label>
+          <label className="appearance-choice">
+            <input
+              type="checkbox"
+              checked={preferences.details}
+              onChange={(event) =>
+                preferences.update({ details: event.currentTarget.checked })
+              }
+            />
+            Mostrar géneros, país y valoraciones
+          </label>
+        </fieldset>
         <fieldset className="appearance-group">
           <legend>Tema</legend>
           <div className="appearance-choices">
@@ -43,11 +138,11 @@ export function AppearanceControls({
               appearance.setAmbient(event.currentTarget.checked)
             }
           />
-          Ambientación decorativa
+          Fondo decorativo
         </label>
         <div className="appearance-group">
           <label className="appearance-label" htmlFor={fileId}>
-            Foto de fondo opcional
+            Foto de fondo (opcional)
           </label>
           <input
             id={fileId}
@@ -62,10 +157,16 @@ export function AppearanceControls({
             }}
           />
           <p className="appearance-note" id={noteId}>
-            PNG, JPEG o WebP; máximo 5 MiB. Vista previa temporal; al recargar
-            se descarta. La foto permanece en esta apertura y no se incluye en
-            los respaldos.
+            La foto se usa durante esta apertura. Puedes elegir otra cuando
+            quieras.
           </p>
+          <details className="appearance-file-help">
+            <summary>Formatos y privacidad</summary>
+            <p className="appearance-note">
+              PNG, JPEG o WebP, hasta 5 MB. La foto no se sube y se descarta al
+              recargar; no forma parte de tus respaldos.
+            </p>
+          </details>
           {preview.preparing && <p role="status">Preparando vista previa…</p>}
           {preview.error && (
             <p className="field-error" role="alert" id={errorId}>

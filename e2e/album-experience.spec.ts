@@ -117,6 +117,7 @@ test('ficha y Calificaciones mantienen una nota y una referencia opcional entre 
       fullPage: true,
     })
   }
+  await openLibraryOptions(page)
   await page
     .getByRole('button', { name: 'Calificaciones', exact: true })
     .click()
@@ -210,7 +211,7 @@ test('modelo de notas por género restaura7, conserva la general y protege etiqu
       (r) => r.userAlbumId !== before.data.library.userAlbums[0]!.id,
     ),
   )
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Editar álbum', exact: true }).click()
