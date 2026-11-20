@@ -234,7 +234,7 @@ test('revisión distingue cada género y aplica decisiones independientes del mi
 test('pantalla integrada bloquea operaciones incompatibles y regresa a biblioteca con aviso correcto', async () => {
   const repo = await repository()
   render(<App repository={repo} />)
-  await screen.findByRole('heading', { name: 'Tu biblioteca' })
+  await screen.findByRole('heading', { name: 'Mi colección' })
   openLibraryOptions()
   await waitFor(() =>
     expect(screen.getByRole('button', { name: 'Respaldos' })).toBeEnabled(),
@@ -247,9 +247,7 @@ test('pantalla integrada bloquea operaciones incompatibles y regresa a bibliotec
     screen.getByRole('button', { name: 'Descargar respaldo JSON sin audio' }),
   ).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Confirmar importación' }))
-  await screen.findByText(
-    'Datos incorporados a tu biblioteca. La identidad local se conserva.',
-  )
+  await screen.findByText('Datos añadidos a tu colección.')
   expect(
     screen.getByRole('button', { name: 'Nuevo Horizonte' }),
   ).toBeInTheDocument()

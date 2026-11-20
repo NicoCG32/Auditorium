@@ -10,6 +10,11 @@ import { LibraryControls } from './LibraryControls'
 import { useMemo } from 'react'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { albumArtistIndex } from '../../application/catalog-artists'
+import {
+  indexLibraryHoldings,
+  inCollectionMedium,
+  type CollectionMedium,
+} from '../../application/library-holdings'
 
 export function LibraryView({
   albums,
@@ -21,6 +26,10 @@ export function LibraryView({
   onOpen,
   onAdd,
   onArtist,
+  medium,
+  onMediumChange,
+  covers,
+  details,
 }: {
   albums: LibraryAlbum[]
   snapshot: LocalSnapshot
@@ -31,29 +40,25 @@ export function LibraryView({
   onOpen: (id: string) => void
   onAdd: () => void
   onArtist: (id: string) => void
+  medium: CollectionMedium
+  onMediumChange: (medium: CollectionMedium) => void
+  covers: 'small' | 'medium' | 'large'
+  details: boolean
 }) {
   const artists = useMemo(
     () => albumArtistIndex(snapshot.catalog),
     [snapshot.catalog],
   )
-  const collection = useMemo(() => {
-    const counts = new Map<string, { copies: number; wishes: number }>()
-    for (const item of snapshot.library.ownedItems) {
-      const row = counts.get(item.userAlbumId) ?? { copies: 0, wishes: 0 }
-      row.copies++
-      counts.set(item.userAlbumId, row)
-    }
-    for (const wish of snapshot.library.purchaseWishes) {
-      if (wish.status !== 'active') continue
-      const row = counts.get(wish.userAlbumId) ?? { copies: 0, wishes: 0 }
-      row.wishes++
-      counts.set(wish.userAlbumId, row)
-    }
-    return counts
-  }, [snapshot.library.ownedItems, snapshot.library.purchaseWishes])
-  const visible = queryLibrary(albums, filters)
+  const collection = useMemo(
+    () => indexLibraryHoldings(snapshot, albums),
+    [snapshot, albums],
+  )
+  const visible = queryLibrary(albums, filters).filter((album) =>
+    inCollectionMedium(collection.holdings.get(album.id), medium),
+  )
   const context = ratingGenre(filters)
   const narrowed = Boolean(
+    medium !== 'all' ||
     filters.search ||
     filters.genre ||
     filters.country ||
@@ -75,9 +80,6 @@ export function LibraryView({
           />
         </div>
         <div className="welcome-copy">
-          <p className="mb-3 text-xs tracking-widest text-accent-text uppercase">
-            Tu archivo comienza aquí
-          </p>
           <h2 id="empty-title" className="text-3xl font-semibold">
             Aún no hay álbumes
           </h2>
@@ -92,7 +94,33 @@ export function LibraryView({
       </section>
     )
   return (
-    <>
+    <section
+      className="collection-gallery"
+      data-covers={covers}
+      aria-label="Tu colección"
+    >
+      <div
+        className="collection-medium"
+        role="group"
+        aria-label="Mostrar en mi colección"
+      >
+        {(
+          [
+            ['all', 'Todos'],
+            ['physical', 'Físico'],
+            ['digital', 'Digital'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            type="button"
+            key={value}
+            aria-pressed={medium === value}
+            onClick={() => onMediumChange(value)}
+          >
+            {label} <span>{collection.counts[value]}</span>
+          </button>
+        ))}
+      </div>
       <LibraryControls
         albums={albums}
         filters={filters}
@@ -109,7 +137,13 @@ export function LibraryView({
           <button
             type="button"
             className="text-button"
-            onClick={() => onFiltersChange(defaultLibraryFilters)}
+            onClick={() => {
+              onFiltersChange({
+                ...defaultLibraryFilters,
+                order: filters.order,
+              })
+              onMediumChange('all')
+            }}
           >
             Limpiar búsqueda y filtros
           </button>
@@ -121,12 +155,20 @@ export function LibraryView({
             No encontramos coincidencias
           </h2>
           <p className="mt-3 text-muted">
-            Prueba otro título o artista, o limpia los filtros.
+            {medium === 'all'
+              ? 'Prueba otro título o artista, o limpia los filtros.'
+              : `Aquí aparecen los álbumes con ${medium === 'physical' ? 'ejemplares físicos' : 'ejemplares digitales'} registrados en su ficha.`}
           </p>
           <button
             type="button"
             className="action-button mt-6"
-            onClick={() => onFiltersChange(defaultLibraryFilters)}
+            onClick={() => {
+              onFiltersChange({
+                ...defaultLibraryFilters,
+                order: filters.order,
+              })
+              onMediumChange('all')
+            }}
           >
             Mostrar todos los álbumes
           </button>
@@ -143,15 +185,25 @@ export function LibraryView({
               view={view}
               artists={artists.get(album.albumId) ?? []}
               onArtist={onArtist}
-              {...(collection.has(album.id)
-                ? { collection: collection.get(album.id)! }
+              {...(collection.holdings.has(album.id)
+                ? { collection: collection.holdings.get(album.id)! }
                 : {})}
+              details={
+                details ||
+                Boolean(
+                  filters.genre ||
+                  filters.country ||
+                  filters.listening !== 'all' ||
+                  filters.rating !== 'all' ||
+                  ['rating', 'genre', 'country'].includes(filters.order),
+                )
+              }
               {...(context ? { ratingGenre: context } : {})}
               onOpen={() => onOpen(album.id)}
             />
           ))}
         </ul>
       )}
-    </>
+    </section>
   )
 }

@@ -102,7 +102,8 @@ async function exportBackup(page: Page) {
   return parseBackupText(await readFile(path, 'utf8'))
 }
 async function collection(page: Page) {
-  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
+  await openLibraryOptions(page)
+  await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
 }
 const copies = (page: Page) =>
   page.getByRole('list', { name: 'Ejemplares de este álbum' })
@@ -155,7 +156,7 @@ test('colección conjunta filtra copias y conserva búsqueda, formato, selector 
     page.locator('details[data-album-area="collection"] > summary'),
   ).toBeFocused()
   await page
-    .getByRole('button', { name: 'Volver a mi colección', exact: true })
+    .getByRole('button', { name: 'Volver a ejemplares', exact: true })
     .click()
   await expect(
     page.getByLabel('Buscar en mi colección', { exact: true }),
@@ -200,7 +201,7 @@ test('colección conjunta filtra copias y conserva búsqueda, formato, selector 
     }),
   ).toBeVisible()
   await page
-    .getByRole('button', { name: 'Volver a mi colección', exact: true })
+    .getByRole('button', { name: 'Volver a ejemplares', exact: true })
     .click()
   await expect(
     page.getByLabel('Buscar álbum para registrar una adquisición', {
@@ -316,14 +317,14 @@ test('conflictos no sobrescriben copias; colección y edición son accesibles en
   await collection(page)
   for (const theme of ['dark', 'light']) {
     const appearance = page.locator('details.appearance-panel')
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     expect(
       (
         await new AxeBuilder({ page })

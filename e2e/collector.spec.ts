@@ -89,7 +89,7 @@ test('colecciona con lo mínimo y completa los detalles después sin notas o esc
   await expect(
     page.getByRole('list', { name: 'Deseos de este álbum' }),
   ).toContainText('CD')
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   const card = page.getByRole('list', { name: 'Álbumes de tu biblioteca' })
   await expect(card).toContainText('1 ejemplar')
   await expect(card).toContainText('En deseos')
@@ -120,9 +120,9 @@ test('móvil y teclado: los detalles se despliegan sin perder el borrador y el t
 }, info) => {
   await page.setViewportSize({ width: 320, height: 900 })
   await addAlbum(page)
-  await page.getByText('Apariencia', { exact: true }).click()
+  await page.getByText('Personalizar', { exact: true }).click()
   await page.getByRole('radio', { name: 'Claro', exact: true }).check()
-  await page.getByText('Apariencia', { exact: true }).click()
+  await page.getByText('Personalizar', { exact: true }).click()
   await openAlbumArea(page, 'collection')
   await page
     .getByRole('button', { name: 'Registrar ejemplar', exact: true })
@@ -156,7 +156,7 @@ test('móvil y teclado: los detalles se despliegan sin perder el borrador y el t
     path: info.outputPath('collector-mobile-light.png'),
     fullPage: true,
   })
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Cambios sin guardar' })
   await expect(dialog).toBeVisible()
   await dialog

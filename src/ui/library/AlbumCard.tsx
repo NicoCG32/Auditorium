@@ -4,6 +4,8 @@ import { AlbumCover } from './AlbumCover'
 import { formatScore, listeningLabels } from './labels'
 import { ArtistLinks } from './ArtistLinks'
 import type { Artist } from '../../domain/catalog/schemas'
+import type { AlbumHolding } from '../../application/library-holdings'
+import { ownedFormatLabels } from './owned-labels'
 
 export function AlbumCard({
   album,
@@ -13,14 +15,16 @@ export function AlbumCard({
   collection,
   artists,
   onArtist,
+  details = true,
 }: {
   album: LibraryAlbum
   view: 'grid' | 'list'
   onOpen: () => void
   ratingGenre?: string
-  collection?: { copies: number; wishes: number }
+  collection?: AlbumHolding
   artists: Artist[]
   onArtist: (id: string) => void
+  details?: boolean
 }) {
   const score = albumScore(album, ratingGenre)
   const context = ratingGenre
@@ -84,15 +88,22 @@ export function AlbumCard({
                 {collection.copies === 1 ? 'ejemplar' : 'ejemplares'}
               </li>
             ) : null}
+            {collection.formats.map((format) => (
+              <li key={format}>
+                {format === 'digital_download'
+                  ? 'Digital'
+                  : ownedFormatLabels[format]}
+              </li>
+            ))}
             {collection.wishes > 0 ? <li>En deseos</li> : null}
           </ul>
         ) : null}
-        {album.countries?.length ? (
+        {details && album.countries?.length ? (
           <p className="mt-2 text-xs text-muted wrap-anywhere">
             País de origen: {album.countries.join(' · ')}
           </p>
         ) : null}
-        {album.genres?.length ? (
+        {details && album.genres?.length ? (
           <ul
             aria-label="Géneros del álbum"
             className="album-genres mt-3 flex flex-wrap gap-2"
@@ -104,8 +115,8 @@ export function AlbumCard({
             ))}
           </ul>
         ) : null}
-        {album.listeningStatus !== 'untracked' ||
-        score !== undefined ||
+        {(details &&
+          (album.listeningStatus !== 'untracked' || score !== undefined)) ||
         ratingGenre ? (
           <dl className="album-personal">
             {album.listeningStatus !== 'untracked' ? (

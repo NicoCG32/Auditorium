@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { App } from './app/App'
 import { IndexedDbRepository } from './infrastructure/repositories/indexeddb-repository'
 import './styles/base.css'
+import './styles/collection.css'
 import { createOfflineController } from './infrastructure/browser/offline-controller'
 import {
   cloudConfiguration,

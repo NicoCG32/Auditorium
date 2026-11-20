@@ -1,6 +1,6 @@
 # Mi colección: ejemplares y compras digitales
 
-COL-05 #71 · 27 de octubre de 2026, con refinamiento de interfaz posterior a 1.1.0. Mi colección se encuentra junto a Biblioteca en el menú principal. Registra las adquisiciones explícitas: cada ejemplar físico y cada compra individual digital tienen su propio registro.
+La vista principal **Mi colección** permite consultar todos los álbumes y filtrar Físico/Digital. **Más opciones → Ejemplares** conserva la gestión detallada de cada adquisición: cada ejemplar físico y cada compra individual digital tienen su propio registro. En la colección se cuentan álbumes; en esta gestión se cuentan copias. [Vista y personalización](BIBLIOTECA.md).
 
 **Registrar una adquisición** y **Consultar deseos de compra** aparecen antes del listado. En la ficha del álbum, **Mi colección** y **Deseos de compra** son los primeros apartados y muestran sus recuentos. Los deseos permanecen separados de **Administrar álbum**, donde se encuentra la retirada.
 

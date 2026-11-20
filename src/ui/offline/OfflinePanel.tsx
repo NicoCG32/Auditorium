@@ -36,15 +36,20 @@ export function OfflinePanel({
   )
   return (
     <aside className="offline-panel" aria-label="Aplicación y almacenamiento">
-      <p role="status">
-        {state.update === 'available'
-          ? 'Nueva versión lista para la próxima apertura.'
-          : shellLabels[state.shell]}
-        {!state.online && ' El navegador indica que no hay conexión.'}
-      </p>
+      {(state.update === 'available' ||
+        state.shell === 'failed' ||
+        !state.online) && (
+        <p role="status">
+          {state.update === 'available'
+            ? 'Nueva versión lista para la próxima apertura.'
+            : shellLabels[state.shell]}
+          {!state.online && ' El navegador indica que no hay conexión.'}
+        </p>
+      )}
       <details>
-        <summary>Aplicación y almacenamiento</summary>
+        <summary>Ajustes de la aplicación</summary>
         <div className="mt-4 grid gap-4">
+          <p>{shellLabels[state.shell]}</p>
           <p>
             Después de prepararse, puedes abrir la biblioteca, registrar álbumes
             y gestionar ediciones, notas, valoraciones, ejemplares, deseos y

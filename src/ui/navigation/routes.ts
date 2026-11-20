@@ -78,13 +78,13 @@ export function routeHash(route: Route): string {
 export function routeTitle(route: Route) {
   switch (route.kind) {
     case 'library':
-      return 'Tu biblioteca'
+      return 'Mi colección'
     case 'add':
       return 'Añadir álbum'
     case 'ratings':
       return 'Calificaciones'
     case 'collection':
-      return 'Mi colección'
+      return 'Ejemplares'
     case 'artist':
       return 'Artista'
     case 'album':

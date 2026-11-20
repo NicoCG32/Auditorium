@@ -36,7 +36,7 @@ function setup({ supported = true, persistent = false, granted = true } = {}) {
   const controller = new OfflineController(browser)
   controller.start()
   render(<OfflinePanel controller={controller} />)
-  fireEvent.click(screen.getByText('Aplicación y almacenamiento'))
+  fireEvent.click(screen.getByText('Ajustes de la aplicación'))
   return { controller, events, storage, registration, browser }
 }
 

@@ -108,7 +108,7 @@ test('busca, pagina, confirma un lote y reconoce los vínculos al repetir sin du
   ).toBeVisible()
   await page.getByRole('button', { name: 'Confirmar importación' }).click()
   await expect(
-    page.getByRole('heading', { name: 'Tu biblioteca', exact: true }),
+    page.getByRole('heading', { name: 'Mi colección', exact: true }),
   ).toBeVisible()
   const first = await backup(page)
   expect(first.schemaVersion).toBe(9)
@@ -149,14 +149,14 @@ test('móvil: filtros, selección y salida protegida son accesibles y no desbord
     ),
   ).toBe(true)
   expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(page.getByRole('dialog')).toBeVisible()
   await page.getByRole('button', { name: 'Seguir editando' }).click()
   await page.getByRole('button', { name: 'Limpiar selección' }).click()
   await expect(
     page.getByRole('button', { name: 'Revisar importación' }),
   ).toHaveCount(0)
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Aún no hay álbumes' }),
   ).toBeVisible()

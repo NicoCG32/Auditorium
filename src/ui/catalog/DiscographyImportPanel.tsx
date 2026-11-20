@@ -319,11 +319,13 @@ export function DiscographyImportPanel({
           ? 'Comparar con tu biblioteca'
           : 'Busca una banda y elige sus discos'}
       </h2>
-      <p className="mt-2 mb-5 text-sm text-muted">
-        Consulta MusicBrainz para incorporar varias obras de una vez. Se envía
-        el nombre o el identificador del artista. Tus notas y valoraciones no
-        forman parte de la consulta.
-      </p>
+      <details className="catalog-source-help">
+        <summary>Sobre la búsqueda en MusicBrainz</summary>
+        <p className="mt-2 mb-5 text-sm text-muted">
+          Se consulta el nombre del artista para encontrar sus discos. Tus notas
+          y valoraciones no se envían.
+        </p>
+      </details>
       {!initial ? (
         <form className="artist-search-form" onSubmit={search}>
           <label className="min-w-0">

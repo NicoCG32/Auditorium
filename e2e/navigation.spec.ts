@@ -17,7 +17,7 @@ test('guardar y salir con título inválido vuelve al campo sin abandonar el edi
   await edit(page)
   const title = page.getByRole('textbox', { name: 'Título', exact: true })
   await title.fill('')
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Guardar y salir' }).click()
   await expect(
     page.getByRole('dialog', { name: 'Cambios sin guardar' }),
@@ -61,7 +61,7 @@ test('Atrás, Escape y un salto de varias entradas conservan o descartan sólo p
   await page
     .getByRole('button', { name: 'Recomendaciones', exact: true })
     .click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await edit(page)
   const title = page.getByRole('textbox', { name: 'Título', exact: true })
   await title.fill('Borrador de navegación ficticio')
@@ -99,7 +99,8 @@ test('guardar y salir conserva identidad y datos ajenos, y abre el destino pedid
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Eclipse Corregido En Navegación')
-  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
+  await openLibraryOptions(page)
+  await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
   await page.getByRole('button', { name: 'Guardar y salir' }).click()
   await expect(page).toHaveURL(/#\/coleccion$/)
   await openLibraryOptions(page)
@@ -189,9 +190,10 @@ test('diálogo accesible a 320px, teclado y ambos temas sin desbordamiento horiz
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Borrador para revisar el diálogo')
   for (const theme of ['Oscuro', 'Claro']) {
-    await page.getByText('Apariencia', { exact: true }).click()
+    await page.getByText('Personalizar', { exact: true }).click()
     await page.getByRole('radio', { name: theme, exact: true }).check()
-    await page.getByText('Apariencia', { exact: true }).click()
+    await page.getByText('Personalizar', { exact: true }).click()
+    await openLibraryOptions(page)
     await page
       .getByRole('button', { name: 'Calificaciones', exact: true })
       .click()

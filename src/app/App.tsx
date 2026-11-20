@@ -10,6 +10,7 @@ import { usePosterPreview } from '../ui/appearance/use-poster-preview'
 import { NavigationProvider } from '../ui/navigation/NavigationProvider'
 import type { CloudAccount } from '../application/cloud-account'
 import { AccountLibrary } from '../ui/account/AccountLibrary'
+import { CollectionPreferences } from '../ui/appearance/CollectionPreferences'
 
 export function App({
   repository,
@@ -39,63 +40,50 @@ export function App({
     }
   }, [appearance.theme])
   return (
-    <div
-      className="aud-app flex min-h-svh flex-col text-foreground"
-      data-aud-theme={appearance.theme}
-      data-aud-ambient={appearance.ambient ? 'on' : 'off'}
-    >
-      <PosterBackdrop poster={preview.poster} visible={appearance.ambient} />
-      <a
-        className="skip-link"
-        href="#contenido"
-        onClick={(event) => {
-          event.preventDefault()
-          document.getElementById('contenido')?.focus()
-        }}
+    <CollectionPreferences>
+      <div
+        className="aud-app flex min-h-svh flex-col text-foreground"
+        data-aud-theme={appearance.theme}
+        data-aud-ambient={appearance.ambient ? 'on' : 'off'}
       >
-        Ir al contenido
-      </a>
-      <header className="app-header">
-        <div className="app-header-inner">
-          <div className="app-brand">
-            <img
-              src={`${import.meta.env.BASE_URL}auditorium/brand/wordmark-${appearance.theme}.svg`}
-              alt="Auditórium · Tu fonoteca digital"
-              width={2400}
-              height={720}
-              className="brand-wordmark"
-            />
+        <PosterBackdrop poster={preview.poster} visible={appearance.ambient} />
+        <a
+          className="skip-link"
+          href="#contenido"
+          onClick={(event) => {
+            event.preventDefault()
+            document.getElementById('contenido')?.focus()
+          }}
+        >
+          Ir al contenido
+        </a>
+        <header className="app-header">
+          <div className="app-header-inner">
+            <div className="app-brand">
+              <img
+                src={`${import.meta.env.BASE_URL}auditorium/brand/wordmark-${appearance.theme}.svg`}
+                alt="Auditórium · Tu fonoteca digital"
+                width={2400}
+                height={720}
+                className="brand-wordmark"
+              />
+            </div>
+            <AppearanceControls appearance={appearance} preview={preview} />
           </div>
-          <AppearanceControls appearance={appearance} preview={preview} />
-        </div>
-      </header>
-      <main id="contenido" tabIndex={-1} className="app-main flex-1">
-        {account ? (
-          <AccountLibrary account={account} />
-        ) : (
-          <NavigationProvider>
-            <LibraryPage repository={repository} />
-          </NavigationProvider>
-        )}
-      </main>
-      <footer className="app-footer">
-        {offline && <OfflinePanel controller={offline} />}
-        <img
-          src={`${import.meta.env.BASE_URL}auditorium/decor/divider-simple.svg`}
-          alt=""
-          aria-hidden="true"
-          width={800}
-          height={80}
-          className="brand-divider"
-          loading="lazy"
-        />
-        <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted">
-          <p>
-            Guardada en este navegador
-            {account ? ', con cuenta opcional entre dispositivos' : ''}.
-          </p>
-        </div>
-      </footer>
-    </div>
+        </header>
+        <main id="contenido" tabIndex={-1} className="app-main flex-1">
+          {account ? (
+            <AccountLibrary account={account} />
+          ) : (
+            <NavigationProvider>
+              <LibraryPage repository={repository} />
+            </NavigationProvider>
+          )}
+        </main>
+        <footer className="app-footer">
+          {offline && <OfflinePanel controller={offline} />}
+        </footer>
+      </div>
+    </CollectionPreferences>
   )
 }

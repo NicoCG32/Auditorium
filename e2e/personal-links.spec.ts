@@ -82,7 +82,7 @@ async function backup(page: Page) {
   return parseBackupText(await readFile(path, 'utf8'))
 }
 async function openAlbum(page: Page) {
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page
     .getByRole('button', { name: 'Umbral Ficticio', exact: true })
     .click()

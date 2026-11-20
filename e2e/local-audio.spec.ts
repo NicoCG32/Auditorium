@@ -530,6 +530,6 @@ test('cancelar una selección pendiente conserva el archivo y descarta la respue
   await page
     .getByRole('button', { name: 'Descartar cambios de audio', exact: true })
     .click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   expect(await audioInventory(page)).toEqual(before)
 })

@@ -22,7 +22,7 @@
 
 Auditorium es una fonoteca digital para organizar álbumes, ediciones, escuchas, valoraciones y adquisiciones en un mismo lugar. Separa el catálogo musical de la experiencia personal y de la colección, para reconocer tanto una obra como las distintas ediciones y copias que tienes.
 
-Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La web incluye la actualización de discografías y ediciones del 17 de noviembre; el ZIP descargable sigue en 1.1.0. Los detalles están en el [changelog](CHANGELOG.md).
+Funciona como web/PWA y guarda la biblioteca en el navegador, sin exigir una cuenta. Ofrece respaldos JSON y ZIP con audio propio, además de sincronización opcional de metadatos entre dispositivos. La web reúne la colección física y digital con presentación personalizable, discografías y ediciones opcionales; el ZIP descargable sigue en 1.1.0. Los detalles están en el [changelog](CHANGELOG.md).
 
 ## Por qué quise construirlo
 
@@ -58,6 +58,8 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 ## Qué puedes hacer
 
 **Biblioteca y catálogo.** Registrar álbumes manualmente, artistas, créditos, géneros, ediciones, pistas y variantes; revisar candidatos de Wikidata cuando lo solicites, sin copiar cambios automáticamente.
+
+**Colección y personalización.** Una vista de portadas con filtros de físico y digital, nombre propio, presentación y orden guardados. Los detalles de las tarjetas se muestran por elección y los ajustes de mantenimiento quedan en segundo plano. [Guía de la colección](docs/BIBLIOTECA.md).
 
 **Discografías por artista.** Buscar una banda en MusicBrainz, seleccionar varias obras y revisar coincidencias antes de incorporarlas. El servicio de consulta está configurado en la web; otras instalaciones necesitan alojarlo. [Recorrido y configuración](docs/DISCOGRAFIAS.md).
 

@@ -103,7 +103,8 @@ test('menú principal ordenado, rutas y contexto propio de calificaciones', asyn
     within(nav)
       .getAllByRole('button')
       .map((button) => button.textContent),
-  ).toEqual(['Biblioteca', 'Mi colección', 'Añadir álbum', 'Calificaciones'])
+  ).toEqual(['Mi colección', 'Añadir álbum'])
+  openLibraryOptions()
   fireEvent.click(screen.getByRole('button', { name: 'Calificaciones' }))
   expect(location.hash).toBe('#/calificaciones')
   fireEvent.click(screen.getByRole('button', { name: 'Calificados' }))
@@ -154,7 +155,8 @@ test('guardar y salir confirma datos una vez y abre el destino solicitado', asyn
   await edit()
   const writes = vi.spyOn(repository, 'mutate')
   change('Título', 'Eclipse Corregido Para Navegar')
-  fireEvent.click(screen.getByRole('button', { name: 'Mi colección' }))
+  openLibraryOptions()
+  fireEvent.click(screen.getByRole('button', { name: 'Ejemplares' }))
   fireEvent.click(screen.getByRole('button', { name: 'Guardar y salir' }))
   await waitFor(() => expect(location.hash).toBe('#/coleccion'))
   expect(writes).toHaveBeenCalledOnce()
@@ -166,7 +168,7 @@ test('guardar y salir confirma datos una vez y abre el destino solicitado', asyn
 test('guardar y salir con datos inválidos conserva editor y ruta', async () => {
   await edit()
   change('Título', '')
-  fireEvent.click(screen.getByRole('button', { name: 'Biblioteca' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Mi colección' }))
   fireEvent.click(screen.getByRole('button', { name: 'Guardar y salir' }))
   await waitFor(() =>
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
@@ -191,7 +193,7 @@ test('alta confirmada con lectura fallida conserva editor y sólo reintenta lect
   })
   await waitFor(() => expect(retry).toBeEnabled())
   expect(location.hash).toBe('#/anadir')
-  expect(screen.getByRole('button', { name: 'Biblioteca' })).toBeDisabled()
+  expect(screen.getByRole('button', { name: 'Mi colección' })).toBeDisabled()
   fireEvent.click(retry)
   await screen.findByRole('heading', { name: 'Umbral De Prueba' })
   expect(writes).toHaveBeenCalledOnce()
@@ -222,7 +224,8 @@ test('entrada directa válida de Pages y ruta inexistente no borran datos', asyn
 test('Mi colección separa medios sin cambiar adquisiciones ni deseos', async () => {
   const before = await repository.readSnapshot()
   await open()
-  fireEvent.click(screen.getByRole('button', { name: 'Mi colección' }))
+  openLibraryOptions()
+  fireEvent.click(screen.getByRole('button', { name: 'Ejemplares' }))
   const medium = screen.getByRole('combobox', { name: 'Medio de la colección' })
   fireEvent.change(medium, { target: { value: 'purchased_digital' } })
   expect(screen.getByText(/^No hay adquisiciones que coincidan/)).toBeVisible()

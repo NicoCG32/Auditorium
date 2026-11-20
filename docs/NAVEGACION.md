@@ -4,7 +4,7 @@ Esta guía describe los destinos, el regreso con contexto y la protección de bo
 
 ## Destinos y rutas
 
-El menú principal sigue Biblioteca → Mi colección → Añadir álbum → Calificaciones. Recomendaciones, Respaldos, Álbumes retirados, Deseos de compra y Cuenta y dispositivos se agrupan en navegación secundaria bajo Más opciones. Los deseos tienen además acceso directo desde Mi colección y un apartado propio en cada ficha. Este menú se despliega a petición y se cierra con Escape, clic fuera o navegación; Escape devuelve el foco a su control de apertura. La [guía de Biblioteca](BIBLIOTECA.md) detalla búsqueda, filtros y tarjetas.
+El menú principal ofrece **Mi colección → Añadir álbum**. La colección reúne los álbumes y sus filtros Todos/Físico/Digital. Ejemplares (gestión de copias), Calificaciones, Deseos de compra, Recomendaciones, Respaldos, Álbumes retirados y Cuenta y dispositivos se agrupan bajo **Más opciones**. Los deseos conservan acceso desde la gestión de ejemplares y desde cada ficha. El menú se despliega a petición y se cierra con Escape, clic fuera o navegación; Escape devuelve el foco al control de apertura. [Guía de la colección](BIBLIOTECA.md).
 
 | Fragmento                               | Destino                                                          |
 | --------------------------------------- | ---------------------------------------------------------------- |
@@ -25,7 +25,7 @@ El servidor recibe sólo la raíz configurada, `/` o `/Auditorium/`, también co
 
 ## Contexto y regreso
 
-Durante la vida de la pestaña se conservan búsqueda, filtros, orden y cuadrícula/lista de Biblioteca, así como búsqueda/sección de Calificaciones y medio de Mi colección. Abrir un álbum recuerda su destino de origen; regresar desde Calificaciones o Mi colección vuelve a ese destino.
+Durante la vida de la pestaña se conservan búsqueda, filtros y medio de la colección, así como búsqueda/sección de Calificaciones y medio de la gestión de ejemplares. Vista y orden de la colección se guardan como preferencias de este navegador. Abrir un álbum recuerda su destino de origen; regresar desde Calificaciones o Mi colección vuelve a ese destino.
 
 Cada pantalla recuerda su posición y foco. El regreso procura enfocar el control de origen sin desplazarlo y recuperar la posición anterior. Si una tarjeta deja de existir en el resultado filtrado, se enfoca la búsqueda. En una transición sin contexto se enfoca el título; la primera apertura de Biblioteca respeta el foco nativo para mantener Ir al contenido como primer destino de Tab. La apertura directa y la recarga pueden recuperar la pantalla por URL, pero no prometen recuperar filtros, scroll o borradores de una sesión terminada.
 

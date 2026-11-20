@@ -65,7 +65,7 @@ async function restore(page: Page) {
   })
   await page.getByRole('button', { name: 'Confirmar restauración' }).click()
   await expect(
-    page.getByRole('heading', { name: 'Tu biblioteca' }),
+    page.getByRole('heading', { name: 'Mi colección' }),
   ).toBeVisible()
   return source
 }
