@@ -287,8 +287,20 @@ async function requestRecovery(page: Page) {
   await page
     .getByRole('button', { name: 'Olvidé mi contraseña', exact: true })
     .click()
+  await expect(
+    page.getByRole('heading', { name: 'Recuperar contraseña', exact: true }),
+  ).toBeVisible()
   await page.getByRole('textbox', { name: 'Correo electrónico' }).fill(email)
-  await page.getByRole('button', { name: 'Enviar enlace', exact: true }).click()
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/auth/v1/recover' &&
+        response.request().method() === 'POST',
+      { timeout: 10_000 },
+    ),
+    page.getByRole('button', { name: 'Enviar enlace', exact: true }).click(),
+  ])
+  expect(response.status()).toBe(200)
   await expect(
     page.getByText(
       'Si el correo corresponde a una cuenta, recibirás un enlace de recuperación.',
@@ -341,13 +353,13 @@ test('un intercambio caducado conserva la sesión y su biblioteca', async ({
     context,
     new Map([[userId, { revision: 1, snapshot: makeBackup().data }]]),
   )
+  const requestPage = await context.newPage()
+  await requestRecovery(requestPage)
+  await requestPage.close()
   await login(page)
   await page
     .getByRole('button', { name: 'Sincronizar ahora', exact: true })
     .click()
-  const requestPage = await context.newPage()
-  await requestRecovery(requestPage)
-  await requestPage.close()
   const failedExchange = page.waitForResponse(
     (response) =>
       response.url().includes('/token?grant_type=pkce') &&
