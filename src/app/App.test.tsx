@@ -626,7 +626,7 @@ test('StrictMode abre una biblioteca vacía real y la acción actualiza cambios 
     </StrictMode>,
   )
   expect(screen.getByRole('main')).toContainElement(
-    screen.getByRole('heading', { level: 1, name: 'Tu biblioteca' }),
+    screen.getByRole('heading', { level: 1, name: 'Mi colección' }),
   )
   expect(
     await screen.findByRole('heading', { name: 'Aún no hay álbumes' }),
@@ -670,6 +670,13 @@ test('lista y cuadrícula mantienen resultados, orden y notas visibles de medio 
   const repository = await populated()
   render(<App repository={repository} />)
   await screen.findByRole('heading', { name: 'Eclipse' })
+  fireEvent.click(screen.getByText('Personalizar'))
+  fireEvent.click(
+    screen.getByRole('checkbox', {
+      name: 'Mostrar géneros, país y valoraciones',
+    }),
+  )
+  fireEvent.click(screen.getByText('Personalizar'))
   expect(screen.getByText('9,5')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
   expect(screen.getByRole('button', { name: 'Lista' })).toHaveAttribute(
@@ -692,6 +699,13 @@ test('muestra datos persistidos después de cerrar y reabrir el repositorio', as
   const reopened = connect()
   render(<App repository={reopened} />)
   await screen.findByRole('heading', { name: 'Eclipse' })
+  fireEvent.click(screen.getByText('Personalizar'))
+  fireEvent.click(
+    screen.getByRole('checkbox', {
+      name: 'Mostrar géneros, país y valoraciones',
+    }),
+  )
+  fireEvent.click(screen.getByText('Personalizar'))
   expect(
     within(
       screen.getByRole('list', { name: 'Álbumes de tu biblioteca' }),

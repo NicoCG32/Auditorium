@@ -16,14 +16,14 @@ test.use({ serviceWorkers: 'block' })
 async function appearance(page: Page, theme: 'dark' | 'light') {
   const panel = page.locator('.appearance-panel')
   if ((await panel.getAttribute('open')) === null)
-    await panel.locator('summary').click()
+    await panel.locator(':scope > summary').click()
   await page
     .getByRole('radio', {
       name: theme === 'dark' ? 'Oscuro' : 'Claro',
       exact: true,
     })
     .check()
-  await panel.locator('summary').click()
+  await panel.locator(':scope > summary').click()
 }
 
 async function populated(page: Page) {
@@ -196,11 +196,9 @@ test('filtros combinados, portada, regreso, teclado y texto ampliado conservan e
   ).toBeVisible()
   await page.getByRole('button', { name: 'Mostrar todos los álbumes' }).click()
   const appearancePanel = page.locator('.appearance-panel')
-  await appearancePanel.locator('summary').click()
-  await page
-    .getByRole('checkbox', { name: 'Ambientación decorativa' })
-    .uncheck()
-  await appearancePanel.locator('summary').click()
+  await appearancePanel.locator(':scope > summary').click()
+  await page.getByRole('checkbox', { name: 'Fondo decorativo' }).uncheck()
+  await appearancePanel.locator(':scope > summary').click()
   await expect(page.locator('.aud-app')).toHaveAttribute(
     'data-aud-ambient',
     'off',

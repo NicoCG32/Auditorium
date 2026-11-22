@@ -22,7 +22,7 @@ async function appearance(page: Page) {
   if (
     !(await panel.evaluate((element) => (element as HTMLDetailsElement).open))
   )
-    await panel.locator('summary').click()
+    await panel.locator(':scope > summary').click()
   return panel
 }
 
@@ -74,7 +74,7 @@ for (const theme of ['dark', 'light'] as const) {
         theme,
       )
       await accessible(page)
-      await panel.locator('summary').click()
+      await panel.locator(':scope > summary').click()
       await page.getByRole('button', { name: 'Añadir tu primer álbum' }).click()
       await accessible(page)
       await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
@@ -103,7 +103,7 @@ for (const theme of ['dark', 'light'] as const) {
         .fill('Borrador ficticio conservado')
       const settings = await appearance(page)
       await settings
-        .getByRole('checkbox', { name: 'Ambientación decorativa' })
+        .getByRole('checkbox', { name: 'Fondo decorativo' })
         .uncheck()
       await settings
         .getByRole('radio', {
@@ -150,7 +150,7 @@ test('foto local sólo aparece tras selección, se puede ocultar y no persiste a
   const panel = await appearance(page)
   await expect(page.locator('.appearance-poster')).toHaveCount(0)
   await panel
-    .getByLabel('Foto de fondo opcional', { exact: true })
+    .getByLabel('Foto de fondo (opcional)', { exact: true })
     .setInputFiles('public/auditorium/icons/icon-192.png')
   await expect(page.locator('.appearance-poster')).toHaveCount(1)
   await panel
@@ -161,16 +161,14 @@ test('foto local sólo aparece tras selección, se puede ocultar y no persiste a
     '100% 50%',
   )
   await accessible(page)
-  await panel
-    .getByRole('checkbox', { name: 'Ambientación decorativa' })
-    .uncheck()
+  await panel.getByRole('checkbox', { name: 'Fondo decorativo' }).uncheck()
   await expect(page.locator('.appearance-poster')).toHaveCount(0)
-  await panel.getByRole('checkbox', { name: 'Ambientación decorativa' }).check()
+  await panel.getByRole('checkbox', { name: 'Fondo decorativo' }).check()
   await expect(page.locator('.appearance-poster')).toHaveCount(1)
   await panel.getByRole('button', { name: 'Quitar foto', exact: true }).click()
   await expect(page.locator('.appearance-poster')).toHaveCount(0)
   await panel
-    .getByLabel('Foto de fondo opcional', { exact: true })
+    .getByLabel('Foto de fondo (opcional)', { exact: true })
     .setInputFiles('public/auditorium/icons/icon-192.png')
   await expect(page.locator('.appearance-poster')).toHaveCount(1)
   await page.reload()

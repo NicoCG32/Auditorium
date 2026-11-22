@@ -11,6 +11,8 @@ import { parseBackupText, serializeBackup } from '../src/domain/backup'
 
 async function openPrepared(page: Page) {
   await page.goto('/')
+  const settings = page.locator('.offline-panel > details')
+  await settings.locator(':scope > summary').click()
   await expect(
     page.getByText('Aplicación preparada para usar sin conexión.', {
       exact: true,
@@ -19,6 +21,7 @@ async function openPrepared(page: Page) {
   await expect(
     page.getByRole('button', { name: 'Añadir álbum', exact: true }),
   ).toBeEnabled()
+  await settings.locator(':scope > summary').click()
 }
 async function addAlbum(page: Page, title: string) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
@@ -163,7 +166,7 @@ test('manifest, iconos y recursos propios disponibles tras cerrar y abrir sin re
   const response = await reopened.goto('/?origen=prueba#contenido')
   expect(response?.fromServiceWorker()).toBe(true)
   await expect(
-    reopened.getByRole('heading', { name: 'Tu biblioteca', exact: true }),
+    reopened.getByRole('heading', { name: 'Mi colección', exact: true }),
   ).toBeVisible()
   await expect(
     reopened.getByText(/El navegador indica que no hay conexión/),
@@ -297,7 +300,7 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
       exact: true,
     }),
   ).toBeVisible()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', {
       name: 'Horizonte Ficticio Offline',
@@ -366,7 +369,7 @@ test('actualización espera a todas las ventanas y conserva identidad y todas la
     () => navigator.serviceWorker.controller?.scriptURL,
   )
   await request.post('/__test/version?value=b')
-  await page.getByText('Aplicación y almacenamiento', { exact: true }).click()
+  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -437,7 +440,7 @@ test('descarga de actualización fallida conserva versión y datos; permite rein
   const before = await rawDatabase(page)
   await request.post('/__test/fail-assets?value=true')
   await request.post('/__test/version?value=b')
-  await page.getByText('Aplicación y almacenamiento', { exact: true }).click()
+  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -452,7 +455,7 @@ test('descarga de actualización fallida conserva versión y datos; permite rein
   ).toBeVisible()
   expect(await page.locator('html').getAttribute('data-test-build')).toBe('a')
   await request.post('/__test/fail-assets?value=false')
-  await page.getByText('Aplicación y almacenamiento', { exact: true }).click()
+  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -521,7 +524,7 @@ test('mensajes de almacenamiento y sección offline operables a 320 px sin desbo
 }) => {
   await page.setViewportSize({ width: 320, height: 800 })
   await openPrepared(page)
-  const summary = page.getByText('Aplicación y almacenamiento', { exact: true })
+  const summary = page.getByText('Ajustes de la aplicación', { exact: true })
   await summary.focus()
   await summary.press('Enter')
   await expect(

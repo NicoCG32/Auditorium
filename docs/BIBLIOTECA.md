@@ -1,37 +1,43 @@
-# Biblioteca: búsqueda, filtros y consulta
+# Mi colección
 
-RATE-02 incorpora [comparación por género](VALORACIONES_POR_GENERO.md): elegir un género usa su nota contextual y permite General de forma explícita. Tarjetas, orden por nota, umbral y Con/Sin nota comparten la base visible; una nota ausente no se sustituye. Las preferencias de consulta siguen siendo temporales y los datos guardados conservan DB12/JSON8/ZIP1.
+Mi colección reúne tus álbumes en una vista de portadas o lista. Desde aquí puedes buscar música, ordenar los discos y consultar tu colección física y digital. La navegación principal ofrece **Mi colección** y **Añadir álbum**; las demás tareas están en **Más opciones**.
 
-La Biblioteca es la entrada principal a la música guardada. El menú mantiene el recorrido **Biblioteca → Mi colección → Añadir álbum → Calificaciones**. Añadir álbum permanece visible; las utilidades se abren desde **Más opciones**.
+## Físico y digital en una sola vista
 
-El refinamiento de interfaz posterior a 1.1.0 permite empezar con lo mínimo y completar los detalles después. Añadir música presenta búsqueda de discografía y registro manual; JSON se encuentra en **Otras formas de añadir**. En el registro manual, **Guardar álbum** está junto a artista y título. Año, géneros, créditos adicionales, portada, enlaces y audio se despliegan a petición.
+- **Todos** muestra los álbumes activos, tengan o no ejemplares registrados.
+- **Físico** muestra los álbumes de los que has registrado al menos un ejemplar físico.
+- **Digital** muestra los álbumes con una adquisición digital registrada.
 
-## Encontrar un álbum
+Los contadores corresponden a álbumes. Varias copias del mismo disco no aumentan ese contador; un álbum con copias físicas y digitales aparece en ambos filtros. Añadir una discografía, un enlace o un deseo no registra una adquisición. Las tarjetas indican los formatos y ejemplares disponibles y los deseos activos.
 
-La búsqueda consulta título, artista, género y país. El orden permite elegir incorporaciones recientes, título, artista, nota, género o país. Cuadrícula y Lista cambian la presentación del mismo resultado.
+Para registrar una copia, abre el álbum y usa **Mi colección**. El medio y el formato son suficientes; puedes completar edición, estado, fecha o notas más adelante. La gestión detallada de cada copia sigue disponible en **Más opciones → Ejemplares**. [Guía de ejemplares](MI_COLECCION.md).
 
-**Filtros** despliega género, país de origen, escucha y nota. Las selecciones se combinan con la búsqueda. Su contador incluye únicamente esos cuatro filtros; la búsqueda y el orden no aumentan el contador.
+## Personalizar
 
-Los filtros activos siguen visibles como etiquetas aunque el panel esté cerrado. Pulsar una etiqueta quita sólo esa selección. **Limpiar búsqueda y filtros** elimina la búsqueda y las selecciones y recupera el orden de incorporaciones recientes; conserva Cuadrícula o Lista. Si no hay coincidencias, **Mostrar todos los álbumes** ofrece la misma recuperación.
+**Personalizar**, en la cabecera, permite ponerle nombre a tu colección, elegir **Portadas/Lista**, cambiar el tamaño de las portadas y mostrar u ocultar géneros, país y valoraciones en las tarjetas. También contiene los temas **Oscuro/Claro**, el fondo decorativo y una foto de fondo opcional.
 
-El total indica cuántos álbumes coinciden respecto de la biblioteca completa. Los valores y reglas de consulta se describen en [Consulta de Biblioteca](CONSULTA_BIBLIOTECA.md).
+El nombre, la presentación, el tamaño, los detalles y el orden elegido se recuerdan en este navegador, al igual que el tema. Si el navegador no permite guardar preferencias, los controles siguen funcionando durante esa apertura. No modifican álbumes, notas, ejemplares ni deseos, y no forman parte del respaldo musical. La foto conserva su uso temporal: se descarta al recargar. [Apariencia y límites](DISENO_BASE.md).
 
-## Abrir y regresar
+Las tarjetas empiezan con portada, título, artista, año disponible y formatos de tu colección. Los demás detalles se muestran por elección. Cuando filtras o comparas por género, escucha o nota, se muestra la información necesaria para entender ese resultado. Una valoración ausente no se sustituye por otra.
 
-La portada y el título abren la misma ficha. Cada tarjeta muestra artista y los datos disponibles, además del número de ejemplares y la indicación **En deseos** cuando corresponda. Año, escucha y nota ausentes no ocupan filas vacías en la vista general. Al comparar por género, una valoración contextual ausente sigue identificada explícitamente y no se sustituye por otra nota. Sin portada se utiliza una composición de disco, manteniendo el acceso a la ficha.
+## Buscar y ordenar
 
-Al volver se conservan búsqueda, filtros, orden, vista, posición y foco mientras siga viva la pestaña. El panel de filtros puede cerrarse sin perder selecciones. Recargar recupera los datos guardados, pero no promete recuperar el contexto temporal de consulta. La [guía de navegación](NAVEGACION.md) explica rutas y borradores.
+La búsqueda consulta título, artista, género y país. **Ordenar por** permite elegir artista, título, incorporaciones recientes, nota, género o país; el orden inicial es artista. El orden se conserva al cambiar entre portadas y lista o al volver a abrir la aplicación.
 
-## Utilidades y estados
+**Filtros** despliega género, país de origen, escucha y nota. Se combinan con la búsqueda y con Físico/Digital. Su contador incluye esos cuatro filtros; la búsqueda, el medio y el orden no lo aumentan. Las etiquetas activas permiten quitar una selección aunque el panel esté cerrado.
 
-Más opciones reúne Recomendaciones, Respaldos, Álbumes retirados, Deseos de compra, Cuenta y dispositivos y Actualizar biblioteca. Se cierra al elegir un destino, pulsar Escape o tocar fuera. Escape devuelve el foco al control que abre el menú; si se cancela una navegación protegida por borradores, el foco vuelve a ese control visible.
+**Limpiar búsqueda y filtros** y **Mostrar todos los álbumes** recuperan todos los álbumes y vacían las selecciones. Conservan tu orden y presentación preferidos. Las reglas de consulta y la comparación por género están en [Consulta de Biblioteca](CONSULTA_BIBLIOTECA.md) y [Valoraciones por género](VALORACIONES_POR_GENERO.md).
 
-Una biblioteca vacía invita a añadir el primer álbum. Una consulta sin coincidencias ofrece limpiar la selección. Los fallos de lectura conservan los datos y muestran una explicación y una acción para reintentar; no se presentan como una biblioteca vacía.
+## Abrir un álbum y regresar
 
-## Presentación y accesibilidad
+La portada y el título abren la misma ficha. El nombre del artista abre su página. Sin portada se utiliza una composición de disco; no se descarga una imagen por buscar o filtrar.
 
-La composición adapta cabecera, búsqueda y tarjetas a móvil y escritorio, con ambos temas y ambientación opcional. Los filtros empiezan plegados para dejar visibles la búsqueda y el comienzo de la música a 360 × 800. A 320 px las tarjetas pasan a una columna; el texto ampliado y los controles pueden ocupar más filas sin desplazamiento horizontal.
+Al regresar de una ficha se conservan búsqueda, medio, filtros, posición y foco mientras siga viva la pestaña. Recargar recupera la presentación guardada, pero no la búsqueda o el medio temporal. La [guía de navegación](NAVEGACION.md) explica rutas y protección de borradores.
 
-Los controles utilizan etiquetas accesibles, estado de vista seleccionada, indicador de expansión y foco visible. Portada y título se activan con teclado. La validación automatizada cubre ambos temas a 360 y 1280 px, texto al 200 %, movimiento reducido, ambientación desactivada, auditoría axe y regreso con contexto en Chromium, Firefox y WebKit. Las capturas usan exclusivamente álbumes y portadas ficticios.
+## Otras tareas y recuperación
 
-Esta entrega corresponde a [VIS-02 #63](https://github.com/NicoCG32/Auditorium/issues/63). No modifica el modelo de álbum, ediciones, calificaciones o adquisiciones; los refinamientos de esos formularios conservan sus tareas en el [Project](https://github.com/users/NicoCG32/projects/4).
+**Más opciones** reúne Ejemplares, Calificaciones, Deseos de compra, Recomendaciones, Respaldos, Álbumes retirados y Cuenta y dispositivos. En móvil se representa con tres puntos. Se cierra al elegir un destino, pulsar Escape o tocar fuera. Escape devuelve el foco al control de apertura.
+
+**Ajustes de la aplicación**, al pie, contiene instalación, funcionamiento sin conexión y almacenamiento. Los avisos de actualización, desconexión y fallos importantes permanecen visibles. Una lectura fallida conserva los datos y ofrece reintentar; no se presenta como una colección vacía.
+
+La presentación se adapta a móvil, escritorio, ambos temas y texto ampliado. Las comprobaciones usan bibliotecas y portadas ficticias; no reemplazan las pruebas físicas con dispositivos y colecciones grandes.

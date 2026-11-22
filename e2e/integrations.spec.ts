@@ -678,14 +678,14 @@ test('catálogo y recomendaciones son accesibles a360px en temas oscuro y claro'
   await seed(page)
   for (const theme of ['dark', 'light'] as const) {
     const appearance = page.locator('details.appearance-panel')
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator('summary').click()
+    await appearance.locator(':scope > summary').click()
     await openLibraryOptions(page)
     await page
       .getByRole('button', { name: 'Recomendaciones', exact: true })

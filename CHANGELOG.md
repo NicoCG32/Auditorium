@@ -1,5 +1,10 @@
 # Changelog
 
+## Web — 2026-11-19
+
+- Mi colección reúne las portadas con filtros Todos/Físico/Digital y recuentos de álbumes según ejemplares registrados. La gestión de copias y calificaciones pasa al menú secundario; se conservan rutas, borradores y regreso con contexto.
+- Personalización de nombre, tamaño de portadas, lista/cuadrícula, detalles y orden recordados por navegador, junto al tema existente. Las tarjetas priorizan portada, artista y formatos. Mantenimiento técnico cotidiano plegado; avisos importantes visibles. Sin cambios de formatos musicales, migraciones o sincronización.
+
 ## Web — 2026-11-17
 
 Actualización de la web publicada. El ZIP de la release 1.1.0 conserva sus archivos originales.

@@ -1,4 +1,16 @@
-import type { Page } from '@playwright/test'
+import { expect, type Page } from '@playwright/test'
+
+export async function waitForOfflineReady(page: Page) {
+  const settings = page.locator('.offline-panel > details')
+  const wasOpen = (await settings.getAttribute('open')) !== null
+  if (!wasOpen) await settings.locator(':scope > summary').click()
+  await expect(
+    page.getByText('Aplicación preparada para usar sin conexión.', {
+      exact: true,
+    }),
+  ).toBeVisible()
+  if (!wasOpen) await settings.locator(':scope > summary').click()
+}
 
 export async function openAlbumArea(
   page: Page,
@@ -44,7 +56,7 @@ export async function openAlbumEditorDetails(page: Page) {
 export async function openLibraryOptions(page: Page) {
   const menu = page.locator('details.library-utilities')
   if ((await menu.getAttribute('open')) === null)
-    await menu.locator('summary').click()
+    await menu.locator(':scope > summary').click()
 }
 
 export async function openLibraryFilters(page: Page) {

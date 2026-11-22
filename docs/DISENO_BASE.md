@@ -39,7 +39,9 @@ La marca cambia con el selector de la aplicación, sin depender del esquema del 
 
 ## Preferencias y foto temporal
 
-El panel **«Apariencia»** de la cabecera permite elegir **Oscuro/Claro**, activar **«Ambientación decorativa»** y seleccionar una **«Foto de fondo opcional»**. El valor inicial es oscuro con ambientación. Tema y activación se guardan en `localStorage` bajo `auditorium.appearance.v1`; si el navegador impide guardarlos, los controles siguen funcionando durante esa apertura. Estas preferencias son independientes de la biblioteca y no forman parte del respaldo JSON.
+El panel **«Personalizar»** de la cabecera permite dar nombre a la colección, elegir portadas o lista, ajustar el tamaño y mostrar detalles en las tarjetas. Se cierra con su control, Escape o clic fuera. El nombre, vista, tamaño, detalles y orden se guardan bajo `auditorium.collection-view.v1`. La primera apertura muestra portadas medianas, información breve y orden por artista. Las preferencias son independientes del snapshot musical y no forman parte de JSON, ZIP ni sincronización.
+
+El mismo panel permite elegir **Oscuro/Claro**, activar **«Fondo decorativo»** y seleccionar una **«Foto de fondo (opcional)»**. El tema inicial es oscuro con ambientación. Tema y activación conservan `auditorium.appearance.v1`; si el navegador impide guardar preferencias, los controles siguen funcionando durante esa apertura.
 
 La foto es una vista previa local, elegida explícitamente desde un archivo PNG, JPEG o WebP de **hasta 5 MiB**. La selección comprueba formato y decodificación. Permite ajustar opacidad entre 5 % y 25 %, posición izquierda/centro/derecha y **«Quitar foto»**. No se sube a ningún servicio, no se guarda en IndexedDB ni en `localStorage` y no se incluye en respaldos. Al recargar o cerrar la aplicación se descarta. Las referencias temporales `blob:` se revocan al reemplazar, quitar o desmontar la vista, y al descartar una carga fallida o cancelada.
 
@@ -55,7 +57,7 @@ Los componentes construyen sus URLs públicas mediante `import.meta.env.BASE_URL
 
 ## Interacción y adaptación
 
-- Biblioteca con cuadrícula adaptable de una a cuatro columnas y vista de lista, sin anchos fijos de contenido.
+- Colección con tamaño de portadas ajustable, cuadrícula adaptable y vista de lista, sin anchos fijos de contenido.
 - Enlace «Ir al contenido» visible al recibir foco; destino principal identificable.
 - Foco visible de tres píxeles y controles de apariencia con áreas de interacción de al menos 44 píxeles de alto.
 - Sin animaciones continuas; las transiciones se desactivan con `prefers-reduced-motion`. En colores forzados se oculta la ambientación y se conservan bordes funcionales.

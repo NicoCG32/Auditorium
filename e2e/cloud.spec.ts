@@ -55,7 +55,9 @@ test('audio queda en su cuenta y dispositivo; la sincronización sólo transfier
     await other
       .getByRole('button', { name: 'Sincronizar ahora', exact: true })
       .click()
-    await other.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+    await other
+      .getByRole('button', { name: 'Mi colección', exact: true })
+      .click()
     await other.getByRole('button', { name: 'Eclipse', exact: true }).click()
     await openAlbumArea(other, 'audio')
     await expect(
@@ -68,14 +70,14 @@ test('audio queda en su cuenta y dispositivo; la sincronización sólo transfier
     await otherDevice.close()
   }
   await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   expect((await audioInventory(page)).files).toEqual([])
   state.set(fixtureId(902), { revision: 1, snapshot: source.fixture.data })
   await login(page, 'other@example.invalid')
   await page
     .getByRole('button', { name: 'Sincronizar ahora', exact: true })
     .click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await openAlbumArea(page, 'audio')
   await expect(
@@ -94,7 +96,7 @@ test('audio queda en su cuenta y dispositivo; la sincronización sólo transfier
   await accountPage(page)
   await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
   await login(page)
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await expect(
     page.getByRole('button', {
@@ -285,8 +287,20 @@ async function requestRecovery(page: Page) {
   await page
     .getByRole('button', { name: 'Olvidé mi contraseña', exact: true })
     .click()
+  await expect(
+    page.getByRole('heading', { name: 'Recuperar contraseña', exact: true }),
+  ).toBeVisible()
   await page.getByRole('textbox', { name: 'Correo electrónico' }).fill(email)
-  await page.getByRole('button', { name: 'Enviar enlace', exact: true }).click()
+  const [response] = await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/auth/v1/recover' &&
+        response.request().method() === 'POST',
+      { timeout: 10_000 },
+    ),
+    page.getByRole('button', { name: 'Enviar enlace', exact: true }).click(),
+  ])
+  expect(response.status()).toBe(200)
   await expect(
     page.getByText(
       'Si el correo corresponde a una cuenta, recibirás un enlace de recuperación.',
@@ -339,13 +353,13 @@ test('un intercambio caducado conserva la sesión y su biblioteca', async ({
     context,
     new Map([[userId, { revision: 1, snapshot: makeBackup().data }]]),
   )
+  const requestPage = await context.newPage()
+  await requestRecovery(requestPage)
+  await requestPage.close()
   await login(page)
   await page
     .getByRole('button', { name: 'Sincronizar ahora', exact: true })
     .click()
-  const requestPage = await context.newPage()
-  await requestRecovery(requestPage)
-  await requestPage.close()
   const failedExchange = page.waitForResponse(
     (response) =>
       response.url().includes('/token?grant_type=pkce') &&
@@ -362,7 +376,7 @@ test('un intercambio caducado conserva la sesión y su biblioteca', async ({
     page.getByRole('heading', { name: 'Tu biblioteca conectada' }),
   ).toBeVisible()
   expect(new URL(page.url()).search).toBe('')
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
@@ -400,7 +414,7 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   await page
     .getByRole('button', { name: 'Sincronizar ahora', exact: true })
     .click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
@@ -437,7 +451,7 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   await other
     .getByRole('button', { name: 'Sincronizar ahora', exact: true })
     .click()
-  await other.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await other.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     other.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()
@@ -481,7 +495,7 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
   await page
     .getByRole('button', { name: 'Sincronizar ahora', exact: true })
     .click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
   await openExperience(page)
   await page.getByText('Valorar por género', { exact: false }).click()
@@ -500,12 +514,12 @@ test('login, dos dispositivos, sincronización y aislamiento al cerrar/cambiar c
     .analyze()
   expect(result.violations).toEqual([])
   await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toHaveCount(0)
   await login(page, 'other@example.invalid')
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toHaveCount(0)
@@ -556,7 +570,7 @@ test('registro y recuperación limpian contraseñas y no guardan credenciales en
     .getByRole('button', { name: 'Guardar contraseña', exact: true })
     .click()
   await expect(
-    recovered.getByRole('button', { name: 'Biblioteca', exact: true }),
+    recovered.getByRole('button', { name: 'Mi colección', exact: true }),
   ).toBeEnabled()
   await recovered.close()
   const storage = await page.evaluate(() =>
@@ -675,7 +689,7 @@ test('incorporar la biblioteca sin cuenta conserva el original y comparte cambio
     .poll(() => state.get(userId)?.snapshot.catalog.albums.length)
     .toBe(2)
   await page.getByRole('button', { name: 'Cerrar sesión', exact: true }).click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Biblioteca Original', exact: true }),
   ).toBeVisible()

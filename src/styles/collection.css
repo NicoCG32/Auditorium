@@ -1,0 +1,192 @@
+/* Portadas y organización, con los ajustes disponibles a petición. */
+.app-header-inner {
+  padding-block: 0.65rem;
+  gap: 0.75rem;
+}
+.brand-wordmark {
+  inline-size: min(100%, 10rem);
+}
+.library-content {
+  position: relative;
+}
+.primary-navigation {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-inline-size: 28rem;
+}
+.library-heading {
+  display: block;
+  margin-block: 1rem;
+}
+.library-intro {
+  display: block;
+  flex: 1;
+}
+.library-title {
+  overflow-wrap: anywhere;
+}
+.library-utilities {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-end: 0;
+}
+.collection-medium {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-block-end: 1.25rem;
+}
+.collection-medium button {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-block-size: 2.75rem;
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+.collection-medium button[aria-pressed='true'] {
+  border-color: var(--accent-text);
+  color: var(--foreground);
+  background: var(--surface-raised);
+}
+.collection-medium button span {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.collection-gallery {
+  --cover-width: 14rem;
+}
+.collection-gallery[data-covers='small'] {
+  --cover-width: 11rem;
+}
+.collection-gallery[data-covers='large'] {
+  --cover-width: 19rem;
+}
+.collection-gallery .album-grid {
+  grid-template-columns: repeat(
+    auto-fill,
+    minmax(min(100%, var(--cover-width)), 1fr)
+  );
+  gap: 1rem;
+}
+.collection-gallery .album-card {
+  overflow: hidden;
+  border-color: transparent;
+  border-radius: 0.35rem;
+}
+.collection-gallery .album-grid .album-copy {
+  padding: 1rem;
+}
+.collection-gallery .album-grid h2 {
+  font-size: 1.05rem;
+  line-height: 1.4;
+}
+.collection-gallery .album-collection-badges {
+  gap: 0.4rem;
+  font-size: 0.72rem;
+}
+.collection-gallery .album-collection-badges li {
+  padding: 0.2rem 0.4rem;
+}
+.appearance-panel {
+  position: relative;
+  flex: 0 0 auto;
+  z-index: 20;
+}
+.appearance-content {
+  position: absolute;
+  inset-inline-end: 0;
+  inline-size: min(25rem, calc(100vw - 2.5rem));
+  max-block-size: min(42rem, 75svh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  box-shadow: 0 12px 36px rgb(0 0 0 / 25%);
+}
+.appearance-content input[type='text'] {
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 2.75rem;
+  padding: 0.65rem;
+  border: 1px solid var(--muted);
+  color: var(--foreground);
+  background: var(--background);
+  font-size: 1rem;
+}
+.appearance-file-help > summary {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+.catalog-source-help {
+  margin-block: 0.5rem 1.25rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+.catalog-source-help summary {
+  min-block-size: 2.75rem;
+  align-content: center;
+  cursor: pointer;
+}
+.app-footer {
+  padding-block: 0;
+  border: 0;
+  background: transparent;
+}
+.app-footer:not(:has(.offline-panel)) {
+  display: none;
+}
+.offline-panel > details > summary {
+  inline-size: fit-content;
+  min-block-size: 2.75rem;
+  align-content: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+@media (max-width: 36rem) {
+  .primary-navigation {
+    inline-size: calc(100% - 3.25rem);
+  }
+  .library-utilities > summary {
+    inline-size: 2.75rem;
+    justify-content: center;
+    padding: 0.5rem;
+    font-size: 0;
+  }
+  .library-utilities > summary::before {
+    content: '•••';
+    font-size: 1rem;
+  }
+  .library-utilities > summary::after {
+    display: none;
+  }
+  .library-sort {
+    flex-basis: 4rem;
+    max-inline-size: none;
+  }
+  .library-sort select {
+    padding-inline: 0.4rem;
+  }
+  .collection-gallery .album-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.6rem;
+  }
+  .collection-gallery[data-covers='large'] .album-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .collection-gallery .album-grid .album-copy {
+    padding: 0.75rem;
+  }
+  .collection-medium {
+    gap: 0.3rem;
+  }
+  .collection-medium button {
+    flex: 1;
+    justify-content: center;
+    gap: 0.4rem;
+    padding-inline: 0.5rem;
+  }
+}

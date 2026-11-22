@@ -102,7 +102,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
   expect(first.data.library.ownedItems).toEqual([])
   const identity = first.data.library.userAlbums[0]!
 
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page
     .getByRole('button', { name: 'Horizonte De Prueba', exact: true })
     .click()
@@ -110,7 +110,8 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
   await openAlbumEditorDetails(page)
   const title = page.getByRole('textbox', { name: 'Título', exact: true })
   await title.fill('horizonte corregido de prueba')
-  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
+  await openLibraryOptions(page)
+  await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Cambios sin guardar' })
   await expect(dialog).toBeVisible()
   await page.keyboard.press('Escape')
@@ -201,7 +202,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     .getByRole('textbox', { name: 'Notas del deseo' })
     .fill('Deseo ficticio independiente')
   await page.getByRole('button', { name: 'Guardar deseo', exact: true }).click()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await openLibraryFilters(page)
   await page
     .getByRole('combobox', { name: 'Género', exact: true })
@@ -211,7 +212,8 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     'Mi nota · Power Metal',
   )
   await expect(page.locator('li[data-entry-id]')).toContainText('1 / 10')
-  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
+  await openLibraryOptions(page)
+  await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
   await expect(
     page
       .getByRole('list', { name: 'Adquisiciones registradas' })
@@ -285,21 +287,23 @@ test('recorrido con texto al 200% conserva controles y reflujo en ambos temas', 
     ),
   ).toBe('32px')
   for (const theme of ['Oscuro', 'Claro']) {
-    await page.getByText('Apariencia', { exact: true }).click()
+    await page.getByText('Personalizar', { exact: true }).click()
     await page.getByRole('radio', { name: theme, exact: true }).check()
-    await page.getByText('Apariencia', { exact: true }).click()
+    await page.getByText('Personalizar', { exact: true }).click()
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 })
       for (const destination of [
-        'Biblioteca',
+        'Mi colección',
         'Añadir álbum',
         'Calificaciones',
-        'Mi colección',
+        'Ejemplares',
       ]) {
+        if (destination === 'Calificaciones' || destination === 'Ejemplares')
+          await openLibraryOptions(page)
         await page
           .getByRole('button', { name: destination, exact: true })
           .click()
-        if (destination === 'Biblioteca') await openLibraryFilters(page)
+        if (destination === 'Mi colección') await openLibraryFilters(page)
         if (destination === 'Añadir álbum')
           await page
             .getByText('Detalles del álbum (opcionales)', { exact: true })
@@ -308,10 +312,10 @@ test('recorrido con texto al 200% conserva controles y reflujo en ambos temas', 
           await page
             .getByRole('button', { name: 'Calificados', exact: true })
             .click()
-        if (destination === 'Mi colección') {
+        if (destination === 'Ejemplares') {
           const register = page.locator('details.collection-register')
           if ((await register.getAttribute('open')) === null)
-            await register.locator('summary').click()
+            await register.locator(':scope > summary').click()
         }
         const dimensions = await page.evaluate(() => ({
           viewport: document.documentElement.clientWidth,

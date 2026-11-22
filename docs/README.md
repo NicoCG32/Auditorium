@@ -84,7 +84,7 @@ Las [ADR](adr/) recogen las decisiones y su contexto histórico. Incluyen el [MV
 
 ## Qué versión estás leyendo
 
-La web incluye la actualización del **17 de noviembre de 2026**, descrita en el [changelog](../CHANGELOG.md). El ZIP descargable sigue en **1.1.0, del 29 de octubre de 2026** y conserva sus archivos originales. Consulta las notas de la versión instalada para conocer sus funciones.
+La web incluye la actualización del **19 de noviembre de 2026**, descrita en el [changelog](../CHANGELOG.md). El ZIP descargable sigue en **1.1.0, del 29 de octubre de 2026** y conserva sus archivos originales. Consulta las notas de la versión instalada para conocer sus funciones.
 
 Los formatos de datos tienen versiones diferentes: **Dexie DB13, respaldo JSON9 y respaldo de audio ZIP1**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
 

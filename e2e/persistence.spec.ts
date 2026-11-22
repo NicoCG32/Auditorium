@@ -1,4 +1,7 @@
-import { openExperience } from './helpers/library-navigation'
+import {
+  waitForOfflineReady,
+  openExperience,
+} from './helpers/library-navigation'
 import { openLibraryOptions } from './helpers/library-navigation'
 import { chromium, expect, test, type Page } from '@playwright/test'
 import { mkdtemp, readFile, rm } from 'node:fs/promises'
@@ -44,11 +47,7 @@ test('audio sobrevive a cerrar el proceso del navegador y volver offline con los
   try {
     const page = context.pages()[0] ?? (await context.newPage())
     await restoreAudio(page)
-    await expect(
-      page.getByText('Aplicación preparada para usar sin conexión.', {
-        exact: true,
-      }),
-    ).toBeVisible()
+    await waitForOfflineReady(page)
     await playPersonalAudio(page)
     const before = await audioInventory(page),
       url = page.url()
@@ -88,11 +87,7 @@ test('cerrar el proceso durante una escritura de audio recupera el estado anteri
   try {
     const page = context.pages()[0] ?? (await context.newPage())
     await page.goto('/')
-    await expect(
-      page.getByText('Aplicación preparada para usar sin conexión.', {
-        exact: true,
-      }),
-    ).toBeVisible()
+    await waitForOfflineReady(page)
     await openBackups(page)
     await page.locator('#complete-audio-file').setInputFiles({
       name: 'cierre-ficticio.zip',
@@ -240,11 +235,7 @@ for (const version of [1, 2] as const) {
       const source = await seed(page, version)
       const before = await audit(page)
       await openLibrary(page)
-      await expect(
-        page.getByText('Aplicación preparada para usar sin conexión.', {
-          exact: true,
-        }),
-      ).toBeVisible()
+      await waitForOfflineReady(page)
       const migrated = await audit(page)
       expect(migrated.version).toBe(130)
       expect(migrated.stores).toHaveLength(17)
@@ -368,11 +359,7 @@ for (const version of [1, 2] as const) {
         await expect(
           target.getByRole('button', { name: 'Respaldos', exact: true }),
         ).toBeEnabled()
-        await expect(
-          target.getByText('Aplicación preparada para usar sin conexión.', {
-            exact: true,
-          }),
-        ).toBeVisible()
+        await waitForOfflineReady(target)
         const initial = await audit(target)
         expect(initial.rows['metadata']).not.toEqual(migrated.rows['metadata'])
         await destination.setOffline(true)
@@ -709,7 +696,7 @@ test('denegar persistencia no bloquea biblioteca ni respaldo', async ({
   const source = await seed(page, 3)
   await openLibrary(page)
   const before = await audit(page)
-  await page.getByText('Aplicación y almacenamiento', { exact: true }).click()
+  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
   const request = page.getByRole('button', {
     name: 'Solicitar protección del almacenamiento',
     exact: true,
@@ -728,7 +715,7 @@ test('denegar persistencia no bloquea biblioteca ni respaldo', async ({
     ).data,
   ).toEqual(source)
   await page.reload()
-  await page.getByRole('button', { name: 'Biblioteca', exact: true }).click()
+  await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await expect(
     page.getByRole('button', { name: 'Eclipse', exact: true }),
   ).toBeVisible()

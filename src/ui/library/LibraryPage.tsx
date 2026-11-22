@@ -34,6 +34,9 @@ import { RatingsDestination, WishesDestination } from './LibraryDestinations'
 import { CollectionDestination } from './CollectionDestination'
 import { defaultCollectionFilters } from '../../application/collection-query'
 import { ArtistPage } from './ArtistPage'
+import { CollectionPreferences } from '../appearance/CollectionPreferences'
+import { useCollectionPreferences } from '../appearance/use-collection-preferences'
+import type { CollectionMedium } from '../../application/library-holdings'
 
 type LoadState =
   | { status: 'loading' }
@@ -59,17 +62,14 @@ function errorMessage(error: unknown) {
   return 'No se pudo leer tu biblioteca. Vuelve a intentar.'
 }
 
-const mainRoutes: Route[] = [
-  { kind: 'library' },
-  { kind: 'collection' },
-  { kind: 'add' },
-  { kind: 'ratings' },
-]
+const mainRoutes: Route[] = [{ kind: 'library' }, { kind: 'add' }]
 const optionRoutes: Route[] = [
+  { kind: 'collection' },
+  { kind: 'ratings' },
+  { kind: 'options', section: 'wishes' },
   { kind: 'options', section: 'recommendations' },
   { kind: 'options', section: 'backups' },
   { kind: 'options', section: 'removed' },
-  { kind: 'options', section: 'wishes' },
   { kind: 'options', section: 'account' },
 ]
 
@@ -84,11 +84,13 @@ export function LibraryPage({
   if (!navigation)
     throw new Error('La biblioteca necesita su controlador de navegación.')
   return (
-    <LibraryContent
-      repository={repository}
-      navigation={navigation}
-      {...(account ? { account } : {})}
-    />
+    <CollectionPreferences>
+      <LibraryContent
+        repository={repository}
+        navigation={navigation}
+        {...(account ? { account } : {})}
+      />
+    </CollectionPreferences>
   )
 }
 
@@ -110,7 +112,8 @@ function LibraryContent({
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [request, setRequest] = useState(0)
   const [filters, setFilters] = useState(defaultLibraryFilters)
-  const [view, setView] = useState<'grid' | 'list'>('grid')
+  const preferences = useCollectionPreferences()
+  const [medium, setMedium] = useState<CollectionMedium>('all')
   const [ratingSearch, setRatingSearch] = useState('')
   const [ratingMode, setRatingMode] = useState<'unrated' | 'rated'>('unrated')
   const [ratingsGenre, setRatingsGenre] = useState('')
@@ -212,8 +215,8 @@ function LibraryContent({
     }
   }, [navigation, path, ready, route.kind])
   useEffect(() => {
-    document.title = `${routeTitle(route)} · Auditórium`
-  }, [route])
+    document.title = `${route.kind === 'library' ? preferences.name.trim() || 'Mi colección' : routeTitle(route)} · Auditórium`
+  }, [route, preferences.name])
   function go(next: Route) {
     setNotice('')
     closeUtilities()
@@ -274,7 +277,7 @@ function LibraryContent({
         ? ratingGenre(filters)
         : undefined
   return (
-    <div ref={content}>
+    <div ref={content} className="library-content">
       <nav className="primary-navigation" aria-label="Navegación principal">
         {mainRoutes.map((next) => (
           <button
@@ -289,7 +292,7 @@ function LibraryContent({
               go(next)
             }}
           >
-            {next.kind === 'library' ? 'Biblioteca' : routeTitle(next)}
+            {next.kind === 'library' ? 'Mi colección' : routeTitle(next)}
           </button>
         ))}
       </nav>
@@ -297,27 +300,23 @@ function LibraryContent({
         <div
           className={`library-intro${route.kind === 'library' ? ' library-intro-home' : ''}`}
         >
-          <p className="library-kicker">El archivo de tu música</p>
           <h1
             tabIndex={-1}
             data-route-heading
             className="library-title font-display font-black"
           >
-            {route.kind === 'add'
-              ? 'Añadir música'
-              : route.kind === 'artist' && state.status === 'ready'
-                ? (state.snapshot.catalog.artists.find(
-                    (row) => row.id === route.id,
-                  )?.name ?? 'Artista')
-                : route.kind === 'options' && route.section === 'removed'
-                  ? 'Tu archivo retirado'
-                  : routeTitle(route)}
+            {route.kind === 'library'
+              ? preferences.name.trim() || 'Mi colección'
+              : route.kind === 'add'
+                ? 'Añadir música'
+                : route.kind === 'artist' && state.status === 'ready'
+                  ? (state.snapshot.catalog.artists.find(
+                      (row) => row.id === route.id,
+                    )?.name ?? 'Artista')
+                  : route.kind === 'options' && route.section === 'removed'
+                    ? 'Tu archivo retirado'
+                    : routeTitle(route)}
           </h1>
-          {route.kind === 'library' ? (
-            <p className="library-description text-muted">
-              Los álbumes que te acompañan y los que te quedan por descubrir.
-            </p>
-          ) : null}
         </div>
         <details
           ref={utilities}
@@ -329,7 +328,7 @@ function LibraryContent({
             }
           }}
         >
-          <summary>Más opciones</summary>
+          <summary aria-label="Más opciones">Más opciones</summary>
           <nav className="secondary-navigation" aria-label="Más opciones">
             {optionRoutes.map((next) => (
               <button
@@ -514,10 +513,18 @@ function LibraryContent({
         <LibraryView
           albums={state.albums}
           snapshot={state.snapshot}
-          filters={filters}
-          onFiltersChange={setFilters}
-          view={view}
-          onViewChange={setView}
+          filters={{ ...filters, order: preferences.order }}
+          onFiltersChange={(next) => {
+            setFilters(next)
+            if (next.order !== preferences.order)
+              preferences.update({ order: next.order })
+          }}
+          view={preferences.view}
+          onViewChange={(view) => preferences.update({ view })}
+          medium={medium}
+          onMediumChange={setMedium}
+          covers={preferences.covers}
+          details={preferences.details}
           onOpen={(id) => navigation.openAlbum(id)}
           onAdd={() => go({ kind: 'add' })}
           onArtist={(id) => go({ kind: 'artist', id })}
@@ -584,16 +591,12 @@ function LibraryContent({
             onCommitted={synchronizeDetail}
             onImported={() => {
               setFilters(defaultLibraryFilters)
-              setNotice(
-                'Datos incorporados a tu biblioteca. La identidad local se conserva.',
-              )
+              setNotice('Datos añadidos a tu colección.')
               navigation.completed({ kind: 'library' }, 'operation')
             }}
             onRestored={() => {
               setFilters(defaultLibraryFilters)
-              setNotice(
-                'Biblioteca restaurada con sus datos e identidad local.',
-              )
+              setNotice('Respaldo restaurado.')
               navigation.completed({ kind: 'library' }, 'operation')
             }}
             onBack={() => go({ kind: 'library' })}
