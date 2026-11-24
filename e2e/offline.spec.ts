@@ -2,8 +2,10 @@ import {
   openAlbumArea,
   openExperience,
   openOwnedDetails,
+  openSettingsSection,
+  waitForOfflineReady,
 } from './helpers/library-navigation'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
@@ -11,17 +13,10 @@ import { parseBackupText, serializeBackup } from '../src/domain/backup'
 
 async function openPrepared(page: Page) {
   await page.goto('/')
-  const settings = page.locator('.offline-panel > details')
-  await settings.locator(':scope > summary').click()
-  await expect(
-    page.getByText('Aplicación preparada para usar sin conexión.', {
-      exact: true,
-    }),
-  ).toBeVisible()
+  await waitForOfflineReady(page)
   await expect(
     page.getByRole('button', { name: 'Añadir álbum', exact: true }),
   ).toBeEnabled()
-  await settings.locator(':scope > summary').click()
 }
 async function addAlbum(page: Page, title: string) {
   await page.getByRole('button', { name: 'Añadir álbum', exact: true }).click()
@@ -59,7 +54,7 @@ async function addAlbum(page: Page, title: string) {
 }
 async function restoreFixture(page: Page) {
   const backup = makeBackup()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio.json',
@@ -75,7 +70,7 @@ async function restoreFixture(page: Page) {
   return backup
 }
 async function exportedBackup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloaded = page.waitForEvent('download')
   await page
@@ -169,9 +164,9 @@ test('manifest, iconos y recursos propios disponibles tras cerrar y abrir sin re
     reopened.getByRole('heading', { name: 'Mi colección', exact: true }),
   ).toBeVisible()
   await expect(
-    reopened.getByText(/El navegador indica que no hay conexión/),
+    reopened.getByText(/Sin conexión. Puedes seguir usando tu colección/),
   ).toBeVisible()
-  await openLibraryOptions(reopened)
+  await openSettings(reopened)
   await reopened.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await expect(
     reopened.getByRole('heading', {
@@ -281,14 +276,12 @@ test('CRUD, ediciones, colección, retirada y respaldo funcionan totalmente offl
   await page
     .getByRole('button', { name: 'Confirmar retirada', exact: true })
     .click()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await expect(
-    page.getByRole('button', { name: 'Álbumes retirados (1)', exact: true }),
+    page.getByRole('button', { name: 'Retirados', exact: true }),
   ).toBeEnabled()
-  await openLibraryOptions(page)
-  await page
-    .getByRole('button', { name: 'Álbumes retirados (1)', exact: true })
-    .click()
+  await openSettings(page)
+  await page.getByRole('button', { name: 'Retirados', exact: true }).click()
   await page
     .getByRole('button', {
       name: /Restaurar Horizonte Ficticio Offline, entrada/,
@@ -369,7 +362,7 @@ test('actualización espera a todas las ventanas y conserva identidad y todas la
     () => navigator.serviceWorker.controller?.scriptURL,
   )
   await request.post('/__test/version?value=b')
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -440,7 +433,7 @@ test('descarga de actualización fallida conserva versión y datos; permite rein
   const before = await rawDatabase(page)
   await request.post('/__test/fail-assets?value=true')
   await request.post('/__test/version?value=b')
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -455,7 +448,7 @@ test('descarga de actualización fallida conserva versión y datos; permite rein
   ).toBeVisible()
   expect(await page.locator('html').getAttribute('data-test-build')).toBe('a')
   await request.post('/__test/fail-assets?value=false')
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -524,7 +517,8 @@ test('mensajes de almacenamiento y sección offline operables a 320 px sin desbo
 }) => {
   await page.setViewportSize({ width: 320, height: 800 })
   await openPrepared(page)
-  const summary = page.getByText('Ajustes de la aplicación', { exact: true })
+  await openSettings(page)
+  const summary = page.getByRole('button', { name: 'Aplicación', exact: true })
   await summary.focus()
   await summary.press('Enter')
   await expect(

@@ -88,25 +88,25 @@ async function selectAndLoad(
   })
 }
 
-test('tema oscuro y ambiente iniciales; preferencias mínimas persisten y se recuperan', () => {
+test('tema oscuro y fondo sobrio iniciales; las elecciones personales persisten y se recuperan', () => {
   const first = renderHook(useAppearance)
   expect(first.result.current.theme).toBe('dark')
-  expect(first.result.current.ambient).toBe(true)
+  expect(first.result.current.ambient).toBe(false)
   act(() => {
     first.result.current.setTheme('light')
-    first.result.current.setAmbient(false)
+    first.result.current.setAmbient(true)
   })
   expect(
     JSON.parse(localStorage.getItem(APPEARANCE_STORAGE_KEY) ?? ''),
   ).toEqual({
     theme: 'light',
-    ambient: false,
+    ambient: true,
   })
   expect(localStorage.length).toBe(1)
   first.unmount()
   const restored = renderHook(useAppearance)
   expect(restored.result.current.theme).toBe('light')
-  expect(restored.result.current.ambient).toBe(false)
+  expect(restored.result.current.ambient).toBe(true)
 })
 
 test.each(['{', 'null', '[]', '{"theme":"otro","ambient":"off"}'])(
@@ -115,7 +115,7 @@ test.each(['{', 'null', '[]', '{"theme":"otro","ambient":"off"}'])(
     localStorage.setItem(APPEARANCE_STORAGE_KEY, saved)
     const { result } = renderHook(useAppearance)
     expect(result.current.theme).toBe('dark')
-    expect(result.current.ambient).toBe(true)
+    expect(result.current.ambient).toBe(false)
   },
 )
 
@@ -274,7 +274,7 @@ test('controles etiquetados permiten ajustar foto, ocultarla con el ambiente y q
     )
   }
   const { container } = render(<Controls />)
-  fireEvent.click(screen.getByText('Personalizar'))
+  fireEvent.click(screen.getByRole('checkbox', { name: 'Fondo decorativo' }))
   const fileInput = screen.getByLabelText('Foto de fondo (opcional)')
   fireEvent.change(fileInput, { target: { files: [rasterFile()] } })
   await waitFor(() => expect(PreviewImage.instances).toHaveLength(1))

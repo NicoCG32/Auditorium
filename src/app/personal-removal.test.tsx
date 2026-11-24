@@ -1,5 +1,8 @@
-import { openAlbumArea, openExperience } from '../test/library-navigation'
-import { openLibraryOptions } from '../test/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openSettings,
+} from '../test/library-navigation'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -90,15 +93,13 @@ function begin() {
 function confirm() {
   fireEvent.click(screen.getByRole('button', { name: 'Confirmar retirada' }))
 }
-function removedView() {
-  fireEvent.click(screen.getByRole('button', { name: /^Álbumes retirados \(/ }))
+async function removedView() {
+  await openSettings()
+  fireEvent.click(screen.getByRole('button', { name: 'Retirados' }))
 }
 async function finished() {
-  openLibraryOptions()
   await waitFor(() =>
-    expect(
-      screen.getByRole('button', { name: 'Actualizar biblioteca' }),
-    ).toBeEnabled(),
+    expect(screen.getByRole('button', { name: 'Ajustes' })).toBeEnabled(),
   )
 }
 
@@ -147,7 +148,7 @@ test.each([false, true])(
       ).toBeVisible()
     else
       expect(screen.getByRole('button', { name: 'Otra órbita' })).toBeVisible()
-    removedView()
+    await removedView()
     expect(
       screen.getByRole('heading', { name: 'Álbumes retirados' }),
     ).toHaveFocus()
@@ -196,10 +197,8 @@ test('cuota conserva confirmación y datos; doble envío retira una vez y bloque
   ).toBeDisabled()
   await finished()
   expect(remove).toHaveBeenCalledTimes(1)
-  openLibraryOptions()
-  expect(
-    screen.getByRole('button', { name: 'Álbumes retirados (1)' }),
-  ).toBeEnabled()
+  await openSettings()
+  expect(screen.getByRole('button', { name: 'Retirados' })).toBeEnabled()
 })
 test.each(['retirar', 'restaurar'])(
   'lectura fallida después de %s muestra recibo, bloquea navegación y reintenta sin escribir',
@@ -212,9 +211,7 @@ test.each(['retirar', 'restaurar'])(
         personalEntryToken(snapshot.library, libraryIds.entry),
       )
       render(<App repository={repository} />)
-      fireEvent.click(
-        await screen.findByRole('button', { name: 'Álbumes retirados (1)' }),
-      )
+      await removedView()
     } else {
       await open(repository)
       begin()
@@ -235,10 +232,8 @@ test.each(['retirar', 'restaurar'])(
     expect(
       screen.getByRole('button', { name: 'Volver a biblioteca' }),
     ).toBeDisabled()
-    openLibraryOptions()
-    expect(
-      screen.getByRole('button', { name: 'Actualizar biblioteca' }),
-    ).toBeDisabled()
+
+    expect(screen.getByRole('button', { name: 'Ajustes' })).toBeDisabled()
     const retry = screen.getByRole('button', {
       name:
         action === 'retirar'
@@ -286,9 +281,7 @@ test('entrada activa distinta impide restaurar y permite abrirla sin fusionar da
   )
   const active = await service.addAlbumToLibrary(ids.album)
   render(<App repository={repository} />)
-  fireEvent.click(
-    await screen.findByRole('button', { name: 'Álbumes retirados (1)' }),
-  )
+  await removedView()
   expect(screen.getByText(/Ya hay otra entrada activa/)).toBeVisible()
   expect(
     screen.queryByRole('button', { name: /^Restaurar Eclipse/ }),

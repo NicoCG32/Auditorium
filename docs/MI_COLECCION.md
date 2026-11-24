@@ -1,6 +1,6 @@
 # Mi colección: ejemplares y compras digitales
 
-La vista principal **Mi colección** permite consultar todos los álbumes y filtrar Físico/Digital. **Más opciones → Ejemplares** conserva la gestión detallada de cada adquisición: cada ejemplar físico y cada compra individual digital tienen su propio registro. En la colección se cuentan álbumes; en esta gestión se cuentan copias. [Vista y personalización](BIBLIOTECA.md).
+La vista principal **Mi colección** permite consultar todos los álbumes y filtrar Físico/Digital. Su pestaña **Ejemplares** conserva la gestión detallada de cada adquisición: cada ejemplar físico y cada compra individual digital tienen su propio registro. En la colección se cuentan álbumes; en esta gestión se cuentan copias. [Vista y personalización](BIBLIOTECA.md).
 
 **Registrar una adquisición** y **Consultar deseos de compra** aparecen antes del listado. En la ficha del álbum, **Mi colección** y **Deseos de compra** son los primeros apartados y muestran sus recuentos. Los deseos permanecen separados de **Administrar álbum**, donde se encuentra la retirada.
 
@@ -54,7 +54,7 @@ erDiagram
 - Release describe una edición física o digital: Deluxe, Especial, Aniversario o Remaster. Puede existir y ser referencia de una valoración sin posesión. Varias copias pueden compartirla.
 - OwnedItem describe una adquisición individual. Físico admite Vinilo/CD/Casete/Otro y condiciones opcionales; Digital adquirido exige Descarga digital y no admite condiciones físicas.
 - Una suscripción, reproducción, URL de compra, archivo propio o descarga gratuita no crean una adquisición. Cambiar propiedad no marca escucha ni cambia notas generales, por género o pista.
-- Los deseos tienen acceso secundario mediante **Consultar deseos de compra** y Más opciones. Una compra no los cumple automáticamente; seleccionar una edición de referencia no implica comprarla.
+- **Deseos** tiene acceso directo en la navegación principal y también mediante **Consultar deseos de compra**. Una compra no los cumple automáticamente; seleccionar una edición de referencia no implica comprarla.
 
 ## Guardado y concurrencia
 

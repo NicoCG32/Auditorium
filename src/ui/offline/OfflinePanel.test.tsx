@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
 import { OfflineController } from '../../infrastructure/browser/offline-controller'
-import { OfflinePanel } from './OfflinePanel'
+import { OfflinePanel, OfflineNotice } from './OfflinePanel'
 
 function setup({ supported = true, persistent = false, granted = true } = {}) {
   const events = new EventTarget()
@@ -35,8 +35,12 @@ function setup({ supported = true, persistent = false, granted = true } = {}) {
   }
   const controller = new OfflineController(browser)
   controller.start()
-  render(<OfflinePanel controller={controller} />)
-  fireEvent.click(screen.getByText('Ajustes de la aplicación'))
+  render(
+    <>
+      <OfflinePanel controller={controller} />
+      <OfflineNotice controller={controller} />
+    </>,
+  )
   return { controller, events, storage, registration, browser }
 }
 
@@ -116,7 +120,7 @@ test('evento offline cambia indicación y desactiva comprobación, sin perder in
     context.events.dispatchEvent(new Event('offline'))
   })
   expect(
-    screen.getByText(/El navegador indica que no hay conexión/),
+    screen.getByText(/Sin conexión. Puedes seguir usando tu colección/),
   ).toBeVisible()
   expect(button).toBeDisabled()
   expect(

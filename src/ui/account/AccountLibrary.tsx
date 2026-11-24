@@ -15,13 +15,10 @@ export function AccountLibrary({ account }: { account: CloudAccount }) {
           {state.notice}
         </p>
       )}
-      {state.user && (
-        <p className="mb-4 text-xs text-muted">
-          Biblioteca de tu cuenta · {state.user.email}
-        </p>
-      )}
       {state.recovery ? (
-        <AccountPanel account={account} />
+        <div className="account-recovery">
+          <AccountPanel account={account} />
+        </div>
       ) : (
         <LibraryPage repository={state.repository} account={account} />
       )}

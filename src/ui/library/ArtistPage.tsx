@@ -17,6 +17,7 @@ export function ArtistPage({
   snapshot,
   repository,
   onBack,
+  backLabel = 'Volver a biblioteca',
   onOpenAlbum,
   onBusyChange,
   onCommitted,
@@ -27,6 +28,7 @@ export function ArtistPage({
   snapshot: LocalSnapshot
   repository: TransactionalLocalRepository
   onBack: () => void
+  backLabel?: string
   onOpenAlbum: (id: string) => void
   onBusyChange: (busy: boolean) => void
   onCommitted: () => Promise<LocalSnapshot>
@@ -132,7 +134,7 @@ export function ArtistPage({
       <section className="library-empty">
         <h2>Este artista no está en tu biblioteca</h2>
         <button type="button" className="action-button mt-4" onClick={onBack}>
-          Volver a biblioteca
+          {backLabel}
         </button>
       </section>
     )
@@ -147,7 +149,7 @@ export function ArtistPage({
         disabled={review.busy || review.pending}
         onClick={onBack}
       >
-        Volver a biblioteca
+        {backLabel}
       </button>
       <p className="mt-4 text-muted">
         {artist.country || 'Artista de tu biblioteca'}

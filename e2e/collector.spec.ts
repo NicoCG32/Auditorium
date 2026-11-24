@@ -4,8 +4,9 @@ import { readFile } from 'node:fs/promises'
 import { parseBackupText } from '../src/domain/backup'
 import {
   openAlbumArea,
-  openLibraryOptions,
+  openSettings,
   openOwnedDetails,
+  openSettingsSection,
 } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block', actionTimeout: 10_000 })
@@ -95,7 +96,7 @@ test('colecciona con lo mínimo y completa los detalles después sin notas o esc
   await expect(card).toContainText('En deseos')
   await expect(card).not.toContainText('Sin nota')
 
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page
@@ -120,9 +121,9 @@ test('móvil y teclado: los detalles se despliegan sin perder el borrador y el t
 }, info) => {
   await page.setViewportSize({ width: 320, height: 900 })
   await addAlbum(page)
-  await page.getByText('Personalizar', { exact: true }).click()
+  const restoreAppearance = await openSettingsSection(page, 'Personalización')
   await page.getByRole('radio', { name: 'Claro', exact: true }).check()
-  await page.getByText('Personalizar', { exact: true }).click()
+  await restoreAppearance()
   await openAlbumArea(page, 'collection')
   await page
     .getByRole('button', { name: 'Registrar ejemplar', exact: true })

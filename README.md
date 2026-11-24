@@ -59,7 +59,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 **Biblioteca y catálogo.** Registrar álbumes manualmente, artistas, créditos, géneros, ediciones, pistas y variantes; revisar candidatos de Wikidata cuando lo solicites, sin copiar cambios automáticamente.
 
-**Colección y personalización.** Una vista de portadas con filtros de físico y digital, nombre propio, presentación y orden guardados. Los detalles de las tarjetas se muestran por elección y los ajustes de mantenimiento quedan en segundo plano. [Guía de la colección](docs/BIBLIOTECA.md).
+**Colección y personalización.** Navegación lateral en escritorio e inferior en móvil, con Buscar, Mi colección, Deseos, Sugerencias y Ajustes. La colección reúne Álbumes, Artistas, Ejemplares y Calificaciones, con filtros de físico y digital. La personalización se abre sin interrumpir el reproductor ni salir de un formulario; cuenta, respaldos y mantenimiento están en Ajustes. [Guía de la colección](docs/BIBLIOTECA.md).
 
 **Discografías por artista.** Buscar una banda en MusicBrainz, seleccionar varias obras y revisar coincidencias antes de incorporarlas. El servicio de consulta está configurado en la web; otras instalaciones necesitan alojarlo. [Recorrido y configuración](docs/DISCOGRAFIAS.md).
 

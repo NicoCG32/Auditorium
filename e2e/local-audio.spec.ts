@@ -1,4 +1,7 @@
-import { openAlbumEditorDetails } from './helpers/library-navigation'
+import {
+  openAlbumEditorDetails,
+  openSettingsSection,
+} from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { fixtureId } from '../src/domain/catalog/catalog.fixture'
@@ -233,9 +236,12 @@ test('asociación, ZIP completo y un solo reproductor conservan datos; retirada 
     fullPage: true,
   })
   await page.setViewportSize({ width: 1280, height: 900 })
-  await page.locator('details.appearance-panel > summary').click()
+  const restoreAudioAppearance = await openSettingsSection(
+    page,
+    'Personalización',
+  )
   await page.getByRole('radio', { name: 'Claro', exact: true }).check()
-  await page.locator('details.appearance-panel > summary').click()
+  await restoreAudioAppearance()
   await page.screenshot({
     path: info.outputPath('audio-light-1280.png'),
     fullPage: true,

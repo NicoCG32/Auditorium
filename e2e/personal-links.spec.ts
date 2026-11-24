@@ -6,7 +6,7 @@ import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { parseBackupText } from '../src/domain/backup'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
 const spotify = 'https://open.spotify.com/album/' + 'a'.repeat(22)
@@ -71,7 +71,7 @@ async function addAlbum(page: Page) {
   ).toBeVisible()
 }
 async function backup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -195,8 +195,8 @@ test('retirada, restauración y respaldo transportan enlaces y favorito sin comp
   await page
     .getByRole('button', { name: 'Confirmar retirada', exact: true })
     .click()
-  await openLibraryOptions(page)
-  await page.getByRole('button', { name: /Álbumes retirados/ }).click()
+  await openSettings(page)
+  await page.getByRole('button', { name: 'Retirados', exact: true }).click()
   await page
     .getByRole('button', { name: /^Restaurar Umbral Ficticio, entrada/ })
     .click()
@@ -211,7 +211,7 @@ test('retirada, restauración y respaldo transportan enlaces y favorito sin comp
   try {
     const other = await destination.newPage()
     await other.goto('/')
-    await openLibraryOptions(other)
+    await openSettings(other)
     await other.getByRole('button', { name: 'Respaldos', exact: true }).click()
     await other.locator('#backup-file').setInputFiles({
       name: 'enlaces-ficticios.json',

@@ -37,7 +37,7 @@ Abrir `http://127.0.0.1:4173/`. La primera preparación del servidor necesita re
 3. **Calificaciones:** valorar o recalificar la experiencia general y, opcionalmente, cada género. Son cifras independientes, sin promedios ni sustitución de una nota ausente; una nota baja es comparativa. Cada nota puede referenciar una edición añadida de ese álbum aunque no se posea.
 4. **Mi colección:** registrar, corregir o retirar cada copia física o compra digital. Las ediciones se agrupan bajo el mismo álbum. Enlaces, suscripciones, archivos y deseos no se cuentan como adquisiciones.
 
-La ficha conecta estos recorridos con listas, pistas, ediciones y experiencia. Los deseos y respaldos están en Más opciones. Los borradores se protegen al navegar, con elección de guardar, descartar o continuar; permanecen en memoria y no se recuperan después de confirmar una recarga o cerrar la pestaña.
+La ficha conecta estos recorridos con listas, pistas, ediciones y experiencia. En el ZIP 1.1.0, los deseos y respaldos están en Más opciones. La web actual ofrece **Deseos** en la navegación principal y **Ajustes → Respaldos**; su organización se describe en [Navegación](NAVEGACION.md). Los borradores se protegen al navegar, con elección de guardar, descartar o continuar; permanecen en memoria y no se recuperan después de confirmar una recarga o cerrar la pestaña.
 
 Las portadas por HTTPS se cargan automáticamente desde su origen; requieren red. Una portada local JPG/PNG validada de hasta 2 MiB queda en la biblioteca y sus respaldos. Spotify/YouTube se cargan por elección y ofrecen alternativa externa; disponibilidad y reproducción dependen del proveedor. Los archivos de audio se conservan en este dispositivo, con un reproductor activo y sin reproducción automática.
 

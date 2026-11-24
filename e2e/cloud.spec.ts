@@ -1,5 +1,5 @@
 import {
-  openLibraryOptions,
+  openSettings,
   openExperience,
   openAlbumArea,
 } from './helpers/library-navigation'
@@ -267,10 +267,8 @@ async function mock(
   )
 }
 async function accountPage(page: Page) {
-  await openLibraryOptions(page)
-  await page
-    .getByRole('button', { name: 'Cuenta y dispositivos', exact: true })
-    .click()
+  await openSettings(page)
+  await page.getByRole('button', { name: 'Cuenta', exact: true }).click()
 }
 async function login(page: Page, address = email) {
   await page.goto('/#/opciones/cuenta')
@@ -580,7 +578,7 @@ test('registro y recuperación limpian contraseñas y no guardan credenciales en
     }),
   )
   expect(storage).not.toContain(password)
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloadEvent = page.waitForEvent('download')
   await page

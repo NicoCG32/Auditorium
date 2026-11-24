@@ -1,7 +1,10 @@
 import { entityIdSchema } from '../../domain/shared/scalars'
 
 export type Route =
-  | { kind: 'library' | 'add' | 'ratings' | 'collection' }
+  | {
+      kind: 'library' | 'add' | 'ratings' | 'collection' | 'artists' | 'catalog'
+    }
+  | { kind: 'settings'; section: 'appearance' | 'application' }
   | { kind: 'album'; id: string; editor?: 'edit' | 'experience' | 'collection' }
   | { kind: 'artist'; id: string }
   | {
@@ -30,6 +33,12 @@ export function parseRoute(hash: string): Route {
   if (hash === '#/anadir') return { kind: 'add' }
   if (hash === '#/calificaciones') return { kind: 'ratings' }
   if (hash === '#/coleccion') return { kind: 'collection' }
+  if (hash === '#/artistas') return { kind: 'artists' }
+  if (hash === '#/buscar') return { kind: 'catalog' }
+  if (hash === '#/ajustes' || hash === '#/ajustes/personalizacion')
+    return { kind: 'settings', section: 'appearance' }
+  if (hash === '#/ajustes/aplicacion')
+    return { kind: 'settings', section: 'application' }
   const artist = /^#\/artista\/([^/?#]+)$/u.exec(hash)
   if (artist && entityIdSchema.safeParse(artist[1]).success)
     return { kind: 'artist', id: artist[1]! }
@@ -62,6 +71,14 @@ export function routeHash(route: Route): string {
       return '#/calificaciones'
     case 'collection':
       return '#/coleccion'
+    case 'artists':
+      return '#/artistas'
+    case 'catalog':
+      return '#/buscar'
+    case 'settings':
+      return route.section === 'appearance'
+        ? '#/ajustes/personalizacion'
+        : '#/ajustes/aplicacion'
     case 'artist':
       return `#/artista/${route.id}`
     case 'album':
@@ -85,6 +102,12 @@ export function routeTitle(route: Route) {
       return 'Calificaciones'
     case 'collection':
       return 'Ejemplares'
+    case 'artists':
+      return 'Artistas'
+    case 'catalog':
+      return 'Buscar música'
+    case 'settings':
+      return route.section === 'appearance' ? 'Personalización' : 'Aplicación'
     case 'artist':
       return 'Artista'
     case 'album':

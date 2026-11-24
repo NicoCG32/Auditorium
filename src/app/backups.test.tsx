@@ -1,4 +1,4 @@
-import { openLibraryOptions } from '../test/library-navigation'
+import { openSettings } from '../test/library-navigation'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -48,11 +48,11 @@ async function setup(populated = false) {
 }
 async function open(repository: IndexedDbRepository) {
   render(<App repository={repository} />)
-  openLibraryOptions()
+  await openSettings()
   await waitFor(() =>
     expect(screen.getByRole('button', { name: 'Respaldos' })).toBeEnabled(),
   )
-  openLibraryOptions()
+  await openSettings()
   fireEvent.click(screen.getByRole('button', { name: 'Respaldos' }))
 }
 function file(text = serializeBackup(makeBackup()), size?: number) {
@@ -82,11 +82,8 @@ async function ready() {
   )
 }
 async function finished() {
-  openLibraryOptions()
   await waitFor(() =>
-    expect(
-      screen.getByRole('button', { name: 'Actualizar biblioteca' }),
-    ).toBeEnabled(),
+    expect(screen.getByRole('button', { name: 'Ajustes' })).toBeEnabled(),
   )
 }
 
@@ -166,20 +163,16 @@ test('confirmación restaura identidad y relaciones; doble envío escribe una ve
   fireEvent.click(
     screen.getByRole('button', { name: 'Confirmar restauración' }),
   )
-  openLibraryOptions()
-  expect(
-    screen.getByRole('button', { name: 'Actualizar biblioteca' }),
-  ).toBeDisabled()
+
+  expect(screen.getByRole('button', { name: 'Ajustes' })).toBeDisabled()
   await screen.findByRole('button', { name: 'Eclipse' })
   await finished()
   expect(restore).toHaveBeenCalledTimes(1)
   const after = await repository.readSnapshot()
   expect(after.identity).toEqual(makeBackup().data.identity)
   expect(after.library.ownedItems).toEqual(makeBackup().data.library.ownedItems)
-  openLibraryOptions()
-  expect(
-    screen.getByRole('button', { name: 'Álbumes retirados (1)' }),
-  ).toBeEnabled()
+  await openSettings()
+  expect(screen.getByRole('button', { name: 'Retirados' })).toBeEnabled()
 })
 test.each(['invalid_json', 'invalid_version', 'too_large'])(
   'archivo %s no habilita confirmación ni modifica destino',
@@ -251,7 +244,7 @@ test('lectura fallida después del commit muestra recibo con identidad adoptada;
   expect(
     screen.getByRole('button', { name: 'Volver a biblioteca' }),
   ).toBeDisabled()
-  openLibraryOptions()
+
   expect(screen.getByRole('button', { name: 'Respaldos' })).toBeDisabled()
   expect(
     screen.getByRole('button', { name: 'Descargar respaldo JSON sin audio' }),

@@ -2,8 +2,9 @@ import {
   waitForOfflineReady,
   openExperience,
   openAlbumEditorDetails,
+  openSettingsSection,
 } from './helpers/library-navigation'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
@@ -24,7 +25,7 @@ test('importación JSON en Pages añade un catálogo sin conexión y conserva lo
   ).toBeEnabled()
   await waitForOfflineReady(page)
   await context.setOffline(true)
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const guide = await readFile('docs/IMPORTACION_JSON.md', 'utf8'),
     json = guide.match(/```json\s*\n([\s\S]*?)```/)?.[1]
@@ -43,7 +44,7 @@ test('importación JSON en Pages añade un catálogo sin conexión y conserva lo
   await expect(
     page.getByRole('button', { name: 'Horizonte De Ejemplo', exact: true }),
   ).toBeVisible()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -145,7 +146,7 @@ test('rutas de navegación y borradores conservan base Pages y query después de
     page.getByRole('textbox', { name: 'Título', exact: true }),
   ).toHaveValue('Eclipse')
   await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
-  await openLibraryOptions(page)
+
   await page
     .getByRole('button', { name: 'Calificaciones', exact: true })
     .click()
@@ -163,7 +164,7 @@ test('rutas de navegación y borradores conservan base Pages y query después de
   await page
     .getByRole('textbox', { name: 'Título', exact: true })
     .fill('Borrador ficticio Pages')
-  await openLibraryOptions(page)
+
   await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
   await page
     .getByRole('button', { name: 'Descartar cambios', exact: true })
@@ -171,7 +172,7 @@ test('rutas de navegación y borradores conservan base Pages y query después de
   await expect(page).toHaveURL(
     /\/Auditorium\/index\.html\?contexto=prueba#\/coleccion$/,
   )
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   expect((await exportedBackup(page)).data).toEqual(fixture.data)
 })
@@ -186,7 +187,7 @@ async function openPrepared(page: Page) {
 
 async function restoreFixture(page: Page) {
   const backup = makeBackup()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio-pages.json',
@@ -203,7 +204,7 @@ async function restoreFixture(page: Page) {
 }
 
 async function exportedBackup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -461,7 +462,7 @@ test('Pages restaura y permite cambios, reapertura y respaldo sin red en sus var
       }),
     ).toBeVisible()
     await expect(
-      reopened.getByText(/El navegador indica que no hay conexión/),
+      reopened.getByText(/Sin conexión. Puedes seguir usando tu colección/),
     ).toBeVisible()
     expect(await rawDatabase(reopened)).toEqual(before)
     const backup = await exportedBackup(reopened)
@@ -577,7 +578,7 @@ test('Pages espera a las dos ventanas para actualizar y conserva las tablas y la
     ).put('/unrelated', new Response('Fixture Pages'))
   })
   await request.post('/__test/version?value=b')
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -642,7 +643,7 @@ test('Pages mantiene la versión y los datos ante una actualización fallida y p
   const before = await rawDatabase(page)
   await request.post('/__test/fail-assets?value=true')
   await request.post('/__test/version?value=b')
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()
@@ -657,7 +658,7 @@ test('Pages mantiene la versión y los datos ante una actualización fallida y p
   ).toBeVisible()
   await expect(page.locator('html')).toHaveAttribute('data-test-build', 'a')
   await request.post('/__test/fail-assets?value=false')
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await page
     .getByRole('button', { name: 'Comprobar actualización', exact: true })
     .click()

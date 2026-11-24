@@ -5,7 +5,7 @@ import { makeBackup } from '../src/domain/backup.fixture'
 import { fixtureId, ids } from '../src/domain/catalog/catalog.fixture'
 import { libraryIds, times } from '../src/domain/library/library.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
 async function seed(page: Page) {
@@ -45,7 +45,7 @@ async function seed(page: Page) {
     await writeFile('.vitest/collection-demo.json', serializeBackup(backup))
   }
   await page.goto('/')
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'colección-ficticia.json',
@@ -71,7 +71,7 @@ test('una colección filtra físico y digital, conserva el contexto y no confund
     page
       .getByRole('navigation', { name: 'Navegación principal' })
       .getByRole('button'),
-  ).toHaveCount(2)
+  ).toHaveCount(5)
   await expect(albums(page).getByRole('heading')).toHaveCount(3)
   await page.getByRole('button', { name: /^Físico 1$/ }).click()
   await expect(albums(page).getByRole('heading')).toHaveText(['Eclipse'])
@@ -104,7 +104,7 @@ test('nombre, portadas, vista y orden persisten sin cambiar la biblioteca', asyn
   page,
 }) => {
   const before = await seed(page)
-  await page.getByText('Personalizar', { exact: true }).click()
+  await openSettings(page)
   await page
     .getByRole('textbox', { name: 'Nombre de tu colección' })
     .fill('Los discos de casa')
@@ -120,7 +120,9 @@ test('nombre, portadas, vista y orden persisten sin cambiar la biblioteca', asyn
   await page
     .getByRole('textbox', { name: 'Nombre de tu colección' })
     .press('Escape')
-  await expect(page.getByText('Personalizar', { exact: true })).toBeFocused()
+  await expect(
+    page.getByRole('button', { name: 'Ajustes', exact: true }),
+  ).toBeFocused()
   await page
     .getByRole('combobox', { name: 'Ordenar por' })
     .selectOption('title')
@@ -139,7 +141,7 @@ test('nombre, portadas, vista y orden persisten sin cambiar la biblioteca', asyn
     'small',
   )
   await expect(albums(page).getByText('9,5', { exact: true })).toBeVisible()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -162,7 +164,7 @@ for (const theme of ['dark', 'light'] as const) {
     await page.setViewportSize({ width: 1280, height: 900 })
     await seed(page)
     await expect(albums(page).getByText('9,5', { exact: true })).toHaveCount(0)
-    await page.getByText('Personalizar', { exact: true }).click()
+    await openSettings(page)
     await page
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
@@ -174,7 +176,7 @@ for (const theme of ['dark', 'light'] as const) {
       .press('Escape')
     if (test.info().project.name === 'chromium' && theme === 'dark')
       await page.screenshot({
-        path: '.vitest/collection-escritorio.png',
+        path: '.vitest/navigation-escritorio.png',
         fullPage: false,
       })
     await page.setViewportSize({ width: 320, height: 760 })
@@ -196,7 +198,7 @@ for (const theme of ['dark', 'light'] as const) {
     ).toEqual([])
     if (test.info().project.name === 'chromium' && theme === 'light')
       await page.screenshot({
-        path: '.vitest/collection-movil.png',
+        path: '.vitest/navigation-movil.png',
         fullPage: false,
       })
   })

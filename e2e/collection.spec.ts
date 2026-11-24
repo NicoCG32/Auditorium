@@ -5,7 +5,11 @@ import { makeBackup } from '../src/domain/backup.fixture'
 import { fixtureId, ids } from '../src/domain/catalog/catalog.fixture'
 import { libraryIds, times } from '../src/domain/library/library.fixture'
 import { serializeBackup, parseBackupText } from '../src/domain/backup'
-import { openLibraryOptions, openAlbumArea } from './helpers/library-navigation'
+import {
+  openSettings,
+  openAlbumArea,
+  openSettingsSection,
+} from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
 const digitalId = fixtureId(820)
@@ -72,7 +76,7 @@ async function seed(page: Page) {
     },
   ]
   await page.goto('/')
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'coleccion-ficticia.json',
@@ -88,7 +92,7 @@ async function seed(page: Page) {
   return backup
 }
 async function exportBackup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page
@@ -102,7 +106,6 @@ async function exportBackup(page: Page) {
   return parseBackupText(await readFile(path, 'utf8'))
 }
 async function collection(page: Page) {
-  await openLibraryOptions(page)
   await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
 }
 const copies = (page: Page) =>
@@ -316,15 +319,19 @@ test('conflictos no sobrescriben copias; colección y edición son accesibles en
   await seed(page)
   await collection(page)
   for (const theme of ['dark', 'light']) {
-    const appearance = page.locator('details.appearance-panel')
-    await appearance.locator(':scope > summary').click()
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
+    const appearance = page.getByRole('region', {
+      name: 'Personalización',
+      exact: true,
+    })
+
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator(':scope > summary').click()
+    await restoreAppearance()
     expect(
       (
         await new AxeBuilder({ page })

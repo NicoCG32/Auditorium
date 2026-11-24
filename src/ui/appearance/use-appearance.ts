@@ -18,13 +18,13 @@ function readPreferences(): Preferences {
       const value = saved as Record<string, unknown>
       return {
         theme: value.theme === 'light' ? 'light' : 'dark',
-        ambient: value.ambient !== false,
+        ambient: typeof value.ambient === 'boolean' ? value.ambient : false,
       }
     }
   } catch {
     // Las preferencias son opcionales cuando el navegador bloquea su almacenamiento.
   }
-  return { theme: 'dark', ambient: true }
+  return { theme: 'dark', ambient: false }
 }
 
 export function useAppearance() {

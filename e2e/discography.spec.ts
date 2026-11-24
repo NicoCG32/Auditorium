@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { fixtureId } from '../src/domain/catalog/catalog.fixture'
 import { parseBackupText } from '../src/domain/backup'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block', actionTimeout: 10_000 })
 const artist = {
@@ -65,7 +65,7 @@ async function search(page: Page) {
   ).toBeVisible()
 }
 async function backup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page

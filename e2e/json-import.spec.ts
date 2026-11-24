@@ -4,11 +4,11 @@ import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 import { fixtureId, ids } from '../src/domain/catalog/catalog.fixture'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block', actionTimeout: 10_000 })
 async function backups(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await expect(
     page.getByRole('heading', { name: 'Respaldos de tu biblioteca' }),

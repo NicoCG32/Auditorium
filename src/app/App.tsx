@@ -1,28 +1,29 @@
 import { useEffect } from 'react'
 import type { BackupLocalRepository } from '../domain/repositories/local-repository'
 import { LibraryPage } from '../ui/library/LibraryPage'
-import { OfflinePanel } from '../ui/offline/OfflinePanel'
 import type { OfflineController } from '../infrastructure/browser/offline-controller'
-import { AppearanceControls } from '../ui/appearance/AppearanceControls'
 import { PosterBackdrop } from '../ui/appearance/PosterBackdrop'
-import { useAppearance } from '../ui/appearance/use-appearance'
-import { usePosterPreview } from '../ui/appearance/use-poster-preview'
+import { ApplicationSettings } from '../ui/settings/ApplicationSettings'
+import { useApplicationSettings } from '../ui/settings/application-settings-context'
 import { NavigationProvider } from '../ui/navigation/NavigationProvider'
 import type { CloudAccount } from '../application/cloud-account'
 import { AccountLibrary } from '../ui/account/AccountLibrary'
 import { CollectionPreferences } from '../ui/appearance/CollectionPreferences'
 
-export function App({
-  repository,
-  offline,
-  account,
-}: {
+interface AppProps {
   repository: BackupLocalRepository
   offline?: OfflineController
   account?: CloudAccount
-}) {
-  const appearance = useAppearance()
-  const preview = usePosterPreview()
+}
+export function App(props: AppProps) {
+  return (
+    <ApplicationSettings {...(props.offline ? { offline: props.offline } : {})}>
+      <AppContent {...props} />
+    </ApplicationSettings>
+  )
+}
+function AppContent({ repository, account }: AppProps) {
+  const { appearance, preview } = useApplicationSettings()
   useEffect(() => {
     const html = document.documentElement
     const previous = html.getAttribute('data-aud-theme')
@@ -31,7 +32,7 @@ export function App({
     html.setAttribute('data-aud-theme', appearance.theme)
     meta?.setAttribute(
       'content',
-      appearance.theme === 'light' ? '#ebe2d6' : '#0a0a0d',
+      appearance.theme === 'light' ? '#f1f2f4' : '#111315',
     )
     return () => {
       if (previous === null) html.removeAttribute('data-aud-theme')
@@ -57,20 +58,6 @@ export function App({
         >
           Ir al contenido
         </a>
-        <header className="app-header">
-          <div className="app-header-inner">
-            <div className="app-brand">
-              <img
-                src={`${import.meta.env.BASE_URL}auditorium/brand/wordmark-${appearance.theme}.svg`}
-                alt="Auditórium · Tu fonoteca digital"
-                width={2400}
-                height={720}
-                className="brand-wordmark"
-              />
-            </div>
-            <AppearanceControls appearance={appearance} preview={preview} />
-          </div>
-        </header>
         <main id="contenido" tabIndex={-1} className="app-main flex-1">
           {account ? (
             <AccountLibrary account={account} />
@@ -80,9 +67,6 @@ export function App({
             </NavigationProvider>
           )}
         </main>
-        <footer className="app-footer">
-          {offline && <OfflinePanel controller={offline} />}
-        </footer>
       </div>
     </CollectionPreferences>
   )

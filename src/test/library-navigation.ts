@@ -1,4 +1,5 @@
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, waitFor } from '@testing-library/react'
+import { expect } from 'vitest'
 
 export function openAlbumArea(
   area:
@@ -43,10 +44,9 @@ export function openLibraryFilters() {
   if (toggle.getAttribute('aria-expanded') === 'false') fireEvent.click(toggle)
 }
 
-export function openLibraryOptions() {
-  const menu = document.querySelector<HTMLDetailsElement>(
-    'details.library-utilities',
-  )
-  const summary = menu?.querySelector('summary')
-  if (menu && !menu.open && summary) fireEvent.click(summary)
+export async function openSettings() {
+  if (screen.queryByRole('dialog', { name: 'Ajustes' })) return
+  const button = screen.getByRole('button', { name: 'Ajustes' })
+  await waitFor(() => expect(button).toBeEnabled())
+  fireEvent.click(button)
 }

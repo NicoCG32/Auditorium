@@ -8,22 +8,22 @@ import {
 } from '../src/test/visual-library.fixture'
 import {
   openLibraryFilters,
-  openLibraryOptions,
+  openSettings,
+  openSettingsSection,
 } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block' })
 
 async function appearance(page: Page, theme: 'dark' | 'light') {
-  const panel = page.locator('.appearance-panel')
-  if ((await panel.getAttribute('open')) === null)
-    await panel.locator(':scope > summary').click()
+  const restorePanel = await openSettingsSection(page, 'Personalización')
+
   await page
     .getByRole('radio', {
       name: theme === 'dark' ? 'Oscuro' : 'Claro',
       exact: true,
     })
     .check()
-  await panel.locator(':scope > summary').click()
+  await restorePanel()
 }
 
 async function populated(page: Page) {
@@ -36,7 +36,7 @@ async function populated(page: Page) {
         body: visualCover(index),
       })
     })
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'biblioteca-visual-ficticia.json',
@@ -154,7 +154,6 @@ test('filtros combinados, portada, regreso, teclado y texto ampliado conservan e
     .getByRole('combobox', { name: 'Nota', exact: true })
     .selectOption('high')
   await expect(page.getByRole('button', { name: 'Filtros (4)' })).toBeVisible()
-  await page.getByRole('button', { name: 'Filtros (4)' }).click()
   await page
     .getByRole('combobox', { name: 'Ordenar por' })
     .selectOption('title')
@@ -182,7 +181,7 @@ test('filtros combinados, portada, regreso, teclado y texto ampliado conservan e
   )
   await expect(
     page.getByRole('button', { name: 'Filtros (4)' }),
-  ).toHaveAttribute('aria-expanded', 'false')
+  ).toHaveAttribute('aria-expanded', 'true')
   await page
     .getByRole('button', { name: 'Quitar filtro País: Chile', exact: true })
     .click()
@@ -195,10 +194,13 @@ test('filtros combinados, portada, regreso, teclado y texto ampliado conservan e
     page.getByRole('heading', { name: 'No encontramos coincidencias' }),
   ).toBeVisible()
   await page.getByRole('button', { name: 'Mostrar todos los álbumes' }).click()
-  const appearancePanel = page.locator('.appearance-panel')
-  await appearancePanel.locator(':scope > summary').click()
+  const restoreAppearancePanel = await openSettingsSection(
+    page,
+    'Personalización',
+  )
+
   await page.getByRole('checkbox', { name: 'Fondo decorativo' }).uncheck()
-  await appearancePanel.locator(':scope > summary').click()
+  await restoreAppearancePanel()
   await expect(page.locator('.aud-app')).toHaveAttribute(
     'data-aud-ambient',
     'off',
@@ -212,8 +214,12 @@ test('filtros combinados, portada, regreso, teclado y texto ampliado conservan e
     page.getByRole('combobox', { name: 'Género', exact: true }),
   ).toBeVisible()
   await noOverflow(page)
-  await page.locator('.library-utilities summary').click()
+  await openSettings(page)
   await page.keyboard.press('Escape')
-  await expect(page.locator('.library-utilities')).not.toHaveAttribute('open')
-  await expect(page.locator('.library-utilities summary')).toBeFocused()
+  await expect(
+    page.getByRole('dialog', { name: 'Ajustes', exact: true }),
+  ).toHaveCount(0)
+  await expect(
+    page.getByRole('button', { name: 'Ajustes', exact: true }),
+  ).toBeFocused()
 })

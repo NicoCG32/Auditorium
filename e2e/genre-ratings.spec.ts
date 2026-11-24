@@ -6,10 +6,11 @@ import { ids } from '../src/domain/catalog/catalog.fixture'
 import { libraryIds, times } from '../src/domain/library/library.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 import {
-  openLibraryOptions,
+  openSettings,
   openLibraryFilters,
   openExperience,
   openAlbumArea,
+  openSettingsSection,
 } from './helpers/library-navigation'
 test.use({ serviceWorkers: 'block' })
 const longGenre = 'Metal ' + 'Extremo '.repeat(8).trim()
@@ -44,7 +45,7 @@ async function seed(page: Page, notes = false, long = false) {
   await expect(
     page.getByRole('button', { name: 'Añadir álbum', exact: true }),
   ).toBeEnabled()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'generos-ficticios.json',
@@ -70,7 +71,7 @@ async function save(page: Page, keyboard = false) {
   ).toBeVisible()
 }
 async function exported(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page
@@ -242,7 +243,7 @@ test('Biblioteca y Calificaciones comparan un género explícito sin rellenar co
     .click()
   await openLibraryFilters(page)
   await expect(genre).toHaveValue('power metal')
-  await openLibraryOptions(page)
+
   await page
     .getByRole('button', { name: 'Calificaciones', exact: true })
     .click()
@@ -297,15 +298,19 @@ test('conflicto conserva borrador, renombrado protege notas y formularios son ac
   await openExperience(page)
   await page.getByText('Valorar por género', { exact: false }).click()
   for (const theme of ['dark', 'light']) {
-    const appearance = page.locator('details.appearance-panel')
-    await appearance.locator(':scope > summary').click()
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
+    const appearance = page.getByRole('region', {
+      name: 'Personalización',
+      exact: true,
+    })
+
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator(':scope > summary').click()
+    await restoreAppearance()
     expect(
       (
         await new AxeBuilder({ page })
