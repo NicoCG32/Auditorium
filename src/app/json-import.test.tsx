@@ -91,9 +91,11 @@ test('cancelar con Escape no escribe y devuelve foco al selector', async () => {
     mutation = vi.spyOn(repo, 'mutate')
   upload()
   const dialog = await screen.findByRole('dialog')
-  expect(
-    screen.getByRole('button', { name: 'Cancelar importación' }),
-  ).toHaveFocus()
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Cancelar importación' }),
+    ).toHaveFocus(),
+  )
   fireEvent.keyDown(dialog, { key: 'Escape' })
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(
