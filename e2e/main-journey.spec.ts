@@ -7,15 +7,16 @@ import {
   openAlbumArea,
   openExperience,
   openLibraryFilters,
-  openLibraryOptions,
+  openSettings,
   openOwnedDetails,
   openAlbumEditorDetails,
+  openSettingsSection,
 } from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block', actionTimeout: 10_000 })
 
 async function download(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -28,7 +29,7 @@ async function download(page: Page) {
 
 async function restore(page: Page, buffer: Buffer) {
   await page.goto('/')
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'recorrido-ficticio.json',
@@ -110,7 +111,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
   await openAlbumEditorDetails(page)
   const title = page.getByRole('textbox', { name: 'Título', exact: true })
   await title.fill('horizonte corregido de prueba')
-  await openLibraryOptions(page)
+
   await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Cambios sin guardar' })
   await expect(dialog).toBeVisible()
@@ -212,7 +213,7 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     'Mi nota · Power Metal',
   )
   await expect(page.locator('li[data-entry-id]')).toContainText('1 / 10')
-  await openLibraryOptions(page)
+
   await page.getByRole('button', { name: 'Ejemplares', exact: true }).click()
   await expect(
     page
@@ -287,9 +288,9 @@ test('recorrido con texto al 200% conserva controles y reflujo en ambos temas', 
     ),
   ).toBe('32px')
   for (const theme of ['Oscuro', 'Claro']) {
-    await page.getByText('Personalizar', { exact: true }).click()
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
     await page.getByRole('radio', { name: theme, exact: true }).check()
-    await page.getByText('Personalizar', { exact: true }).click()
+    await restoreAppearance()
     for (const width of [320, 1280]) {
       await page.setViewportSize({ width, height: 900 })
       for (const destination of [
@@ -299,7 +300,9 @@ test('recorrido con texto al 200% conserva controles y reflujo en ambos temas', 
         'Ejemplares',
       ]) {
         if (destination === 'Calificaciones' || destination === 'Ejemplares')
-          await openLibraryOptions(page)
+          await page
+            .getByRole('button', { name: 'Mi colección', exact: true })
+            .click()
         await page
           .getByRole('button', { name: destination, exact: true })
           .click()

@@ -25,6 +25,31 @@ function megabytes(bytes: number) {
   )
 }
 
+export function OfflineNotice({
+  controller,
+}: {
+  controller: OfflineController
+}) {
+  const state = useSyncExternalStore(
+    controller.subscribe,
+    controller.getSnapshot,
+  )
+  if (state.update !== 'available' && state.shell !== 'failed' && state.online)
+    return null
+  return (
+    <p className="application-notice" role="status">
+      {state.update === 'available'
+        ? 'Nueva versión lista para la próxima apertura.'
+        : state.shell === 'failed'
+          ? shellLabels.failed
+          : 'Sin conexión. Puedes seguir usando tu colección.'}
+      {state.update === 'available' && !state.online
+        ? ' Estás sin conexión.'
+        : ''}
+    </p>
+  )
+}
+
 export function OfflinePanel({
   controller,
 }: {
@@ -36,128 +61,115 @@ export function OfflinePanel({
   )
   return (
     <aside className="offline-panel" aria-label="Aplicación y almacenamiento">
-      {(state.update === 'available' ||
-        state.shell === 'failed' ||
-        !state.online) && (
-        <p role="status">
-          {state.update === 'available'
-            ? 'Nueva versión lista para la próxima apertura.'
-            : shellLabels[state.shell]}
-          {!state.online && ' El navegador indica que no hay conexión.'}
+      <h2>Aplicación</h2>
+      <div className="mt-4 grid gap-4">
+        <p>{shellLabels[state.shell]}</p>
+        <p>
+          Después de prepararse, puedes abrir la biblioteca, registrar álbumes y
+          gestionar ediciones, notas, valoraciones, ejemplares, deseos y
+          respaldos sin conexión. Las portadas y enlaces externos necesitan red.
         </p>
-      )}
-      <details>
-        <summary>Ajustes de la aplicación</summary>
-        <div className="mt-4 grid gap-4">
-          <p>{shellLabels[state.shell]}</p>
-          <p>
-            Después de prepararse, puedes abrir la biblioteca, registrar álbumes
-            y gestionar ediciones, notas, valoraciones, ejemplares, deseos y
-            respaldos sin conexión. Las portadas y enlaces externos necesitan
-            red.
+        {state.update === 'available' && (
+          <p className="field-notice">
+            Guarda tus cambios y cierra todas las pestañas y ventanas de
+            Auditórium, incluida la aplicación instalada. La nueva versión se
+            activará al volver a abrirla. Tu biblioteca guardada se conserva.
           </p>
-          {state.update === 'available' && (
-            <p className="field-notice">
-              Guarda tus cambios y cierra todas las pestañas y ventanas de
-              Auditórium, incluida la aplicación instalada. La nueva versión se
-              activará al volver a abrirla. Tu biblioteca guardada se conserva.
-            </p>
-          )}
-          {state.shell === 'ready' && state.update !== 'available' && (
-            <div>
-              <button
-                type="button"
-                className="action-button"
-                disabled={state.update === 'checking' || !state.online}
-                onClick={() => {
-                  void controller.checkUpdate()
-                }}
-              >
-                {state.update === 'checking'
-                  ? 'Comprobando actualización…'
-                  : 'Comprobar actualización'}
-              </button>
-              {state.update === 'failed' && (
-                <p role="alert" className="field-error">
-                  No se pudo comprobar o descargar la actualización. La versión
-                  actual sigue disponible; vuelve a intentar con conexión.
-                </p>
-              )}
-            </div>
-          )}
+        )}
+        {state.shell === 'ready' && state.update !== 'available' && (
           <div>
-            {state.installation === 'installed' ? (
-              <p>Aplicación instalada.</p>
-            ) : (
-              <>
-                <p>
-                  Si tu navegador lo permite, instala Auditórium desde su menú.
-                  En iPhone o iPad, usa Compartir → Añadir a pantalla de inicio.
-                  La biblioteca depende del navegador, dispositivo y modo de
-                  apertura. Si la aplicación instalada aparece vacía, mueve tus
-                  datos con un respaldo JSON.
-                </p>
-                {(state.installation === 'available' ||
-                  state.installation === 'pending') && (
-                  <button
-                    className="action-button mt-3"
-                    type="button"
-                    disabled={state.installation === 'pending'}
-                    onClick={() => {
-                      void controller.install()
-                    }}
-                  >
-                    {state.installation === 'pending'
-                      ? 'Esperando al navegador…'
-                      : 'Instalar Auditórium'}
-                  </button>
-                )}
-                {state.installation === 'dismissed' && (
-                  <p>
-                    Instalación cancelada. Puedes intentarlo desde el menú del
-                    navegador.
-                  </p>
-                )}
-                {state.installation === 'failed' && (
-                  <p role="alert">
-                    No se pudo abrir la instalación. Usa el menú del navegador
-                    si está disponible.
-                  </p>
-                )}
-              </>
-            )}
-          </div>
-          <div>
-            <p role="status">{storageLabels[state.storage]}</p>
-            {state.usage !== undefined && state.quota !== undefined && (
-              <p className="mt-2">
-                Uso estimado de este sitio: {megabytes(state.usage)} MiB de{' '}
-                {megabytes(state.quota)} MiB. Incluye la aplicación y la
-                biblioteca; la cuota puede cambiar.
+            <button
+              type="button"
+              className="action-button"
+              disabled={state.update === 'checking' || !state.online}
+              onClick={() => {
+                void controller.checkUpdate()
+              }}
+            >
+              {state.update === 'checking'
+                ? 'Comprobando actualización…'
+                : 'Comprobar actualización'}
+            </button>
+            {state.update === 'failed' && (
+              <p role="alert" className="field-error">
+                No se pudo comprobar o descargar la actualización. La versión
+                actual sigue disponible; vuelve a intentar con conexión.
               </p>
             )}
-            {controller.canRequestPersistence() &&
-              state.storage !== 'persistent' && (
+          </div>
+        )}
+        <div>
+          {state.installation === 'installed' ? (
+            <p>Aplicación instalada.</p>
+          ) : (
+            <>
+              <p>
+                Si tu navegador lo permite, instala Auditórium desde su menú. En
+                iPhone o iPad, usa Compartir → Añadir a pantalla de inicio. La
+                biblioteca depende del navegador, dispositivo y modo de
+                apertura. Si la aplicación instalada aparece vacía, mueve tus
+                datos con un respaldo JSON.
+              </p>
+              {(state.installation === 'available' ||
+                state.installation === 'pending') && (
                 <button
-                  type="button"
                   className="action-button mt-3"
-                  disabled={state.storage === 'checking'}
+                  type="button"
+                  disabled={state.installation === 'pending'}
                   onClick={() => {
-                    void controller.requestPersistence()
+                    void controller.install()
                   }}
                 >
-                  Solicitar protección del almacenamiento
+                  {state.installation === 'pending'
+                    ? 'Esperando al navegador…'
+                    : 'Instalar Auditórium'}
                 </button>
               )}
-          </div>
-          <p>
-            Los datos permanecen en este navegador. Borrar los datos del sitio,
-            usar navegación privada o perder el dispositivo puede eliminar la
-            biblioteca, incluso con protección. Descarga respaldos JSON
-            periódicos desde «Respaldos» y guárdalos fuera de este dispositivo.
-          </p>
+              {state.installation === 'dismissed' && (
+                <p>
+                  Instalación cancelada. Puedes intentarlo desde el menú del
+                  navegador.
+                </p>
+              )}
+              {state.installation === 'failed' && (
+                <p role="alert">
+                  No se pudo abrir la instalación. Usa el menú del navegador si
+                  está disponible.
+                </p>
+              )}
+            </>
+          )}
         </div>
-      </details>
+        <div>
+          <p role="status">{storageLabels[state.storage]}</p>
+          {state.usage !== undefined && state.quota !== undefined && (
+            <p className="mt-2">
+              Uso estimado de este sitio: {megabytes(state.usage)} MiB de{' '}
+              {megabytes(state.quota)} MiB. Incluye la aplicación y la
+              biblioteca; la cuota puede cambiar.
+            </p>
+          )}
+          {controller.canRequestPersistence() &&
+            state.storage !== 'persistent' && (
+              <button
+                type="button"
+                className="action-button mt-3"
+                disabled={state.storage === 'checking'}
+                onClick={() => {
+                  void controller.requestPersistence()
+                }}
+              >
+                Solicitar protección del almacenamiento
+              </button>
+            )}
+        </div>
+        <p>
+          Los datos permanecen en este navegador. Borrar los datos del sitio,
+          usar navegación privada o perder el dispositivo puede eliminar la
+          biblioteca, incluso con protección. Descarga respaldos JSON periódicos
+          desde «Respaldos» y guárdalos fuera de este dispositivo.
+        </p>
+      </div>
     </aside>
   )
 }

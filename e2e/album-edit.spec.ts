@@ -2,11 +2,9 @@ import {
   openAlbumArea,
   openExperience,
   openAlbumEditorDetails,
+  openSettingsSection,
 } from './helpers/library-navigation'
-import {
-  openLibraryOptions,
-  openLibraryFilters,
-} from './helpers/library-navigation'
+import { openSettings, openLibraryFilters } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -214,15 +212,19 @@ test('sugerencias accesibles a320px en ambos temas y créditos múltiples con se
   await page.setViewportSize({ width: 320, height: 850 })
   await suggestionSeed(page)
   for (const theme of ['dark', 'light'] as const) {
-    const appearance = page.locator('details.appearance-panel')
-    await appearance.locator(':scope > summary').click()
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
+    const appearance = page.getByRole('region', {
+      name: 'Personalización',
+      exact: true,
+    })
+
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator(':scope > summary').click()
+    await restoreAppearance()
     await page
       .getByRole('button', { name: 'Añadir álbum', exact: true })
       .click()
@@ -388,7 +390,7 @@ async function ready(page: Page) {
 }
 
 async function restore(page: Page, text: string) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'biblioteca-ficticia-edicion.json',
@@ -407,7 +409,7 @@ async function seed(page: Page) {
 }
 
 async function exportBackup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page
@@ -752,15 +754,19 @@ test('edición y nuevos filtros son accesibles a360px en los dos temas', async (
   await page.setViewportSize({ width: 360, height: 900 })
   await seed(page)
   for (const theme of ['dark', 'light'] as const) {
-    const appearance = page.locator('details.appearance-panel')
-    await appearance.locator(':scope > summary').click()
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
+    const appearance = page.getByRole('region', {
+      name: 'Personalización',
+      exact: true,
+    })
+
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator(':scope > summary').click()
+    await restoreAppearance()
     await editor(page)
     await page
       .getByRole('combobox', { name: 'Géneros (separados por comas)' })

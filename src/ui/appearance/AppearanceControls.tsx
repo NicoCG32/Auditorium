@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react'
+import { useId } from 'react'
 import type { Appearance } from './use-appearance'
 import type { PosterPreview, PosterPosition } from './use-poster-preview'
 import { CollectionPreferences } from './CollectionPreferences'
@@ -28,37 +28,14 @@ function Personalization({
   preview: PosterPreview
 }) {
   const preferences = useCollectionPreferences()
-  const panel = useRef<HTMLDetailsElement>(null)
-  useEffect(() => {
-    const dismiss = (event: PointerEvent) => {
-      if (
-        panel.current?.open &&
-        event.target instanceof Node &&
-        !panel.current.contains(event.target)
-      )
-        panel.current.open = false
-    }
-    document.addEventListener('pointerdown', dismiss)
-    return () => document.removeEventListener('pointerdown', dismiss)
-  }, [])
   const id = useId()
   const fileId = `${id}-poster`
   const noteId = `${id}-note`
   const errorId = `${id}-error`
 
   return (
-    <details
-      ref={panel}
-      className="appearance-panel"
-      onKeyDown={(event) => {
-        if (event.key === 'Escape' && panel.current?.open) {
-          event.preventDefault()
-          panel.current.open = false
-          panel.current.querySelector('summary')?.focus()
-        }
-      }}
-    >
-      <summary>Personalizar</summary>
+    <section className="appearance-settings" aria-label="Personalización">
+      <h2>Personalización</h2>
       <div className="appearance-content">
         <label className="appearance-label">
           Nombre de tu colección
@@ -220,6 +197,6 @@ function Personalization({
           )}
         </div>
       </div>
-    </details>
+    </section>
   )
 }

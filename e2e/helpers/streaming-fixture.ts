@@ -3,7 +3,7 @@ import { makeBackup } from '../../src/domain/backup.fixture'
 import { serializeBackup, parseBackupText } from '../../src/domain/backup'
 import { fixtureId } from '../../src/domain/catalog/catalog.fixture'
 import { readFile } from 'node:fs/promises'
-import { openLibraryOptions } from './library-navigation'
+import { openSettings } from './library-navigation'
 
 export const spotify = `https://open.spotify.com/album/${'a'.repeat(22)}`
 export const youtube = 'https://www.youtube.com/watch?v=ficticio_01'
@@ -40,7 +40,7 @@ export function playbackFixture() {
 export async function restorePlayback(page: Page, base = '/') {
   const fixture = playbackFixture()
   await page.goto(base)
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'reproduccion-ficticia.json',
@@ -57,7 +57,7 @@ export async function restorePlayback(page: Page, base = '/') {
   return fixture
 }
 export async function playbackBackup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloading = page.waitForEvent('download')
   await page

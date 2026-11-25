@@ -1,5 +1,9 @@
-import { openAlbumArea, openExperience } from './helpers/library-navigation'
-import { openLibraryOptions } from './helpers/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openSettingsSection,
+} from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page, type Route } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -120,7 +124,7 @@ async function ready(page: Page) {
 }
 
 async function restore(page: Page, text: string) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio-integraciones.json',
@@ -164,7 +168,7 @@ async function searchCatalog(page: Page) {
 }
 
 async function exportText(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const downloaded = page.waitForEvent('download')
   await page
@@ -190,7 +194,14 @@ function recommendationBody(provider: 'groq' | 'gemini', reference = 'a1') {
     : { candidates: [{ finishReason: 'STOP', content: { parts: [{ text }] } }] }
 }
 
+async function openRecommendationService(page: Page) {
+  const panel = page.locator('details.recommendation-service')
+  if ((await panel.getAttribute('open')) === null)
+    await panel.locator(':scope > summary').click()
+}
+
 async function consent(page: Page, provider: 'groq' | 'gemini') {
+  await openRecommendationService(page)
   await page
     .getByLabel(`Clave API de ${provider === 'groq' ? 'Groq' : 'Gemini'}`, {
       exact: true,
@@ -504,10 +515,9 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
     await fulfill(route, recommendationBody('groq'))
   })
   await seed(page)
-  await openLibraryOptions(page)
-  await page
-    .getByRole('button', { name: 'Recomendaciones', exact: true })
-    .click()
+
+  await page.getByRole('button', { name: 'Sugerencias', exact: true }).click()
+  await openRecommendationService(page)
   await page
     .getByLabel('Clave API de Groq', { exact: true })
     .fill(fictitiousKey)
@@ -541,10 +551,9 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
   await expect(
     page.getByRole('textbox', { name: 'Notas personales', exact: true }),
   ).toHaveValue('  Comentario ficticio.\nSegunda línea.  ')
-  await openLibraryOptions(page)
-  await page
-    .getByRole('button', { name: 'Recomendaciones', exact: true })
-    .click()
+
+  await page.getByRole('button', { name: 'Sugerencias', exact: true }).click()
+  await openRecommendationService(page)
   await expect(
     page.getByLabel('Clave API de Groq', { exact: true }),
   ).toHaveValue(fictitiousKey)
@@ -556,10 +565,9 @@ test('Groq usa consentimiento y datos mínimos sin persistir clave ni alterar la
     .getByLabel('Clave API de Groq', { exact: true })
     .fill(fictitiousKey)
   await page.reload()
-  await openLibraryOptions(page)
-  await page
-    .getByRole('button', { name: 'Recomendaciones', exact: true })
-    .click()
+
+  await page.getByRole('button', { name: 'Sugerencias', exact: true }).click()
+  await openRecommendationService(page)
   await expect(
     page.getByLabel('Clave API de Groq', { exact: true }),
   ).toHaveValue('')
@@ -607,10 +615,9 @@ test('Gemini permite recuperarse de cuota, referencia desconocida y cancelación
     } else await fulfill(route, recommendationBody('gemini'))
   })
   await seed(page)
-  await openLibraryOptions(page)
-  await page
-    .getByRole('button', { name: 'Recomendaciones', exact: true })
-    .click()
+
+  await page.getByRole('button', { name: 'Sugerencias', exact: true }).click()
+  await openRecommendationService(page)
   await page
     .getByLabel('Clave API de Groq', { exact: true })
     .fill('otra-clave-ficticia')
@@ -677,19 +684,22 @@ test('catálogo y recomendaciones son accesibles a360px en temas oscuro y claro'
   })
   await seed(page)
   for (const theme of ['dark', 'light'] as const) {
-    const appearance = page.locator('details.appearance-panel')
-    await appearance.locator(':scope > summary').click()
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
+    const appearance = page.getByRole('region', {
+      name: 'Personalización',
+      exact: true,
+    })
+
     await appearance
       .getByRole('radio', {
         name: theme === 'dark' ? 'Oscuro' : 'Claro',
         exact: true,
       })
       .check()
-    await appearance.locator(':scope > summary').click()
-    await openLibraryOptions(page)
-    await page
-      .getByRole('button', { name: 'Recomendaciones', exact: true })
-      .click()
+    await restoreAppearance()
+
+    await page.getByRole('button', { name: 'Sugerencias', exact: true }).click()
+    await openRecommendationService(page)
     await consent(page, 'groq')
     await page.getByRole('button', { name: 'Generar recomendaciones' }).click()
     await expect(

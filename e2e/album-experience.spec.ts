@@ -7,7 +7,7 @@ import { fixtureId, ids } from '../src/domain/catalog/catalog.fixture'
 import {
   openAlbumArea,
   openExperience,
-  openLibraryOptions,
+  openSettings,
   openAlbumEditorDetails,
 } from './helpers/library-navigation'
 
@@ -46,7 +46,7 @@ async function seed(page: Page, genreRating = false) {
   await expect(
     page.getByRole('button', { name: 'Añadir álbum', exact: true }),
   ).toBeEnabled()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'experiencia-ficticia.json',
@@ -70,7 +70,7 @@ async function saved(page: Page) {
   ).toHaveCount(0)
 }
 async function backup(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page
@@ -117,7 +117,7 @@ test('ficha y Calificaciones mantienen una nota y una referencia opcional entre 
       fullPage: true,
     })
   }
-  await openLibraryOptions(page)
+
   await page
     .getByRole('button', { name: 'Calificaciones', exact: true })
     .click()

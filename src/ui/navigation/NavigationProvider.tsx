@@ -19,8 +19,15 @@ function DraftDialog({ navigation }: { navigation: NavigationController }) {
   const keep = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     if (state.prompt) {
-      dialog.current?.showModal()
+      const element = dialog.current
+      element?.showModal()
       keep.current?.focus()
+      // Conserva el control elegido al terminar la apertura del diálogo nativo.
+      const frame = requestAnimationFrame(() => {
+        if (element?.open && document.activeElement === element)
+          keep.current?.focus()
+      })
+      return () => cancelAnimationFrame(frame)
     } else {
       dialog.current?.close()
       navigation.focusFailure()

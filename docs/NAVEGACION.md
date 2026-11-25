@@ -4,11 +4,15 @@ Esta guía describe los destinos, el regreso con contexto y la protección de bo
 
 ## Destinos y rutas
 
-El menú principal ofrece **Mi colección → Añadir álbum**. La colección reúne los álbumes y sus filtros Todos/Físico/Digital. Ejemplares (gestión de copias), Calificaciones, Deseos de compra, Recomendaciones, Respaldos, Álbumes retirados y Cuenta y dispositivos se agrupan bajo **Más opciones**. Los deseos conservan acceso desde la gestión de ejemplares y desde cada ficha. El menú se despliega a petición y se cierra con Escape, clic fuera o navegación; Escape devuelve el foco al control de apertura. [Guía de la colección](BIBLIOTECA.md).
+La navegación ofrece **Buscar, Mi colección, Deseos, Sugerencias y Ajustes**: lateral en escritorio e inferior en móvil. La colección reúne Álbumes, Artistas, Ejemplares y Calificaciones, con filtros Todos/Físico/Digital. **Añadir álbum** es una acción en la cabecera de cada pantalla. [Guía de la colección](BIBLIOTECA.md).
+
+**Ajustes** abre un panel para personalización y aplicación que conserva la pantalla musical, su reproductor y los formularios. Cerrar ajustes o Escape devuelve el foco al botón de apertura. Cuenta, Respaldos y Retirados abren sus pantallas dentro de la misma organización de ajustes y respetan las guardas de navegación. Las páginas de personalización y aplicación también admiten acceso directo por URL.
 
 | Fragmento                               | Destino                                                          |
 | --------------------------------------- | ---------------------------------------------------------------- |
 | `#/biblioteca`                          | Biblioteca, búsqueda, filtros, orden y vista                     |
+| `#/buscar`                              | Búsqueda de bandas y discografías en el catálogo                 |
+| `#/artistas`                            | Directorio de artistas de los álbumes guardados                  |
 | `#/anadir`                              | Registro manual, búsqueda de discografía y acceso a JSON         |
 | `#/artista/{artistId}`                  | Álbumes locales, colección y comparación de discografía          |
 | `#/album/{userAlbumId}`                 | Ficha de la entrada personal                                     |
@@ -18,6 +22,10 @@ El menú principal ofrece **Mi colección → Añadir álbum**. La colección re
 | `#/coleccion`                           | Índice de adquisiciones y elección de álbum                      |
 | `#/coleccion/nueva?album={userAlbumId}` | Acceso contextual a la ficha y sus operaciones de colección      |
 | `#/opciones/{seccion}`                  | `recomendaciones`, `respaldos`, `retirados`, `deseos` o `cuenta` |
+| `#/ajustes/personalizacion`             | Nombre, presentación, tema y fondo de la colección               |
+| `#/ajustes/aplicacion`                  | Instalación, actualizaciones y almacenamiento                    |
+
+`#/ajustes` también abre personalización. Las rutas anteriores se conservan.
 
 Las rutas identifican una entrada de esta biblioteca; no comparten datos con otro navegador. Un álbum inexistente o retirado ofrece volver a Biblioteca; una ruta no reconocida muestra una recuperación equivalente. No se borran registros ni se ejecuta una operación por abrir una URL.
 
@@ -25,7 +33,7 @@ El servidor recibe sólo la raíz configurada, `/` o `/Auditorium/`, también co
 
 ## Contexto y regreso
 
-Durante la vida de la pestaña se conservan búsqueda, filtros y medio de la colección, así como búsqueda/sección de Calificaciones y medio de la gestión de ejemplares. Vista y orden de la colección se guardan como preferencias de este navegador. Abrir un álbum recuerda su destino de origen; regresar desde Calificaciones o Mi colección vuelve a ese destino.
+Durante la vida de la pestaña se conservan búsqueda, filtros, apertura de sus controles y medio de la colección, así como búsqueda/sección de Calificaciones y medio de la gestión de ejemplares. El directorio de artistas recuerda su búsqueda al volver de una banda. Vista y orden de la colección se guardan como preferencias de este navegador. Abrir un álbum recuerda su destino de origen; regresar desde Calificaciones o Mi colección vuelve a ese destino.
 
 Cada pantalla recuerda su posición y foco. El regreso procura enfocar el control de origen sin desplazarlo y recuperar la posición anterior. Si una tarjeta deja de existir en el resultado filtrado, se enfoca la búsqueda. En una transición sin contexto se enfoca el título; la primera apertura de Biblioteca respeta el foco nativo para mantener Ir al contenido como primer destino de Tab. La apertura directa y la recarga pueden recuperar la pantalla por URL, pero no prometen recuperar filtros, scroll o borradores de una sesión terminada.
 
@@ -67,7 +75,7 @@ El alta aplica la misma regla: recuerda el identificador confirmado y abre la fi
 
 ## Alcance de esta entrega
 
-Calificaciones y Mi colección son índices de navegación sobre los datos existentes. Mi colección distingue **Físico / Digital adquirido** y mantiene sus recuentos separados; los deseos conservan su destino secundario. Consultar o registrar datos sigue utilizando las operaciones actuales en la ficha. No se infiere una compra a partir de un enlace, suscripción o reproducción.
+Calificaciones, artistas y ejemplares son vistas sobre los datos existentes. Mi colección distingue **Físico / Digital adquirido** y mantiene sus recuentos separados; los deseos tienen acceso directo en la navegación. Consultar o registrar datos sigue utilizando las operaciones actuales en la ficha. No se infiere una compra a partir de un enlace, suscripción o reproducción.
 
 VIS-02 completa la composición de Biblioteca, con filtros plegables, selecciones visibles y apertura desde portada o título. Enlaces personales (LINK-01), alta/edición y clasificación musical (UX-05), experiencia conjunta y selector opcional Edición de referencia (UX-06), notas independientes por género (RATE-01/02) y composición de Mi colección (COL-05) ya tienen implementación. La URL de experiencia abre su editor conjunto; la de colección abre su sección desplegable. Mi colección conserva búsqueda, filtros y selector al regresar, con edición y retirada de copias independientes. La [validación integral](VALIDACION_RECORRIDO.md) distingue regresión técnica y comprensión pendiente. No se altera la independencia entre álbum, edición, calificación y adquisición.
 

@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
 import { parseBackupText } from '../src/domain/backup'
 import {
-  openLibraryOptions,
+  openSettings,
   openAlbumEditorDetails,
 } from './helpers/library-navigation'
 
@@ -89,7 +89,7 @@ test('alta mínima, créditos múltiples y clasificación independiente hasta fi
   await expect(
     page.getByText('Full-length · Split · En vivo · Inédito', { exact: true }),
   ).toBeVisible()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page

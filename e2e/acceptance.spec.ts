@@ -2,8 +2,9 @@ import {
   openAlbumArea,
   openExperience,
   openOwnedDetails,
+  openSettingsSection,
 } from './helpers/library-navigation'
-import { openLibraryOptions } from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { readFile } from 'node:fs/promises'
@@ -78,7 +79,7 @@ async function add(page: Page, title: string, artist: string) {
   ).toBeVisible()
 }
 async function fixture(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'respaldo-ficticio.json',
@@ -213,8 +214,8 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   await openAlbumArea(page, 'actions')
   await page.getByRole('button', { name: 'Quitar álbum de biblioteca' }).click()
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
-  await openLibraryOptions(page)
-  await page.getByRole('button', { name: 'Álbumes retirados (1)' }).click()
+  await openSettings(page)
+  await page.getByRole('button', { name: 'Retirados' }).click()
   await page
     .getByRole('button', { name: /Restaurar Horizonte Ficticio, entrada/ })
     .click()
@@ -227,7 +228,7 @@ test('recorrido musical completo conserva notas independientes, copias, deseos y
   ).toBeVisible()
   await page.getByRole('button', { name: 'Mi colección', exact: true }).click()
   await page.reload()
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page
@@ -317,10 +318,10 @@ test('auditoría de accesibilidad en vacío, formularios, ficha y confirmaciones
   await page.getByRole('button', { name: 'Quitar álbum de biblioteca' }).click()
   await accessible(page)
   await page.getByRole('button', { name: 'Confirmar retirada' }).click()
-  await openLibraryOptions(page)
-  await page.getByRole('button', { name: 'Álbumes retirados (2)' }).click()
+  await openSettings(page)
+  await page.getByRole('button', { name: 'Retirados' }).click()
   await accessible(page)
-  await page.getByText('Ajustes de la aplicación', { exact: true }).click()
+  await openSettingsSection(page, 'Aplicación')
   await accessible(page)
 })
 
@@ -348,10 +349,19 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
   })
   if (limitedTabs) await addButton.focus()
   else {
-    await page.keyboard.press(tabKey)
-    await expect(
-      page.getByRole('button', { name: 'Mi colección', exact: true }),
-    ).toBeFocused()
+    for (const name of [
+      'Ir a mi colección',
+      'Buscar',
+      'Mi colección',
+      'Deseos',
+      'Sugerencias',
+      'Ajustes',
+    ]) {
+      await page.keyboard.press(tabKey)
+      await expect(
+        page.getByRole('button', { name, exact: true }),
+      ).toBeFocused()
+    }
     await page.keyboard.press(tabKey)
   }
   await expect(addButton).toBeFocused()
@@ -396,7 +406,8 @@ test('teclado mantiene foco visible, devuelve foco al cancelar y permite Escape'
   await page
     .getByRole('button', { name: 'Descartar cambios', exact: true })
     .click()
-  const summary = page.getByText('Ajustes de la aplicación', { exact: true })
+  await openSettings(page)
+  const summary = page.getByRole('button', { name: 'Aplicación', exact: true })
   await summary.focus()
   await summary.press('Enter')
   await expect(

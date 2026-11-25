@@ -88,6 +88,11 @@ test('muestra datos acotados y exige una acción explícita con consentimiento',
   const onOpenAlbum = vi.fn()
   const storage = vi.spyOn(Storage.prototype, 'setItem')
   render(<Harness request={request} onOpenAlbum={onOpenAlbum} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   expect(request).not.toHaveBeenCalled()
   expect(
     screen.getByRole('button', { name: 'Generar recomendaciones' }),
@@ -124,6 +129,11 @@ test('muestra datos acotados y exige una acción explícita con consentimiento',
 test('cancelar aborta y descarta una respuesta tardía sin reintentar', async () => {
   const { request, pending } = deferredRequest()
   render(<Harness request={request} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   acceptAndGenerate()
   expect(
     screen.getByRole('button', { name: 'Generar recomendaciones' }),
@@ -145,6 +155,11 @@ test('cancelar aborta y descarta una respuesta tardía sin reintentar', async ()
 test('olvidar elimina la clave, cancela y requiere un nuevo consentimiento', async () => {
   const { request, pending } = deferredRequest()
   render(<Harness request={request} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   acceptAndGenerate()
   const signal = request.mock.calls[0]![0].signal!
   fireEvent.click(screen.getByRole('button', { name: 'Olvidar clave' }))
@@ -169,6 +184,11 @@ test('olvidar elimina la clave, cancela y requiere un nuevo consentimiento', asy
 test('editar clave invalida resultados y el transporte anterior', async () => {
   const { request, pending } = deferredRequest()
   render(<Harness request={request} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   acceptAndGenerate()
   const signal = request.mock.calls[0]![0].signal!
   fireEvent.change(screen.getByLabelText('Clave API de Groq'), {
@@ -188,6 +208,11 @@ test('editar clave invalida resultados y el transporte anterior', async () => {
 test('cambiar de proveedor cancela, olvida la clave y explica Gemini gratuito', async () => {
   const { request, pending } = deferredRequest()
   render(<Harness request={request} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   acceptAndGenerate()
   const signal = request.mock.calls[0]![0].signal!
   fireEvent.change(screen.getByRole('combobox', { name: 'Proveedor' }), {
@@ -218,6 +243,11 @@ test('cerrar o desmontar aborta sin aceptar una respuesta posterior', async () =
   const { request, pending } = deferredRequest()
   const onClose = vi.fn()
   const view = render(<Harness request={request} onClose={onClose} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   acceptAndGenerate()
   const signal = request.mock.calls[0]![0].signal!
   fireEvent.click(
@@ -260,6 +290,11 @@ test.each([
       .fn<typeof requestRecommendations>()
       .mockRejectedValue(error)
     render(<Harness request={request} />)
+    fireEvent.click(
+      screen.getByText('Sugerencias con un servicio externo', {
+        selector: 'summary',
+      }),
+    )
     acceptAndGenerate()
     await waitFor(() =>
       expect(screen.getByRole('status')).toHaveTextContent(
@@ -279,6 +314,11 @@ test('un error desconocido se muestra sin su contenido remoto', async () => {
     .fn<typeof requestRecommendations>()
     .mockRejectedValue(new Error('clave-remota-ficticia'))
   render(<Harness request={request} />)
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
   acceptAndGenerate()
   await waitFor(() =>
     expect(screen.getByRole('status')).toHaveTextContent(

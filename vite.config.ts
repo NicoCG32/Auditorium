@@ -36,8 +36,8 @@ export default defineConfig(({ mode }) => {
           start_url: base,
           scope: base,
           display: 'standalone',
-          background_color: '#0a0a0d',
-          theme_color: '#0a0a0d',
+          background_color: '#111315',
+          theme_color: '#111315',
           icons: [
             {
               src: `${base}auditorium/icons/icon-192.png`,

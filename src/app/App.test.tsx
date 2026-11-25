@@ -1,5 +1,5 @@
 import {
-  openLibraryOptions,
+  openSettings,
   openAlbumArea,
   openExperience,
 } from '../test/library-navigation'
@@ -633,8 +633,14 @@ test('StrictMode abre una biblioteca vacía real y la acción actualiza cambios 
   ).toBeVisible()
   expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
   await populated()
-  openLibraryOptions()
+  await openSettings()
+  fireEvent.click(screen.getByRole('button', { name: 'Aplicación' }))
   fireEvent.click(screen.getByRole('button', { name: 'Actualizar biblioteca' }))
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Mi colección' })).toBeEnabled(),
+  )
+  fireEvent.click(screen.getByRole('button', { name: 'Cerrar ajustes' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Mi colección' }))
   await screen.findByRole('heading', { name: 'Eclipse' })
   expect(albumTitles()).toEqual(['Eclipse', 'Otra órbita'])
 })
@@ -670,13 +676,13 @@ test('lista y cuadrícula mantienen resultados, orden y notas visibles de medio 
   const repository = await populated()
   render(<App repository={repository} />)
   await screen.findByRole('heading', { name: 'Eclipse' })
-  fireEvent.click(screen.getByText('Personalizar'))
+  await openSettings()
   fireEvent.click(
     screen.getByRole('checkbox', {
       name: 'Mostrar géneros, país y valoraciones',
     }),
   )
-  fireEvent.click(screen.getByText('Personalizar'))
+  fireEvent.click(screen.getByRole('button', { name: 'Cerrar ajustes' }))
   expect(screen.getByText('9,5')).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Lista' }))
   expect(screen.getByRole('button', { name: 'Lista' })).toHaveAttribute(
@@ -699,13 +705,13 @@ test('muestra datos persistidos después de cerrar y reabrir el repositorio', as
   const reopened = connect()
   render(<App repository={reopened} />)
   await screen.findByRole('heading', { name: 'Eclipse' })
-  fireEvent.click(screen.getByText('Personalizar'))
+  await openSettings()
   fireEvent.click(
     screen.getByRole('checkbox', {
       name: 'Mostrar géneros, país y valoraciones',
     }),
   )
-  fireEvent.click(screen.getByText('Personalizar'))
+  fireEvent.click(screen.getByRole('button', { name: 'Cerrar ajustes' }))
   expect(
     within(
       screen.getByRole('list', { name: 'Álbumes de tu biblioteca' }),

@@ -1,5 +1,8 @@
-import { openExperience } from './helpers/library-navigation'
-import { openLibraryOptions } from './helpers/library-navigation'
+import {
+  openExperience,
+  openLibraryFilters,
+} from './helpers/library-navigation'
+import { openSettings } from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test, type Page } from '@playwright/test'
 import { serializeBackup } from '../src/domain/backup'
@@ -18,12 +21,8 @@ async function accessible(page: Page) {
 }
 
 async function appearance(page: Page) {
-  const panel = page.locator('details.appearance-panel')
-  if (
-    !(await panel.evaluate((element) => (element as HTMLDetailsElement).open))
-  )
-    await panel.locator(':scope > summary').click()
-  return panel
+  await openSettings(page)
+  return page.getByRole('dialog', { name: 'Ajustes', exact: true })
 }
 
 async function rawDatabase(page: Page) {
@@ -74,11 +73,13 @@ for (const theme of ['dark', 'light'] as const) {
         theme,
       )
       await accessible(page)
-      await panel.locator(':scope > summary').click()
+      await panel
+        .getByRole('button', { name: 'Cerrar ajustes', exact: true })
+        .click()
       await page.getByRole('button', { name: 'Añadir tu primer álbum' }).click()
       await accessible(page)
       await page.getByRole('button', { name: 'Cancelar', exact: true }).click()
-      await openLibraryOptions(page)
+      await openSettings(page)
       await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
       await page.locator('#backup-file').setInputFiles({
         name: 'biblioteca-ficticia-apariencia.json',
@@ -93,6 +94,7 @@ for (const theme of ['dark', 'light'] as const) {
       ).toBeVisible()
       const before = await rawDatabase(page)
       await accessible(page)
+      await openLibraryFilters(page)
       await page.getByRole('button', { name: 'Lista', exact: true }).click()
       await accessible(page)
       await page.getByRole('button', { name: 'Eclipse', exact: true }).click()
@@ -111,17 +113,24 @@ for (const theme of ['dark', 'light'] as const) {
           exact: true,
         })
         .check()
+      await settings
+        .getByRole('button', { name: 'Cerrar ajustes', exact: true })
+        .click()
       await openExperience(page)
       await expect(
         page.getByRole('textbox', { name: 'Notas personales', exact: true }),
       ).toHaveValue('Borrador ficticio conservado')
       await accessible(page)
-      await settings
+      const reopenedSettings = await appearance(page)
+      await reopenedSettings
         .getByRole('radio', {
           name: theme === 'dark' ? 'Oscuro' : 'Claro',
           exact: true,
         })
         .check()
+      await reopenedSettings
+        .getByRole('button', { name: 'Cerrar ajustes', exact: true })
+        .click()
       // This reload explicitly discards the fictitious draft after the theme check.
       page.once('dialog', (dialog) => dialog.accept())
       await page.reload()
@@ -149,6 +158,7 @@ test('foto local sólo aparece tras selección, se puede ocultar y no persiste a
   await page.goto('/')
   const panel = await appearance(page)
   await expect(page.locator('.appearance-poster')).toHaveCount(0)
+  await panel.getByRole('checkbox', { name: 'Fondo decorativo' }).check()
   await panel
     .getByLabel('Foto de fondo (opcional)', { exact: true })
     .setInputFiles('public/auditorium/icons/icon-192.png')

@@ -1,5 +1,13 @@
 # Changelog
 
+## Web — 2026-11-23
+
+- Navegación visible por Buscar, Mi colección, Deseos, Sugerencias y Ajustes: lateral en escritorio e inferior en móvil. Desaparecen el menú genérico Más opciones, el control de apariencia aislado y el pie de almacenamiento. Añadir álbum queda como acción de cabecera.
+- La colección organiza Álbumes, Artistas, Ejemplares y Calificaciones. El directorio de artistas reúne los álbumes activos y conserva búsqueda y foco al volver de una banda. Buscar abre directamente el catálogo de discografías.
+- Ajustes unifica personalización, cuenta, respaldos, retirados y aplicación. La personalización y las opciones de aplicación se abren en un panel modal que conserva el reproductor y los formularios; las operaciones sobre datos mantienen la protección de borradores. Los avisos importantes aparecen dentro del contexto activo.
+- Sugerencias muestra primero los pendientes y últimas incorporaciones de la colección, sin servicios externos. La configuración opcional de recomendaciones asistidas conserva consentimiento, claves temporales y límites de datos.
+- Presentación más sobria, portadas sin marcos pesados, titulares del sistema y controles compactos en móvil. Las preferencias nuevas empiezan sin fondo decorativo; se conservan elecciones existentes. Sin cambios de datos, respaldos, sincronización, dependencias ni ZIP 1.1.0.
+
 ## Web — 2026-11-19
 
 - Mi colección reúne las portadas con filtros Todos/Físico/Digital y recuentos de álbumes según ejemplares registrados. La gestión de copias y calificaciones pasa al menú secundario; se conservan rutas, borradores y regreso con contexto.

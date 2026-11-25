@@ -1,4 +1,4 @@
-import { openLibraryOptions } from '../test/library-navigation'
+import { openSettings } from '../test/library-navigation'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
@@ -51,17 +51,18 @@ async function populated() {
 }
 
 async function ready() {
-  openLibraryOptions()
   await waitFor(() =>
-    expect(
-      screen.getByRole('button', { name: 'Recomendaciones' }),
-    ).toBeEnabled(),
+    expect(screen.getByRole('button', { name: 'Sugerencias' })).toBeEnabled(),
   )
 }
 
 function openRecommendations() {
-  openLibraryOptions()
-  fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Sugerencias' }))
+  fireEvent.click(
+    screen.getByText('Sugerencias con un servicio externo', {
+      selector: 'summary',
+    }),
+  )
 }
 
 function enterKey(value = fictitiousKey, provider = 'Groq') {
@@ -93,7 +94,7 @@ test('la clave de sesión permanece al cerrar el panel, visitar respaldos y abri
     screen.getByRole('checkbox', { name: /Acepto enviar estos datos/u }),
   ).not.toBeChecked()
 
-  openLibraryOptions()
+  await openSettings()
   fireEvent.click(screen.getByRole('button', { name: 'Respaldos' }))
   expect(
     screen.getByRole('heading', { name: 'Respaldos de tu biblioteca' }),
@@ -171,7 +172,7 @@ test('cambiar proveedor y olvidar clave borran el estado del padre y no lo recup
   enterKey('otra-clave-ficticia-temporal', 'Gemini')
   fireEvent.click(screen.getByRole('button', { name: 'Olvidar clave' }))
   expect(screen.getByLabelText('Clave API de Gemini')).toHaveValue('')
-  openLibraryOptions()
+  await openSettings()
   fireEvent.click(screen.getByRole('button', { name: 'Respaldos' }))
   openRecommendations()
   expect(screen.getByRole('combobox', { name: 'Proveedor' })).toHaveValue(

@@ -1,5 +1,9 @@
-import { openAlbumArea, openExperience } from '../test/library-navigation'
-import { openLibraryOptions } from '../test/library-navigation'
+import {
+  openAlbumArea,
+  openExperience,
+  openSettings,
+} from '../test/library-navigation'
+
 import {
   act,
   fireEvent,
@@ -50,20 +54,26 @@ async function edit() {
   fireEvent.click(screen.getByRole('button', { name: 'Editar álbum' }))
 }
 
-test('Más opciones se cierra con Escape y al abrir una utilidad', async () => {
+test('destinos musicales visibles y un único lugar para personalización, cuenta y mantenimiento', async () => {
   await open()
-  const summary = screen.getByText('Más opciones', { selector: 'summary' })
-  const menu = summary.closest('details')!
-  expect(menu).not.toHaveAttribute('open')
-  fireEvent.click(summary)
-  expect(menu).toHaveAttribute('open')
-  fireEvent.keyDown(summary, { key: 'Escape' })
-  expect(menu).not.toHaveAttribute('open')
-  expect(summary).toHaveFocus()
-  fireEvent.click(summary)
+  const before = await repository.readSnapshot()
+  expect(screen.queryByText('Más opciones')).not.toBeInTheDocument()
+  expect(screen.queryByText('Personalizar')).not.toBeInTheDocument()
+  expect(screen.queryByText('Ajustes de la aplicación')).not.toBeInTheDocument()
+  expect(screen.getByRole('button', { name: 'Deseos' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Sugerencias' })).toBeVisible()
+  expect(
+    screen.queryByRole('button', { name: 'Respaldos' }),
+  ).not.toBeInTheDocument()
+  await openSettings()
+  expect(
+    screen.getByRole('textbox', { name: 'Nombre de tu colección' }),
+  ).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Cuenta' })).toBeVisible()
+  expect(screen.getByRole('button', { name: 'Aplicación' })).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Respaldos' }))
-  expect(menu).not.toHaveAttribute('open')
   expect(location.hash).toBe('#/opciones/respaldos')
+  expect(await repository.readSnapshot()).toEqual(before)
 })
 
 test('abrir desde la portada conserva búsqueda, vista y foco al regresar', async () => {
@@ -87,6 +97,60 @@ test('abrir desde la portada conserva búsqueda, vista y foco al regresar', asyn
     screen.getByRole('button', { name: 'Abrir ficha de Eclipse' }),
   ).toHaveFocus()
 })
+
+test('artistas muestra sólo álbumes activos y conserva búsqueda y foco al volver de una banda', async () => {
+  await open()
+  const before = await repository.readSnapshot()
+  fireEvent.click(screen.getByRole('button', { name: 'Artistas' }))
+  const directory = screen.getByRole('region', {
+    name: 'Artistas de tu colección',
+  })
+  expect(within(directory).getByText(/^1 álbum(?: · .+)?$/)).toBeVisible()
+  fireEvent.change(
+    screen.getByRole('searchbox', { name: 'Buscar en tus artistas' }),
+    { target: { value: 'umbral electrico' } },
+  )
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Ver artista Umbral Eléctrico' }),
+  )
+  expect(
+    screen.getByRole('heading', { level: 1, name: 'Umbral Eléctrico' }),
+  ).toBeVisible()
+  fireEvent.click(screen.getByRole('button', { name: 'Volver a artistas' }))
+  expect(
+    screen.getByRole('searchbox', { name: 'Buscar en tus artistas' }),
+  ).toHaveValue('umbral electrico')
+  expect(
+    screen.getByRole('button', { name: 'Ver artista Umbral Eléctrico' }),
+  ).toHaveFocus()
+  expect(await repository.readSnapshot()).toEqual(before)
+})
+
+test('Buscar abre directamente el catálogo y las sugerencias locales funcionan sin configurar servicios', async () => {
+  await open()
+  const before = await repository.readSnapshot()
+  const fetch = vi
+    .spyOn(globalThis, 'fetch')
+    .mockRejectedValue(new Error('Petición no esperada en esta prueba'))
+  fireEvent.click(screen.getByRole('button', { name: 'Buscar' }))
+  expect(
+    screen.getByRole('heading', { level: 1, name: 'Buscar música' }),
+  ).toBeVisible()
+  expect(
+    screen.queryByRole('button', { name: 'Guardar álbum' }),
+  ).not.toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Sugerencias' }))
+  expect(
+    screen.getByRole('button', { name: 'Ver álbum Eclipse' }),
+  ).toBeVisible()
+  expect(screen.getByLabelText('Clave API de Groq')).not.toBeVisible()
+  expect(fetch).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByRole('button', { name: 'Ver álbum Eclipse' }))
+  expect(
+    screen.getByRole('heading', { level: 1, name: 'Ficha del álbum' }),
+  ).toBeVisible()
+  expect(await repository.readSnapshot()).toEqual(before)
+})
 function change(name: string, value: string) {
   fireEvent.change(
     screen.getByRole(name === 'Artista' ? 'combobox' : 'textbox', { name }),
@@ -103,8 +167,8 @@ test('menú principal ordenado, rutas y contexto propio de calificaciones', asyn
     within(nav)
       .getAllByRole('button')
       .map((button) => button.textContent),
-  ).toEqual(['Mi colección', 'Añadir álbum'])
-  openLibraryOptions()
+  ).toEqual(['Buscar', 'Mi colección', 'Deseos', 'Sugerencias', 'Ajustes'])
+
   fireEvent.click(screen.getByRole('button', { name: 'Calificaciones' }))
   expect(location.hash).toBe('#/calificaciones')
   fireEvent.click(screen.getByRole('button', { name: 'Calificados' }))
@@ -132,20 +196,18 @@ test('editar → Recomendaciones no pierde título, cancelación devuelve el foc
   const title = screen.getByRole('textbox', { name: 'Título' })
   title.focus()
   change('Título', 'Borrador de prueba')
-  openLibraryOptions()
-  fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
+
+  fireEvent.click(screen.getByRole('button', { name: 'Sugerencias' }))
   expect(
     screen.getByRole('dialog', { name: 'Cambios sin guardar' }),
   ).toBeVisible()
   fireEvent.click(screen.getByRole('button', { name: 'Seguir editando' }))
   expect(title).toHaveValue('Borrador de prueba')
-  expect(
-    screen.getByText('Más opciones', { selector: 'summary' }),
-  ).toHaveFocus()
+  expect(screen.getByRole('button', { name: 'Sugerencias' })).toHaveFocus()
   expect(location.hash).toMatch(/\/editar$/)
   expect(await repository.readSnapshot()).toEqual(before)
-  openLibraryOptions()
-  fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
+
+  fireEvent.click(screen.getByRole('button', { name: 'Sugerencias' }))
   fireEvent.click(screen.getByRole('button', { name: 'Descartar cambios' }))
   expect(location.hash).toBe('#/opciones/recomendaciones')
   expect(await repository.readSnapshot()).toEqual(before)
@@ -155,7 +217,7 @@ test('guardar y salir confirma datos una vez y abre el destino solicitado', asyn
   await edit()
   const writes = vi.spyOn(repository, 'mutate')
   change('Título', 'Eclipse Corregido Para Navegar')
-  openLibraryOptions()
+
   fireEvent.click(screen.getByRole('button', { name: 'Ejemplares' }))
   fireEvent.click(screen.getByRole('button', { name: 'Guardar y salir' }))
   await waitFor(() => expect(location.hash).toBe('#/coleccion'))
@@ -224,13 +286,13 @@ test('entrada directa válida de Pages y ruta inexistente no borran datos', asyn
 test('Mi colección separa medios sin cambiar adquisiciones ni deseos', async () => {
   const before = await repository.readSnapshot()
   await open()
-  openLibraryOptions()
+
   fireEvent.click(screen.getByRole('button', { name: 'Ejemplares' }))
   const medium = screen.getByRole('combobox', { name: 'Medio de la colección' })
   fireEvent.change(medium, { target: { value: 'purchased_digital' } })
   expect(screen.getByText(/^No hay adquisiciones que coincidan/)).toBeVisible()
-  openLibraryOptions()
-  fireEvent.click(screen.getByRole('button', { name: 'Deseos de compra' }))
+
+  fireEvent.click(screen.getByRole('button', { name: 'Deseos' }))
   expect(location.hash).toBe('#/opciones/deseos')
   expect(await repository.readSnapshot()).toEqual(before)
 })
@@ -254,8 +316,8 @@ test('cancelar un ejemplar no descarta la experiencia pendiente del mismo álbum
   expect(screen.getByRole('textbox', { name: 'Notas personales' })).toHaveValue(
     'Experiencia ficticia por conservar',
   )
-  openLibraryOptions()
-  fireEvent.click(screen.getByRole('button', { name: 'Recomendaciones' }))
+
+  fireEvent.click(screen.getByRole('button', { name: 'Sugerencias' }))
   expect(dialog).toHaveTextContent('Mi experiencia')
   expect(dialog).not.toHaveTextContent('Nueva adquisición')
   fireEvent.click(

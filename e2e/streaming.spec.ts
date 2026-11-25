@@ -1,4 +1,7 @@
-import { openAlbumEditorDetails } from './helpers/library-navigation'
+import {
+  openAlbumEditorDetails,
+  openSettingsSection,
+} from './helpers/library-navigation'
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 import { fixtureId } from '../src/domain/catalog/catalog.fixture'
@@ -147,10 +150,14 @@ test('errores, callbacks tardíos, lista y navegación liberan YouTube sin autop
     path: info.outputPath('youtube-dark-320.png'),
     fullPage: true,
   })
-  const appearance = page.locator('details.appearance-panel')
-  await appearance.locator(':scope > summary').click()
+  const restoreAppearance = await openSettingsSection(page, 'Personalización')
+  const appearance = page.getByRole('region', {
+    name: 'Personalización',
+    exact: true,
+  })
+
   await appearance.getByRole('radio', { name: 'Claro', exact: true }).check()
-  await appearance.locator(':scope > summary').click()
+  await restoreAppearance()
   await page.setViewportSize({ width: 1280, height: 900 })
   expect(
     (

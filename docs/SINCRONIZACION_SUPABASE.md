@@ -8,7 +8,7 @@ Supabase añade una cuenta opcional con correo y contraseña a la biblioteca loc
 
 ## Uso
 
-1. Abre **Más opciones → Cuenta y dispositivos** y crea tu cuenta.
+1. Abre **Ajustes → Cuenta** y crea tu cuenta.
 2. Confirma el correo y entra con correo y contraseña. El enlace de confirmación puede abrir otra pestaña del mismo navegador. Si se abre en otro dispositivo, confirma el correo y después inicia sesión manualmente.
 3. Para incorporar una biblioteca anterior, abre **Traer mi biblioteca sin cuenta**. La cuenta debe estar vacía; se copia el original y se conserva la biblioteca sin cuenta.
 4. En otro dispositivo, entra con la misma cuenta. La biblioteca se descarga a su propia caché local.

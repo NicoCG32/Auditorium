@@ -30,6 +30,8 @@ export function LibraryView({
   onMediumChange,
   covers,
   details,
+  controlsOpen,
+  onControlsOpen,
 }: {
   albums: LibraryAlbum[]
   snapshot: LocalSnapshot
@@ -44,6 +46,8 @@ export function LibraryView({
   onMediumChange: (medium: CollectionMedium) => void
   covers: 'small' | 'medium' | 'large'
   details: boolean
+  controlsOpen: boolean
+  onControlsOpen: (open: boolean) => void
 }) {
   const artists = useMemo(
     () => albumArtistIndex(snapshot.catalog),
@@ -71,14 +75,6 @@ export function LibraryView({
         className="library-empty library-welcome"
         aria-labelledby="empty-title"
       >
-        <div className="welcome-art" aria-hidden="true">
-          <img
-            src={`${import.meta.env.BASE_URL}auditorium/brand/logo-stacked.webp`}
-            alt=""
-            width={1254}
-            height={1254}
-          />
-        </div>
         <div className="welcome-copy">
           <h2 id="empty-title" className="text-3xl font-semibold">
             Aún no hay álbumes
@@ -122,6 +118,8 @@ export function LibraryView({
         ))}
       </div>
       <LibraryControls
+        expanded={controlsOpen}
+        onExpandedChange={onControlsOpen}
         albums={albums}
         filters={filters}
         onChange={onFiltersChange}

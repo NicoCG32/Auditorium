@@ -16,6 +16,8 @@ interface Props {
   view: 'grid' | 'list'
   onViewChange: (view: 'grid' | 'list') => void
   albums?: LibraryAlbum[]
+  expanded?: boolean
+  onExpandedChange?: (expanded: boolean) => void
 }
 
 export function LibraryControls({
@@ -24,9 +26,12 @@ export function LibraryControls({
   view,
   onViewChange,
   albums,
+  expanded: controlledExpanded,
+  onExpandedChange,
 }: Props) {
   const options = useMemo(() => libraryFilterOptions(albums ?? []), [albums])
-  const [expanded, setExpanded] = useState(false)
+  const [localExpanded, setExpanded] = useState(false)
+  const expanded = controlledExpanded ?? localExpanded
   const panelId = useId()
   const selected = [
     ...(filters.genre
@@ -84,7 +89,11 @@ export function LibraryControls({
           className="filter-toggle action-button"
           aria-expanded={expanded}
           aria-controls={panelId}
-          onClick={() => setExpanded((value) => !value)}
+          onClick={() =>
+            onExpandedChange
+              ? onExpandedChange(!expanded)
+              : setExpanded((value) => !value)
+          }
         >
           Filtros{selected.length > 0 ? ` (${selected.length})` : ''}
         </button>

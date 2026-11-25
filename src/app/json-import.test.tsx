@@ -8,7 +8,7 @@ import { AuditoriumDatabase } from '../infrastructure/db/database'
 import { IndexedDbRepository } from '../infrastructure/repositories/indexeddb-repository'
 import { JsonImportPanel } from '../ui/library/JsonImportPanel'
 import * as downloads from '../infrastructure/browser/backup-download'
-import { openLibraryOptions } from '../test/library-navigation'
+import { openSettings } from '../test/library-navigation'
 import { App } from './App'
 import { parseImportText } from '../domain/catalog-import'
 
@@ -91,9 +91,11 @@ test('cancelar con Escape no escribe y devuelve foco al selector', async () => {
     mutation = vi.spyOn(repo, 'mutate')
   upload()
   const dialog = await screen.findByRole('dialog')
-  expect(
-    screen.getByRole('button', { name: 'Cancelar importación' }),
-  ).toHaveFocus()
+  await waitFor(() =>
+    expect(
+      screen.getByRole('button', { name: 'Cancelar importación' }),
+    ).toHaveFocus(),
+  )
   fireEvent.keyDown(dialog, { key: 'Escape' })
   expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   expect(
@@ -235,7 +237,7 @@ test('pantalla integrada bloquea operaciones incompatibles y regresa a bibliotec
   const repo = await repository()
   render(<App repository={repo} />)
   await screen.findByRole('heading', { name: 'Mi colección' })
-  openLibraryOptions()
+  await openSettings()
   await waitFor(() =>
     expect(screen.getByRole('button', { name: 'Respaldos' })).toBeEnabled(),
   )

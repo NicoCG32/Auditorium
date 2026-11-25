@@ -4,7 +4,11 @@ import { readFile } from 'node:fs/promises'
 import { makeBackup } from '../src/domain/backup.fixture'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 import { fixtureId, ids } from '../src/domain/catalog/catalog.fixture'
-import { openAlbumArea, openLibraryOptions } from './helpers/library-navigation'
+import {
+  openAlbumArea,
+  openSettings,
+  openSettingsSection,
+} from './helpers/library-navigation'
 
 test.use({ serviceWorkers: 'block', actionTimeout: 10_000 })
 const artistId = fixtureId(9000),
@@ -168,7 +172,7 @@ async function seed(
     )!.deletedAt
   }
   await page.goto('/')
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   await page.locator('#backup-file').setInputFiles({
     name: 'catalogo-ficticio.json',
@@ -188,7 +192,7 @@ async function exported(page: Page) {
   await page.evaluate(() =>
     window.scrollTo({ top: 0, left: 0, behavior: 'instant' }),
   )
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
   const download = page.waitForEvent('download')
   await page
@@ -532,13 +536,12 @@ test('a 320 px la selección protege la salida, conserva el foco y es accesible 
     }),
   ).toBeFocused()
   for (const theme of ['Oscuro', 'Claro']) {
-    await openLibraryOptions(page)
-    const appearance = page.locator('details.appearance-panel')
-    if ((await appearance.getAttribute('open')) === null)
-      await appearance.locator(':scope > summary').click()
+    await openSettings(page)
+    const restoreAppearance = await openSettingsSection(page, 'Personalización')
+
     await page.getByRole('radio', { name: theme, exact: true }).check()
-    await appearance.locator(':scope > summary').click()
-    await page.locator('details.library-utilities > summary').click()
+    await restoreAppearance()
+
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,

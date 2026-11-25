@@ -1,15 +1,44 @@
 import { expect, type Page } from '@playwright/test'
 
 export async function waitForOfflineReady(page: Page) {
-  const settings = page.locator('.offline-panel > details')
-  const wasOpen = (await settings.getAttribute('open')) !== null
-  if (!wasOpen) await settings.locator(':scope > summary').click()
+  const restore = await openSettingsSection(page, 'Aplicación')
   await expect(
     page.getByText('Aplicación preparada para usar sin conexión.', {
       exact: true,
     }),
   ).toBeVisible()
-  if (!wasOpen) await settings.locator(':scope > summary').click()
+  await restore()
+}
+
+export async function openSettingsSection(
+  page: Page,
+  section:
+    'Personalización' | 'Cuenta' | 'Respaldos' | 'Retirados' | 'Aplicación',
+) {
+  if (
+    !(await page
+      .getByRole('dialog', { name: 'Ajustes', exact: true })
+      .isVisible())
+  )
+    await expect(
+      page.getByRole('button', { name: 'Ajustes', exact: true }),
+    ).toBeEnabled()
+  const previous = page.url()
+  let steps = 0
+  await openSettings(page)
+  if (page.url() !== previous) steps += 1
+  const settingsUrl = page.url()
+  await page.getByRole('button', { name: section, exact: true }).click()
+  if (page.url() !== settingsUrl) steps += 1
+  return async () => {
+    const dialog = page.getByRole('dialog', { name: 'Ajustes', exact: true })
+    if (await dialog.isVisible())
+      await dialog
+        .getByRole('button', { name: 'Cerrar ajustes', exact: true })
+        .click()
+    for (let index = 0; index < steps; index += 1) await page.goBack()
+    await expect(page).toHaveURL(previous)
+  }
 }
 
 export async function openAlbumArea(
@@ -53,10 +82,12 @@ export async function openAlbumEditorDetails(page: Page) {
   }
 }
 
-export async function openLibraryOptions(page: Page) {
-  const menu = page.locator('details.library-utilities')
-  if ((await menu.getAttribute('open')) === null)
-    await menu.locator(':scope > summary').click()
+export async function openSettings(page: Page) {
+  if (
+    await page.getByRole('dialog', { name: 'Ajustes', exact: true }).isVisible()
+  )
+    return
+  await page.getByRole('button', { name: 'Ajustes', exact: true }).click()
 }
 
 export async function openLibraryFilters(page: Page) {

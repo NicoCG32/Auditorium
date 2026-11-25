@@ -4,7 +4,7 @@ import { serializeBackup } from '../../src/domain/backup'
 import { fixtureId } from '../../src/domain/catalog/catalog.fixture'
 import { createStoredZip } from '../../src/infrastructure/browser/stored-zip'
 import { playbackFixture } from './streaming-fixture'
-import { openLibraryOptions } from './library-navigation'
+import { openSettings } from './library-navigation'
 import { syntheticWav } from '../../src/test/audio.fixture'
 
 export const audioName = 'audio-ficticio.wav'
@@ -53,7 +53,7 @@ export async function audioBackup() {
   return { fixture, bytes, payload, manifest }
 }
 export async function openBackups(page: Page) {
-  await openLibraryOptions(page)
+  await openSettings(page)
   await page.getByRole('button', { name: 'Respaldos', exact: true }).click()
 }
 export async function restoreAudio(page: Page, base = '/') {
