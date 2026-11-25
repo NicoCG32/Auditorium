@@ -80,9 +80,9 @@ export function AccountPanel({ account }: { account: CloudAccount }) {
             editar. Puedes continuar sin conexión en este dispositivo.
           </p>
           <p className="mt-3 text-sm text-muted">
-            Los archivos de audio permanecen sólo en este dispositivo. Para
-            conservarlos o trasladarlos, utiliza el respaldo completo ZIP en
-            Respaldos.
+            Las portadas descargadas y el audio se guardan en este dispositivo.
+            Para conservarlos o trasladarlos, utiliza el respaldo completo ZIP
+            en Respaldos.
           </p>
           {state.engine ? (
             <SyncControls

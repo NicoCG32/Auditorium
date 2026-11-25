@@ -18,13 +18,14 @@
 
 - [**Origen y alcance**](general/01-origen-y-alcance.md): por qué hice la aplicación y cómo separo catálogo, experiencia y colección.
 - [**Uso y límites**](general/02-uso-y-limites.md): registrar álbumes, valoraciones, ejemplares, reproducción y respaldos.
+- [**Portadas**](PORTADAS.md): búsqueda automática, copias sin conexión y respaldo completo.
 - [**Identidad y accesibilidad**](general/03-diseno-e-identidad.md): vinilo, estética gótica, temas y decisiones de interfaz.
 
 ### 02 · Técnica — entender el sistema
 
 - [**Arquitectura por niveles**](tecnica/01-arquitectura.md): contexto, contenedores, componentes y despliegue web/PWA.
 - [**Dominio y relaciones**](tecnica/02-dominio.md): álbum, edición, pista, catálogo, escucha y ejemplar; modelo lógico.
-- [**Persistencia**](tecnica/03-datos-y-persistencia.md): 17 almacenes IndexedDB DB13, snapshot JSON9, ZIP1 de audio y cuenta Supabase opcional.
+- [**Persistencia**](tecnica/03-datos-y-persistencia.md): 19 almacenes IndexedDB DB14, snapshot JSON9, ZIP2 con portadas y audio y cuenta Supabase opcional.
 - [**Flujos y estados**](tecnica/04-flujos-y-estados.md): registro, valoración, retirada, deseos, respaldos, conflictos y sincronización.
 - [**Integraciones y seguridad**](tecnica/05-integraciones-y-seguridad.md): Wikidata, Gemini/Groq, reproducción externa, claves de sesión y RLS.
 
@@ -37,12 +38,12 @@ flowchart TD
     U --> E["Experiencia · escucha y notas"]
     U --> C["Colección · ejemplares y deseos"]
     U --> L["Audio asociado localmente"]
-    A --> B[("IndexedDB DB13")]
+    A --> B[("IndexedDB DB14")]
     E --> B
     C --> B
     L --> B
     B -. "Snapshot JSON9 sin audio" .-> R[("Supabase opcional")]
-    B --> Z["ZIP1 · audio + biblioteca"]
+    B --> Z["ZIP2 · portadas + audio + biblioteca"]
 ```
 
 Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos los datos. Para los índices y las claves exactas consulta [Datos y persistencia](tecnica/03-datos-y-persistencia.md).

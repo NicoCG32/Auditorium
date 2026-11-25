@@ -28,7 +28,7 @@ Los ocho archivos `tone-*` de [las muestras de audio](../prototypes/audio-01/fix
 
 ## Portadas, metadatos y servicios
 
-- **MusicBrainz y Cover Art Archive:** las consultas de artista y edición se revisan antes de guardar. La portada se carga explícitamente desde Cover Art Archive/Internet Archive y se conserva como enlace; sus derechos son independientes de las licencias de metadatos. [Recorrido y fuentes](ARTISTAS_Y_EDICIONES.md).
+- **MusicBrainz y Cover Art Archive:** las coincidencias ambiguas se revisan y las portadas se descargan como copias optimizadas por dispositivo, conservando el origen. Sus derechos son independientes de las licencias de metadatos; no se incluyen portadas de terceros en la distribución del programa. [Recorrido y fuentes](PORTADAS.md).
 - **Portadas:** pueden provenir de una URL o de un archivo seleccionado. Su almacenamiento y visualización conservan los derechos y permisos de la imagen original.
 - **Wikidata:** aporta candidatos de metadatos que se revisan antes de incorporarlos. Las fuentes y sus avisos se conservan según el material utilizado.
 - **Spotify y YouTube:** se abren mediante enlaces o reproductores oficiales. Auditorium no extrae ni redistribuye su señal musical.

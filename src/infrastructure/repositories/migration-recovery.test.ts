@@ -175,7 +175,22 @@ test.each([1, 2, 3, 4, 5] as const)(
                       ...definition.indexes,
                     ],
                   }
-                : definition,
+                : definition.name === 'albumArtists'
+                  ? {
+                      ...definition,
+                      indexes: [
+                        ...definition.indexes,
+                        {
+                          name: 'albumId',
+                          keyPath: 'albumId',
+                          unique: false,
+                          multiEntry: false,
+                        },
+                      ].sort((a, b) =>
+                        a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+                      ),
+                    }
+                  : definition,
       )
     expect(migrated.identity).toEqual(snapshot.identity)
     expect(
@@ -273,15 +288,15 @@ test('v5 conserva las trece tablas e índices v4 y persiste metadatos y portada 
         : album,
     ),
   })
-  expect(DATABASE_VERSION).toBe(13)
+  expect(DATABASE_VERSION).toBe(14)
   expect(SCHEMA_V4).toEqual(SCHEMA_V3)
   expect(SCHEMA_V5).toEqual(SCHEMA_V4)
   const native = await inspectNativeStorage({
     name: 'migration-recovery',
     factory,
   })
-  expect(native.version).toBe(130)
-  expect(native.stores).toHaveLength(17)
+  expect(native.version).toBe(140)
+  expect(native.stores).toHaveLength(19)
   expect(native.rows['albumGenreRatings']).toEqual([])
   const openedAsV3 = factory.open('migration-recovery', 40)
   const failure = await new Promise<DOMException | null>((resolve) => {

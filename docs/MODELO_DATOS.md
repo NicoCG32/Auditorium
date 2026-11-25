@@ -1,5 +1,7 @@
 # Modelo de datos y persistencia
 
+La actualización de [portadas](PORTADAS.md) usa DB14/nativa140, JSON9 y ZIP2 con imágenes. Añade descriptores y bytes locales por identidad y álbum, con restauración conjunta y conservación del contrato ZIP1. Los apartados siguientes documentan los incrementos anteriores.
+
 El incremento vigente [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) usa DB13/nativa130 y JSON/snapshot9; incorpora referencias MusicBrainz opcionales de edición y grabación, conservando ZIP1. Los apartados de incrementos anteriores mantienen su contexto histórico.
 
 COL-05 completa [Mi colección](MI_COLECCION.md) sin campos persistentes nuevos: actualización y retirada de filas OwnedItem con estado completo esperado y transacción local. Conserva DB12/nativa120, JSON/snapshot8, ZIP1 y sincronización; los nombres legibles se derivan en la presentación.

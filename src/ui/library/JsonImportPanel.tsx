@@ -529,12 +529,13 @@ export function JsonImportPanel({
                   <select
                     className="mt-2 w-full min-w-0"
                     value={choices[conflict.key] ?? ''}
-                    onChange={(event) =>
+                    onChange={(event) => {
+                      const value = event.currentTarget.value
                       setChoices((previous) => ({
                         ...previous,
-                        [conflict.key]: event.target.value,
+                        [conflict.key]: value,
                       }))
-                    }
+                    }}
                   >
                     <option value="">Elegir…</option>
                     {conflict.options.map((option) => (

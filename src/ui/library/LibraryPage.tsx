@@ -42,6 +42,8 @@ import { SettingsPage } from '../settings/SettingsPage'
 import { AppShell } from '../navigation/AppShell'
 import { ArtistsDirectory } from './ArtistsDirectory'
 import { DiscographyImportPanel } from '../catalog/DiscographyImportPanel'
+import { LocalCovers } from './LocalCovers'
+import { CoverActivity } from './cover-context'
 
 type LoadState =
   | { status: 'loading' }
@@ -278,148 +280,321 @@ function LibraryContent({
         }
         onRefresh={refresh}
       >
-        {notice ? (
-          <p role="status" className="mb-6 text-sm text-accent-text">
-            {notice}
-          </p>
-        ) : null}
-        {state.status === 'loading' ? (
-          <div className="library-empty" role="status">
-            <p>Cargando tu biblioteca…</p>
-          </div>
-        ) : state.status === 'error' ? (
-          <section className="library-empty" aria-labelledby="error-title">
-            <h2 id="error-title" className="text-2xl font-semibold">
-              No pudimos abrir la biblioteca
-            </h2>
-            <p className="mt-4 max-w-lg text-muted" role="alert">
-              {state.message}
+        <LocalCovers
+          repository={repository}
+          snapshot={ready ? state.snapshot : undefined}
+          onCommitted={synchronizeDetail}
+        >
+          <CoverActivity />
+          {notice ? (
+            <p role="status" className="mb-6 text-sm text-accent-text">
+              {notice}
             </p>
-            <button
-              type="button"
-              className="action-button mt-6"
-              onClick={refresh}
-            >
-              Volver a intentar
-            </button>
-          </section>
-        ) : route.kind === 'settings' ? (
-          <SettingsPage
-            section={route.section}
-            onRefresh={refresh}
-            disabled={blocked}
-          />
-        ) : route.kind === 'artists' ? (
-          <ArtistsDirectory
-            albums={state.albums}
-            snapshot={state.snapshot}
-            search={artistSearch}
-            onSearch={setArtistSearch}
-            onArtist={openArtist}
-            onSearchCatalog={() => go({ kind: 'catalog' })}
-          />
-        ) : route.kind === 'catalog' ? (
-          <DiscographyImportPanel
-            snapshot={state.snapshot}
-            repository={repository}
-            onBusyChange={setDetailBusy}
-            onCommitted={synchronizeDetail}
-            onOpenAlbum={(id) => navigation.openAlbum(id)}
-            onImported={(result) => {
-              setFilters(defaultLibraryFilters)
-              setNotice(
-                `${result.added} álbumes incorporados y ${result.linked} vinculados. Tu experiencia se conserva.`,
-              )
-              navigation.completed({ kind: 'library' }, 'discography')
-            }}
-          />
-        ) : route.kind === 'add' ? (
-          <AddMusicPage
-            snapshot={state.snapshot}
-            repository={repository}
-            library={library}
-            onBusyChange={setDetailBusy}
-            onImported={(result) => {
-              setFilters(defaultLibraryFilters)
-              setNotice(
-                result
-                  ? `${result.added} álbumes incorporados y ${result.linked} vinculados. Tu experiencia se conserva.`
-                  : 'Datos incorporados a tu biblioteca.',
-              )
-              navigation.completed({ kind: 'library' }, 'discography')
-            }}
-            onComplete={complete}
-            onCommitted={synchronizeDetail}
-            onCancel={() => go({ kind: 'library' })}
-          />
-        ) : route.kind === 'album' ? (
-          selected && selectedAlbum && personalEntry ? (
-            <AlbumSummary
-              key={selected.id}
+          ) : null}
+          {state.status === 'loading' ? (
+            <div className="library-empty" role="status">
+              <p>Cargando tu biblioteca…</p>
+            </div>
+          ) : state.status === 'error' ? (
+            <section className="library-empty" aria-labelledby="error-title">
+              <h2 id="error-title" className="text-2xl font-semibold">
+                No pudimos abrir la biblioteca
+              </h2>
+              <p className="mt-4 max-w-lg text-muted" role="alert">
+                {state.message}
+              </p>
+              <button
+                type="button"
+                className="action-button mt-6"
+                onClick={refresh}
+              >
+                Volver a intentar
+              </button>
+            </section>
+          ) : route.kind === 'settings' ? (
+            <SettingsPage
+              section={route.section}
+              onRefresh={refresh}
+              disabled={blocked}
+            />
+          ) : route.kind === 'artists' ? (
+            <ArtistsDirectory
+              albums={state.albums}
+              snapshot={state.snapshot}
+              search={artistSearch}
+              onSearch={setArtistSearch}
+              onArtist={openArtist}
+              onSearchCatalog={() => go({ kind: 'catalog' })}
+            />
+          ) : route.kind === 'catalog' ? (
+            <DiscographyImportPanel
               snapshot={state.snapshot}
               repository={repository}
-              onArtist={openArtist}
-              album={selectedAlbum}
-              entry={selected}
-              {...(comparisonGenre ? { ratingGenre: comparisonGenre } : {})}
-              library={library}
-              busy={detailBusy}
               onBusyChange={setDetailBusy}
-              personalEntry={personalEntry}
-              catalog={state.snapshot.catalog}
-              trackRatings={state.snapshot.library.trackRatings}
-              ownedItems={state.snapshot.library.ownedItems}
-              purchaseWishes={state.snapshot.library.purchaseWishes}
-              personalLibrary={state.snapshot.library}
-              onExperienceCommitted={synchronizeDetail}
-              editing={route.editor === 'edit'}
-              experienceEditing={route.editor === 'experience'}
-              collectionEditing={route.editor === 'collection'}
-              onExperienceOpen={() =>
-                go({ kind: 'album', id: selected.id, editor: 'experience' })
-              }
-              onExperienceComplete={() => {
-                setNotice('Experiencia guardada.')
-                navigation.completed(
-                  { kind: 'album', id: selected.id },
-                  `experience:${selected.id}`,
-                )
-              }}
-              onExperienceCancel={() => go({ kind: 'album', id: selected.id })}
-              onEdit={() =>
-                go({ kind: 'album', id: selected.id, editor: 'edit' })
-              }
-              onEditComplete={() => {
-                setNotice('Datos del álbum guardados.')
-                navigation.completed(
-                  { kind: 'album', id: selected.id },
-                  `edit:${selected.albumId}`,
-                )
-              }}
-              onEditCancel={() => go({ kind: 'album', id: selected.id })}
-              backLabel={
-                from.kind === 'artist'
-                  ? `Volver a ${state.snapshot.catalog.artists.find((row) => row.id === from.id)?.name ?? 'artista'}`
-                  : from.kind === 'library'
-                    ? 'Volver a biblioteca'
-                    : `Volver a ${routeTitle(from).toLocaleLowerCase()}`
-              }
-              onBack={() => go(from)}
-              onRemoved={() => {
+              onCommitted={synchronizeDetail}
+              onOpenAlbum={(id) => navigation.openAlbum(id)}
+              onImported={(result) => {
+                setFilters(defaultLibraryFilters)
                 setNotice(
-                  'Álbum retirado. Puedes restaurarlo desde «Álbumes retirados» con todos sus datos personales.',
+                  `${result.added} álbumes incorporados y ${result.linked} vinculados. Tu experiencia se conserva.`,
                 )
-                navigation.completed({ kind: 'library' }, 'operation')
+                navigation.completed({ kind: 'library' }, 'discography')
               }}
             />
+          ) : route.kind === 'add' ? (
+            <AddMusicPage
+              snapshot={state.snapshot}
+              repository={repository}
+              library={library}
+              onBusyChange={setDetailBusy}
+              onImported={(result) => {
+                setFilters(defaultLibraryFilters)
+                setNotice(
+                  result
+                    ? `${result.added} álbumes incorporados y ${result.linked} vinculados. Tu experiencia se conserva.`
+                    : 'Datos incorporados a tu biblioteca.',
+                )
+                navigation.completed({ kind: 'library' }, 'discography')
+              }}
+              onComplete={complete}
+              onCommitted={synchronizeDetail}
+              onCancel={() => go({ kind: 'library' })}
+            />
+          ) : route.kind === 'album' ? (
+            selected && selectedAlbum && personalEntry ? (
+              <AlbumSummary
+                key={selected.id}
+                snapshot={state.snapshot}
+                repository={repository}
+                onArtist={openArtist}
+                album={selectedAlbum}
+                entry={selected}
+                {...(comparisonGenre ? { ratingGenre: comparisonGenre } : {})}
+                library={library}
+                busy={detailBusy}
+                onBusyChange={setDetailBusy}
+                personalEntry={personalEntry}
+                catalog={state.snapshot.catalog}
+                trackRatings={state.snapshot.library.trackRatings}
+                ownedItems={state.snapshot.library.ownedItems}
+                purchaseWishes={state.snapshot.library.purchaseWishes}
+                personalLibrary={state.snapshot.library}
+                onExperienceCommitted={synchronizeDetail}
+                editing={route.editor === 'edit'}
+                experienceEditing={route.editor === 'experience'}
+                collectionEditing={route.editor === 'collection'}
+                onExperienceOpen={() =>
+                  go({ kind: 'album', id: selected.id, editor: 'experience' })
+                }
+                onExperienceComplete={() => {
+                  setNotice('Experiencia guardada.')
+                  navigation.completed(
+                    { kind: 'album', id: selected.id },
+                    `experience:${selected.id}`,
+                  )
+                }}
+                onExperienceCancel={() =>
+                  go({ kind: 'album', id: selected.id })
+                }
+                onEdit={() =>
+                  go({ kind: 'album', id: selected.id, editor: 'edit' })
+                }
+                onEditComplete={() => {
+                  setNotice('Datos del álbum guardados.')
+                  navigation.completed(
+                    { kind: 'album', id: selected.id },
+                    `edit:${selected.albumId}`,
+                  )
+                }}
+                onEditCancel={() => go({ kind: 'album', id: selected.id })}
+                backLabel={
+                  from.kind === 'artist'
+                    ? `Volver a ${state.snapshot.catalog.artists.find((row) => row.id === from.id)?.name ?? 'artista'}`
+                    : from.kind === 'library'
+                      ? 'Volver a biblioteca'
+                      : `Volver a ${routeTitle(from).toLocaleLowerCase()}`
+                }
+                onBack={() => go(from)}
+                onRemoved={() => {
+                  setNotice(
+                    'Álbum retirado. Puedes restaurarlo desde «Álbumes retirados» con todos sus datos personales.',
+                  )
+                  navigation.completed({ kind: 'library' }, 'operation')
+                }}
+              />
+            ) : (
+              <section className="library-empty">
+                <h2 className="text-xl font-semibold">
+                  Este álbum no está en esta biblioteca
+                </h2>
+                <p className="mt-3 text-muted">
+                  Puede estar retirado o pertenecer a otro navegador.
+                </p>
+                <button
+                  type="button"
+                  className="action-button mt-5"
+                  onClick={() => go({ kind: 'library' })}
+                >
+                  Volver a biblioteca
+                </button>
+              </section>
+            )
+          ) : route.kind === 'artist' ? (
+            <ArtistPage
+              key={route.id}
+              artistId={route.id}
+              snapshot={state.snapshot}
+              repository={repository}
+              onBack={() => go(artistOrigin)}
+              backLabel={
+                artistOrigin.kind === 'library'
+                  ? 'Volver a biblioteca'
+                  : `Volver a ${routeTitle(artistOrigin).toLocaleLowerCase('es')}`
+              }
+              onOpenAlbum={(id) => navigation.openAlbum(id)}
+              onBusyChange={setDetailBusy}
+              onCommitted={synchronizeDetail}
+              onLinked={() =>
+                navigation.completed(
+                  { kind: 'artist', id: route.id },
+                  'artist-link',
+                )
+              }
+              onImported={() =>
+                navigation.completed(
+                  { kind: 'artist', id: route.id },
+                  'discography',
+                )
+              }
+            />
+          ) : route.kind === 'library' ? (
+            <LibraryView
+              controlsOpen={controlsOpen}
+              onControlsOpen={setControlsOpen}
+              albums={state.albums}
+              snapshot={state.snapshot}
+              filters={{ ...filters, order: preferences.order }}
+              onFiltersChange={(next) => {
+                setNotice('')
+                setFilters(next)
+                if (next.order !== preferences.order)
+                  preferences.update({ order: next.order })
+              }}
+              view={preferences.view}
+              onViewChange={(view) => {
+                setNotice('')
+                preferences.update({ view })
+              }}
+              medium={medium}
+              onMediumChange={(next) => {
+                setNotice('')
+                setMedium(next)
+              }}
+              covers={preferences.covers}
+              details={preferences.details}
+              onOpen={(id) => navigation.openAlbum(id)}
+              onAdd={() => go({ kind: 'add' })}
+              onArtist={openArtist}
+            />
+          ) : route.kind === 'ratings' ? (
+            <RatingsDestination
+              albums={state.albums}
+              search={ratingSearch}
+              onSearch={setRatingSearch}
+              mode={ratingMode}
+              genre={ratingsGenre}
+              basis={ratingsBasis}
+              onGenre={(genre) => {
+                setRatingsGenre(genre)
+                setRatingsBasis('auto')
+              }}
+              onBasis={setRatingsBasis}
+              onMode={setRatingMode}
+              onOpen={(id) => navigation.openAlbum(id, 'experience')}
+            />
+          ) : route.kind === 'collection' ? (
+            <CollectionDestination
+              albums={state.albums}
+              snapshot={state.snapshot}
+              filters={collectionFilters}
+              onFilters={setCollectionFilters}
+              albumSearch={collectionAlbumSearch}
+              onAlbumSearch={setCollectionAlbumSearch}
+              registerOpen={collectionRegisterOpen}
+              onRegisterOpen={setCollectionRegisterOpen}
+              onOpen={(id) => navigation.openAlbum(id, 'collection')}
+              onWishes={() => go({ kind: 'options', section: 'wishes' })}
+              onAdd={() => go({ kind: 'add' })}
+            />
+          ) : route.kind === 'options' ? (
+            route.section === 'account' ? (
+              account ? (
+                <AccountPanel account={account} />
+              ) : (
+                <p>
+                  El acceso entre dispositivos todavía no está disponible en
+                  esta instalación. Puedes seguir usando la biblioteca y sus
+                  respaldos.
+                </p>
+              )
+            ) : route.section === 'recommendations' ? (
+              <RecommendationsPanel
+                albums={state.albums}
+                provider={recommendationProvider}
+                apiKey={recommendationKey}
+                onProviderChange={(provider) => {
+                  setRecommendationProvider(provider)
+                  setRecommendationKey('')
+                }}
+                onKeyChange={setRecommendationKey}
+                onOpenAlbum={(id) => navigation.openAlbum(id)}
+                onClose={() => go({ kind: 'library' })}
+              />
+            ) : route.section === 'backups' ? (
+              <BackupPanel
+                repository={repository}
+                snapshot={state.snapshot}
+                blocked={detailBusy}
+                onBusyChange={setDetailBusy}
+                onCommitted={synchronizeDetail}
+                onImported={() => {
+                  setFilters(defaultLibraryFilters)
+                  setNotice('Datos añadidos a tu colección.')
+                  navigation.completed({ kind: 'library' }, 'operation')
+                }}
+                onRestored={() => {
+                  setFilters(defaultLibraryFilters)
+                  setNotice('Respaldo restaurado.')
+                  navigation.completed({ kind: 'library' }, 'operation')
+                }}
+                onBack={() => go({ kind: 'library' })}
+              />
+            ) : route.section === 'removed' ? (
+              <RemovedAlbumsPanel
+                snapshot={state.snapshot}
+                library={library}
+                blocked={detailBusy}
+                onBusyChange={setDetailBusy}
+                onCommitted={synchronizeDetail}
+                onRestored={(id) => {
+                  setNotice('Álbum restaurado con sus datos personales.')
+                  navigation.completed({ kind: 'album', id }, 'operation')
+                }}
+                onOpenActive={(id) => navigation.openAlbum(id)}
+                onBack={() => go({ kind: 'library' })}
+              />
+            ) : (
+              <WishesDestination
+                albums={state.albums}
+                snapshot={state.snapshot}
+                onOpen={(id) => navigation.openAlbum(id)}
+              />
+            )
           ) : (
             <section className="library-empty">
               <h2 className="text-xl font-semibold">
-                Este álbum no está en esta biblioteca
+                No encontramos esta pantalla
               </h2>
-              <p className="mt-3 text-muted">
-                Puede estar retirado o pertenecer a otro navegador.
-              </p>
               <button
                 type="button"
                 className="action-button mt-5"
@@ -428,171 +603,8 @@ function LibraryContent({
                 Volver a biblioteca
               </button>
             </section>
-          )
-        ) : route.kind === 'artist' ? (
-          <ArtistPage
-            key={route.id}
-            artistId={route.id}
-            snapshot={state.snapshot}
-            repository={repository}
-            onBack={() => go(artistOrigin)}
-            backLabel={
-              artistOrigin.kind === 'library'
-                ? 'Volver a biblioteca'
-                : `Volver a ${routeTitle(artistOrigin).toLocaleLowerCase('es')}`
-            }
-            onOpenAlbum={(id) => navigation.openAlbum(id)}
-            onBusyChange={setDetailBusy}
-            onCommitted={synchronizeDetail}
-            onLinked={() =>
-              navigation.completed(
-                { kind: 'artist', id: route.id },
-                'artist-link',
-              )
-            }
-            onImported={() =>
-              navigation.completed(
-                { kind: 'artist', id: route.id },
-                'discography',
-              )
-            }
-          />
-        ) : route.kind === 'library' ? (
-          <LibraryView
-            controlsOpen={controlsOpen}
-            onControlsOpen={setControlsOpen}
-            albums={state.albums}
-            snapshot={state.snapshot}
-            filters={{ ...filters, order: preferences.order }}
-            onFiltersChange={(next) => {
-              setNotice('')
-              setFilters(next)
-              if (next.order !== preferences.order)
-                preferences.update({ order: next.order })
-            }}
-            view={preferences.view}
-            onViewChange={(view) => {
-              setNotice('')
-              preferences.update({ view })
-            }}
-            medium={medium}
-            onMediumChange={(next) => {
-              setNotice('')
-              setMedium(next)
-            }}
-            covers={preferences.covers}
-            details={preferences.details}
-            onOpen={(id) => navigation.openAlbum(id)}
-            onAdd={() => go({ kind: 'add' })}
-            onArtist={openArtist}
-          />
-        ) : route.kind === 'ratings' ? (
-          <RatingsDestination
-            albums={state.albums}
-            search={ratingSearch}
-            onSearch={setRatingSearch}
-            mode={ratingMode}
-            genre={ratingsGenre}
-            basis={ratingsBasis}
-            onGenre={(genre) => {
-              setRatingsGenre(genre)
-              setRatingsBasis('auto')
-            }}
-            onBasis={setRatingsBasis}
-            onMode={setRatingMode}
-            onOpen={(id) => navigation.openAlbum(id, 'experience')}
-          />
-        ) : route.kind === 'collection' ? (
-          <CollectionDestination
-            albums={state.albums}
-            snapshot={state.snapshot}
-            filters={collectionFilters}
-            onFilters={setCollectionFilters}
-            albumSearch={collectionAlbumSearch}
-            onAlbumSearch={setCollectionAlbumSearch}
-            registerOpen={collectionRegisterOpen}
-            onRegisterOpen={setCollectionRegisterOpen}
-            onOpen={(id) => navigation.openAlbum(id, 'collection')}
-            onWishes={() => go({ kind: 'options', section: 'wishes' })}
-            onAdd={() => go({ kind: 'add' })}
-          />
-        ) : route.kind === 'options' ? (
-          route.section === 'account' ? (
-            account ? (
-              <AccountPanel account={account} />
-            ) : (
-              <p>
-                El acceso entre dispositivos todavía no está disponible en esta
-                instalación. Puedes seguir usando la biblioteca y sus respaldos.
-              </p>
-            )
-          ) : route.section === 'recommendations' ? (
-            <RecommendationsPanel
-              albums={state.albums}
-              provider={recommendationProvider}
-              apiKey={recommendationKey}
-              onProviderChange={(provider) => {
-                setRecommendationProvider(provider)
-                setRecommendationKey('')
-              }}
-              onKeyChange={setRecommendationKey}
-              onOpenAlbum={(id) => navigation.openAlbum(id)}
-              onClose={() => go({ kind: 'library' })}
-            />
-          ) : route.section === 'backups' ? (
-            <BackupPanel
-              repository={repository}
-              snapshot={state.snapshot}
-              blocked={detailBusy}
-              onBusyChange={setDetailBusy}
-              onCommitted={synchronizeDetail}
-              onImported={() => {
-                setFilters(defaultLibraryFilters)
-                setNotice('Datos añadidos a tu colección.')
-                navigation.completed({ kind: 'library' }, 'operation')
-              }}
-              onRestored={() => {
-                setFilters(defaultLibraryFilters)
-                setNotice('Respaldo restaurado.')
-                navigation.completed({ kind: 'library' }, 'operation')
-              }}
-              onBack={() => go({ kind: 'library' })}
-            />
-          ) : route.section === 'removed' ? (
-            <RemovedAlbumsPanel
-              snapshot={state.snapshot}
-              library={library}
-              blocked={detailBusy}
-              onBusyChange={setDetailBusy}
-              onCommitted={synchronizeDetail}
-              onRestored={(id) => {
-                setNotice('Álbum restaurado con sus datos personales.')
-                navigation.completed({ kind: 'album', id }, 'operation')
-              }}
-              onOpenActive={(id) => navigation.openAlbum(id)}
-              onBack={() => go({ kind: 'library' })}
-            />
-          ) : (
-            <WishesDestination
-              albums={state.albums}
-              snapshot={state.snapshot}
-              onOpen={(id) => navigation.openAlbum(id)}
-            />
-          )
-        ) : (
-          <section className="library-empty">
-            <h2 className="text-xl font-semibold">
-              No encontramos esta pantalla
-            </h2>
-            <button
-              type="button"
-              className="action-button mt-5"
-              onClick={() => go({ kind: 'library' })}
-            >
-              Volver a biblioteca
-            </button>
-          </section>
-        )}
+          )}
+        </LocalCovers>
       </AppShell>
     </div>
   )

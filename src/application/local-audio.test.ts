@@ -273,7 +273,7 @@ test('DB9 upgrades preserve reference rating/checkpoint and create empty local-o
   previous.close()
   const current = connect('upgrade-audio')
   expect(await current.repository.readSnapshot()).toEqual(snapshot)
-  expect(current.database.backendDB().version).toBe(130)
+  expect(current.database.backendDB().version).toBe(140)
   expect(await current.database.albumGenreRatings.count()).toBe(0)
   expect(await current.audio.list()).toEqual([])
   expect((await current.repository.readSyncFrame()).checkpoint.base).toEqual(

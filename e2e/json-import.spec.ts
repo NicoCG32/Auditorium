@@ -103,11 +103,24 @@ test('incorpora catálogo, cancela sin escribir y conserva experiencia en recarg
 }) => {
   const errors: string[] = [],
     external: string[] = []
+  const coverSearches: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.route('**/*', async (route) => {
-    if (new URL(route.request().url()).hostname === '127.0.0.1')
-      await route.continue()
-    else {
+    const requestUrl = new URL(route.request().url())
+    if (requestUrl.hostname === '127.0.0.1') await route.continue()
+    else if (
+      requestUrl.origin === 'https://catalog-test.example' &&
+      requestUrl.pathname === '/api/musicbrainz/artist' &&
+      route.request().method() === 'GET' &&
+      [...requestUrl.searchParams.keys()].join(',') === 'query'
+    ) {
+      coverSearches.push(requestUrl.searchParams.get('query')!)
+      await route.fulfill({
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ artists: [] }),
+      })
+    } else {
       external.push(route.request().url())
       await route.abort()
     }
@@ -126,6 +139,9 @@ test('incorpora catálogo, cancela sin escribir y conserva experiencia en recarg
   await expect(
     page.getByRole('button', { name: 'Nuevo Horizonte', exact: true }),
   ).toBeVisible()
+  await expect
+    .poll(() => coverSearches)
+    .toEqual([before.data.catalog.artists[0]!.name])
   await page.reload()
   await backups(page)
   const after = await snapshot(page)

@@ -11,6 +11,17 @@ import {
   type CompleteAudioState,
 } from '../../domain/audio'
 import { planAudioChanges, writeAudioChanges } from '../db/audio-store'
+import {
+  coverAttachmentSchema,
+  coverSourceSchema,
+  checkCoverBudget,
+  CoverError,
+  coverTarget,
+  validateCoverAttachments,
+  verifyCoverFile,
+  type CoverFile,
+  type CoverLocalRepository,
+} from '../../domain/covers'
 import { catalogSchema } from '../../domain/catalog/catalog'
 import { localIdentitySchema, type LocalIdentity } from '../../domain/identity'
 import { createLibrarySchema } from '../../domain/library/library'
@@ -49,7 +60,11 @@ export interface IndexedDbOptions {
 }
 
 export class IndexedDbRepository
-  implements BackupLocalRepository, SyncLocalRepository, AudioLocalRepository
+  implements
+    BackupLocalRepository,
+    SyncLocalRepository,
+    AudioLocalRepository,
+    CoverLocalRepository
 {
   private readonly database: AuditoriumDatabase
   private readonly createId: () => string
@@ -85,6 +100,7 @@ export class IndexedDbRepository
           )
         : this.opening
     }
+    if (this.database.isOpen()) return Promise.resolve()
     this.closingRequested = false
     this.opening = new Promise((resolve, reject) => {
       const blocked = () => {
@@ -353,10 +369,22 @@ export class IndexedDbRepository
     expectedIdentityInput: LocalIdentity,
     files: AudioFile[] = [],
     signal?: AbortSignal,
+    covers: CoverFile[] = [],
   ): Promise<LocalSnapshot> {
     // Validar antes de abrir o inicializar el destino.
     const next = localSnapshotSchema.parse(snapshotInput)
     const expected = localIdentitySchema.parse(expectedIdentityInput)
+    if (covers.some((file) => !(file.bytes instanceof Uint8Array)))
+      throw new CoverError('El archivo de portada no contiene bytes válidos.')
+    const preparedCovers = covers.map((file) => ({
+      attachment: coverAttachmentSchema.parse(file.attachment),
+      bytes: new Uint8Array(file.bytes),
+    }))
+    validateCoverAttachments(
+      next,
+      preparedCovers.map((file) => file.attachment),
+    )
+    for (const file of preparedCovers) await verifyCoverFile(file, signal)
     validateAudioAttachments(
       next,
       files.map((file) => file.attachment),
@@ -397,7 +425,9 @@ export class IndexedDbRepository
             !isEmptySnapshot(before) ||
             (await this.database.metadata.count()) !== 1 ||
             (await this.database.audioAttachments.count()) !== 0 ||
-            (await this.database.audioFiles.count()) !== 0
+            (await this.database.audioFiles.count()) !== 0 ||
+            (await this.database.coverAttachments.count()) !== 0 ||
+            (await this.database.coverFiles.count()) !== 0
           )
             throw new BackupError(
               'not_empty',
@@ -416,6 +446,18 @@ export class IndexedDbRepository
             ...next.identity,
           })
           await writeSnapshotChanges(this.database, before, next)
+          if (preparedCovers.length) {
+            await this.database.coverAttachments.bulkAdd(
+              preparedCovers.map((file) => file.attachment),
+            )
+            await this.database.coverFiles.bulkAdd(
+              preparedCovers.map(({ attachment, bytes }) => ({
+                scope: attachment.scope,
+                albumId: attachment.albumId,
+                bytes,
+              })),
+            )
+          }
           if (preparedFiles.length) {
             await this.database.audioFiles.bulkAdd(
               preparedFiles.map(({ attachment, bytes }) => ({
@@ -503,7 +545,30 @@ export class IndexedDbRepository
           )
         return { attachment, bytes: row.bytes }
       })
-      return { snapshot, files }
+      const covers = []
+      const attachmentsCover = validateCoverAttachments(
+        snapshot,
+        await this.database.coverAttachments.toArray(),
+      )
+      const coverRows = await this.database.coverFiles.toArray()
+      const coverIndex = new Map(
+        coverRows.map((row) => [JSON.stringify([row.scope, row.albumId]), row]),
+      )
+      if (coverRows.length !== attachmentsCover.length)
+        throw new Error(
+          'Hay portadas locales incompletas. Vuelve a completar sus portadas antes de respaldar.',
+        )
+      for (const attachment of attachmentsCover) {
+        const row = coverIndex.get(
+          JSON.stringify([attachment.scope, attachment.albumId]),
+        )
+        if (!row)
+          throw new Error(
+            'Falta una portada local. Vuelve a completar sus portadas antes de respaldar.',
+          )
+        covers.push({ attachment, bytes: row.bytes })
+      }
+      return { snapshot, files, ...(covers.length ? { covers } : {}) }
     })
   }
   async restoreCompleteAudio(
@@ -511,7 +576,132 @@ export class IndexedDbRepository
     expected: LocalIdentity,
     signal?: AbortSignal,
   ) {
-    return this.restoreEmpty(state.snapshot, expected, state.files, signal)
+    return this.restoreEmpty(
+      state.snapshot,
+      expected,
+      state.files,
+      signal,
+      state.covers,
+    )
+  }
+  async readCoverAttachments() {
+    await this.open()
+    return this.database.transaction('r', this.database.tables, async () => {
+      const files = new Set(
+        (await this.database.coverFiles.toCollection().primaryKeys()).map(
+          (key) => JSON.stringify(key),
+        ),
+      )
+      return validateCoverAttachments(
+        await this.readInsideTransaction(),
+        await this.database.coverAttachments.toArray(),
+      ).filter((row) => files.has(JSON.stringify([row.scope, row.albumId])))
+    })
+  }
+  async readCoverFile(sourceUrl: string, identity: LocalIdentity) {
+    await this.open()
+    const file = await this.database.transaction(
+      'r',
+      this.database.tables,
+      async () => {
+        const record = identityRecordSchema.parse(
+          await this.database.metadata.get(IDENTITY_KEY),
+        )
+        if (
+          record.userId !== identity.userId ||
+          record.createdAt !== identity.createdAt
+        )
+          return
+        const attachment = await this.database.coverAttachments
+          .where('[scope+sourceUrl]')
+          .equals([audioScope(identity), sourceUrl])
+          .first()
+        if (!attachment) return
+        const album = await this.database.albums.get(attachment.albumId)
+        if (
+          !album ||
+          album.coverImage ||
+          album.coverUrl !== attachment.sourceUrl
+        )
+          return
+        const row = await this.database.coverFiles.get([
+          attachment.scope,
+          attachment.albumId,
+        ])
+        if (!row) return
+        return { attachment, bytes: row.bytes }
+      },
+    )
+    if (file) await verifyCoverFile(file)
+    return file
+  }
+  async saveCover(input: CoverFile, expected: string, signal?: AbortSignal) {
+    const file = {
+      attachment: coverAttachmentSchema.parse(input.attachment),
+      bytes: new Uint8Array(input.bytes),
+    }
+    await verifyCoverFile(file, signal)
+    await this.open()
+    try {
+      const saved = await this.database.transaction(
+        'rw',
+        this.database.tables,
+        async () => {
+          signal?.throwIfAborted()
+          const record = identityRecordSchema.parse(
+            await this.database.metadata.get(IDENTITY_KEY),
+          )
+          const identity = {
+            userId: record.userId,
+            createdAt: record.createdAt,
+          }
+          const album = await this.database.albums.get(file.attachment.albumId)
+          const credits = await this.database.albumArtists
+            .where('albumId')
+            .equals(file.attachment.albumId)
+            .toArray()
+          const artists = (
+            await this.database.artists.bulkGet(
+              credits.map((row) => row.artistId),
+            )
+          ).filter((row) => row !== undefined)
+          if (
+            !album ||
+            album.coverImage ||
+            file.attachment.scope !== audioScope(identity) ||
+            (album.coverUrl &&
+              !coverSourceSchema.safeParse(album.coverUrl).success) ||
+            coverTarget(
+              {
+                identity,
+                catalog: { albums: [album], artists, albumArtists: credits },
+              },
+              album.id,
+            ) !== expected
+          )
+            return false
+          album.coverUrl = file.attachment.sourceUrl
+          const attachments = (
+            await this.database.coverAttachments.toArray()
+          ).filter((row) => row.albumId !== album.id)
+          checkCoverBudget([...attachments, file.attachment])
+          await this.database.albums.put(album)
+          await this.database.coverAttachments.put(file.attachment)
+          await this.database.coverFiles.put({
+            scope: file.attachment.scope,
+            albumId: album.id,
+            bytes: file.bytes,
+          })
+          signal?.throwIfAborted()
+          return true
+        },
+      )
+      if (saved) this.notifyChanged()
+      return saved
+    } catch (error) {
+      if (error instanceof CoverError) throw error
+      throw asLocalStorageError(error)
+    }
   }
   async clearLocalAudio(expected: LocalIdentity, signal?: AbortSignal) {
     signal?.throwIfAborted()

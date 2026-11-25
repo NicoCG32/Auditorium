@@ -87,8 +87,12 @@ test.each([
           checkpoint,
         })
         const after = await inspectNativeStorage({ name, factory })
-        expect(after.version).toBe(130)
-        expect(after.rows).toEqual(before.rows)
+        expect(after.version).toBe(140)
+        expect(after.rows).toEqual({
+          ...before.rows,
+          coverAttachments: [],
+          coverFiles: [],
+        })
         expect(
           after.stores.find((row) => row.name === 'releases')?.indexes,
         ).toContainEqual({

@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import type { CoverFile } from './covers'
 import type { LocalIdentity } from './identity'
 import type {
   BackupLocalRepository,
@@ -99,6 +100,7 @@ export interface AudioFile {
 export interface CompleteAudioState {
   snapshot: LocalSnapshot
   files: AudioFile[]
+  covers?: CoverFile[]
 }
 export interface AudioLocalRepository extends BackupLocalRepository {
   readAudioAttachments(): Promise<AudioAttachment[]>

@@ -1,5 +1,7 @@
 # Instalación, uso sin conexión y almacenamiento
 
+Las [portadas descargadas](PORTADAS.md) también residen en IndexedDB, separadas de la precaché. Después de descargarlas se muestran sin red y se incluyen en el respaldo completo ZIP2. JSON9 conserva el origen; las imágenes añadidas a mano mantienen su formato anterior.
+
 El [audio persistente](AUDIO_LOCAL.md) reside en IndexedDB, fuera de Cache Storage y de la precaché. La URL Blob se reconstruye al cargarlo; no se almacena ni exporta. El navegador puede limpiar los datos del sitio: conserva los originales y un respaldo ZIP completo. El JSON y la cuenta no recuperan audio.
 
 La compilación de producción incluye un manifest y un service worker generado con Vite PWA y Workbox. No necesita cuentas, claves ni servicios externos para guardar datos.
@@ -28,7 +30,7 @@ Una nueva versión descarga sus recursos y espera mientras la versión anterior 
 
 La aplicación no envía `SKIP_WAITING` ni recarga automáticamente ventanas abiertas. Esto protege los borradores y evita mezclar recursos de versiones distintas entre pestañas. La activación elimina únicamente entradas obsoletas de su precaché; no borra otras cachés del sitio, IndexedDB ni la identidad. Un fallo al descargar la actualización conserva la versión activa. **«Comprobar actualización»** permite comprobar de nuevo con conexión.
 
-El service worker no administra datos musicales ni migraciones de la base. Los contratos vigentes utilizan DB13, JSON9 y ZIP1; sus cambios de datos son independientes del ciclo del service worker. La clave de recomendaciones sólo vive en memoria, no se entrega al controlador offline ni se conserva al recargar. La [validación adicional de migraciones y recuperación](MIGRACIONES_RECUPERACION.md) corresponde a MVP-04.
+El service worker no administra datos musicales ni migraciones de la base. Los contratos vigentes utilizan DB14, JSON9 y ZIP1/ZIP2; sus cambios de datos son independientes del ciclo del service worker. La clave de recomendaciones sólo vive en memoria, no se entrega al controlador offline ni se conserva al recargar. La [validación adicional de migraciones y recuperación](MIGRACIONES_RECUPERACION.md) corresponde a MVP-04.
 
 ## Protección y límites del almacenamiento
 

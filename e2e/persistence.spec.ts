@@ -17,6 +17,8 @@ import {
 } from '../src/test/historical-storage.fixture'
 import { migrateLegacyAlbum } from '../src/domain/catalog/legacy-classification'
 import { makeBackup } from '../src/domain/backup.fixture'
+import { fixtureId } from '../src/domain/catalog/catalog.fixture'
+import { readStoredZip } from '../src/infrastructure/browser/stored-zip'
 import { parseBackupText, serializeBackup } from '../src/domain/backup'
 import {
   audioBackup,
@@ -38,6 +40,90 @@ async function audioProfile() {
     throw new Error('Invalid temporary audio profile')
   return directory
 }
+
+test('portadas descargadas sobreviven al reinicio real offline y entran en el respaldo completo', async () => {
+  const profile = await audioProfile()
+  let context = await chromium.launchPersistentContext(profile, {
+    headless: true,
+    baseURL: origin,
+    serviceWorkers: 'allow',
+  })
+  try {
+    const page = context.pages()[0] ?? (await context.newPage())
+    await page.route('https://coverartarchive.org/**', (route) =>
+      route.fulfill({
+        contentType: 'image/png',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR4nGOQs6n4DwADIAHS+lr7fQAAAABJRU5ErkJggg==',
+          'base64',
+        ),
+      }),
+    )
+    await page.goto('/')
+    const fixture = makeBackup()
+    fixture.data.catalog.albums[0]!.musicBrainz = {
+      id: fixtureId(99000),
+      retrievedAt: fixture.exportedAt,
+    }
+    await openBackups(page)
+    await page.locator('#backup-file').setInputFiles({
+      name: 'coleccion-portadas.json',
+      mimeType: 'application/json',
+      buffer: Buffer.from(serializeBackup(fixture)),
+    })
+    await page
+      .getByRole('button', { name: 'Confirmar restauración', exact: true })
+      .click()
+    await page
+      .getByRole('button', { name: 'Mi colección', exact: true })
+      .click()
+    await page.getByRole('button', { name: 'Completar portadas' }).click()
+    await expect(
+      page.getByRole('img', { name: 'Portada de Eclipse' }).first(),
+    ).toHaveAttribute('src', /^blob:/u)
+    await waitForOfflineReady(page)
+    await page
+      .getByRole('button', { name: 'Mi colección', exact: true })
+      .click()
+    const url = page.url()
+    await context.close()
+    context = await chromium.launchPersistentContext(profile, {
+      headless: true,
+      baseURL: origin,
+      serviceWorkers: 'allow',
+      offline: true,
+    })
+    const reopened = context.pages()[0] ?? (await context.newPage())
+    await reopened.goto(url)
+    const image = reopened
+      .getByRole('img', { name: 'Portada de Eclipse' })
+      .first()
+    await expect(image).toHaveAttribute('src', /^blob:/u)
+    await expect
+      .poll(() =>
+        image.evaluate((element: HTMLImageElement) => element.naturalWidth),
+      )
+      .toBe(1)
+    await openBackups(reopened)
+    const downloading = reopened.waitForEvent('download')
+    await reopened
+      .getByRole('button', {
+        name: 'Descargar respaldo completo (ZIP)',
+        exact: true,
+      })
+      .click()
+    const path = await (await downloading).path()
+    if (!path) throw new Error('Falta el respaldo offline')
+    const entries = await readStoredZip(await readFile(path))
+    expect(
+      entries.has(`covers/${fixture.data.catalog.albums[0]!.id}.jpg`),
+    ).toBe(true)
+  } finally {
+    await context.close()
+    await rm(profile, { recursive: true, force: true })
+  }
+})
 test('audio sobrevive a cerrar el proceso del navegador y volver offline con los mismos bytes', async () => {
   const profile = await audioProfile()
   let context = await chromium.launchPersistentContext(profile, {
@@ -238,8 +324,8 @@ for (const version of [1, 2] as const) {
       await openLibrary(page)
       await waitForOfflineReady(page)
       const migrated = await audit(page)
-      expect(migrated.version).toBe(130)
-      expect(migrated.stores).toHaveLength(17)
+      expect(migrated.version).toBe(140)
+      expect(migrated.stores).toHaveLength(19)
       expect(migrated.rows['albumGenreRatings']).toEqual([])
       for (const [name, rows] of Object.entries(before.rows))
         expect(migrated.rows[name]).toEqual(
@@ -307,7 +393,22 @@ for (const version of [1, 2] as const) {
                         ...store.indexes,
                       ],
                     }
-                  : store,
+                  : store.name === 'albumArtists'
+                    ? {
+                        ...store,
+                        indexes: [
+                          ...store.indexes,
+                          {
+                            name: 'albumId',
+                            keyPath: 'albumId',
+                            unique: false,
+                            multiEntry: false,
+                          },
+                        ].sort((a, b) =>
+                          a.name < b.name ? -1 : a.name > b.name ? 1 : 0,
+                        ),
+                      }
+                    : store,
         )
       expect(migrated.rows['purchaseWishes']).toEqual([])
       expect(migrated.rows['ownedItems']).toHaveLength(version === 2 ? 1 : 0)
@@ -404,7 +505,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
           version === undefined
             ? originalOpen(name)
             : originalOpen(name, version)
-        if (name === 'auditorium' && version === 130)
+        if (name === 'auditorium' && version === 140)
           request.addEventListener('upgradeneeded', () => {
             const database = request.result
             const create = database.createObjectStore.bind(database)
@@ -432,7 +533,7 @@ for (const fault of ['QuotaExceededError', 'AbortError'] as const) {
       page.getByRole('button', { name: 'Eclipse', exact: true }),
     ).toBeVisible()
     const after = await audit(page)
-    expect(after.version).toBe(130)
+    expect(after.version).toBe(140)
     expect(after.rows['albumGenreRatings']).toEqual([])
     for (const [name, rows] of Object.entries(before.rows))
       expect(after.rows[name]).toEqual(
@@ -534,7 +635,7 @@ for (const damaged of ['index', 'future', 'identity', 'rating'] as const) {
       ]
     await page.evaluate(seedNativeStorage, {
       name: 'auditorium',
-      version: damaged === 'index' ? 20 : damaged === 'future' ? 140 : 50,
+      version: damaged === 'index' ? 20 : damaged === 'future' ? 150 : 50,
       stores,
       rows,
     })
@@ -676,6 +777,8 @@ test('cuota al restaurar revierte también identidad y conserva confirmación pa
     albumGenreRatings: [],
     audioAttachments: [],
     audioFiles: [],
+    coverAttachments: [],
+    coverFiles: [],
   })
   expect(after.rows['purchaseWishes']).toHaveLength(1)
 })
