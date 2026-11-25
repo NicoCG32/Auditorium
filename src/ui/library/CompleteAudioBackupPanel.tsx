@@ -130,7 +130,7 @@ export function CompleteAudioBackupPanel({
   }
   async function download() {
     if (lock.current || disabled) return
-    const controller = start('Preparando biblioteca y audio para el ZIP…')
+    const controller = start('Preparando el respaldo completo…')
     try {
       const result = await service.export(controller.signal)
       controller.signal.throwIfAborted()
@@ -146,7 +146,7 @@ export function CompleteAudioBackupPanel({
   async function select(file: File | undefined) {
     if (!file || lock.current || disabled || !isEmptySnapshot(snapshot)) return
     setPrepared(undefined)
-    const controller = start('Validando biblioteca, manifiesto y audio…')
+    const controller = start('Revisando el respaldo completo…')
     try {
       const backup = await service.readFile(file, controller.signal)
       controller.signal.throwIfAborted()
@@ -179,9 +179,7 @@ export function CompleteAudioBackupPanel({
   }
   async function restore() {
     if (!prepared || lock.current || disabled) return
-    const controller = start(
-      'Restaurando biblioteca y audio en una transacción…',
-    )
+    const controller = start('Restaurando tu colección…')
     try {
       await service.restore(
         prepared.backup,
@@ -278,10 +276,19 @@ export function CompleteAudioBackupPanel({
         >
           <p className="font-semibold wrap-anywhere">{prepared.name}</p>
           <p className="mt-3 text-sm">
-            {prepared.backup.document.data.library.userAlbums.length} entradas
-            de biblioteca y {prepared.backup.state.files.length} archivos de
-            audio y {prepared.backup.state.covers?.length ?? 0} portadas
-            descargadas. Se adoptará la identidad del archivo.
+            {prepared.backup.document.data.library.userAlbums.length}{' '}
+            {prepared.backup.document.data.library.userAlbums.length === 1
+              ? 'entrada de biblioteca'
+              : 'entradas de biblioteca'}
+            , {prepared.backup.state.files.length}{' '}
+            {prepared.backup.state.files.length === 1
+              ? 'archivo de audio'
+              : 'archivos de audio'}{' '}
+            y {prepared.backup.state.covers?.length ?? 0}{' '}
+            {prepared.backup.state.covers?.length === 1
+              ? 'portada descargada'
+              : 'portadas descargadas'}
+            . Se adoptará la identidad del archivo.
           </p>
           <div className="form-actions mt-3">
             <button
@@ -314,7 +321,7 @@ export function CompleteAudioBackupPanel({
           className="action-button mt-4"
           onClick={() => active.current?.abort()}
         >
-          Cancelar operación de audio
+          Cancelar operación
         </button>
       ) : null}
       {message ? (

@@ -79,7 +79,7 @@ test('persistencia concedida mantiene consejo de respaldo y retira solicitud', a
   ).not.toBeInTheDocument()
   expect(
     screen.getByText(/Los datos permanecen en este navegador/),
-  ).toHaveTextContent('Descarga respaldos JSON')
+  ).toHaveTextContent('Guarda periódicamente un respaldo completo')
   context.controller.stop()
 })
 test('navegador sin SW informa limitación y mantiene instrucciones de biblioteca', () => {
@@ -89,7 +89,7 @@ test('navegador sin SW informa limitación y mantiene instrucciones de bibliotec
     screen.queryByRole('button', { name: 'Comprobar actualización' }),
   ).not.toBeInTheDocument()
   expect(screen.getByText(/Después de prepararse/)).toHaveTextContent(
-    'Las portadas y enlaces externos necesitan red',
+    'Las portadas descargadas también se conservan sin red',
   )
   context.controller.stop()
 })

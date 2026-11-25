@@ -12,7 +12,7 @@ Abre la aplicación con conexión mediante HTTPS, o en `localhost`/`127.0.0.1` p
 
 **Ajustes → Aplicación** reúne las instrucciones de instalación, conexión y almacenamiento. Las actualizaciones listas, desconexión y fallos importantes se avisan también junto al contenido, sin abrir los ajustes. Ofrece **«Instalar Auditórium»** cuando el navegador presenta esa posibilidad. La solicitud requiere una acción explícita. Cancelarla conserva el uso web. Aceptar el diálogo no se anuncia como instalación completada hasta recibir el evento del navegador. También se puede usar su menú de instalación; en iPhone/iPad, Compartir → Añadir a pantalla de inicio, si está disponible.
 
-El soporte depende del navegador y sistema. Una aplicación instalada puede usar un almacenamiento distinto al de una pestaña, especialmente en WebKit. Si aparece vacía, descarga primero un [respaldo JSON](RESPALDOS_JSON.md) de la biblioteca original y restáuralo en el destino vacío. No hay sincronización automática entre modos de apertura, navegadores o dispositivos. Véase la [explicación de WebKit sobre datos de aplicaciones instaladas](https://webkit.org/blog/14787/webkit-features-in-safari-17-2/).
+El soporte depende del navegador y sistema. Una aplicación instalada puede usar un almacenamiento distinto al de una pestaña, especialmente en WebKit. Si aparece vacía, descarga primero un [respaldo completo](PORTADAS.md) de la biblioteca original y restáuralo en el destino vacío. No hay sincronización automática entre modos de apertura, navegadores o dispositivos. Véase la [explicación de WebKit sobre datos de aplicaciones instaladas](https://webkit.org/blog/14787/webkit-features-in-safari-17-2/).
 
 ## Qué queda disponible sin red
 
