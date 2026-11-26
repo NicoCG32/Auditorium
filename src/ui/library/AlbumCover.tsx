@@ -78,7 +78,7 @@ function CoverImage({
           height={480}
           referrerPolicy="no-referrer"
           decoding="async"
-          loading="lazy"
+          loading={compact ? 'lazy' : 'eager'}
           onError={() => setFailed(true)}
         />
       ) : (
