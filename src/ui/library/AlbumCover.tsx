@@ -1,4 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocalCovers } from './cover-context'
+import { coverSourceSchema } from '../../domain/covers'
 
 interface AlbumCoverProps {
   title: string
@@ -13,7 +15,34 @@ export function AlbumCover({
   image,
   compact = false,
 }: AlbumCoverProps) {
-  const source = image || url
+  const local = useLocalCovers()
+  const [cached, setCached] = useState<{
+    url: string
+    source: string | undefined
+    revision: number
+  }>()
+  const load = coverSourceSchema.safeParse(url).success
+    ? local?.load
+    : undefined
+  const revision = local?.revision ?? 0
+  useEffect(() => {
+    if (image || !url || !load) return
+    let active = true
+    void load(url).then((source) => {
+      if (active) setCached({ url, source, revision })
+    })
+    return () => {
+      active = false
+    }
+  }, [url, image, load, revision])
+  const waiting =
+    !image &&
+    url &&
+    load &&
+    (cached?.url !== url || cached?.revision !== revision)
+  const source =
+    image ||
+    (waiting ? undefined : cached?.url === url ? cached?.source || url : url)
   return (
     <CoverImage
       key={source ?? ''}
@@ -49,6 +78,7 @@ function CoverImage({
           height={480}
           referrerPolicy="no-referrer"
           decoding="async"
+          loading={compact ? 'lazy' : 'eager'}
           onError={() => setFailed(true)}
         />
       ) : (

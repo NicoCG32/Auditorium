@@ -9,6 +9,7 @@ import type { LocalIdentity } from '../../domain/identity'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { downloadCompleteBackup } from '../../infrastructure/browser/backup-download'
 import { LocalStorageError } from '../../infrastructure/db/errors'
+import { hasCoverRepository } from '../../domain/covers'
 
 function failureMessage(error: unknown) {
   if (error instanceof AudioError || error instanceof BackupError)
@@ -46,7 +47,11 @@ export function CompleteAudioBackupPanel({
     [message, setMessage] = useState(''),
     [failure, setFailure] = useState(''),
     [confirmDelete, setConfirmDelete] = useState(false)
-  const [summary, setSummary] = useState<{ count: number; bytes: number }>(),
+  const [summary, setSummary] = useState<{
+      count: number
+      bytes: number
+      covers: number
+    }>(),
     [summaryError, setSummaryError] = useState('')
   const active = useRef<AbortController | undefined>(undefined),
     lock = useRef(false),
@@ -64,13 +69,18 @@ export function CompleteAudioBackupPanel({
   )
   useEffect(() => {
     let current = true
-    void repository
-      .readAudioAttachments()
-      .then((rows) => {
+    void Promise.all([
+      repository.readAudioAttachments(),
+      hasCoverRepository(repository)
+        ? repository.readCoverAttachments()
+        : Promise.resolve([]),
+    ])
+      .then(([rows, covers]) => {
         if (current) {
           setSummary({
             count: rows.length,
             bytes: rows.reduce((total, row) => total + row.size, 0),
+            covers: covers.length,
           })
           setSummaryError('')
         }
@@ -120,7 +130,7 @@ export function CompleteAudioBackupPanel({
   }
   async function download() {
     if (lock.current || disabled) return
-    const controller = start('Preparando biblioteca y audio para el ZIP…')
+    const controller = start('Preparando el respaldo completo…')
     try {
       const result = await service.export(controller.signal)
       controller.signal.throwIfAborted()
@@ -136,7 +146,7 @@ export function CompleteAudioBackupPanel({
   async function select(file: File | undefined) {
     if (!file || lock.current || disabled || !isEmptySnapshot(snapshot)) return
     setPrepared(undefined)
-    const controller = start('Validando biblioteca, manifiesto y audio…')
+    const controller = start('Revisando el respaldo completo…')
     try {
       const backup = await service.readFile(file, controller.signal)
       controller.signal.throwIfAborted()
@@ -169,9 +179,7 @@ export function CompleteAudioBackupPanel({
   }
   async function restore() {
     if (!prepared || lock.current || disabled) return
-    const controller = start(
-      'Restaurando biblioteca y audio en una transacción…',
-    )
+    const controller = start('Restaurando tu colección…')
     try {
       await service.restore(
         prepared.backup,
@@ -205,7 +213,11 @@ export function CompleteAudioBackupPanel({
     pendingRestore.current = false
     setPending(true)
     setConfirmDelete(false)
-    setSummary({ count: 0, bytes: 0 })
+    setSummary((previous) => ({
+      count: 0,
+      bytes: 0,
+      covers: previous?.covers ?? 0,
+    }))
     setMessage(
       'Copias de audio eliminadas de Auditorium. Álbumes, experiencias y originales del equipo se conservan.',
     )
@@ -215,17 +227,20 @@ export function CompleteAudioBackupPanel({
   return (
     <section className="owned-panel" aria-labelledby="complete-audio-title">
       <h3 id="complete-audio-title" className="text-xl font-semibold">
-        Respaldo completo con audio
+        Respaldo completo
       </h3>
       <p className="mt-3 text-sm text-muted">
-        Un ZIP de hasta 160 MiB incluye la biblioteca y todos sus archivos de
-        audio locales. Se procesa en este equipo y no está cifrado. Guarda la
-        copia como un archivo personal. La cuenta no sincroniza audio.
+        Guarda tus datos, las portadas descargadas y el audio de este
+        dispositivo en un solo archivo. Usa esta copia para trasladar tu
+        colección completa.
       </p>
       {summary ? (
         <p className="mt-3 text-sm">
-          Audio local: {summary.count} archivos ·{' '}
-          {(summary.bytes / 1024 / 1024).toFixed(2)} MiB de 128 MiB.
+          Incluye {summary.covers}{' '}
+          {summary.covers === 1 ? 'portada descargada' : 'portadas descargadas'}{' '}
+          y {summary.count}{' '}
+          {summary.count === 1 ? 'archivo de audio' : 'archivos de audio'} de
+          este dispositivo.
         </p>
       ) : null}
       {summaryError ? <p className="mt-3 text-sm">{summaryError}</p> : null}
@@ -235,13 +250,11 @@ export function CompleteAudioBackupPanel({
         disabled={disabled || Boolean(prepared)}
         onClick={() => void download()}
       >
-        Descargar respaldo completo con audio (ZIP)
+        Descargar respaldo completo (ZIP)
       </button>
       <p className="mt-5 text-sm" id="complete-audio-help">
-        Restaura sólo en un destino completamente vacío, incluidos sus adjuntos.
-        Se validan identidad, asociaciones, límites e integridad antes de
-        guardar. La reproducción dependerá del navegador de destino; los bytes
-        válidos se conservan.
+        Restaura en una colección vacía. Revisaremos el archivo antes de
+        guardar.
       </p>
       <label className="field-label mt-3" htmlFor="complete-audio-file">
         Seleccionar respaldo completo ZIP
@@ -263,9 +276,19 @@ export function CompleteAudioBackupPanel({
         >
           <p className="font-semibold wrap-anywhere">{prepared.name}</p>
           <p className="mt-3 text-sm">
-            {prepared.backup.document.data.library.userAlbums.length} entradas
-            de biblioteca y {prepared.backup.state.files.length} archivos de
-            audio. Se adoptará la identidad del archivo.
+            {prepared.backup.document.data.library.userAlbums.length}{' '}
+            {prepared.backup.document.data.library.userAlbums.length === 1
+              ? 'entrada de biblioteca'
+              : 'entradas de biblioteca'}
+            , {prepared.backup.state.files.length}{' '}
+            {prepared.backup.state.files.length === 1
+              ? 'archivo de audio'
+              : 'archivos de audio'}{' '}
+            y {prepared.backup.state.covers?.length ?? 0}{' '}
+            {prepared.backup.state.covers?.length === 1
+              ? 'portada descargada'
+              : 'portadas descargadas'}
+            . Se adoptará la identidad del archivo.
           </p>
           <div className="form-actions mt-3">
             <button
@@ -298,7 +321,7 @@ export function CompleteAudioBackupPanel({
           className="action-button mt-4"
           onClick={() => active.current?.abort()}
         >
-          Cancelar operación de audio
+          Cancelar operación
         </button>
       ) : null}
       {message ? (
@@ -329,6 +352,12 @@ export function CompleteAudioBackupPanel({
       ) : null}
       <details className="optional-fields mt-5">
         <summary>Administrar copias locales de audio</summary>
+        {summary ? (
+          <p className="mt-3 text-sm">
+            Audio local: {summary.count} archivos ·{' '}
+            {(summary.bytes / 1024 / 1024).toFixed(2)} MiB de 128 MiB.
+          </p>
+        ) : null}
         <p className="mt-3 text-sm">
           Esta acción elimina los adjuntos de esta biblioteca en el dispositivo.
           Guarda un ZIP completo primero si quieres recuperarlos; sus originales

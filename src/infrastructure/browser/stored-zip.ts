@@ -1,9 +1,10 @@
+import { AudioError, MAX_AUDIO_FILE_BYTES } from '../../domain/audio'
 import {
-  AudioError,
-  MAX_AUDIO_ARCHIVE_BYTES,
-  MAX_AUDIO_FILE_BYTES,
-  MAX_AUDIO_MANIFEST_BYTES,
-} from '../../domain/audio'
+  MAX_COMPLETE_BACKUP_BYTES,
+  MAX_COMPLETE_MANIFEST_BYTES,
+  MAX_LOCAL_COVERS,
+  MAX_OPTIMIZED_COVER_BYTES,
+} from '../../domain/covers'
 import { MAX_BACKUP_BYTES } from '../../domain/backup'
 
 // ZIP Store profile, APPNOTE 6.3.10 sections 4.3.7, 4.3.12 and 4.3.16.
@@ -27,8 +28,10 @@ function invalid(): never {
 }
 function limit(name: string) {
   if (name === 'library.json') return MAX_BACKUP_BYTES
-  if (name === 'audio-manifest.json') return MAX_AUDIO_MANIFEST_BYTES
+  if (name === 'audio-manifest.json') return MAX_COMPLETE_MANIFEST_BYTES
   if (/^audio\/[a-f0-9-]{36}\.bin$/u.test(name)) return MAX_AUDIO_FILE_BYTES
+  if (/^covers\/[a-f0-9-]{36}\.jpg$/u.test(name))
+    return MAX_OPTIMIZED_COVER_BYTES
   return invalid()
 }
 async function yieldToCancel(signal?: AbortSignal) {
@@ -45,7 +48,7 @@ export async function createStoredZip(
 ) {
   if (
     entries.length < 2 ||
-    entries.length > 130 ||
+    entries.length > MAX_LOCAL_COVERS + 130 ||
     new Set(entries.map((entry) => entry.name)).size !== entries.length
   )
     invalid()
@@ -56,10 +59,10 @@ export async function createStoredZip(
     size += 30 + 46 + name.byteLength * 2 + entry.data.byteLength
     return { ...entry, name }
   })
-  if (size > MAX_AUDIO_ARCHIVE_BYTES)
+  if (size > MAX_COMPLETE_BACKUP_BYTES)
     throw new AudioError(
       'limit',
-      'El respaldo completo supera el máximo de 160 MiB.',
+      'El respaldo completo supera el máximo de 288 MiB.',
     )
   const output = new Uint8Array(size),
     view = new DataView(output.buffer)
@@ -120,7 +123,7 @@ export async function readStoredZip(
   bytes: Uint8Array,
   signal?: AbortSignal,
 ): Promise<Map<string, Uint8Array>> {
-  if (bytes.byteLength > MAX_AUDIO_ARCHIVE_BYTES || bytes.byteLength < 22)
+  if (bytes.byteLength > MAX_COMPLETE_BACKUP_BYTES || bytes.byteLength < 22)
     invalid()
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength),
     end = bytes.byteLength - 22
@@ -144,7 +147,7 @@ export async function readStoredZip(
     size = u32(end + 12)
   if (
     count < 2 ||
-    count > 130 ||
+    count > MAX_LOCAL_COVERS + 130 ||
     count !== u16(end + 8) ||
     start + size !== end
   )

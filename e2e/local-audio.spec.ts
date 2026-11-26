@@ -253,7 +253,7 @@ test('asociación, ZIP completo y un solo reproductor conservan datos; retirada 
   const downloading = page.waitForEvent('download')
   await page
     .getByRole('button', {
-      name: 'Descargar respaldo completo con audio (ZIP)',
+      name: 'Descargar respaldo completo (ZIP)',
       exact: true,
     })
     .click()

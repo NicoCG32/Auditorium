@@ -1,10 +1,10 @@
 // @vitest-environment node
+import { MAX_COMPLETE_BACKUP_BYTES } from '../domain/covers'
 import { IDBFactory, IDBKeyRange } from 'fake-indexeddb'
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import {
   AudioError,
   audioScope,
-  MAX_AUDIO_ARCHIVE_BYTES,
   MAX_AUDIO_FILE_BYTES,
   audioDigest,
 } from '../domain/audio'
@@ -335,7 +335,7 @@ test('missing audio prevents a complete export; oversized and cancelled inputs a
   const read = vi.fn(() => Promise.resolve(new ArrayBuffer(0)))
   await expect(
     origin.service.readFile({
-      size: MAX_AUDIO_ARCHIVE_BYTES + 1,
+      size: MAX_COMPLETE_BACKUP_BYTES + 1,
       arrayBuffer: read,
     }),
   ).rejects.toMatchObject({ code: 'limit' })

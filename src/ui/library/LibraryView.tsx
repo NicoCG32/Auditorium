@@ -6,6 +6,7 @@ import {
   type LibraryFilters,
 } from '../../application/library-query'
 import { AlbumCard } from './AlbumCard'
+import { useLocalCovers } from './cover-context'
 import { LibraryControls } from './LibraryControls'
 import { useMemo } from 'react'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
@@ -49,6 +50,7 @@ export function LibraryView({
   controlsOpen: boolean
   onControlsOpen: (open: boolean) => void
 }) {
+  const localCovers = useLocalCovers()
   const artists = useMemo(
     () => albumArtistIndex(snapshot.catalog),
     [snapshot.catalog],
@@ -131,6 +133,16 @@ export function LibraryView({
           {visible.length} de {albums.length}{' '}
           {albums.length === 1 ? 'álbum' : 'álbumes'}
         </p>
+        {localCovers ? (
+          <button
+            type="button"
+            className="text-button"
+            disabled={localCovers.busy}
+            onClick={localCovers.complete}
+          >
+            Completar portadas
+          </button>
+        ) : null}
         {narrowed ? (
           <button
             type="button"

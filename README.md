@@ -9,7 +9,7 @@
 
 [![Estado](https://img.shields.io/badge/Estado-Web%20%2F%20PWA%201.1.0-8D343A?style=flat-square)](CHANGELOG.md)
 [![Biblioteca](https://img.shields.io/badge/Biblioteca-Local%20first-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
-[![Datos](https://img.shields.io/badge/Datos-DB13%20%2F%20JSON9%20%2F%20ZIP1-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
+[![Datos](https://img.shields.io/badge/Datos-DB14%20%2F%20JSON9%20%2F%20ZIP2-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
 [![Licencia](https://img.shields.io/badge/C%C3%B3digo-PolyForm%20NC-596273?style=flat-square)](LICENSING.md)
 
 [**Abrir Auditorium**](https://nicocg32.github.io/Auditorium/) · [**Guía de uso**](docs/general/02-uso-y-limites.md) · [**Documentación**](docs/README.md) · [**Versión 1.1.0**](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0)
@@ -65,6 +65,8 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 **Artistas y ediciones.** Abrir la colección de un artista, compararla con su discografía y elegir ediciones con pistas y portada opcionales. Los datos manuales se conservan y los vínculos se revisan antes de guardar. [Guía de artista y edición](docs/ARTISTAS_Y_EDICIONES.md).
 
+**Portadas.** Búsqueda al añadir discos, Completar portadas para la colección y copias optimizadas que puedes ver sin conexión. El respaldo completo incluye las imágenes descargadas; las portadas propias se conservan. [Guía de portadas](docs/PORTADAS.md).
+
 **Experiencia y colección.** Anotar escuchas y valoraciones independientes; registrar formatos físicos o digitales, varias copias y deseos de compra; conservar enlaces personales.
 
 **Reproducción.** Asociar audio propio a este navegador o cargar los reproductores oficiales de Spotify y YouTube desde enlaces admitidos.
@@ -77,7 +79,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 - **Disponible en 1.1.0:** web/PWA, catálogo, experiencia personal, colección, reproducción, audio local, respaldos y cuenta opcional.
 - **Validación pendiente:** pruebas físicas móviles y de rendimiento con bibliotecas grandes y almacenamiento limitado. La [guía de validación](docs/VALIDACION_RECORRIDO.md) detalla la cobertura actual.
-- **Web actualizada el 17 de noviembre:** importación aditiva de respaldos, catálogo musical JSON, artistas y discografías MusicBrainz, ediciones, pistas y portadas opcionales con DB13/JSON9. [Cambios de la web](CHANGELOG.md).
+- **Web actualizada el 25 de noviembre:** colección personalizable, discografías MusicBrainz, ediciones y portadas automáticas con copias sin conexión y respaldo completo; DB14/JSON9/ZIP2. [Cambios de la web](CHANGELOG.md).
 - **Líneas de evolución:** empaquetado nativo de escritorio y Android.
 
 ## Dónde viven tus datos
@@ -85,11 +87,11 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 | Elemento                                | Almacenamiento                    | Transporte                                   |
 | --------------------------------------- | --------------------------------- | -------------------------------------------- |
 | Álbumes, ediciones, notas y colección   | IndexedDB local, mediante Dexie 4 | Respaldo JSON9 o snapshot remoto opcional    |
-| Audio que asocias                       | IndexedDB del dispositivo         | **ZIP1 completo**, no JSON ni Supabase       |
+| Audio y portadas descargadas            | IndexedDB del dispositivo         | **ZIP completo**, no JSON ni Supabase        |
 | Recursos para abrir la PWA sin conexión | Cache Storage del navegador       | Se descargan de nuevo al instalar/actualizar |
 | Clave de recomendaciones                | Memoria de la sesión              | No se incluye en respaldos                   |
 
-La base local usa **Dexie DB13 con 17 almacenes**; el respaldo JSON9 y el ZIP1 tienen versiones propias. Guarda una copia fuera del navegador antes de cambiar de origen o limpiar sus datos. [Guía de respaldos](docs/RESPALDOS_JSON.md).
+La base local usa **Dexie DB14 con 19 almacenes**; el respaldo JSON9 y el ZIP2 tienen versiones propias. Se siguen leyendo ZIP1. Guarda una copia fuera del navegador antes de cambiar de origen o limpiar sus datos. [Guía de respaldos](docs/RESPALDOS_JSON.md).
 
 ## Arquitectura en una mirada
 

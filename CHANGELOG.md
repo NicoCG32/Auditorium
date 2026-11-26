@@ -1,5 +1,11 @@
 # Changelog
 
+## Web — 2026-11-25
+
+- Portadas al añadir álbumes y acción Completar portadas para la colección. Búsqueda por referencias precisas o coincidencias de artista, título y año; revisión de homónimos, progreso y cancelación. Se conservan portadas propias y cambios hechos durante una descarga; un fallo nunca impide el alta.
+- Copias optimizadas en el dispositivo, disponibles sin conexión y separadas de JSON9. DB14/nativa140 añade dos almacenes de portadas con migración validada desde DB13. Sin cambios de Supabase ni dependencias.
+- El respaldo completo incluye portadas y audio en ZIP2, con verificación de hashes, asociaciones y restauración atómica. Se siguen leyendo ZIP1 y JSON1–9. El ZIP descargable de la release1.1.0 conserva sus archivos. [Guía de portadas](docs/PORTADAS.md).
+
 ## Web — 2026-11-23
 
 - Navegación visible por Buscar, Mi colección, Deseos, Sugerencias y Ajustes: lateral en escritorio e inferior en móvil. Desaparecen el menú genérico Más opciones, el control de apariencia aislado y el pie de almacenamiento. Añadir álbum queda como acción de cabecera.

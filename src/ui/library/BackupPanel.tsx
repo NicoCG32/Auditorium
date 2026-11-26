@@ -257,19 +257,28 @@ export function BackupPanel({
         Respaldos de tu biblioteca
       </h2>
       <p className="mt-3 text-sm text-muted">
-        Descarga tu biblioteca con notas y valoraciones. El JSON excluye el
-        audio local; el ZIP completo lo incluye. Los archivos se procesan en tu
-        equipo, sin enviarlos a servicios externos.
+        Conserva tu colección con sus notas, valoraciones, portadas y audio. Los
+        archivos se preparan en este equipo.
       </p>
+      {hasAudioRepository(repository) ? (
+        <CompleteAudioBackupPanel
+          repository={repository}
+          snapshot={snapshot}
+          blocked={disabled || Boolean(prepared)}
+          onBusyChange={onBusyChange}
+          onCommitted={onCommitted}
+          onRestored={onRestored}
+        />
+      ) : null}
       <section className="owned-panel" aria-labelledby="backup-export-title">
         <h3 id="backup-export-title" className="text-xl font-semibold">
           Exportar respaldo
         </h3>
         <Counts snapshot={pending ?? snapshot} />
         <p className="mt-3 text-sm text-muted">
-          El JSON incluye los datos de biblioteca y portadas locales. Excluye
-          archivos y nombres de audio; utiliza el ZIP completo para conservarlos
-          o trasladarlos.
+          El JSON guarda tus datos y las imágenes que añadiste a mano. Usa el
+          respaldo completo para incluir también las portadas descargadas y el
+          audio.
         </p>
         <button
           type="button"
@@ -376,16 +385,6 @@ export function BackupPanel({
           </div>
         ) : null}
       </section>
-      {hasAudioRepository(repository) ? (
-        <CompleteAudioBackupPanel
-          repository={repository}
-          snapshot={snapshot}
-          blocked={disabled || Boolean(prepared)}
-          onBusyChange={onBusyChange}
-          onCommitted={onCommitted}
-          onRestored={onRestored}
-        />
-      ) : null}
       {busy ? (
         <p role="status" className="mt-4 text-sm">
           {phase}

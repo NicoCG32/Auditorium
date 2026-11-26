@@ -7,6 +7,7 @@ import {
   migrateSnapshotV6,
   legacySnapshotV7Schema,
   legacySnapshotV8Schema,
+  localSnapshotSchema,
 } from '../../domain/backup'
 import { fromStoredUserAlbum, identityRecordSchema } from './records'
 import { LocalStorageError } from './errors'
@@ -32,14 +33,16 @@ import { migrateLegacyCheckpoint } from './migrate-classification'
 import { migrateGenreRatingsCheckpoint } from './migrate-genre-ratings'
 import type { SyncCheckpoint } from '../../domain/sync'
 import {
+  syncCheckpointSchema,
   legacySyncCheckpointV6Schema,
   legacySyncCheckpointV7Schema,
   legacySyncCheckpointV8Schema,
 } from '../../domain/sync'
 import type { AudioAttachment, AudioFileRecord } from '../../domain/audio'
+import type { CoverAttachment, CoverFileRecord } from '../../domain/covers'
 
 export const DATABASE_NAME = 'auditorium'
-export const DATABASE_VERSION = 13
+export const DATABASE_VERSION = 14
 export const SCHEMA_V1 = {
   metadata: 'key',
   artists: 'id, name',
@@ -97,6 +100,26 @@ export const SCHEMA_V13 = {
   releases: 'id, albumId, format, &musicBrainz.id',
   tracks: 'id, albumId, title, variantOfTrackId, &[albumId+musicBrainz.id]',
 } as const
+export const SCHEMA_V14 = {
+  ...SCHEMA_V13,
+  albumArtists: `${SCHEMA_V13.albumArtists}, albumId`,
+  coverAttachments: '[scope+albumId], scope, [scope+sourceUrl]',
+  coverFiles: '[scope+albumId], scope',
+} as const
+
+async function validateCoverUpgrade(transaction: Transaction) {
+  const snapshot = await readUpgradeSnapshot(transaction, true)
+  const checkpoints: unknown[] = await transaction
+    .table('syncCheckpoint')
+    .toArray()
+  if (!snapshot && checkpoints.length)
+    throw new LocalStorageError(
+      'identity_missing',
+      'Falta la identidad local antes de preparar las portadas. Los datos se conservan.',
+    )
+  if (snapshot) localSnapshotSchema.parse(snapshot)
+  checkpoints.forEach((row) => syncCheckpointSchema.parse(row))
+}
 
 async function validateEditionUpgrade(transaction: Transaction) {
   const snapshot = await readUpgradeSnapshot(transaction, true)
@@ -269,6 +292,8 @@ export class AuditoriumDatabase extends Dexie {
   readonly syncCheckpoint: Table<SyncCheckpoint, string>
   readonly audioAttachments: Table<AudioAttachment, [string, string]>
   readonly audioFiles: Table<AudioFileRecord, [string, string]>
+  readonly coverAttachments: Table<CoverAttachment, [string, string]>
+  readonly coverFiles: Table<CoverFileRecord, [string, string]>
 
   constructor(
     name = DATABASE_NAME,
@@ -293,6 +318,9 @@ export class AuditoriumDatabase extends Dexie {
     this.version(11).stores(SCHEMA_V11).upgrade(migrateGenreRatings)
     this.version(12).stores(SCHEMA_V12).upgrade(validateMusicBrainzUpgrade)
     this.version(13).stores(SCHEMA_V13).upgrade(validateEditionUpgrade)
+    this.version(14).stores(SCHEMA_V14).upgrade(validateCoverUpgrade)
+    this.coverAttachments = this.table('coverAttachments')
+    this.coverFiles = this.table('coverFiles')
     this.metadata = this.table<IdentityRecord, string>('metadata')
     this.audioAttachments = this.table<AudioAttachment, [string, string]>(
       'audioAttachments',

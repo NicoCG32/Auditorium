@@ -2,6 +2,7 @@ import type { Table } from 'dexie'
 import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { AuditoriumDatabase } from './database'
 import { toStoredUserAlbum } from './records'
+import { pruneCoverFiles } from './cover-store'
 
 async function syncTable<T, K extends string | (string | number)[]>(
   table: Table<T, K>,
@@ -36,6 +37,7 @@ export async function writeSnapshotChanges(
   before: LocalSnapshot,
   after: LocalSnapshot,
 ): Promise<void> {
+  await pruneCoverFiles(database, after)
   await Promise.all([
     syncTable(
       database.purchaseWishes,

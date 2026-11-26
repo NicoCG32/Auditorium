@@ -26,9 +26,17 @@ import {
   readStoredZip,
 } from '../infrastructure/browser/stored-zip'
 import { sameSnapshot } from '../domain/sync'
+import {
+  coverAttachmentSchema,
+  validateCoverAttachments,
+  verifyCoverFile,
+  MAX_LOCAL_COVERS,
+  MAX_COMPLETE_BACKUP_BYTES,
+  MAX_COMPLETE_MANIFEST_BYTES,
+} from '../domain/covers'
 
 const encoder = new TextEncoder()
-const manifestSchema = z.strictObject({
+const manifestV1Schema = z.strictObject({
   format: z.literal('auditorium-audio-backup'),
   version: z.literal(1),
   identity: localIdentitySchema,
@@ -41,6 +49,19 @@ const manifestSchema = z.strictObject({
     )
     .max(MAX_AUDIO_ATTACHMENTS),
 })
+const manifestSchema = z.discriminatedUnion('version', [
+  manifestV1Schema,
+  manifestV1Schema.extend({
+    version: z.literal(2),
+    covers: z
+      .array(
+        coverAttachmentSchema
+          .omit({ scope: true })
+          .extend({ path: z.string().regex(/^covers\/[a-f0-9-]{36}\.jpg$/u) }),
+      )
+      .max(MAX_LOCAL_COVERS),
+  }),
+])
 export interface PreparedAudioBackup {
   document: LibraryBackup
   state: CompleteAudioState
@@ -63,6 +84,12 @@ export class CompleteAudioBackups {
       state.files.map((file) => file.attachment),
     )
     for (const file of state.files) await verifyAudioFile(file, signal)
+    const covers = state.covers ?? []
+    validateCoverAttachments(
+      state.snapshot,
+      covers.map((file) => file.attachment),
+    )
+    for (const file of covers) await verifyCoverFile(file, signal)
     const document = parseBackupDocument({
       format: 'auditorium-backup',
       schemaVersion: BACKUP_SCHEMA_VERSION,
@@ -72,7 +99,7 @@ export class CompleteAudioBackups {
     const library = encoder.encode(serializeBackup(document))
     const manifest = manifestSchema.parse({
       format: 'auditorium-audio-backup',
-      version: 1,
+      version: covers.length ? 2 : 1,
       identity: state.snapshot.identity,
       librarySha256: await audioDigest(library),
       attachments: state.files.map(({ attachment }) => ({
@@ -80,16 +107,44 @@ export class CompleteAudioBackups {
         userAlbumId: attachment.userAlbumId,
         path: `audio/${attachment.id}.bin`,
       })),
+      ...(covers.length
+        ? {
+            covers: covers.map(({ attachment }) => ({
+              ...coverAttachmentSchema
+                .omit({ scope: true })
+                .parse(
+                  Object.fromEntries(
+                    Object.entries(attachment).filter(
+                      ([key]) => key !== 'scope',
+                    ),
+                  ),
+                ),
+              path: `covers/${attachment.albumId}.jpg`,
+            })),
+          }
+        : {}),
     })
     const metadata = encoder.encode(JSON.stringify(manifest))
-    if (metadata.length > MAX_AUDIO_MANIFEST_BYTES)
-      throw new AudioError('limit', 'El manifiesto de audio supera 1 MiB.')
+    if (
+      metadata.length >
+      (manifest.version === 1
+        ? MAX_AUDIO_MANIFEST_BYTES
+        : MAX_COMPLETE_MANIFEST_BYTES)
+    )
+      throw new AudioError(
+        'limit',
+        'El índice del respaldo completo supera su límite.',
+      )
     const bytes = await createStoredZip(
       [
         { name: 'audio-manifest.json', data: metadata },
         { name: 'library.json', data: library },
         ...state.files.map((file) => ({
           name: `audio/${file.attachment.id}.bin`,
+          data: file.bytes,
+        })),
+        ...covers.map((file) => ({
+          name: `covers/${file.attachment.albumId}.jpg`,
           data: file.bytes,
         })),
       ],
@@ -101,8 +156,8 @@ export class CompleteAudioBackups {
     file: Pick<Blob, 'size' | 'arrayBuffer'>,
     signal?: AbortSignal,
   ): Promise<PreparedAudioBackup> {
-    if (file.size > MAX_AUDIO_ARCHIVE_BYTES)
-      throw new AudioError('limit', 'Máximo 160 MiB para el respaldo completo.')
+    if (file.size > MAX_COMPLETE_BACKUP_BYTES)
+      throw new AudioError('limit', 'Máximo 288 MiB para el respaldo completo.')
     signal?.throwIfAborted()
     const entries = await readStoredZip(
       new Uint8Array(await file.arrayBuffer()),
@@ -113,6 +168,16 @@ export class CompleteAudioBackups {
       const manifest = manifestSchema.parse(
         JSON.parse(decoder.decode(entries.get('audio-manifest.json'))),
       )
+      if (
+        manifest.version === 1 &&
+        (file.size > MAX_AUDIO_ARCHIVE_BYTES ||
+          entries.get('audio-manifest.json')!.length > MAX_AUDIO_MANIFEST_BYTES)
+      )
+        throw new AudioError(
+          'limit',
+          'El respaldo de audio supera los límites de su versión.',
+        )
+      const coverEntries = manifest.version === 2 ? manifest.covers : []
       const library = entries.get('library.json')!
       if ((await audioDigest(library)) !== manifest.librarySha256)
         throw new AudioError(
@@ -128,7 +193,10 @@ export class CompleteAudioBackups {
           'scope',
           'El manifiesto y la biblioteca tienen identidades diferentes.',
         )
-      if (entries.size !== manifest.attachments.length + 2)
+      if (
+        entries.size !==
+        manifest.attachments.length + coverEntries.length + 2
+      )
         throw new AudioError(
           'invalid_archive',
           'El paquete contiene archivos que no están declarados en el manifiesto.',
@@ -150,8 +218,31 @@ export class CompleteAudioBackups {
         files.map((item) => item.attachment),
       )
       for (const item of files) await verifyAudioFile(item, signal)
+      const covers = coverEntries.map(({ path, ...metadata }) => {
+        if (path !== `covers/${metadata.albumId}.jpg` || !entries.has(path))
+          throw new AudioError(
+            'invalid_archive',
+            'Falta una portada declarada o su ruta no coincide.',
+          )
+        return {
+          attachment: coverAttachmentSchema.parse({ ...metadata, scope }),
+          bytes: entries.get(path)!,
+        }
+      })
+      validateCoverAttachments(
+        document.data,
+        covers.map((file) => file.attachment),
+      )
+      for (const cover of covers) await verifyCoverFile(cover, signal)
       signal?.throwIfAborted()
-      return { document, state: { snapshot: document.data, files } }
+      return {
+        document,
+        state: {
+          snapshot: document.data,
+          files,
+          ...(covers.length ? { covers } : {}),
+        },
+      }
     } catch (error) {
       if (
         error instanceof AudioError ||

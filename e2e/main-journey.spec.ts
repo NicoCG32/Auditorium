@@ -58,11 +58,24 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
   test.setTimeout(120_000)
   const errors: string[] = []
   const external: string[] = []
+  const coverSearches: string[] = []
   page.on('pageerror', (error) => errors.push(error.message))
   await page.route('**/*', async (route) => {
-    if (new URL(route.request().url()).hostname === '127.0.0.1')
-      await route.continue()
-    else {
+    const requestUrl = new URL(route.request().url())
+    if (requestUrl.hostname === '127.0.0.1') await route.continue()
+    else if (
+      requestUrl.origin === 'https://catalog-test.example' &&
+      requestUrl.pathname === '/api/musicbrainz/artist' &&
+      route.request().method() === 'GET' &&
+      [...requestUrl.searchParams.keys()].join(',') === 'query'
+    ) {
+      coverSearches.push(requestUrl.searchParams.get('query')!)
+      await route.fulfill({
+        contentType: 'application/json',
+        headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ artists: [] }),
+      })
+    } else {
       external.push(new URL(route.request().url()).hostname)
       await route.abort()
     }
@@ -97,6 +110,9 @@ test('del alta manual a la restauración conserva una identidad y conceptos inde
     page.getByRole('heading', { name: 'Horizonte De Prueba', exact: true }),
   ).toBeFocused()
   const first = await download(page)
+  await expect
+    .poll(() => coverSearches)
+    .toEqual([first.data.catalog.artists[0]!.name])
   expect(first.data.catalog.albums).toHaveLength(1)
   expect(first.data.library.albumRatings).toEqual([])
   expect(first.data.library.albumGenreRatings).toEqual([])

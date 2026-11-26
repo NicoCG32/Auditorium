@@ -146,6 +146,20 @@
   color: var(--muted);
   font-size: 0.8rem;
 }
+.cover-progress {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--surface);
+}
+.cover-progress progress {
+  accent-color: var(--accent);
+  block-size: 0.35rem;
+}
+.cover-progress li + li {
+  border-block-start: 1px solid var(--border);
+  padding-block-start: 1rem;
+}
 @media (max-width: 36rem) {
   .primary-navigation {
     inline-size: calc(100% - 3.25rem);

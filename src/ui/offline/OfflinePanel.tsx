@@ -67,7 +67,8 @@ export function OfflinePanel({
         <p>
           Después de prepararse, puedes abrir la biblioteca, registrar álbumes y
           gestionar ediciones, notas, valoraciones, ejemplares, deseos y
-          respaldos sin conexión. Las portadas y enlaces externos necesitan red.
+          respaldos sin conexión. Las portadas descargadas también se conservan
+          sin red; las imágenes y enlaces externos necesitan conexión.
         </p>
         {state.update === 'available' && (
           <p className="field-notice">
@@ -108,7 +109,7 @@ export function OfflinePanel({
                 iPhone o iPad, usa Compartir → Añadir a pantalla de inicio. La
                 biblioteca depende del navegador, dispositivo y modo de
                 apertura. Si la aplicación instalada aparece vacía, mueve tus
-                datos con un respaldo JSON.
+                datos con un respaldo completo (ZIP).
               </p>
               {(state.installation === 'available' ||
                 state.installation === 'pending') && (
@@ -166,8 +167,8 @@ export function OfflinePanel({
         <p>
           Los datos permanecen en este navegador. Borrar los datos del sitio,
           usar navegación privada o perder el dispositivo puede eliminar la
-          biblioteca, incluso con protección. Descarga respaldos JSON periódicos
-          desde «Respaldos» y guárdalos fuera de este dispositivo.
+          biblioteca, incluso con protección. Guarda periódicamente un respaldo
+          completo desde «Respaldos», fuera de este dispositivo.
         </p>
       </div>
     </aside>

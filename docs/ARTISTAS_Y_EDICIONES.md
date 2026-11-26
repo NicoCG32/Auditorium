@@ -1,5 +1,7 @@
 # Artistas, ediciones, pistas y portadas
 
+Las portadas de las altas nuevas se descargan automáticamente cuando hay una coincidencia segura. **Completar portadas** incorpora copias de imágenes pendientes y de los enlaces CAA elegidos anteriormente. Se conservan portadas propias y referencias de edición. [Copias locales, búsqueda y respaldo](PORTADAS.md).
+
 La consulta externa utiliza el [servicio MusicBrainz](DISCOGRAFIAS.md#transporte-y-configuración), configurado en la web publicada. La biblioteca y el registro manual siguen disponibles sin él.
 
 ## Abrir un artista

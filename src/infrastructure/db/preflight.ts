@@ -15,6 +15,7 @@ import {
   SCHEMA_V11,
   SCHEMA_V12,
   SCHEMA_V13,
+  SCHEMA_V14,
 } from './database'
 import { LocalStorageError } from './errors'
 
@@ -75,6 +76,7 @@ export function checkNativeSchema(
           110: SCHEMA_V11,
           120: SCHEMA_V12,
           130: SCHEMA_V13,
+          140: SCHEMA_V14,
         }
         const schema = schemas[native.version]
         if (!schema)
