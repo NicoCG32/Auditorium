@@ -3,6 +3,8 @@ import type { OwnedItem } from '../domain/library/owned-items'
 import type { LibraryAlbum } from './library-query'
 
 export type CollectionMedium = 'all' | 'physical' | 'digital'
+export type PhysicalFormat =
+  'all' | Exclude<OwnedItem['format'], 'digital_download'>
 export type AlbumHolding = {
   copies: number
   wishes: number
@@ -49,6 +51,12 @@ export function indexLibraryHoldings(
 export function inCollectionMedium(
   holding: AlbumHolding | undefined,
   medium: CollectionMedium,
+  format: PhysicalFormat = 'all',
 ) {
-  return medium === 'all' || (holding?.[medium] ?? 0) > 0
+  return (
+    (medium === 'all' || (holding?.[medium] ?? 0) > 0) &&
+    (medium !== 'physical' ||
+      format === 'all' ||
+      Boolean(holding?.formats.includes(format)))
+  )
 }

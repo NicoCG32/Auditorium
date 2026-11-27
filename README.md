@@ -59,7 +59,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 **Biblioteca y catálogo.** Registrar álbumes manualmente, artistas, créditos, géneros, ediciones, pistas y variantes; revisar candidatos de Wikidata cuando lo solicites, sin copiar cambios automáticamente.
 
-**Colección y personalización.** Navegación lateral en escritorio e inferior en móvil, con Buscar, Mi colección, Deseos, Sugerencias y Ajustes. La colección reúne Álbumes, Artistas, Ejemplares y Calificaciones, con filtros de físico y digital. La personalización se abre sin interrumpir el reproductor ni salir de un formulario; cuenta, respaldos y mantenimiento están en Ajustes. [Guía de la colección](docs/BIBLIOTECA.md).
+**Colección y personalización.** Navegación lateral en escritorio e inferior en móvil, con Buscar, Mi colección, Deseos, Sugerencias y Ajustes. La colección reúne Álbumes, Artistas, Ejemplares y Calificaciones, con filtros de físico, digital y formato físico. Acciones rápidas, selección de varios discos y vistas con nombre permiten organizarla sin abrir cada ficha. La personalización se abre sin interrumpir el reproductor ni salir de un formulario; cuenta, respaldos y mantenimiento están en Ajustes. [Guía de la colección](docs/BIBLIOTECA.md).
 
 **Discografías por artista.** Buscar una banda en MusicBrainz, seleccionar varias obras y revisar coincidencias antes de incorporarlas. El servicio de consulta está configurado en la web; otras instalaciones necesitan alojarlo. [Recorrido y configuración](docs/DISCOGRAFIAS.md).
 
@@ -79,7 +79,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 - **Disponible en 1.1.0:** web/PWA, catálogo, experiencia personal, colección, reproducción, audio local, respaldos y cuenta opcional.
 - **Validación pendiente:** pruebas físicas móviles y de rendimiento con bibliotecas grandes y almacenamiento limitado. La [guía de validación](docs/VALIDACION_RECORRIDO.md) detalla la cobertura actual.
-- **Web actualizada el 25 de noviembre:** colección personalizable, discografías MusicBrainz, ediciones y portadas automáticas con copias sin conexión y respaldo completo; DB14/JSON9/ZIP2. [Cambios de la web](CHANGELOG.md).
+- **Web actualizada el 27 de noviembre:** acciones de colección sobre varios discos, vistas guardadas y formato físico, junto a personalización, discografías MusicBrainz y portadas automáticas con respaldo completo; DB14/JSON9/ZIP2. [Cambios de la web](CHANGELOG.md).
 - **Líneas de evolución:** empaquetado nativo de escritorio y Android.
 
 ## Dónde viven tus datos

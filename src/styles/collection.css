@@ -160,7 +160,314 @@
   border-block-start: 1px solid var(--border);
   padding-block-start: 1rem;
 }
+.collection-browse-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-block-end: 1.25rem;
+}
+.collection-browse-bar .collection-medium {
+  margin: 0;
+}
+.collection-views-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-block-size: 2.75rem;
+}
+.collection-format-filter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin-block: -0.25rem 1rem;
+  font-size: 0.875rem;
+  color: var(--muted);
+}
+.collection-format-filter select {
+  min-block-size: 2.75rem;
+  max-inline-size: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--foreground);
+  background: var(--surface);
+}
+.collection-gallery .album-card {
+  position: relative;
+}
+.album-actions-button {
+  position: absolute;
+  inset-block-start: 0.4rem;
+  inset-inline-end: 0.4rem;
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--foreground);
+  background: var(--surface-raised);
+  opacity: 0;
+  cursor: pointer;
+}
+.album-card:hover .album-actions-button,
+.album-card:focus-within .album-actions-button {
+  opacity: 1;
+}
+.album-row .album-copy {
+  padding-inline-end: 3.5rem;
+}
+.album-selection-cover {
+  position: relative;
+  display: block;
+  cursor: pointer;
+}
+.album-selection-input {
+  position: absolute;
+  inset-block-start: 0.6rem;
+  inset-inline-start: 0.6rem;
+  z-index: 1;
+  inline-size: 1.5rem;
+  block-size: 1.5rem;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+.collection-gallery .album-card.album-selected,
+.collection-gallery .album-card:has(.album-selection-input:focus-visible) {
+  outline: 2px solid var(--accent-text);
+  outline-offset: -2px;
+  background: var(--surface-raised);
+}
+.collection-action-notice {
+  margin-block-end: 1rem;
+  font-size: 0.875rem;
+}
+.collection-selection {
+  position: sticky;
+  inset-block-start: 0.5rem;
+  z-index: 10;
+  margin-block-end: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 0.65rem;
+  background: var(--surface);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+}
+.collection-selection-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-block-end: 0.5rem;
+  font-size: 0.875rem;
+}
+.collection-selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-block-end: 0.5rem;
+}
+.collection-dialog {
+  inline-size: min(38rem, calc(100vw - 2rem));
+  max-inline-size: calc(100vw - 2rem);
+  max-block-size: calc(100svh - 2rem);
+  margin: auto;
+  padding: 1.25rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  border-radius: 0.85rem;
+  color: var(--foreground);
+  background: var(--surface);
+  box-shadow: 0 20px 80px rgb(0 0 0 / 40%);
+}
+.collection-dialog::backdrop {
+  background: rgb(0 0 0 / 65%);
+}
+.collection-dialog-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-block-end: 1rem;
+}
+.collection-dialog-heading h2 {
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
+  font-family: var(--font-ui);
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.collection-dialog-heading .settings-close {
+  flex-shrink: 0;
+}
+.collection-action-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-block-end: 1rem;
+}
+.collection-action-tabs button {
+  min-inline-size: 0;
+  min-block-size: 2.75rem;
+  padding: 0.5rem 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+.collection-action-tabs button[aria-pressed='true'] {
+  border-color: var(--accent-text);
+  color: var(--foreground);
+  background: var(--surface-raised);
+}
+.collection-action-field {
+  display: grid;
+  gap: 0.45rem;
+  margin-block: 1rem;
+  font-size: 0.875rem;
+}
+.collection-action-field :is(input, select) {
+  inline-size: 100%;
+  min-inline-size: 0;
+  min-block-size: 2.75rem;
+  padding: 0.6rem;
+  border: 1px solid var(--muted);
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  color: var(--foreground);
+  background: var(--background);
+}
+.collection-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-block-start: 1.25rem;
+}
+.collection-review-list {
+  max-block-size: 18rem;
+  margin-block-start: 0.75rem;
+  overflow-y: auto;
+  list-style: none;
+}
+.collection-review-list li {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-block: 0.65rem;
+  border-block-end: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.collection-review-list li > div {
+  flex: 1;
+  min-inline-size: 0;
+}
+.collection-review-list li > div > * {
+  display: block;
+}
+.collection-review-list li > span {
+  max-inline-size: 40%;
+}
+.collection-saved-list {
+  max-block-size: 24rem;
+  overflow-y: auto;
+  list-style: none;
+}
+.collection-saved-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-block-end: 1px solid var(--border);
+}
+.collection-saved-open {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  min-inline-size: 0;
+  min-block-size: 3.5rem;
+  padding: 0.65rem 0.25rem;
+  border: 0;
+  color: var(--foreground);
+  background: transparent;
+  text-align: start;
+  cursor: pointer;
+}
+.collection-saved-open small {
+  color: var(--muted);
+}
+.collection-icon-button {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 2.75rem;
+  block-size: 2.75rem;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 0.5rem;
+  color: var(--foreground);
+  background: transparent;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.collection-icon-button:hover,
+.collection-saved-open:hover {
+  background: var(--surface-raised);
+}
+.collection-view-undo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-block-start: 1rem;
+  font-size: 0.875rem;
+}
+@media (hover: none) {
+  .album-actions-button {
+    opacity: 1;
+  }
+}
 @media (max-width: 36rem) {
+  .collection-dialog {
+    inline-size: calc(100vw - 1rem);
+    max-inline-size: calc(100vw - 1rem);
+    max-block-size: calc(100svh - 1rem);
+    padding: 1rem;
+  }
+  .collection-browse-bar {
+    gap: 0.5rem;
+  }
+  .collection-browse-bar .collection-medium {
+    flex: 1 1 14rem;
+    min-inline-size: 0;
+  }
+  .collection-gallery .collection-browse-bar .collection-medium button {
+    flex: 1 0 auto;
+    padding-inline: 0.5rem;
+    font-size: 0.8rem;
+    gap: 0.25rem;
+    white-space: nowrap;
+  }
+  .collection-views-trigger {
+    padding-inline: 0.65rem;
+    font-size: 0.8rem;
+  }
+  .collection-selection {
+    padding: 0.6rem 0.75rem;
+  }
+  .collection-selection-actions .action-button {
+    flex: 1;
+    padding-inline: 0.5rem;
+  }
   .primary-navigation {
     inline-size: calc(100% - 3.25rem);
   }

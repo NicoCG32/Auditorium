@@ -1,5 +1,11 @@
 # Changelog
 
+## Web — 2026-11-27
+
+- Acciones rápidas en cada álbum y modo Seleccionar para registrar formatos, añadir deseos o cambiar escucha sobre varios discos. Revisión por álbum antes de confirmar, conservación de ejemplares y deseos existentes, guardado atómico y detección de cambios concurrentes. Una lectura fallida tras guardar se reintenta sin repetir la escritura.
+- Filtro de formato dentro de Físico y vistas con nombre para recuperar búsqueda, filtros, medio, formato, orden y presentación. Renombrado, eliminación y deshacer de la última vista; preferencias locales por biblioteca, conservadas entre aperturas y compartidas entre ventanas del navegador. No se incluyen en respaldos ni sincronización.
+- Controles de selección visibles sólo al usarlos, regreso de foco y diálogos accesibles en móvil y con texto ampliado. Sin cambios de DB14/JSON9/ZIP2, servicio remoto, dependencias o release 1.1.0.
+
 ## Web — 2026-11-25
 
 - Portadas al añadir álbumes y acción Completar portadas para la colección. Búsqueda por referencias precisas o coincidencias de artista, título y año; revisión de homónimos, progreso y cancelación. Se conservan portadas propias y cambios hechos durante una descarga; un fallo nunca impide el alta.
