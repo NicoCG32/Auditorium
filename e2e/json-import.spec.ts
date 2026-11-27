@@ -195,6 +195,12 @@ test('nota conflictiva exige elegir y la revisión se adapta a 320px con teclado
   await decision.focus()
   await decision.selectOption('incoming')
   await page.getByRole('button', { name: 'Confirmar importación' }).click()
+  await expect(
+    page.getByText('Datos añadidos a tu colección.', { exact: true }),
+  ).toBeVisible()
+  await expect(
+    page.getByRole('heading', { name: 'Mi colección', exact: true }),
+  ).toBeVisible()
   await backups(page)
   expect((await snapshot(page)).data.library.albumRatings[0]?.scoreUnits).toBe(
     2,
