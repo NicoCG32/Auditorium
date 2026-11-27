@@ -209,8 +209,10 @@ test('sugerencias accesibles a320px en ambos temas y créditos múltiples con se
   browser,
   browserName,
 }, info) => {
-  await page.setViewportSize({ width: 320, height: 850 })
   await suggestionSeed(page)
+  // Resize the loaded document: Gecko can retain the initial painted height
+  // when the viewport is changed before the first navigation.
+  await page.setViewportSize({ width: 320, height: 850 })
   for (const theme of ['dark', 'light'] as const) {
     const restoreAppearance = await openSettingsSection(page, 'Personalización')
     const appearance = page.getByRole('region', {
@@ -751,8 +753,8 @@ test('edición y nuevos filtros son accesibles a360px en los dos temas', async (
   page,
 }) => {
   test.setTimeout(90_000)
-  await page.setViewportSize({ width: 360, height: 900 })
   await seed(page)
+  await page.setViewportSize({ width: 360, height: 900 })
   for (const theme of ['dark', 'light'] as const) {
     const restoreAppearance = await openSettingsSection(page, 'Personalización')
     const appearance = page.getByRole('region', {
