@@ -8,13 +8,22 @@ import {
 import { AlbumCard } from './AlbumCard'
 import { useLocalCovers } from './cover-context'
 import { LibraryControls } from './LibraryControls'
-import { useMemo } from 'react'
-import type { LocalSnapshot } from '../../domain/repositories/local-repository'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type {
+  LocalSnapshot,
+  TransactionalLocalRepository,
+} from '../../domain/repositories/local-repository'
+import type { SavedCollectionViewsState } from '../appearance/use-saved-collection-views'
+import type { CollectionViewSettings } from '../../application/collection-views'
+import type { CollectionBatchAction } from '../../application/collection-batches'
+import { CollectionBatchDialog } from './CollectionBatchDialog'
+import { CollectionViewsDialog } from './CollectionViewsDialog'
 import { albumArtistIndex } from '../../application/catalog-artists'
 import {
   indexLibraryHoldings,
   inCollectionMedium,
   type CollectionMedium,
+  type PhysicalFormat,
 } from '../../application/library-holdings'
 
 export function LibraryView({
@@ -33,6 +42,12 @@ export function LibraryView({
   details,
   controlsOpen,
   onControlsOpen,
+  repository,
+  onCommitted,
+  onBusyChange,
+  savedViews,
+  format,
+  onFormatChange,
 }: {
   albums: LibraryAlbum[]
   snapshot: LocalSnapshot
@@ -49,6 +64,12 @@ export function LibraryView({
   details: boolean
   controlsOpen: boolean
   onControlsOpen: (open: boolean) => void
+  repository: TransactionalLocalRepository
+  onCommitted: () => Promise<LocalSnapshot>
+  onBusyChange: (busy: boolean) => void
+  savedViews: SavedCollectionViewsState
+  format: PhysicalFormat
+  onFormatChange: (format: PhysicalFormat) => void
 }) {
   const localCovers = useLocalCovers()
   const artists = useMemo(
@@ -60,8 +81,116 @@ export function LibraryView({
     [snapshot, albums],
   )
   const visible = queryLibrary(albums, filters).filter((album) =>
-    inCollectionMedium(collection.holdings.get(album.id), medium),
+    inCollectionMedium(collection.holdings.get(album.id), medium, format),
   )
+  const scope = `${snapshot.identity.userId}:${snapshot.identity.createdAt}`
+  const criteria = JSON.stringify([
+    filters.search,
+    filters.genre ?? '',
+    filters.country ?? '',
+    filters.listening,
+    filters.rating,
+    filters.ratingBasis ?? 'auto',
+    medium,
+    format,
+  ])
+  const [selection, setSelection] = useState({
+    scope,
+    criteria,
+    active: false,
+    ids: [] as string[],
+  })
+  const [batch, setBatch] = useState<{
+    ids: string[]
+    action: CollectionBatchAction
+  }>()
+  const [viewsOpen, setViewsOpen] = useState(false),
+    [notice, setNotice] = useState('')
+  const selectionButton = useRef<HTMLButtonElement>(null),
+    selectionEndButton = useRef<HTMLButtonElement>(null),
+    viewsButton = useRef<HTMLButtonElement>(null)
+  const returnFocus = useRef<HTMLElement | null>(null)
+  const [focusRequest, setFocusRequest] = useState<{
+    target: HTMLElement | null
+  }>()
+  const visibleIds = new Set(visible.map((album) => album.id))
+  const selectedIds =
+    selection.scope === scope && selection.criteria === criteria
+      ? selection.ids.filter((id) => visibleIds.has(id))
+      : []
+  if (
+    selection.scope !== scope ||
+    selection.criteria !== criteria ||
+    selectedIds.length !== selection.ids.length
+  ) {
+    setSelection({
+      scope,
+      criteria,
+      active: selection.scope === scope && selection.active,
+      ids: selectedIds,
+    })
+    if (selection.scope !== scope) {
+      setBatch(undefined)
+      setViewsOpen(false)
+      setNotice('')
+    }
+  }
+  useEffect(() => {
+    if (!focusRequest) return
+    // Wait until the modal and any completed-selection controls have unmounted.
+    const frame = requestAnimationFrame(() => {
+      const target = focusRequest.target
+      ;(target?.isConnected
+        ? target
+        : (selectionButton.current ?? selectionEndButton.current)
+      )?.focus({ preventScroll: true })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [focusRequest])
+  function restoreFocus(target: HTMLElement | null) {
+    setFocusRequest({ target })
+  }
+  function closeBatch() {
+    setBatch(undefined)
+    restoreFocus(returnFocus.current)
+  }
+  function openBatch(
+    ids: string[],
+    action: CollectionBatchAction,
+    source: HTMLElement,
+  ) {
+    returnFocus.current = source
+    setNotice('')
+    setBatch({ ids: [...ids], action })
+  }
+  function toggle(id: string) {
+    setSelection({
+      scope,
+      criteria,
+      active: true,
+      ids: selectedIds.includes(id)
+        ? selectedIds.filter((value) => value !== id)
+        : [...selectedIds, id],
+    })
+  }
+  const selected = new Set(selectedIds)
+  const currentView: CollectionViewSettings = {
+    filters: {
+      ...filters,
+      genre: filters.genre ?? '',
+      country: filters.country ?? '',
+      ratingBasis: filters.ratingBasis ?? 'auto',
+    },
+    medium,
+    format: medium === 'physical' ? format : 'all',
+    view,
+  }
+  function applyView(settings: CollectionViewSettings) {
+    onFiltersChange(settings.filters)
+    onMediumChange(settings.medium)
+    onFormatChange(settings.format)
+    onViewChange(settings.view)
+  }
   const context = ratingGenre(filters)
   const narrowed = Boolean(
     medium !== 'all' ||
@@ -97,28 +226,71 @@ export function LibraryView({
       data-covers={covers}
       aria-label="Tu colección"
     >
-      <div
-        className="collection-medium"
-        role="group"
-        aria-label="Mostrar en mi colección"
-      >
-        {(
-          [
-            ['all', 'Todos'],
-            ['physical', 'Físico'],
-            ['digital', 'Digital'],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            type="button"
-            key={value}
-            aria-pressed={medium === value}
-            onClick={() => onMediumChange(value)}
+      <div className="collection-browse-bar">
+        <div
+          className="collection-medium"
+          role="group"
+          aria-label="Mostrar en mi colección"
+        >
+          {(
+            [
+              ['all', 'Todos'],
+              ['physical', 'Físico'],
+              ['digital', 'Digital'],
+            ] as const
+          ).map(([value, label]) => (
+            <button
+              type="button"
+              key={value}
+              aria-pressed={medium === value}
+              onClick={() => onMediumChange(value)}
+            >
+              {label} <span>{collection.counts[value]}</span>
+            </button>
+          ))}
+        </div>
+        <button
+          ref={viewsButton}
+          type="button"
+          className="collection-views-trigger action-button"
+          aria-label="Vistas guardadas"
+          onClick={() => {
+            setNotice('')
+            setViewsOpen(true)
+          }}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="18"
+            height="18"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.7"
+            aria-hidden="true"
           >
-            {label} <span>{collection.counts[value]}</span>
-          </button>
-        ))}
+            <path d="M6 3h12v18l-6-4-6 4z" />
+          </svg>
+          Vistas
+        </button>
       </div>
+      {medium === 'physical' ? (
+        <label className="collection-format-filter">
+          <span>Formato físico</span>
+          <select
+            value={format}
+            onChange={(event) => {
+              setNotice('')
+              onFormatChange(event.currentTarget.value as PhysicalFormat)
+            }}
+          >
+            <option value="all">Todos los formatos</option>
+            <option value="cd">CD</option>
+            <option value="vinyl">Vinilo</option>
+            <option value="cassette">Casete</option>
+            <option value="other">Otro</option>
+          </select>
+        </label>
+      ) : null}
       <LibraryControls
         expanded={controlsOpen}
         onExpandedChange={onControlsOpen}
@@ -133,6 +305,19 @@ export function LibraryView({
           {visible.length} de {albums.length}{' '}
           {albums.length === 1 ? 'álbum' : 'álbumes'}
         </p>
+        {!selection.active ? (
+          <button
+            ref={selectionButton}
+            type="button"
+            className="text-button collection-select-toggle"
+            onClick={() => {
+              setNotice('')
+              setSelection({ scope, criteria, active: true, ids: [] })
+            }}
+          >
+            Seleccionar
+          </button>
+        ) : null}
         {localCovers ? (
           <button
             type="button"
@@ -159,6 +344,117 @@ export function LibraryView({
           </button>
         ) : null}
       </div>
+      {notice ? (
+        <p role="status" className="collection-action-notice">
+          {notice}
+        </p>
+      ) : null}
+      {selection.active ? (
+        <section
+          className="collection-selection"
+          aria-label="Seleccionar álbumes"
+        >
+          <div className="collection-selection-top">
+            <p role="status">
+              {selectedIds.length}{' '}
+              {selectedIds.length === 1
+                ? 'álbum seleccionado'
+                : 'álbumes seleccionados'}
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                className="text-button"
+                disabled={
+                  visible.length === 0 || selectedIds.length === visible.length
+                }
+                onClick={() =>
+                  setSelection({
+                    scope,
+                    criteria,
+                    active: true,
+                    ids: visible.map((album) => album.id),
+                  })
+                }
+              >
+                Seleccionar visibles
+              </button>
+              <button
+                type="button"
+                className="text-button"
+                disabled={!selectedIds.length}
+                onClick={() =>
+                  setSelection({ scope, criteria, active: true, ids: [] })
+                }
+              >
+                Limpiar
+              </button>
+              <button
+                ref={selectionEndButton}
+                type="button"
+                className="collection-icon-button"
+                aria-label="Terminar selección"
+                title="Terminar selección"
+                onClick={() =>
+                  setSelection({ scope, criteria, active: false, ids: [] })
+                }
+              >
+                ×
+              </button>
+            </div>
+          </div>
+          <div className="collection-selection-actions">
+            <button
+              type="button"
+              className="action-button"
+              disabled={!selectedIds.length}
+              onClick={(event) =>
+                openBatch(
+                  selectedIds,
+                  { kind: 'own', format: 'cd' },
+                  event.currentTarget,
+                )
+              }
+            >
+              Lo tengo
+            </button>
+            <button
+              type="button"
+              className="action-button"
+              disabled={!selectedIds.length}
+              onClick={(event) =>
+                openBatch(
+                  selectedIds,
+                  { kind: 'wish', format: 'cd' },
+                  event.currentTarget,
+                )
+              }
+            >
+              Lo quiero
+            </button>
+            <button
+              type="button"
+              className="action-button"
+              disabled={!selectedIds.length}
+              onClick={(event) =>
+                openBatch(
+                  selectedIds,
+                  {
+                    kind: 'listening',
+                    status: 'completed',
+                  },
+                  event.currentTarget,
+                )
+              }
+            >
+              Escucha
+            </button>
+          </div>
+          <p className="text-xs text-muted">
+            La selección se reinicia al cambiar los filtros.
+          </p>
+        </section>
+      ) : null}
       {!visible.length ? (
         <section className="library-empty" aria-labelledby="no-results-title">
           <h2 id="no-results-title" className="text-2xl font-semibold">
@@ -195,6 +491,21 @@ export function LibraryView({
               view={view}
               artists={artists.get(album.albumId) ?? []}
               onArtist={onArtist}
+              {...(selection.active
+                ? {
+                    selection: {
+                      checked: selected.has(album.id),
+                      onToggle: () => toggle(album.id),
+                    },
+                  }
+                : {
+                    onActions: (source) =>
+                      openBatch(
+                        [album.id],
+                        { kind: 'own', format: 'cd' },
+                        source,
+                      ),
+                  })}
               {...(collection.holdings.has(album.id)
                 ? { collection: collection.holdings.get(album.id)! }
                 : {})}
@@ -214,6 +525,35 @@ export function LibraryView({
           ))}
         </ul>
       )}
+      {viewsOpen ? (
+        <CollectionViewsDialog
+          saved={savedViews}
+          current={currentView}
+          onApply={applyView}
+          onNotice={setNotice}
+          onClose={() => {
+            setViewsOpen(false)
+            restoreFocus(viewsButton.current)
+          }}
+        />
+      ) : null}
+      {batch ? (
+        <CollectionBatchDialog
+          repository={repository}
+          ids={batch.ids}
+          initialAction={batch.action}
+          onBusyChange={onBusyChange}
+          onCommitted={onCommitted}
+          onClose={closeBatch}
+          onDone={(receipt) => {
+            setNotice(
+              `Cambios guardados en ${receipt.changed} ${receipt.changed === 1 ? 'álbum' : 'álbumes'}.${receipt.unchanged ? ` ${receipt.unchanged} ya ${receipt.unchanged === 1 ? 'estaba actualizado' : 'estaban actualizados'}.` : ''}`,
+            )
+            setSelection({ scope, criteria, active: false, ids: [] })
+            closeBatch()
+          }}
+        />
+      ) : null}
     </section>
   )
 }

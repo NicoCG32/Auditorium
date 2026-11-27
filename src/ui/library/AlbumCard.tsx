@@ -16,6 +16,8 @@ export function AlbumCard({
   artists,
   onArtist,
   details = true,
+  selection,
+  onActions,
 }: {
   album: LibraryAlbum
   view: 'grid' | 'list'
@@ -25,6 +27,8 @@ export function AlbumCard({
   artists: Artist[]
   onArtist: (id: string) => void
   details?: boolean
+  selection?: { checked: boolean; onToggle: () => void }
+  onActions?: (source: HTMLButtonElement) => void
 }) {
   const score = albumScore(album, ratingGenre)
   const context = ratingGenre
@@ -34,25 +38,64 @@ export function AlbumCard({
   return (
     <li
       data-entry-id={album.id}
-      className={`album-card ${view === 'list' ? 'album-row' : ''}`}
+      className={`album-card ${view === 'list' ? 'album-row' : ''}${selection?.checked ? ' album-selected' : ''}`}
     >
-      <button
-        id={`album-cover-${album.id}`}
-        type="button"
-        className="album-cover-button"
-        aria-label={`Abrir ficha de ${album.title}`}
-        onClick={(event) => {
-          event.currentTarget.focus()
-          onOpen()
-        }}
-      >
-        <AlbumCover
-          title={album.title}
-          {...(album.coverUrl ? { url: album.coverUrl } : {})}
-          {...(album.coverImage ? { image: album.coverImage } : {})}
-          compact
-        />
-      </button>
+      {selection ? (
+        <label className="album-cover-button album-selection-cover">
+          <input
+            type="checkbox"
+            className="album-selection-input"
+            checked={selection.checked}
+            aria-label={`Seleccionar ${album.title}${album.artist ? ` de ${album.artist}` : ''}`}
+            onChange={selection.onToggle}
+          />
+          <AlbumCover
+            title={album.title}
+            {...(album.coverUrl ? { url: album.coverUrl } : {})}
+            {...(album.coverImage ? { image: album.coverImage } : {})}
+            compact
+          />
+        </label>
+      ) : (
+        <button
+          id={`album-cover-${album.id}`}
+          type="button"
+          className="album-cover-button"
+          aria-label={`Abrir ficha de ${album.title}`}
+          onClick={(event) => {
+            event.currentTarget.focus()
+            onOpen()
+          }}
+        >
+          <AlbumCover
+            title={album.title}
+            {...(album.coverUrl ? { url: album.coverUrl } : {})}
+            {...(album.coverImage ? { image: album.coverImage } : {})}
+            compact
+          />
+        </button>
+      )}
+      {!selection && onActions ? (
+        <button
+          type="button"
+          className="album-actions-button"
+          aria-label={`Acciones de ${album.title}`}
+          title="Acciones del álbum"
+          onClick={(event) => onActions(event.currentTarget)}
+        >
+          <svg
+            viewBox="0 0 24 24"
+            width="22"
+            height="22"
+            fill="currentColor"
+            aria-hidden="true"
+          >
+            <circle cx="5" cy="12" r="1.8" />
+            <circle cx="12" cy="12" r="1.8" />
+            <circle cx="19" cy="12" r="1.8" />
+          </svg>
+        </button>
+      ) : null}
       <div className="album-copy">
         <h2 className="text-xl font-semibold leading-tight wrap-anywhere">
           <button
@@ -61,19 +104,24 @@ export function AlbumCard({
             className="album-title-button"
             onClick={(event) => {
               event.currentTarget.focus()
-              onOpen()
+              if (selection) selection.onToggle()
+              else onOpen()
             }}
           >
             {album.title}
           </button>
         </h2>
         <p className="album-artist mt-2 text-sm leading-relaxed wrap-anywhere">
-          <ArtistLinks
-            artists={artists}
-            fallback={album.artist}
-            onOpen={onArtist}
-            focusKey={`album-${album.id}`}
-          />
+          {selection ? (
+            album.artist || 'Sin artista'
+          ) : (
+            <ArtistLinks
+              artists={artists}
+              fallback={album.artist}
+              onOpen={onArtist}
+              focusKey={`album-${album.id}`}
+            />
+          )}
         </p>
         {album.originalYear ? (
           <p className="mt-2 text-xs tracking-wider text-muted">

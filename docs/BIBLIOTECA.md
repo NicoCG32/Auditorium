@@ -10,7 +10,25 @@ Mi colección reúne tus álbumes en una vista de portadas o lista. La navegaci�
 
 Los contadores corresponden a álbumes. Varias copias del mismo disco no aumentan ese contador; un álbum con copias físicas y digitales aparece en ambos filtros. Añadir una discografía, un enlace o un deseo no registra una adquisición. Las tarjetas indican los formatos y ejemplares disponibles y los deseos activos.
 
+Al elegir **Físico** aparece **Formato físico**, con Todos, CD, Vinilo, Casete y Otro. Este filtro consulta tus ejemplares registrados y se conserva al volver de una ficha.
+
 Para registrar una copia, abre el álbum y usa **Mi colección**. El medio y el formato son suficientes; puedes completar edición, estado, fecha o notas más adelante. La gestión detallada de cada copia está en **Mi colección → Ejemplares**. [Guía de ejemplares](MI_COLECCION.md).
+
+## Acciones rápidas y selección
+
+El botón de tres puntos de una tarjeta abre **Lo tengo**, **Lo quiero** y **Escucha** para ese álbum. Con teclado aparece al enfocar la tarjeta; en pantallas táctiles está siempre visible.
+
+Para actuar sobre varios discos, pulsa **Seleccionar** y marca sus portadas o títulos. **Seleccionar visibles** incluye los resultados actuales. **Lo tengo** registra un formato, **Lo quiero** añade un deseo de ese formato y **Escucha** cambia el estado de escucha. Antes de confirmar se muestra cada disco y si cambiará o ya está actualizado. Puedes cancelar la revisión sin guardar.
+
+**Lo tengo** añade una copia sólo donde aún no exista ese formato; conserva las copias y sus detalles. **Lo quiero** omite deseos activos del mismo formato, incluidos los que apuntan a una edición. No completa deseos automáticamente ni asigna una edición. Para varias copias o detalles de una adquisición, utiliza la ficha del álbum.
+
+Cambiar búsqueda o filtros vacía la selección; cambiar orden o presentación la conserva. La revisión se guarda en una sola operación. Si un álbum fue retirado, cambió el formato revisado o cambió el estado de escucha que ibas a sustituir, se pide revisar de nuevo. Si falla el guardado no se aplica una parte del lote. Cuando ya se guardó pero falla la lectura, **Reintentar lectura** actualiza la pantalla sin repetir los cambios.
+
+## Vistas guardadas
+
+**Vistas → Guardar vista actual** permite nombrar una combinación de búsqueda, filtros, medio, formato físico, orden y lista o portadas. Para recuperarla, abre **Vistas** y elige su nombre. Allí también puedes cambiarlo o eliminar la vista; **Deshacer** recupera la última que eliminaste mientras siga abierto el panel.
+
+Las vistas se guardan en este navegador para la biblioteca local actual, hasta 20 nombres distintos. Siguen disponibles al reabrir; para recuperar sus filtros debes elegirlas. No contienen álbumes ni modifican los datos musicales. Se actualizan entre ventanas del mismo navegador, pero no se incluyen en JSON, ZIP ni sincronización entre dispositivos. Un fallo al guardar se avisa y permite seguir usando los filtros.
 
 ## Personalizar
 
@@ -32,7 +50,7 @@ La búsqueda consulta título, artista, género y país. **Ordenar por** permite
 
 La portada y el título abren la misma ficha. El nombre del artista abre su página. Sin portada se utiliza una composición de disco; no se descarga una imagen por buscar o filtrar.
 
-Al regresar de una ficha se conservan búsqueda, medio, filtros, apertura del panel, posición y foco mientras siga viva la pestaña. Recargar recupera la presentación guardada, pero no la búsqueda o el medio temporal. La [guía de navegación](NAVEGACION.md) explica rutas y protección de borradores.
+Al regresar de una ficha se conservan búsqueda, medio, formato físico, filtros, apertura del panel, posición y foco mientras siga viva la pestaña. Recargar recupera la presentación guardada; las combinaciones de búsqueda y filtros se recuperan eligiendo una vista guardada. La [guía de navegación](NAVEGACION.md) explica rutas y protección de borradores.
 
 ## Artistas y sugerencias
 

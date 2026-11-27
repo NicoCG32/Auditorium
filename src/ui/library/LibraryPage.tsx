@@ -36,7 +36,11 @@ import { defaultCollectionFilters } from '../../application/collection-query'
 import { ArtistPage } from './ArtistPage'
 import { CollectionPreferences } from '../appearance/CollectionPreferences'
 import { useCollectionPreferences } from '../appearance/use-collection-preferences'
-import type { CollectionMedium } from '../../application/library-holdings'
+import type {
+  CollectionMedium,
+  PhysicalFormat,
+} from '../../application/library-holdings'
+import { useSavedCollectionViews } from '../appearance/use-saved-collection-views'
 import { ApplicationSettings } from '../settings/ApplicationSettings'
 import { SettingsPage } from '../settings/SettingsPage'
 import { AppShell } from '../navigation/AppShell'
@@ -113,6 +117,7 @@ function LibraryContent({
   const [controlsOpen, setControlsOpen] = useState(false)
   const preferences = useCollectionPreferences()
   const [medium, setMedium] = useState<CollectionMedium>('all')
+  const [physicalFormat, setPhysicalFormat] = useState<PhysicalFormat>('all')
   const [artistSearch, setArtistSearch] = useState('')
   const [artistOrigin, setArtistOrigin] = useState<Route>({ kind: 'artists' })
   const [ratingSearch, setRatingSearch] = useState('')
@@ -193,6 +198,9 @@ function LibraryContent({
     }
   }, [repository, request])
   const ready = state.status === 'ready'
+  const savedViews = useSavedCollectionViews(
+    ready ? state.snapshot.identity : undefined,
+  )
   const initialView = useRef(true)
   useLayoutEffect(() => {
     if (ready && content.current) {
@@ -469,6 +477,12 @@ function LibraryContent({
             />
           ) : route.kind === 'library' ? (
             <LibraryView
+              repository={repository}
+              onCommitted={synchronizeDetail}
+              onBusyChange={setDetailBusy}
+              savedViews={savedViews}
+              format={physicalFormat}
+              onFormatChange={setPhysicalFormat}
               controlsOpen={controlsOpen}
               onControlsOpen={setControlsOpen}
               albums={state.albums}
@@ -489,6 +503,7 @@ function LibraryContent({
               onMediumChange={(next) => {
                 setNotice('')
                 setMedium(next)
+                setPhysicalFormat('all')
               }}
               covers={preferences.covers}
               details={preferences.details}

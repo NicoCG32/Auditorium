@@ -19,11 +19,11 @@ La lectura comienza al montar la aplicación. «Actualizar biblioteca» vuelve a
 
 La biblioteca vacía ofrece «Añadir tu primer álbum», conectado al [registro manual](REGISTRO_MANUAL.md). La búsqueda sin resultados ofrece «Mostrar todos los álbumes», que limpia sus criterios. Los errores presentan un mensaje comprensible y una acción para reintentar, sin exponer excepciones ni datos personales.
 
-LIB-02 incorpora el formulario manual; LIB-03 amplía la [ficha y valoración](FICHA_ALBUM.md), abierta desde el título de una tarjeta o al usar un registro existente. Al registrar un álbum, la biblioteca se actualiza automáticamente y se limpian los criterios para mostrar la entrada nueva. Cambiar una nota actualiza los resultados conservando los filtros. Los filtros de propiedad/formato llegarán cuando existan ejemplares.
+LIB-02 incorpora el formulario manual; LIB-03 amplía la [ficha y valoración](FICHA_ALBUM.md), abierta desde el título de una tarjeta o al usar un registro existente. Al registrar un álbum, la biblioteca se actualiza automáticamente y se limpian los criterios para mostrar la entrada nueva. Cambiar una nota actualiza los resultados conservando los filtros. Los filtros Todos/Físico/Digital y el formato físico consultan únicamente ejemplares registrados; las reglas de selección y vistas guardadas están en [Mi colección](BIBLIOTECA.md).
 
 LIB-04 permite editar [escucha y notas personales](EXPERIENCIA_PERSONAL.md) desde esa misma ficha. El guardado actualiza la biblioteca conservando sus filtros; si la entrada deja de coincidir, volver enfoca la búsqueda. Los comentarios no se usan para buscar ni para calcular valoraciones.
 
-Las preferencias de búsqueda y vista duran mientras la pantalla permanezca montada. No hay suscripción automática a cambios entre pestañas; actualizar o recargar lee el estado vigente. La apertura puede crear la identidad de una base nueva, pero las consultas no escriben registros musicales.
+La búsqueda y los filtros se mantienen durante la apertura de la aplicación; las vistas con nombre los conservan entre aperturas. Presentación y orden se recuerdan en el navegador. Las definiciones de vistas se actualizan entre ventanas; para leer cambios musicales hechos en otra pestaña se debe actualizar o recargar la colección. La apertura puede crear la identidad de una base nueva, pero las consultas no escriben registros musicales.
 
 ## Accesibilidad y verificación
 
