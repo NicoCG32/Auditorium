@@ -134,10 +134,33 @@ for (const error of [
     await page
       .getByRole('button', { name: 'Olvidé mi contraseña', exact: true })
       .click()
-    await page.getByRole('textbox', { name: 'Correo electrónico' }).fill(email)
-    await page
-      .getByRole('button', { name: 'Enviar enlace', exact: true })
-      .click()
+    const address = page.getByRole('textbox', { name: 'Correo electrónico' })
+    await address.fill(email)
+    // Commit the email and leave native autocomplete before mouse submission.
+    await address.press('Tab')
+    const send = page.getByRole('button', {
+      name: 'Enviar enlace',
+      exact: true,
+    })
+    await expect(send).toBeFocused()
+    await expect(address).toHaveValue(email)
+    await expect
+      .poll(() =>
+        address.evaluate((input: HTMLInputElement) => input.validity.valid),
+      )
+      .toBe(true)
+    const [response] = await Promise.all([
+      page.waitForResponse(
+        (response) =>
+          new URL(response.url()).pathname === '/auth/v1/recover' &&
+          response.request().method() === 'POST',
+        { timeout: 10_000 },
+      ),
+      send.click(),
+    ])
+    expect(response.status()).toBe(200)
+    expect(response.request().postDataJSON()).toMatchObject({ email })
+    expect(response.request().postData()).not.toContain('fictitious-private')
     await expect(
       page.getByText(
         'Si el correo corresponde a una cuenta, recibirás un enlace de recuperación.',
