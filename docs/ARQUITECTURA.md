@@ -1,6 +1,6 @@
 # Arquitectura del sistema
 
-El incremento de [portadas automáticas](PORTADAS.md) utiliza DB14/nativa140 y conserva JSON9: descarga en el navegador, coincidencias revisadas, imágenes optimizadas fuera del snapshot y respaldo completo ZIP2 con lectura de ZIP1. Los apartados de incrementos previos conservan su contexto histórico.
+El incremento de [portadas automáticas](PORTADAS.md) utiliza DB14/nativa140 y conserva JSON9: descarga en el navegador, coincidencias revisadas, imágenes optimizadas fuera del snapshot y respaldo completo ZIP3 con diseño personal y lectura de ZIP1/2. Los apartados de incrementos previos conservan su contexto histórico.
 
 COL-05 completa [Mi colección](MI_COLECCION.md): proyección de adquisiciones con búsqueda y filtros, operaciones de copias independientes y actualización con comparación del registro completo dentro de una transacción. No cambia catálogo, experiencia ni contratos de almacenamiento o sincronización.
 
@@ -201,7 +201,7 @@ La interfaz distingue fallo antes del commit de fallo al actualizar la vista des
 
 ## 6. PWA y actualización de recursos
 
-El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos y recursos visuales propios seleccionados en el [diseño base](DISENO_BASE.md). La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado. Tema y ambientación se guardan como preferencias opcionales de presentación en localStorage. La vista previa de una foto local sólo vive en memoria durante la apertura; ninguna de estas opciones modifica IndexedDB ni el respaldo musical.
+El registro se inicia explícitamente desde el punto de composición. La precarga incluye HTML, JS/CSS compilados, manifest e iconos y recursos visuales propios seleccionados en el [diseño base](DISENO_BASE.md). La configuración mantiene `runtimeCaching: []`, `skipWaiting: false` y `clientsClaim: true`; el service worker de desarrollo está desactivado. El diseño personal v1 reúne tema, paleta, imagen optimizada y presentación en un registro de localStorage, con migración de las preferencias anteriores. Se puede descargar por separado o incluir en ZIP3. Se conserva fuera de IndexedDB y del snapshot musical. [Contrato y restauración](PERSONALIZACION.md).
 
 ```mermaid
 sequenceDiagram

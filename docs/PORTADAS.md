@@ -33,8 +33,10 @@ Guardar una portada escribe su origen, descriptor y bytes en una sola transacci�
 
 JSON9 y el snapshot remoto mantienen su contrato y límite de 20 MiB. Las imágenes descargadas no entran en RPC ni checkpoints. No hay cambios en el esquema remoto.
 
-El respaldo completo conserva `audio-manifest.json` y `library.json`. Con portadas usa manifiesto **versión2**, agregando `covers`, rutas `covers/<albumId>.jpg`, origen, tamaño, dimensiones y SHA-256. Los bytes permanecen separados de library.json. Sin portadas se sigue generando ZIP1; ambos formatos se leen. El paquete admite hasta 288 MiB, con presupuestos independientes de 128 MiB de audio y 128 MiB de portadas, 20 MiB de JSON y 4 MiB de índice. ZIP1 conserva sus límites históricos de 160 MiB e índice de 1 MiB.
+El respaldo completo conserva `audio-manifest.json` y `library.json`. Con portadas usa manifiesto **versión2**, agregando `covers`, rutas `covers/<albumId>.jpg`, origen, tamaño, dimensiones y SHA-256. Los bytes permanecen separados de library.json. La aplicación incluye el diseño en ZIP3; el servicio conserva la exportación ZIP1/2 cuando no se proporciona un diseño. Se leen las tres versiones. El paquete admite hasta 288 MiB, con presupuestos independientes de 128 MiB de audio y 128 MiB de portadas, 20 MiB de JSON y 4 MiB de índice. ZIP1 conserva sus límites históricos de 160 MiB e índice de 1 MiB.
 
 Antes de restaurar se verifican rutas, archivos declarados, identidad, asociaciones, dimensiones y hashes. La escritura conjunta de identidad, biblioteca, audio y portadas es atómica; un fallo o cancelación revierte el destino. Una aplicación antigua no abre DB14 ni lee ZIP2. Conserva respaldos históricos separados y utiliza una versión actualizada para restaurar un ZIP2.
 
 Los derechos de las imágenes pertenecen a sus titulares. Descargar una copia para tu colección no concede permiso para redistribuirla ni cambia las licencias del catálogo.
+
+La aplicación incluye también [tu diseño personal](PERSONALIZACION.md) al descargar el respaldo completo: en ese caso escribe ZIP3, con el mismo contrato de portadas y lectura de ZIP1/2. El diseño se puede omitir al restaurar.

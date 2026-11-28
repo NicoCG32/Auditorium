@@ -5,6 +5,7 @@ import { IndexedDbRepository } from './infrastructure/repositories/indexeddb-rep
 import './styles/base.css'
 import './styles/collection.css'
 import './styles/app-shell.css'
+import './styles/personal-design.css'
 import { createOfflineController } from './infrastructure/browser/offline-controller'
 import {
   cloudConfiguration,

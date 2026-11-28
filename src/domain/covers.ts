@@ -124,7 +124,7 @@ export function checkCoverBudget(rows: Pick<CoverAttachment, 'size'>[]) {
       'No hay espacio para más portadas en esta colección. Las portadas guardadas se conservan.',
     )
 }
-function jpegDimensions(bytes: Uint8Array) {
+export function jpegDimensions(bytes: Uint8Array) {
   if (bytes[0] !== 255 || bytes[1] !== 216)
     throw new CoverError('La portada no contiene una imagen JPEG válida.')
   for (let cursor = 2; cursor + 3 < bytes.length;) {

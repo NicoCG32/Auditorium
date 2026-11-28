@@ -1,5 +1,8 @@
 import { act, renderHook } from '@testing-library/react'
 import { expect, test, vi } from 'vitest'
+import { PersonalDesignProvider } from './PersonalDesignProvider'
+import { PERSONAL_DESIGN_STORAGE_KEY } from '../../infrastructure/browser/personal-design-storage'
+import { parsePersonalDesign } from '../../domain/personal-design'
 import {
   defaultCollectionPreferences,
   COLLECTION_VIEW_STORAGE_KEY,
@@ -7,7 +10,9 @@ import {
 } from './use-collection-preferences'
 
 test('personalización, vista y orden se conservan al volver a abrir sin guardar datos musicales', () => {
-  const first = renderHook(useCollectionViewState)
+  const first = renderHook(useCollectionViewState, {
+    wrapper: PersonalDesignProvider,
+  })
   act(() =>
     first.result.current.update({
       name: 'Los discos de casa',
@@ -18,7 +23,9 @@ test('personalización, vista y orden se conservan al volver a abrir sin guardar
     }),
   )
   first.unmount()
-  const restored = renderHook(useCollectionViewState)
+  const restored = renderHook(useCollectionViewState, {
+    wrapper: PersonalDesignProvider,
+  })
   expect(restored.result.current).toMatchObject({
     name: 'Los discos de casa',
     covers: 'small',
@@ -27,7 +34,8 @@ test('personalización, vista y orden se conservan al volver a abrir sin guardar
     details: true,
   })
   expect(
-    JSON.parse(localStorage.getItem(COLLECTION_VIEW_STORAGE_KEY)!),
+    parsePersonalDesign(localStorage.getItem(PERSONAL_DESIGN_STORAGE_KEY)!)
+      .collection,
   ).toEqual({
     name: 'Los discos de casa',
     covers: 'small',
@@ -50,7 +58,9 @@ test('preferencias incompletas o dañadas no impiden abrir la colección', () =>
     }),
   ]) {
     localStorage.setItem(COLLECTION_VIEW_STORAGE_KEY, value)
-    const result = renderHook(useCollectionViewState)
+    const result = renderHook(useCollectionViewState, {
+      wrapper: PersonalDesignProvider,
+    })
     expect(result.result.current).toMatchObject(defaultCollectionPreferences)
     result.unmount()
   }
@@ -66,7 +76,9 @@ test('sin almacenamiento disponible los cambios de presentación siguen funciona
       throw new Error('Bloqueado')
     })
   try {
-    const { result } = renderHook(useCollectionViewState)
+    const { result } = renderHook(useCollectionViewState, {
+      wrapper: PersonalDesignProvider,
+    })
     act(() => result.current.update({ view: 'list', covers: 'large' }))
     expect(result.current).toMatchObject({ view: 'list', covers: 'large' })
   } finally {

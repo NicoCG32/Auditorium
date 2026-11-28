@@ -77,11 +77,11 @@ DB13 conserva los índices únicos `musicBrainz.id` en artistas y álbumes de DB
 | -------------------- | ------------------- | ---------------------------------------------------- | ------------------------------------------------- |
 | Base local IndexedDB | DB14                | Metadatos, biblioteca, checkpoints, audio y portadas | No es un archivo transportable por sí sola        |
 | Respaldo/snapshot    | `schemaVersion = 9` | Identidad, catálogo y biblioteca                     | Audio y copias descargadas de portadas; caché PWA |
-| Respaldo completo    | ZIP2                | Snapshot y archivos con manifiesto e integridad      | No crea una cuenta remota                         |
+| Respaldo completo    | ZIP3                | Snapshot y archivos con manifiesto e integridad      | No crea una cuenta remota                         |
 
 DB14 añade `coverAttachments` y `coverFiles` por `[scope+albumId]`, separados del snapshot. El origen tiene índice `[scope+sourceUrl]` y los créditos se consultan por `albumId`. [Portadas y respaldo completo](../PORTADAS.md).
 
-Cada contrato tiene su propia versión: IndexedDB (`14`), snapshot (`9`), ZIP (`2` con portadas, `1` sin ellas) y aplicación (`1.1.0`). Los validadores mantienen lectores de versiones anteriores y migraciones específicas.
+Cada contrato tiene su propia versión: IndexedDB (`14`), snapshot (`9`), diseño (`1`), ZIP (`3` con diseño, `2` con portadas, `1` sin ellas) y aplicación (`1.1.0`). Los validadores mantienen lectores de versiones anteriores y migraciones específicas.
 
 ## PostgreSQL opcional en Supabase
 
@@ -108,8 +108,10 @@ La base local conserva las transacciones de la experiencia en este dispositivo. 
 ## Límites y riesgos
 
 - Snapshot JSON: **20 MiB máximo** (`MAX_BACKUP_BYTES`); la base remota también valida tamaño del documento.
-- Audio: **16 MiB por archivo**, **128 adjuntos**, **128 MiB por biblioteca**. Portadas descargadas: **128 KiB por imagen**, **5.000 imágenes** y **128 MiB por colección**. ZIP2 completo: **288 MiB máximo**, índice de hasta 4 MiB; ZIP1 mantiene 160 MiB e índice de 1 MiB.
+- Audio: **16 MiB por archivo**, **128 adjuntos**, **128 MiB por biblioteca**. Portadas descargadas: **128 KiB por imagen**, **5.000 imágenes** y **128 MiB por colección**. ZIP3 completo: **288 MiB máximo**, índice de hasta 4 MiB; ZIP1 mantiene 160 MiB e índice de 1 MiB.
 - Un respaldo antiguo debe pasar por el lector y migración compatibles; **no** se deben editar IDs a mano para forzar una restauración.
 - Los nombres de entidades en un diagrama no son garantía de cifrado local: IndexedDB depende de la seguridad del perfil del navegador y el dispositivo.
 
 [Reglas de dominio](02-dominio.md) · [Restauración y flujos](04-flujos-y-estados.md) · [Cuenta y seguridad](05-integraciones-y-seguridad.md)
+
+El diseño personal se almacena fuera de IndexedDB y del snapshot musical, en `auditorium.personal-design.v1`. Se incluye en ZIP3 como `design.json` con SHA-256; la restauración permite conservar el diseño del destino. [Contrato y límites](../PERSONALIZACION.md).

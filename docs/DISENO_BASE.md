@@ -35,15 +35,11 @@ Los recursos de producción están en [`public/auditorium/`](../public/auditoriu
 
 La marca cambia con el selector de la aplicación, sin depender del esquema del sistema. Los fondos tienen variantes de escritorio y móvil; una capa de protección y superficies opacas separan la decoración del contenido operativo. Los recursos ornamentales no interceptan pulsaciones ni aportan nombres accesibles redundantes. Las portadas guardadas siguen perteneciendo al catálogo: el emblema no sustituye una portada existente.
 
-## Preferencias y foto temporal
+## Diseños personales y wallpapers
 
-**Ajustes → Personalización** permite dar nombre a la colección, elegir portadas o lista, ajustar el tamaño y mostrar detalles en las tarjetas. El panel se cierra con **Cerrar ajustes** o Escape, sin abandonar la música ni los formularios abiertos. El nombre, vista, tamaño, detalles y orden se guardan bajo `auditorium.collection-view.v1`. La primera apertura muestra portadas medianas, información breve y orden por artista. Las preferencias son independientes del snapshot musical y no forman parte de JSON, ZIP ni sincronización.
+**Ajustes → Personalización** reúne una vista previa, imagen propia persistente, seis paletas y modo automático, temas claro/oscuro, nombre y presentación de la colección. Los ajustes de intensidad/encuadre y traslado del diseño quedan plegados. [Uso, almacenamiento y respaldo del diseño](PERSONALIZACION.md).
 
-El mismo panel permite elegir **Oscuro/Claro**, activar **«Fondo decorativo»** y seleccionar una **«Foto de fondo (opcional)»**. El tema inicial es oscuro, con fondo decorativo desactivado para preferencias nuevas; las elecciones válidas ya guardadas se conservan. Tema y activación utilizan `auditorium.appearance.v1`; si el navegador impide guardar preferencias, los controles siguen funcionando durante esa apertura.
-
-La foto es una vista previa local, elegida explícitamente desde un archivo PNG, JPEG o WebP de **hasta 5 MiB**. La selección comprueba formato y decodificación. Permite ajustar opacidad entre 5 % y 25 %, posición izquierda/centro/derecha y **«Quitar foto»**. No se sube a ningún servicio, no se guarda en IndexedDB ni en `localStorage` y no se incluye en respaldos. Al recargar o cerrar la aplicación se descarta. Las referencias temporales `blob:` se revocan al reemplazar, quitar o desmontar la vista, y al descartar una carga fallida o cancelada.
-
-Desactivar la ambientación oculta los fondos y la foto; no elimina la selección temporal. La aplicación conserva superficies y controles legibles sin imágenes. No se distribuyen fotografías de artistas ni se solicitan imágenes decorativas a servicios externos.
+El contrato de diseño v1 se guarda como un único registro local y migra las preferencias anteriores sin borrarlas. Se puede descargar y abrir por separado o incluir en ZIP3. Las paletas CSS están en `src/styles/personal-design.css`; `data-aud-theme` y `data-aud-palette` se aplican también a la raíz del documento para mantener los diálogos coherentes.
 
 ## Recursos sin conexión y rutas
 
@@ -74,6 +70,6 @@ La adaptación de 2026-10-16 se verificó con 564 pruebas en 33 archivos y 37 re
 
 En aquella adaptación, las auditorías automatizadas de los estados recorridos no detectaron infracciones A/AA. La paleta de octubre alcanzó un contraste mínimo de 6,65:1 para texto principal, secundario y destacado, y de 4,92:1 en botones carmesí, incluido hover. El foco superó 7:1 frente a sus superficies. Son resultados históricos de esas combinaciones y recorridos; no describen una certificación de accesibilidad ni sustituyen la revisión de la paleta actual.
 
-La revisión visual cubrió escritorio y móvil, ambos temas y ficha sin conexión. La precaché contiene los 13 recursos visuales previstos en raíz y Pages; permite cambiar de tema sin red. Quedan pendientes la comprobación en dispositivos móviles físicos y con lectores de pantalla, y la persistencia de fotos personales como una función futura independiente.
+La revisión visual cubrió escritorio y móvil, ambos temas y ficha sin conexión. La precaché contiene los 13 recursos visuales previstos en raíz y Pages; permite cambiar de tema sin red. Quedan pendientes la comprobación en dispositivos móviles físicos y con lectores de pantalla. La persistencia de fondos personales se incorpora en la revisión de noviembre descrita arriba.
 
 Referencias: [Tailwind con Vite](https://tailwindcss.com/docs/installation/using-vite), [variables de tema](https://tailwindcss.com/docs/theme) y [contraste de texto](https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum).

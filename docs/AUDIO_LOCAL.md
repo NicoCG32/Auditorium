@@ -1,6 +1,6 @@
 # Audio personal persistente y respaldo completo
 
-El respaldo completo también puede incluir [portadas descargadas](PORTADAS.md): en ese caso usa ZIP2, con imágenes separadas del snapshot, hasta 288 MiB en total. La lectura de ZIP1 y sus límites históricos se conservan; el presupuesto del audio sigue en 128 MiB. DB14 añade dos almacenes de portadas sin cambiar los archivos de audio existentes. Los apartados siguientes conservan el contrato de audio original.
+El respaldo completo ZIP3 lleva [el diseño personal](PERSONALIZACION.md) y también puede incluir [portadas descargadas](PORTADAS.md): se conserva la lectura de ZIP2, con imágenes separadas del snapshot, hasta 288 MiB en total. La lectura de ZIP1 y sus límites históricos se conservan; el presupuesto del audio sigue en 128 MiB. DB14 añade dos almacenes de portadas sin cambiar los archivos de audio existentes. Los apartados siguientes conservan el contrato de audio original.
 
 AUDIO-02 #70 · 24 de octubre de 2026. Implementación de audio por dispositivo con respaldo completo propio. La investigación AUDIO-01 #69 y su [prototipo aislado](../prototypes/audio-01/README.md) conservan la evidencia previa de formatos y almacenamiento.
 

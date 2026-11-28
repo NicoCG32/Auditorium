@@ -1,4 +1,5 @@
 import { useId } from 'react'
+import { PALETTES } from '../../domain/personal-design'
 import type { Appearance } from './use-appearance'
 import type { PosterPreview, PosterPosition } from './use-poster-preview'
 import { CollectionPreferences } from './CollectionPreferences'
@@ -6,6 +7,9 @@ import {
   useCollectionPreferences,
   type CollectionPreferences as Preferences,
 } from './use-collection-preferences'
+import { usePersonalDesign } from './personal-design-context'
+import { DesignPreview } from './DesignPreview'
+import { DesignTransfer } from './DesignTransfer'
 
 export function AppearanceControls({
   appearance,
@@ -28,15 +32,157 @@ function Personalization({
   preview: PosterPreview
 }) {
   const preferences = useCollectionPreferences()
+  const { design } = usePersonalDesign()
   const id = useId()
-  const fileId = `${id}-poster`
-  const noteId = `${id}-note`
-  const errorId = `${id}-error`
-
   return (
     <section className="appearance-settings" aria-label="Personalización">
       <h2>Personalización</h2>
       <div className="appearance-content">
+        <DesignPreview design={design} />
+        <div className="design-main-controls">
+          <fieldset className="appearance-group">
+            <legend>Fondo</legend>
+            <div className="design-file-actions">
+              <label className="design-upload">
+                {preview.poster ? 'Cambiar imagen' : 'Elegir imagen'}
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  aria-label="Imagen de fondo"
+                  aria-describedby={`${id}-image-help`}
+                  aria-invalid={preview.error ? true : undefined}
+                  onChange={(event) => {
+                    const file = event.currentTarget.files?.[0]
+                    event.currentTarget.value = ''
+                    void preview.chooseFile(file)
+                  }}
+                />
+              </label>
+              {preview.poster && (
+                <button
+                  type="button"
+                  className="action-button"
+                  onClick={() => preview.removePoster()}
+                >
+                  Quitar imagen
+                </button>
+              )}
+              {preview.preparing && (
+                <button
+                  type="button"
+                  className="action-button"
+                  onClick={() => preview.cancelSelection()}
+                >
+                  Cancelar imagen
+                </button>
+              )}
+            </div>
+            <p className="appearance-note" id={`${id}-image-help`}>
+              PNG, JPEG o WebP, hasta 15 MB. Se guarda en este dispositivo.
+            </p>
+            {preview.preparing && <p role="status">Preparando imagen…</p>}
+            {preview.error && (
+              <p className="field-error" role="alert">
+                {preview.error}
+              </p>
+            )}
+            {preview.poster ? (
+              <details className="appearance-file-help">
+                <summary>Ajustar imagen</summary>
+                <div className="appearance-poster-controls">
+                  <label className="appearance-label">
+                    Intensidad del fondo (
+                    {Math.round(preview.poster.opacity * 100)} %)
+                    <input
+                      type="range"
+                      min="10"
+                      max="60"
+                      step="1"
+                      value={Math.round(preview.poster.opacity * 100)}
+                      onChange={(event) =>
+                        preview.setOpacity(
+                          Number(event.currentTarget.value) / 100,
+                        )
+                      }
+                    />
+                  </label>
+                  <label className="appearance-label">
+                    Encuadre
+                    <select
+                      value={preview.poster.position}
+                      onChange={(event) =>
+                        preview.setPosition(
+                          event.currentTarget.value as PosterPosition,
+                        )
+                      }
+                    >
+                      <option value="left">Izquierda</option>
+                      <option value="center">Centro</option>
+                      <option value="right">Derecha</option>
+                    </select>
+                  </label>
+                </div>
+              </details>
+            ) : (
+              <label className="appearance-choice">
+                <input
+                  type="checkbox"
+                  checked={appearance.ambient}
+                  onChange={(event) =>
+                    appearance.setAmbient(event.currentTarget.checked)
+                  }
+                />
+                Fondo decorativo
+              </label>
+            )}
+          </fieldset>
+          <fieldset className="appearance-group">
+            <legend>Colores</legend>
+            <label className="appearance-choice">
+              <input
+                type="radio"
+                name={`${id}-palette`}
+                checked={appearance.palette === 'auto'}
+                onChange={() => appearance.setPalette('auto')}
+              />
+              Combinar con el fondo
+            </label>
+            <div className="design-palette-grid">
+              {PALETTES.map((palette) => (
+                <label className="design-palette" key={palette.id}>
+                  <input
+                    type="radio"
+                    name={`${id}-palette`}
+                    checked={appearance.palette === palette.id}
+                    onChange={() => appearance.setPalette(palette.id)}
+                  />
+                  <span
+                    className="design-swatch"
+                    style={{ background: palette.swatch }}
+                    aria-hidden="true"
+                  />
+                  {palette.name}
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        </div>
+        <fieldset className="appearance-group">
+          <legend>Tema</legend>
+          <div className="appearance-choices">
+            {(['dark', 'light'] as const).map((theme) => (
+              <label className="appearance-choice" key={theme}>
+                <input
+                  type="radio"
+                  name={`${id}-theme`}
+                  checked={appearance.theme === theme}
+                  onChange={() => appearance.setTheme(theme)}
+                />
+                {theme === 'dark' ? 'Oscuro' : 'Claro'}
+              </label>
+            ))}
+          </div>
+        </fieldset>
         <label className="appearance-label">
           Nombre de tu colección
           <input
@@ -90,112 +236,15 @@ function Personalization({
             Mostrar géneros, país y valoraciones
           </label>
         </fieldset>
-        <fieldset className="appearance-group">
-          <legend>Tema</legend>
-          <div className="appearance-choices">
-            {(['dark', 'light'] as const).map((theme) => (
-              <label className="appearance-choice" key={theme}>
-                <input
-                  type="radio"
-                  name={`${id}-theme`}
-                  value={theme}
-                  checked={appearance.theme === theme}
-                  onChange={() => appearance.setTheme(theme)}
-                />
-                {theme === 'dark' ? 'Oscuro' : 'Claro'}
-              </label>
-            ))}
-          </div>
-        </fieldset>
-        <label className="appearance-choice">
-          <input
-            type="checkbox"
-            checked={appearance.ambient}
-            onChange={(event) =>
-              appearance.setAmbient(event.currentTarget.checked)
-            }
-          />
-          Fondo decorativo
-        </label>
-        <div className="appearance-group">
-          <label className="appearance-label" htmlFor={fileId}>
-            Foto de fondo (opcional)
-          </label>
-          <input
-            id={fileId}
-            type="file"
-            accept="image/png,image/jpeg,image/webp"
-            aria-describedby={`${noteId}${preview.error ? ` ${errorId}` : ''}`}
-            aria-invalid={preview.error ? true : undefined}
-            onChange={(event) => {
-              const file = event.currentTarget.files?.[0]
-              event.currentTarget.value = ''
-              void preview.chooseFile(file)
-            }}
-          />
-          <p className="appearance-note" id={noteId}>
-            La foto se usa durante esta apertura. Puedes elegir otra cuando
-            quieras.
+        {appearance.storageError && (
+          <p role="alert" className="field-error">
+            {appearance.storageError}
           </p>
-          <details className="appearance-file-help">
-            <summary>Formatos y privacidad</summary>
-            <p className="appearance-note">
-              PNG, JPEG o WebP, hasta 5 MB. La foto no se sube y se descarta al
-              recargar; no forma parte de tus respaldos.
-            </p>
-          </details>
-          {preview.preparing && <p role="status">Preparando vista previa…</p>}
-          {preview.error && (
-            <p className="field-error" role="alert" id={errorId}>
-              {preview.error}
-            </p>
-          )}
-          {preview.poster && (
-            <div className="appearance-poster-controls">
-              <label className="appearance-label">
-                Opacidad de la foto ({Math.round(preview.poster.opacity * 100)}{' '}
-                %)
-                <input
-                  type="range"
-                  min="5"
-                  max="25"
-                  step="1"
-                  value={Math.round(preview.poster.opacity * 100)}
-                  onChange={(event) =>
-                    preview.setOpacity(Number(event.currentTarget.value) / 100)
-                  }
-                />
-              </label>
-              <label className="appearance-label">
-                Posición de la foto
-                <select
-                  value={preview.poster.position}
-                  onChange={(event) =>
-                    preview.setPosition(
-                      event.currentTarget.value as PosterPosition,
-                    )
-                  }
-                >
-                  <option value="left">Izquierda</option>
-                  <option value="center">Centro</option>
-                  <option value="right">Derecha</option>
-                </select>
-              </label>
-              <button
-                type="button"
-                className="action-button"
-                onClick={preview.removePoster}
-              >
-                Quitar foto
-              </button>
-              {!appearance.ambient && (
-                <p className="appearance-note">
-                  La foto está oculta mientras la ambientación está desactivada.
-                </p>
-              )}
-            </div>
-          )}
-        </div>
+        )}
+        <DesignTransfer
+          onApply={() => preview.cancelSelection()}
+          disabled={preview.preparing}
+        />
       </div>
     </section>
   )

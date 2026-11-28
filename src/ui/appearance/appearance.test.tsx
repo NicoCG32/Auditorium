@@ -1,311 +1,276 @@
-import { StrictMode } from 'react'
+import { StrictMode, type ReactNode } from 'react'
 import {
   act,
-  cleanup,
   fireEvent,
   render,
   renderHook,
   screen,
   waitFor,
 } from '@testing-library/react'
-import { afterEach, beforeEach, expect, test, vi } from 'vitest'
+import { beforeEach, expect, test, vi } from 'vitest'
 import { AppearanceControls } from './AppearanceControls'
 import { PosterBackdrop } from './PosterBackdrop'
 import { APPEARANCE_STORAGE_KEY, useAppearance } from './use-appearance'
-import { MAX_POSTER_BYTES, usePosterPreview } from './use-poster-preview'
+import { usePosterPreview } from './use-poster-preview'
+import { PersonalDesignProvider } from './PersonalDesignProvider'
+import { PERSONAL_DESIGN_STORAGE_KEY } from '../../infrastructure/browser/personal-design-storage'
+import {
+  prepareWallpaper,
+  WallpaperError,
+} from '../../infrastructure/browser/wallpaper'
+import { syntheticWallpaper } from '../../test/personal-design.fixture'
+import { usePersonalDesign } from './personal-design-context'
 
-class PreviewImage {
-  static instances: PreviewImage[] = []
-  naturalWidth = 640
-  naturalHeight = 480
-  onload: (() => void) | null = null
-  onerror: (() => void) | null = null
-  src = ''
+vi.mock('../../infrastructure/browser/wallpaper', async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import('../../infrastructure/browser/wallpaper')
+  >()),
+  prepareWallpaper: vi.fn(),
+  verifyWallpaper: vi.fn(),
+}))
+const prepare = vi.mocked(prepareWallpaper)
+const file = () => new File(['ficticio'], 'fondo.png', { type: 'image/png' })
+const wrapper = ({ children }: { children: ReactNode }) => (
+  <StrictMode>
+    <PersonalDesignProvider>{children}</PersonalDesignProvider>
+  </StrictMode>
+)
+beforeEach(() => {
+  localStorage.clear()
+  prepare.mockReset()
+  prepare.mockResolvedValue(syntheticWallpaper())
+})
 
-  constructor() {
-    PreviewImage.instances.push(this)
+function useControls() {
+  return {
+    appearance: useAppearance(),
+    preview: usePosterPreview(),
+    personal: usePersonalDesign(),
   }
 }
 
-class PreviewURL extends URL {
-  static createObjectURL = vi.fn(() => `blob:preview-${crypto.randomUUID()}`)
-  static revokeObjectURL = vi.fn()
-}
-
-beforeEach(() => {
-  localStorage.clear()
-  PreviewImage.instances = []
-  PreviewURL.createObjectURL.mockClear()
-  PreviewURL.revokeObjectURL.mockClear()
-  vi.stubGlobal('Image', PreviewImage)
-  vi.stubGlobal('URL', PreviewURL)
+test('tema, paleta y wallpaper persisten juntos al reabrir y el modo automático combina con la imagen', async () => {
+  const first = renderHook(useControls, { wrapper })
+  expect(first.result.current.appearance).toMatchObject({
+    theme: 'dark',
+    ambient: false,
+    resolvedPalette: 'garnet',
+  })
+  expect(prepare).not.toHaveBeenCalled()
+  await act(() => first.result.current.preview.chooseFile(file()))
+  act(() => first.result.current.appearance.setTheme('light'))
+  act(() => first.result.current.preview.setPosition('right'))
+  act(() => first.result.current.preview.setOpacity(0.5))
+  const saved = first.result.current.personal.design
+  expect(first.result.current.appearance.resolvedPalette).toBe('forest')
+  expect(localStorage.length).toBe(1)
+  first.unmount()
+  const restored = renderHook(useControls, { wrapper })
+  expect(restored.result.current.personal.design).toEqual(saved)
+  expect(restored.result.current.preview.poster).toMatchObject({
+    opacity: 0.5,
+    position: 'right',
+  })
+  expect(prepare).toHaveBeenCalledTimes(1)
 })
 
-afterEach(() => {
-  cleanup()
-  vi.restoreAllMocks()
-  vi.unstubAllGlobals()
-  localStorage.clear()
-})
-
-function rasterFile(type = 'image/png') {
-  const signature = {
-    'image/png': [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a],
-    'image/jpeg': [0xff, 0xd8, 0xff],
-    'image/webp': [0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50],
-  }[type]
-  const bytes = new Uint8Array(signature ?? [1, 2, 3])
-  const file = new File([bytes], 'imagen-ficticia', { type })
-  // jsdom aún no implementa Blob.arrayBuffer; mantenemos los bytes reales del caso.
-  vi.spyOn(file, 'slice').mockImplementation(() => {
-    const slice = new Blob([bytes])
-    Object.defineProperty(slice, 'arrayBuffer', {
-      value: () => Promise.resolve(bytes.buffer),
-    })
-    return slice
-  })
-  return file
-}
-
-function lastImage() {
-  const image = PreviewImage.instances.at(-1)
-  if (!image) throw new Error('La imagen de prueba no se creó.')
-  return image
-}
-
-async function selectAndLoad(
-  chooseFile: (file: File | undefined) => Promise<void>,
-  file = rasterFile(),
-) {
-  let selection!: Promise<void>
-  act(() => {
-    selection = chooseFile(file)
-  })
-  await waitFor(() => expect(lastImage().onload).not.toBeNull())
-  await act(async () => {
-    lastImage().onload?.()
-    await selection
-  })
-}
-
-test('tema oscuro y fondo sobrio iniciales; las elecciones personales persisten y se recuperan', () => {
-  const first = renderHook(useAppearance)
-  expect(first.result.current.theme).toBe('dark')
-  expect(first.result.current.ambient).toBe(false)
-  act(() => {
-    first.result.current.setTheme('light')
-    first.result.current.setAmbient(true)
-  })
+test('migra preferencias anteriores sin escribir ni borrar claves hasta que se cambia el diseño', () => {
+  localStorage.setItem(
+    APPEARANCE_STORAGE_KEY,
+    JSON.stringify({ theme: 'light', ambient: true }),
+  )
+  const { result } = renderHook(useControls, { wrapper })
+  expect(result.current.appearance.theme).toBe('light')
+  expect(localStorage.getItem(PERSONAL_DESIGN_STORAGE_KEY)).toBeNull()
+  act(() => result.current.appearance.setPalette('ocean'))
   expect(
-    JSON.parse(localStorage.getItem(APPEARANCE_STORAGE_KEY) ?? ''),
-  ).toEqual({
+    JSON.parse(localStorage.getItem(PERSONAL_DESIGN_STORAGE_KEY)!),
+  ).toMatchObject({ theme: 'light' })
+  expect(JSON.parse(localStorage.getItem(APPEARANCE_STORAGE_KEY)!)).toEqual({
     theme: 'light',
     ambient: true,
   })
-  expect(localStorage.length).toBe(1)
-  first.unmount()
-  const restored = renderHook(useAppearance)
-  expect(restored.result.current.theme).toBe('light')
-  expect(restored.result.current.ambient).toBe(true)
 })
 
-test.each(['{', 'null', '[]', '{"theme":"otro","ambient":"off"}'])(
-  'preferencias dañadas o fuera del contrato recuperan valores seguros: %s',
-  (saved) => {
-    localStorage.setItem(APPEARANCE_STORAGE_KEY, saved)
-    const { result } = renderHook(useAppearance)
-    expect(result.current.theme).toBe('dark')
-    expect(result.current.ambient).toBe(false)
+test.each(['{', 'null', '[]', '{"version":99}', '{"theme":"otro"}'])(
+  'almacenamiento dañado no impide abrir: %s',
+  (value) => {
+    localStorage.setItem(PERSONAL_DESIGN_STORAGE_KEY, value)
+    const { result } = renderHook(useControls, { wrapper })
+    expect(result.current.appearance.theme).toBe('dark')
+    expect(localStorage.getItem(PERSONAL_DESIGN_STORAGE_KEY)).toBe(value)
   },
 )
 
-test('bloqueos de lectura y escritura no impiden usar los controles', () => {
-  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-    throw new DOMException('Almacenamiento bloqueado', 'SecurityError')
-  })
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
-    throw new DOMException('Cuota no disponible', 'QuotaExceededError')
-  })
-  const { result } = renderHook(useAppearance)
-  act(() => {
-    result.current.setTheme('light')
-    result.current.setAmbient(false)
-  })
-  expect(result.current.theme).toBe('light')
-  expect(result.current.ambient).toBe(false)
+test('una paleta manual se conserva al sustituir o quitar la imagen', async () => {
+  const { result } = renderHook(useControls, { wrapper })
+  act(() => result.current.appearance.setPalette('violet'))
+  await act(() => result.current.preview.chooseFile(file()))
+  expect(result.current.appearance.resolvedPalette).toBe('violet')
+  act(() => result.current.preview.removePoster())
+  expect(result.current.preview.poster).toBeNull()
+  expect(result.current.appearance.resolvedPalette).toBe('violet')
 })
 
-test('no crea imágenes hasta elegir archivo y descarta la vista previa al volver a montar', async () => {
-  const first = renderHook(usePosterPreview, { wrapper: StrictMode })
-  expect(PreviewURL.createObjectURL).not.toHaveBeenCalled()
-  expect(PreviewImage.instances).toHaveLength(0)
-  await selectAndLoad(first.result.current.chooseFile)
-  const url = first.result.current.poster?.url
-  expect(first.result.current.poster).toEqual({
-    url,
-    opacity: 0.12,
-    position: 'center',
-  })
-  expect(localStorage.length).toBe(0)
-  first.unmount()
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(url)
-  expect(renderHook(usePosterPreview).result.current.poster).toBeNull()
-})
-
-test('reemplazar, quitar y desmontar liberan las referencias de las fotos', async () => {
-  const { result, unmount } = renderHook(usePosterPreview)
-  await selectAndLoad(result.current.chooseFile)
-  const firstUrl = result.current.poster?.url
-  await selectAndLoad(result.current.chooseFile, rasterFile('image/jpeg'))
-  const secondUrl = result.current.poster?.url
-  expect(secondUrl).not.toBe(firstUrl)
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(firstUrl)
-  act(() => result.current.removePoster())
-  expect(result.current.poster).toBeNull()
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledWith(secondUrl)
-  await selectAndLoad(result.current.chooseFile, rasterFile('image/webp'))
-  const thirdUrl = result.current.poster?.url
-  unmount()
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledWith(thirdUrl)
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledTimes(3)
-})
-
-test('rechaza SVG, exceso de tamaño, firmas falsas y fallo de decodificación conservando la foto anterior', async () => {
-  const { result } = renderHook(usePosterPreview)
-  await selectAndLoad(result.current.chooseFile)
-  const original = result.current.poster
-  const oversize = rasterFile()
-  Object.defineProperty(oversize, 'size', { value: MAX_POSTER_BYTES + 1 })
-  for (const file of [
-    new File(['<svg/>'], 'imagen.svg', { type: 'image/svg+xml' }),
-    oversize,
-    rasterFile('image/bmp'),
-  ]) {
-    await act(() => result.current.chooseFile(file))
-    expect(result.current.error).not.toBeNull()
-    expect(result.current.poster).toBe(original)
+test('cuota insuficiente conserva imagen y diseño anteriores; los cambios pequeños pueden usarse en sesión', async () => {
+  const { result } = renderHook(useControls, { wrapper })
+  await act(() => result.current.preview.chooseFile(file()))
+  const before = result.current.personal.design
+  const saved = localStorage.getItem(PERSONAL_DESIGN_STORAGE_KEY)
+  const write = vi
+    .spyOn(Storage.prototype, 'setItem')
+    .mockImplementation(() => {
+      throw new DOMException('Cuota', 'QuotaExceededError')
+    })
+  try {
+    prepare.mockResolvedValue({ ...syntheticWallpaper(), palette: 'amber' })
+    await act(() => result.current.preview.chooseFile(file()))
+    expect(result.current.personal.design).toBe(before)
+    expect(localStorage.getItem(PERSONAL_DESIGN_STORAGE_KEY)).toBe(saved)
+    expect(result.current.appearance.storageError).toContain(
+      'anterior se conserva',
+    )
+    act(() => result.current.appearance.setTheme('light'))
+    expect(result.current.appearance.theme).toBe('light')
+    expect(result.current.appearance.storageError).toContain(
+      'durante esta apertura',
+    )
+  } finally {
+    write.mockRestore()
   }
-  const disguised = rasterFile()
-  vi.spyOn(disguised, 'slice').mockReturnValue(
-    Object.assign(new Blob(), {
-      arrayBuffer: () => Promise.resolve(new Uint8Array([1, 2, 3]).buffer),
-    }),
-  )
-  await act(() => result.current.chooseFile(disguised))
-  expect(result.current.error).toContain('no contiene una imagen')
-  expect(PreviewURL.createObjectURL).toHaveBeenCalledTimes(1)
-
-  let selection!: Promise<void>
-  act(() => {
-    selection = result.current.chooseFile(rasterFile())
-  })
-  await waitFor(() => expect(PreviewImage.instances).toHaveLength(2))
-  const failedUrl = lastImage().src
-  await act(async () => {
-    lastImage().onerror?.()
-    await selection
-  })
-  expect(result.current.error).toContain('No pudimos abrir')
-  expect(result.current.poster).toBe(original)
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(failedUrl)
 })
 
-test('quitar o desmontar durante la carga cancela la selección sin revivir la foto', async () => {
-  const { result, unmount } = renderHook(usePosterPreview)
-  let selection!: Promise<void>
-  act(() => {
-    selection = result.current.chooseFile(rasterFile())
-  })
-  await waitFor(() => expect(PreviewImage.instances).toHaveLength(1))
-  const image = lastImage()
-  const lateLoad = image.onload
-  await act(async () => {
-    result.current.removePoster()
-    lateLoad?.()
-    await selection
-  })
-  expect(result.current.poster).toBeNull()
-  expect(result.current.preparing).toBe(false)
-  expect(image.onload).toBeNull()
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(image.src)
+test('rechazo de imagen conserva la anterior y no escribe preferencias', async () => {
+  const { result } = renderHook(useControls, { wrapper })
+  await act(() => result.current.preview.chooseFile(file()))
+  const before = result.current.personal.design
+  prepare.mockRejectedValue(new WallpaperError('Imagen inválida'))
+  await act(() => result.current.preview.chooseFile(file()))
+  expect(result.current.personal.design).toBe(before)
+  expect(result.current.preview.error).toBe('Imagen inválida')
+})
 
+test('sustitución, cancelación, retirada y desmontaje descartan cargas tardías', async () => {
+  let resolve!: (value: ReturnType<typeof syntheticWallpaper>) => void
+  prepare.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done
+      }),
+  )
+  const { result, unmount } = renderHook(useControls, { wrapper })
+  let pending!: Promise<void>
   act(() => {
-    selection = result.current.chooseFile(rasterFile())
+    pending = result.current.preview.chooseFile(file())
   })
-  await waitFor(() => expect(PreviewImage.instances).toHaveLength(2))
-  const pendingUrl = lastImage().src
+  const signal = prepare.mock.calls[0]![1]!
+  await act(() => result.current.preview.chooseFile(file()))
+  expect(signal.aborted).toBe(true)
+  await act(async () => {
+    resolve({ ...syntheticWallpaper(), palette: 'amber' })
+    await pending
+  })
+  expect(result.current.preview.poster?.palette).toBe('forest')
+  prepare.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done
+      }),
+  )
+  act(() => {
+    pending = result.current.preview.chooseFile(file())
+  })
+  act(() => result.current.preview.removePoster())
+  await act(async () => {
+    resolve(syntheticWallpaper())
+    await pending
+  })
+  expect(result.current.preview.poster).toBeNull()
+  prepare.mockImplementationOnce(
+    () =>
+      new Promise((done) => {
+        resolve = done
+      }),
+  )
+  act(() => {
+    pending = result.current.preview.chooseFile(file())
+  })
+  const lastSignal = prepare.mock.calls.at(-1)![1]!
   unmount()
-  await selection
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledWith(pendingUrl)
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledTimes(2)
-})
-
-test('una nueva elección cancela la imagen pendiente y sólo muestra la última selección', async () => {
-  const { result } = renderHook(usePosterPreview)
-  let firstSelection!: Promise<void>
-  act(() => {
-    firstSelection = result.current.chooseFile(rasterFile())
-  })
-  await waitFor(() => expect(PreviewImage.instances).toHaveLength(1))
-  const firstImage = lastImage()
-  const lateLoad = firstImage.onload
-  await selectAndLoad(result.current.chooseFile, rasterFile('image/jpeg'))
+  expect(lastSignal.aborted).toBe(true)
   await act(async () => {
-    lateLoad?.()
-    await firstSelection
+    resolve(syntheticWallpaper())
+    await pending
   })
-  expect(result.current.poster?.url).toBe(lastImage().src)
-  expect(result.current.poster?.url).not.toBe(firstImage.src)
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledExactlyOnceWith(
-    firstImage.src,
-  )
-  expect(result.current.error).toBeNull()
 })
 
-test('controles etiquetados permiten ajustar foto, ocultarla con el ambiente y quitarla', async () => {
+test('controles accesibles muestran el fondo al elegirlo y dejan ajustes secundarios plegados', async () => {
   function Controls() {
-    const appearance = useAppearance()
-    const preview = usePosterPreview()
+    const { appearance, preview } = useControls()
     return (
       <>
         <AppearanceControls appearance={appearance} preview={preview} />
-        <PosterBackdrop poster={preview.poster} visible={appearance.ambient} />
+        <PosterBackdrop poster={preview.poster} />
       </>
     )
   }
-  const { container } = render(<Controls />)
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Fondo decorativo' }))
-  const fileInput = screen.getByLabelText('Foto de fondo (opcional)')
-  fireEvent.change(fileInput, { target: { files: [rasterFile()] } })
-  await waitFor(() => expect(PreviewImage.instances).toHaveLength(1))
-  await act(async () => {
-    lastImage().onload?.()
-    await Promise.resolve()
+  const { container } = render(<Controls />, { wrapper })
+  fireEvent.change(screen.getByLabelText('Imagen de fondo'), {
+    target: { files: [file()] },
   })
-  expect(screen.getByText(/La foto se usa durante esta apertura/)).toBeVisible()
-  fireEvent.change(
-    screen.getByRole('slider', { name: /Opacidad de la foto/ }),
-    {
-      target: { value: '25' },
-    },
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'Quitar imagen' })).toBeVisible(),
   )
-  fireEvent.change(
-    screen.getByRole('combobox', { name: 'Posición de la foto' }),
-    {
-      target: { value: 'right' },
-    },
-  )
+  expect(
+    screen.getByText('Ajustar imagen').closest('details'),
+  ).not.toHaveAttribute('open')
+  fireEvent.click(screen.getByText('Ajustar imagen'))
+  fireEvent.change(screen.getByRole('slider', { name: /Intensidad/ }), {
+    target: { value: '50' },
+  })
+  fireEvent.change(screen.getByRole('combobox', { name: 'Encuadre' }), {
+    target: { value: 'right' },
+  })
   expect(container.querySelector('.appearance-poster')).toHaveStyle({
-    opacity: '0.25',
+    opacity: '0.5',
     backgroundPosition: 'right center',
   })
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Fondo decorativo' }))
+  fireEvent.click(screen.getByRole('radio', { name: 'Océano' }))
+  expect(screen.getByRole('radio', { name: 'Océano' })).toBeChecked()
+  fireEvent.click(screen.getByRole('button', { name: 'Quitar imagen' }))
   expect(container.querySelector('.appearance-poster')).toBeNull()
-  expect(screen.getByText(/La foto está oculta/)).toBeVisible()
-  expect(PreviewURL.revokeObjectURL).not.toHaveBeenCalled()
-  fireEvent.click(screen.getByRole('checkbox', { name: 'Fondo decorativo' }))
-  expect(container.querySelector('.appearance-poster')).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Quitar foto' }))
-  expect(container.querySelector('.appearance-poster')).toBeNull()
-  expect(PreviewURL.revokeObjectURL).toHaveBeenCalledTimes(1)
+})
+
+test('fallos internos no exponen mensajes técnicos al elegir una imagen', async () => {
+  const { result } = renderHook(useControls, { wrapper })
+  prepare.mockRejectedValue(
+    new Error('SecurityError: canvas context internal details'),
+  )
+  await act(() => result.current.preview.chooseFile(file()))
+  expect(result.current.preview.error).toBe('No pudimos abrir esta imagen.')
+})
+
+test('otra ventana puede actualizar el diseño y sus datos dañados no sustituyen el visible', () => {
+  const { result } = renderHook(useControls, { wrapper })
+  act(() => {
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: PERSONAL_DESIGN_STORAGE_KEY,
+        newValue: JSON.stringify({
+          ...result.current.personal.design,
+          palette: 'ocean',
+        }),
+      }),
+    )
+  })
+  expect(result.current.appearance.resolvedPalette).toBe('ocean')
+  act(() => {
+    window.dispatchEvent(
+      new StorageEvent('storage', {
+        key: PERSONAL_DESIGN_STORAGE_KEY,
+        newValue: '{"version":99}',
+      }),
+    )
+  })
+  expect(result.current.appearance.resolvedPalette).toBe('ocean')
 })

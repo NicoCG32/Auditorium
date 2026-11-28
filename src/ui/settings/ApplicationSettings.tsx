@@ -3,6 +3,7 @@ import { useAppearance } from '../appearance/use-appearance'
 import { usePosterPreview } from '../appearance/use-poster-preview'
 import type { OfflineController } from '../../infrastructure/browser/offline-controller'
 import { ApplicationSettingsContext } from './application-settings-context'
+import { PersonalDesignProvider } from '../appearance/PersonalDesignProvider'
 
 function SettingsProvider({
   children,
@@ -27,5 +28,11 @@ export function ApplicationSettings(props: {
   offline?: OfflineController
 }) {
   const inherited = useContext(ApplicationSettingsContext)
-  return inherited ? props.children : <SettingsProvider {...props} />
+  return inherited ? (
+    props.children
+  ) : (
+    <PersonalDesignProvider>
+      <SettingsProvider {...props} />
+    </PersonalDesignProvider>
+  )
 }

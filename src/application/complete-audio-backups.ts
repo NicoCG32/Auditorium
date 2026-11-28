@@ -1,5 +1,10 @@
 import { z } from 'zod'
 import {
+  parsePersonalDesign,
+  serializePersonalDesign,
+  type PersonalDesign,
+} from '../domain/personal-design'
+import {
   AudioError,
   audioDigest,
   audioAttachmentSchema,
@@ -61,10 +66,25 @@ const manifestSchema = z.discriminatedUnion('version', [
       )
       .max(MAX_LOCAL_COVERS),
   }),
+  manifestV1Schema.extend({
+    version: z.literal(3),
+    covers: z
+      .array(
+        coverAttachmentSchema
+          .omit({ scope: true })
+          .extend({ path: z.string().regex(/^covers\/[a-f0-9-]{36}\.jpg$/u) }),
+      )
+      .max(MAX_LOCAL_COVERS),
+    design: z.strictObject({
+      path: z.literal('design.json'),
+      sha256: z.string().regex(/^[a-f0-9]{64}$/u),
+    }),
+  }),
 ])
 export interface PreparedAudioBackup {
   document: LibraryBackup
   state: CompleteAudioState
+  design?: PersonalDesign
 }
 export class CompleteAudioBackups {
   private readonly repository: AudioLocalRepository
@@ -76,8 +96,11 @@ export class CompleteAudioBackups {
     this.repository = repository
     this.now = now
   }
-  async export(signal?: AbortSignal) {
+  async export(signal?: AbortSignal, design?: PersonalDesign) {
     signal?.throwIfAborted()
+    const designBytes = design
+      ? new TextEncoder().encode(serializePersonalDesign(design))
+      : undefined
     const state = await this.repository.readCompleteAudio()
     validateAudioAttachments(
       state.snapshot,
@@ -99,7 +122,15 @@ export class CompleteAudioBackups {
     const library = encoder.encode(serializeBackup(document))
     const manifest = manifestSchema.parse({
       format: 'auditorium-audio-backup',
-      version: covers.length ? 2 : 1,
+      version: designBytes ? 3 : covers.length ? 2 : 1,
+      ...(designBytes
+        ? {
+            design: {
+              path: 'design.json',
+              sha256: await audioDigest(designBytes),
+            },
+          }
+        : {}),
       identity: state.snapshot.identity,
       librarySha256: await audioDigest(library),
       attachments: state.files.map(({ attachment }) => ({
@@ -107,7 +138,7 @@ export class CompleteAudioBackups {
         userAlbumId: attachment.userAlbumId,
         path: `audio/${attachment.id}.bin`,
       })),
-      ...(covers.length
+      ...(covers.length || designBytes
         ? {
             covers: covers.map(({ attachment }) => ({
               ...coverAttachmentSchema
@@ -139,6 +170,7 @@ export class CompleteAudioBackups {
       [
         { name: 'audio-manifest.json', data: metadata },
         { name: 'library.json', data: library },
+        ...(designBytes ? [{ name: 'design.json', data: designBytes }] : []),
         ...state.files.map((file) => ({
           name: `audio/${file.attachment.id}.bin`,
           data: file.bytes,
@@ -177,7 +209,18 @@ export class CompleteAudioBackups {
           'limit',
           'El respaldo de audio supera los límites de su versión.',
         )
-      const coverEntries = manifest.version === 2 ? manifest.covers : []
+      const coverEntries =
+        manifest.version >= 2 && 'covers' in manifest ? manifest.covers : []
+      let design: PersonalDesign | undefined
+      if (manifest.version === 3) {
+        const bytes = entries.get(manifest.design.path)
+        if (!bytes || (await audioDigest(bytes)) !== manifest.design.sha256)
+          throw new AudioError(
+            'integrity',
+            'El diseño no coincide con el manifiesto del respaldo.',
+          )
+        design = parsePersonalDesign(decoder.decode(bytes))
+      }
       const library = entries.get('library.json')!
       if ((await audioDigest(library)) !== manifest.librarySha256)
         throw new AudioError(
@@ -195,7 +238,7 @@ export class CompleteAudioBackups {
         )
       if (
         entries.size !==
-        manifest.attachments.length + coverEntries.length + 2
+        manifest.attachments.length + coverEntries.length + 2 + (design ? 1 : 0)
       )
         throw new AudioError(
           'invalid_archive',
@@ -237,6 +280,7 @@ export class CompleteAudioBackups {
       signal?.throwIfAborted()
       return {
         document,
+        ...(design ? { design } : {}),
         state: {
           snapshot: document.data,
           files,

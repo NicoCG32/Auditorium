@@ -27,27 +27,34 @@ function AppContent({ repository, account }: AppProps) {
   useEffect(() => {
     const html = document.documentElement
     const previous = html.getAttribute('data-aud-theme')
+    const previousPalette = html.getAttribute('data-aud-palette')
     const meta = document.querySelector('meta[name="theme-color"]')
     const previousColor = meta?.getAttribute('content')
     html.setAttribute('data-aud-theme', appearance.theme)
+    html.setAttribute('data-aud-palette', appearance.resolvedPalette)
     meta?.setAttribute(
       'content',
-      appearance.theme === 'light' ? '#f1f2f4' : '#111315',
+      getComputedStyle(html).getPropertyValue('--background').trim() ||
+        (appearance.theme === 'light' ? '#f1f2f4' : '#111315'),
     )
     return () => {
       if (previous === null) html.removeAttribute('data-aud-theme')
       else html.setAttribute('data-aud-theme', previous)
+      if (previousPalette === null) html.removeAttribute('data-aud-palette')
+      else html.setAttribute('data-aud-palette', previousPalette)
       if (previousColor) meta?.setAttribute('content', previousColor)
     }
-  }, [appearance.theme])
+  }, [appearance.theme, appearance.resolvedPalette])
   return (
     <CollectionPreferences>
       <div
         className="aud-app flex min-h-svh flex-col text-foreground"
         data-aud-theme={appearance.theme}
+        data-aud-palette={appearance.resolvedPalette}
         data-aud-ambient={appearance.ambient ? 'on' : 'off'}
+        data-aud-wallpaper={preview.poster ? 'on' : 'off'}
       >
-        <PosterBackdrop poster={preview.poster} visible={appearance.ambient} />
+        <PosterBackdrop poster={preview.poster} />
         <a
           className="skip-link"
           href="#contenido"
