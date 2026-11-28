@@ -6,6 +6,7 @@ import {
   MAX_OPTIMIZED_COVER_BYTES,
 } from '../../domain/covers'
 import { MAX_BACKUP_BYTES } from '../../domain/backup'
+import { MAX_DESIGN_BYTES } from '../../domain/personal-design'
 
 // ZIP Store profile, APPNOTE 6.3.10 sections 4.3.7, 4.3.12 and 4.3.16.
 const encoder = new TextEncoder()
@@ -28,6 +29,7 @@ function invalid(): never {
 }
 function limit(name: string) {
   if (name === 'library.json') return MAX_BACKUP_BYTES
+  if (name === 'design.json') return MAX_DESIGN_BYTES
   if (name === 'audio-manifest.json') return MAX_COMPLETE_MANIFEST_BYTES
   if (/^audio\/[a-f0-9-]{36}\.bin$/u.test(name)) return MAX_AUDIO_FILE_BYTES
   if (/^covers\/[a-f0-9-]{36}\.jpg$/u.test(name))
@@ -48,7 +50,7 @@ export async function createStoredZip(
 ) {
   if (
     entries.length < 2 ||
-    entries.length > MAX_LOCAL_COVERS + 130 ||
+    entries.length > MAX_LOCAL_COVERS + 131 ||
     new Set(entries.map((entry) => entry.name)).size !== entries.length
   )
     invalid()
@@ -147,7 +149,7 @@ export async function readStoredZip(
     size = u32(end + 12)
   if (
     count < 2 ||
-    count > MAX_LOCAL_COVERS + 130 ||
+    count > MAX_LOCAL_COVERS + 131 ||
     count !== u16(end + 8) ||
     start + size !== end
   )

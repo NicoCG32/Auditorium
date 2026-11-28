@@ -1,5 +1,10 @@
 # Changelog
 
+## Web — 2026-11-28
+
+- Wallpapers propios persistentes, con copia optimizada y selección automática de una de seis paletas CSS. Elección manual, temas claro/oscuro y vista previa en un único panel; intensidad y encuadre opcionales.
+- Guardar, revisar y abrir diseños con fondo, colores y presentación de la colección. ZIP3 incluye el diseño con integridad y permite conservar el del destino; lectura ZIP1/2 y DB14/JSON9 conservadas. La release 1.1.0 mantiene sus archivos originales.
+
 ## Web — 2026-11-27
 
 - Acciones rápidas en cada álbum y modo Seleccionar para registrar formatos, añadir deseos o cambiar escucha sobre varios discos. Revisión por álbum antes de confirmar, conservación de ejemplares y deseos existentes, guardado atómico y detección de cambios concurrentes. Una lectura fallida tras guardar se reintenta sin repetir la escritura.

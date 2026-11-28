@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useContext, useEffect, useMemo, useRef, useState } from 'react'
 import {
   CompleteAudioBackups,
   type PreparedAudioBackup,
@@ -10,6 +10,9 @@ import type { LocalSnapshot } from '../../domain/repositories/local-repository'
 import { downloadCompleteBackup } from '../../infrastructure/browser/backup-download'
 import { LocalStorageError } from '../../infrastructure/db/errors'
 import { hasCoverRepository } from '../../domain/covers'
+import type { PersonalDesign } from '../../domain/personal-design'
+import { PersonalDesignContext } from '../appearance/personal-design-context'
+import { verifyWallpaper } from '../../infrastructure/browser/wallpaper'
 
 function failureMessage(error: unknown) {
   if (error instanceof AudioError || error instanceof BackupError)
@@ -33,6 +36,9 @@ export function CompleteAudioBackupPanel({
   onCommitted: () => Promise<LocalSnapshot>
   onRestored: () => void
 }) {
+  const personal = useContext(PersonalDesignContext)
+  const [applyDesign, setApplyDesign] = useState(true)
+  const [designToRestore, setDesignToRestore] = useState<PersonalDesign>()
   const service = useMemo(
     () => new CompleteAudioBackups(repository),
     [repository],
@@ -132,7 +138,7 @@ export function CompleteAudioBackupPanel({
     if (lock.current || disabled) return
     const controller = start('Preparando el respaldo completo…')
     try {
-      const result = await service.export(controller.signal)
+      const result = await service.export(controller.signal, personal?.design)
       controller.signal.throwIfAborted()
       downloadCompleteBackup(result.bytes, result.exportedAt)
       setMessage(
@@ -149,7 +155,10 @@ export function CompleteAudioBackupPanel({
     const controller = start('Revisando el respaldo completo…')
     try {
       const backup = await service.readFile(file, controller.signal)
+      if (backup.design?.wallpaper)
+        await verifyWallpaper(backup.design.wallpaper, controller.signal)
       controller.signal.throwIfAborted()
+      setApplyDesign(true)
       setPrepared({
         backup,
         expected: { ...snapshot.identity },
@@ -192,6 +201,16 @@ export function CompleteAudioBackupPanel({
       return
     }
     pendingRestore.current = true
+    const design = prepared.backup.design
+    if (
+      applyDesign &&
+      design &&
+      personal &&
+      !personal.update(() => design, false)
+    ) {
+      setDesignToRestore(design)
+      pendingRestore.current = false
+    }
     setPrepared(undefined)
     setPending(true)
     setMessage('Biblioteca y audio restaurados con la identidad del archivo.')
@@ -230,7 +249,7 @@ export function CompleteAudioBackupPanel({
         Respaldo completo
       </h3>
       <p className="mt-3 text-sm text-muted">
-        Guarda tus datos, las portadas descargadas y el audio de este
+        Guarda tus datos, las portadas descargadas, tu diseño y el audio de este
         dispositivo en un solo archivo. Usa esta copia para trasladar tu
         colección completa.
       </p>
@@ -290,6 +309,19 @@ export function CompleteAudioBackupPanel({
               : 'portadas descargadas'}
             . Se adoptará la identidad del archivo.
           </p>
+          {prepared.backup.design && personal && (
+            <label className="appearance-choice mt-3">
+              <input
+                type="checkbox"
+                checked={applyDesign}
+                disabled={disabled}
+                onChange={(event) =>
+                  setApplyDesign(event.currentTarget.checked)
+                }
+              />
+              Usar también el diseño del respaldo
+            </label>
+          )}
           <div className="form-actions mt-3">
             <button
               type="button"
@@ -315,6 +347,40 @@ export function CompleteAudioBackupPanel({
           </div>
         </div>
       ) : null}
+      {designToRestore && (
+        <div className="owned-confirm mt-4">
+          <p role="alert">
+            Tu colección ya está restaurada. El navegador no permitió guardar el
+            diseño; puedes reintentarlo o conservar el actual.
+          </p>
+          <div className="form-actions mt-3">
+            <button
+              type="button"
+              className="action-button"
+              disabled={busy || pending}
+              onClick={() => {
+                setDesignToRestore(undefined)
+                onRestored()
+              }}
+            >
+              Conservar diseño actual
+            </button>
+            <button
+              type="button"
+              className="primary-button"
+              disabled={busy || pending}
+              onClick={() => {
+                if (personal?.update(() => designToRestore, false)) {
+                  setDesignToRestore(undefined)
+                  onRestored()
+                }
+              }}
+            >
+              Reintentar guardar diseño
+            </button>
+          </div>
+        </div>
+      )}
       {busy && !pending ? (
         <button
           type="button"

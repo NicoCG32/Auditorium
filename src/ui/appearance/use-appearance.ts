@@ -1,52 +1,28 @@
-import { useEffect, useState } from 'react'
+import {
+  designPalette,
+  type PersonalDesign,
+} from '../../domain/personal-design'
+import { LEGACY_APPEARANCE_KEY } from '../../infrastructure/browser/personal-design-storage'
+import { usePersonalDesign } from './personal-design-context'
 
-export type AppearanceTheme = 'dark' | 'light'
-
-type Preferences = {
-  theme: AppearanceTheme
-  ambient: boolean
-}
-
-export const APPEARANCE_STORAGE_KEY = 'auditorium.appearance.v1'
-
-function readPreferences(): Preferences {
-  try {
-    const saved: unknown = JSON.parse(
-      localStorage.getItem(APPEARANCE_STORAGE_KEY) ?? 'null',
-    )
-    if (typeof saved === 'object' && saved !== null) {
-      const value = saved as Record<string, unknown>
-      return {
-        theme: value.theme === 'light' ? 'light' : 'dark',
-        ambient: typeof value.ambient === 'boolean' ? value.ambient : false,
-      }
-    }
-  } catch {
-    // Las preferencias son opcionales cuando el navegador bloquea su almacenamiento.
-  }
-  return { theme: 'dark', ambient: false }
-}
-
+export const APPEARANCE_STORAGE_KEY = LEGACY_APPEARANCE_KEY
 export function useAppearance() {
-  const [preferences, setPreferences] = useState(readPreferences)
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(APPEARANCE_STORAGE_KEY, JSON.stringify(preferences))
-    } catch {
-      // La apariencia de esta apertura sigue disponible sin persistencia.
-    }
-  }, [preferences])
-
+  const { design, update, storageError } = usePersonalDesign()
   return {
-    ...preferences,
-    setTheme(theme: AppearanceTheme) {
-      setPreferences((current) => ({ ...current, theme }))
+    theme: design.theme,
+    ambient: design.ambient,
+    palette: design.palette,
+    resolvedPalette: designPalette(design),
+    storageError,
+    setTheme(theme: PersonalDesign['theme']) {
+      update((value) => ({ ...value, theme }))
     },
     setAmbient(ambient: boolean) {
-      setPreferences((current) => ({ ...current, ambient }))
+      update((value) => ({ ...value, ambient }))
+    },
+    setPalette(palette: PersonalDesign['palette']) {
+      update((value) => ({ ...value, palette }))
     },
   }
 }
-
 export type Appearance = ReturnType<typeof useAppearance>

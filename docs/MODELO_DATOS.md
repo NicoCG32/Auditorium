@@ -1,6 +1,6 @@
 # Modelo de datos y persistencia
 
-La actualización de [portadas](PORTADAS.md) usa DB14/nativa140, JSON9 y ZIP2 con imágenes. Añade descriptores y bytes locales por identidad y álbum, con restauración conjunta y conservación del contrato ZIP1. Los apartados siguientes documentan los incrementos anteriores.
+La actualización de [portadas](PORTADAS.md) usa DB14/nativa140, JSON9 y ZIP3 con imágenes y diseño personal. Añade descriptores y bytes locales por identidad y álbum, con restauración conjunta y conservación del contrato ZIP1. Los apartados siguientes documentan los incrementos anteriores.
 
 El incremento vigente [Artistas y ediciones](ARTISTAS_Y_EDICIONES.md) usa DB13/nativa130 y JSON/snapshot9; incorpora referencias MusicBrainz opcionales de edición y grabación, conservando ZIP1. Los apartados de incrementos anteriores mantienen su contexto histórico.
 
@@ -104,7 +104,7 @@ La retirada de un álbum personal no elimina su catálogo ni los registros perso
 
 Las migraciones mantienen claves, índices y registros históricos; v2/v3 crean las nuevas tablas vacías. v4 y v5 no crean tablas ni transforman filas: establecen barreras de compatibilidad para sus campos opcionales, evitando que una versión anterior los interprete como corrupción. No hay una conversión de notas, regeneración de identificadores ni enriquecimiento de las filas existentes en estas ampliaciones. Tras la apertura, una lectura validada comprueba su contenido. La versión del respaldo JSON tiene un historial independiente del esquema IndexedDB.
 
-`Artist.country` es texto opcional de hasta cien caracteres. `Album.genres` admite hasta veinte etiquetas libres de ochenta caracteres, sin duplicados normalizados. `Album.coverImage` admite una data URL JPEG/PNG validada de hasta 2 MiB decodificados; es excluyente con `coverUrl`. No añade una tabla de imágenes, rutas del dispositivo ni Blob URL temporales. La selección local comprueba también decodificación y dimensiones antes de guardar. Los [metadatos y portadas](EDICION_CATALOGO.md) pertenecen al catálogo, mientras la foto temporal de Apariencia queda fuera del snapshot. Los filtros por género y país se calculan sobre la proyección de la biblioteca, sin índices físicos nuevos.
+`Artist.country` es texto opcional de hasta cien caracteres. `Album.genres` admite hasta veinte etiquetas libres de ochenta caracteres, sin duplicados normalizados. `Album.coverImage` admite una data URL JPEG/PNG validada de hasta 2 MiB decodificados; es excluyente con `coverUrl`. No añade una tabla de imágenes, rutas del dispositivo ni Blob URL temporales. La selección local comprueba también decodificación y dimensiones antes de guardar. Los [metadatos y portadas](EDICION_CATALOGO.md) pertenecen al catálogo, mientras el diseño personal persistente queda fuera del snapshot y se traslada en ZIP3. Los filtros por género y país se calculan sobre la proyección de la biblioteca, sin índices físicos nuevos.
 
 ## Identidad y mapeo de registros
 

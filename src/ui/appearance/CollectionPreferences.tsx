@@ -1,4 +1,5 @@
 import { useContext, type ReactNode } from 'react'
+import { PersonalDesignProvider } from './PersonalDesignProvider'
 import {
   CollectionViewContext,
   useCollectionViewState,
@@ -17,6 +18,8 @@ export function CollectionPreferences({ children }: { children: ReactNode }) {
   return inherited ? (
     children
   ) : (
-    <PreferencesProvider>{children}</PreferencesProvider>
+    <PersonalDesignProvider>
+      <PreferencesProvider>{children}</PreferencesProvider>
+    </PersonalDesignProvider>
   )
 }

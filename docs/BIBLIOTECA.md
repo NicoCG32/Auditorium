@@ -34,7 +34,7 @@ Las vistas se guardan en este navegador para la biblioteca local actual, hasta 2
 
 **Ajustes → Personalización** permite ponerle nombre a tu colección, elegir **Portadas/Lista**, cambiar el tamaño de las portadas y mostrar u ocultar géneros, país y valoraciones en las tarjetas. También contiene los temas **Oscuro/Claro**, el fondo decorativo y una foto de fondo opcional. El panel se cierra con **Cerrar ajustes** o Escape y devuelve el foco a Ajustes. Cambiar la apariencia conserva el reproductor y el formulario abiertos.
 
-El nombre, la presentación, el tamaño, los detalles y el orden elegido se recuerdan en este navegador, al igual que el tema. Si el navegador no permite guardar preferencias, los controles siguen funcionando durante esa apertura. No modifican álbumes, notas, ejemplares ni deseos, y no forman parte del respaldo musical. La foto conserva su uso temporal: se descarta al recargar. [Apariencia y límites](DISENO_BASE.md).
+El nombre, la presentación, el tamaño, los detalles y el orden elegido se recuerdan en este navegador, al igual que el tema. Si el navegador no permite guardar preferencias, los controles siguen funcionando durante esa apertura. No modifican álbumes, notas, ejemplares ni deseos. El fondo propio permanece al recargar y el diseño puede trasladarse por separado o con el respaldo completo ZIP3. [Personalización y límites](PERSONALIZACION.md).
 
 Las tarjetas empiezan con portada, título, artista, año disponible y formatos de tu colección. Los demás detalles se muestran por elección. Cuando filtras o comparas por género, escucha o nota, se muestra la información necesaria para entender ese resultado. Una valoración ausente no se sustituye por otra.
 

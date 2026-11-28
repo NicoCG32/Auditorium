@@ -399,3 +399,77 @@ test('a valid musical JSON with changed content fails the manifest hash even wit
     (await destination.repository.readSnapshot()).library.userAlbums,
   ).toEqual([])
 })
+
+test('ZIP3 lleva el diseño por separado y conserva biblioteca, audio e identidad al restaurar', async () => {
+  const origin = await source(),
+    destination = connect('design-target')
+  const identity = await destination.repository.open()
+  const design = (
+    await import('../test/personal-design.fixture')
+  ).personalDesignFixture()
+  const exported = await origin.service.export(undefined, design)
+  const entries = await readStoredZip(exported.bytes)
+  const manifest = z
+    .object({
+      version: z.number(),
+      design: z.object({ path: z.string(), sha256: z.string() }),
+      covers: z.array(z.unknown()),
+    })
+    .parse(
+      JSON.parse(new TextDecoder().decode(entries.get('audio-manifest.json'))),
+    )
+  expect(manifest.version).toBe(3)
+  expect(manifest.design).toEqual({
+    path: 'design.json',
+    sha256: await audioDigest(entries.get('design.json')!),
+  })
+  expect(manifest.covers).toEqual([])
+  const prepared = await destination.service.readFile(file(exported.bytes))
+  expect(prepared.design).toEqual(design)
+  await destination.service.restore(prepared, identity)
+  const actual = await destination.repository.readCompleteAudio()
+  const original = await origin.repository.readCompleteAudio()
+  expect(actual.snapshot).toEqual(original.snapshot)
+  expect(actual.files).toEqual(original.files)
+})
+
+test('ZIP3 rechaza diseño alterado, ajeno o ausente antes de restaurar', async () => {
+  const origin = await source(),
+    destination = connect('invalid-design-target')
+  await destination.repository.open()
+  const before = await destination.repository.readSnapshot()
+  const design = (
+    await import('../test/personal-design.fixture')
+  ).personalDesignFixture()
+  const exported = await origin.service.export(undefined, design)
+  for (const mode of ['hash', 'missing', 'schema']) {
+    const entries = await readStoredZip(exported.bytes)
+    const index = z
+      .object({ design: z.object({ path: z.string(), sha256: z.string() }) })
+      .passthrough()
+      .parse(
+        JSON.parse(
+          new TextDecoder().decode(entries.get('audio-manifest.json')),
+        ),
+      )
+    if (mode === 'missing') entries.delete('design.json')
+    else {
+      const changed =
+        mode === 'hash'
+          ? { ...design, palette: 'ocean' }
+          : { ...design, css: 'body{display:none}' }
+      const bytes = new TextEncoder().encode(JSON.stringify(changed))
+      entries.set('design.json', bytes)
+      if (mode === 'schema') index.design.sha256 = await audioDigest(bytes)
+    }
+    entries.set(
+      'audio-manifest.json',
+      new TextEncoder().encode(JSON.stringify(index)),
+    )
+    const bytes = await createStoredZip(
+      [...entries].map(([name, data]) => ({ name, data })),
+    )
+    await expect(destination.service.readFile(file(bytes))).rejects.toThrow()
+    expect(await destination.repository.readSnapshot()).toEqual(before)
+  }
+})

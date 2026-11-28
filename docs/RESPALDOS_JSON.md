@@ -1,6 +1,6 @@
 # Respaldos JSON y restauración
 
-Para conservar también las portadas descargadas, elige **Descargar respaldo completo (ZIP)**. [Portadas y compatibilidad ZIP1/ZIP2](PORTADAS.md). JSON9 mantiene su límite de 20 MiB y las imágenes que añadiste manualmente; las copias nuevas descargadas se guardan fuera del snapshot.
+Para conservar también las portadas descargadas, elige **Descargar respaldo completo (ZIP)**. El ZIP3 incorpora también [tu diseño personal](PERSONALIZACION.md) y sigue leyendo ZIP1/ZIP2. JSON9 mantiene su límite de 20 MiB y las imágenes que añadiste manualmente; las copias nuevas descargadas se guardan fuera del snapshot.
 
 Para añadir datos a una biblioteca que ya contiene música, usa [Incorporar datos desde JSON](IMPORTACION_JSON.md). Ese recorrido revisa conflictos, conserva la identidad actual y admite también un catálogo sencillo para valoración posterior. La restauración descrita aquí continúa siendo el recorrido de recuperación en destino vacío.
 

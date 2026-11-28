@@ -9,7 +9,7 @@
 
 [![Estado](https://img.shields.io/badge/Estado-Web%20%2F%20PWA%201.1.0-8D343A?style=flat-square)](CHANGELOG.md)
 [![Biblioteca](https://img.shields.io/badge/Biblioteca-Local%20first-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
-[![Datos](https://img.shields.io/badge/Datos-DB14%20%2F%20JSON9%20%2F%20ZIP2-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
+[![Datos](https://img.shields.io/badge/Datos-DB14%20%2F%20JSON9%20%2F%20ZIP3-3D5268?style=flat-square)](docs/tecnica/03-datos-y-persistencia.md)
 [![Licencia](https://img.shields.io/badge/C%C3%B3digo-PolyForm%20NC-596273?style=flat-square)](LICENSING.md)
 
 [**Abrir Auditorium**](https://nicocg32.github.io/Auditorium/) · [**Guía de uso**](docs/general/02-uso-y-limites.md) · [**Documentación**](docs/README.md) · [**Versión 1.1.0**](https://github.com/NicoCG32/Auditorium/releases/tag/v1.1.0)
@@ -79,7 +79,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 
 - **Disponible en 1.1.0:** web/PWA, catálogo, experiencia personal, colección, reproducción, audio local, respaldos y cuenta opcional.
 - **Validación pendiente:** pruebas físicas móviles y de rendimiento con bibliotecas grandes y almacenamiento limitado. La [guía de validación](docs/VALIDACION_RECORRIDO.md) detalla la cobertura actual.
-- **Web actualizada el 27 de noviembre:** acciones de colección sobre varios discos, vistas guardadas y formato físico, junto a personalización, discografías MusicBrainz y portadas automáticas con respaldo completo; DB14/JSON9/ZIP2. [Cambios de la web](CHANGELOG.md).
+- **Web actualizada el 28 de noviembre:** wallpapers persistentes, paletas automáticas o manuales y diseños portables, junto a acciones de colección sobre varios discos, vistas guardadas, discografías MusicBrainz y portadas automáticas; DB14/JSON9/ZIP3. [Cambios de la web](CHANGELOG.md).
 - **Líneas de evolución:** empaquetado nativo de escritorio y Android.
 
 ## Dónde viven tus datos
@@ -91,7 +91,7 @@ Este es un esquema **conceptual**; [el modelo formal](docs/tecnica/02-dominio.md
 | Recursos para abrir la PWA sin conexión | Cache Storage del navegador       | Se descargan de nuevo al instalar/actualizar |
 | Clave de recomendaciones                | Memoria de la sesión              | No se incluye en respaldos                   |
 
-La base local usa **Dexie DB14 con 19 almacenes**; el respaldo JSON9 y el ZIP2 tienen versiones propias. Se siguen leyendo ZIP1. Guarda una copia fuera del navegador antes de cambiar de origen o limpiar sus datos. [Guía de respaldos](docs/RESPALDOS_JSON.md).
+La base local usa **Dexie DB14 con 19 almacenes**; el respaldo JSON9, el diseño v1 y el ZIP3 tienen versiones propias. Se siguen leyendo ZIP1 y ZIP2. Guarda una copia fuera del navegador antes de cambiar de origen o limpiar sus datos. [Guía de respaldos](docs/RESPALDOS_JSON.md).
 
 ## Arquitectura en una mirada
 

@@ -95,7 +95,7 @@ test('copia optimizada, recarga y respaldo completo con portadas locales', async
     new TextDecoder().decode(entries.get('audio-manifest.json')),
   )
   expect(manifest).toMatchObject({
-    version: 2,
+    version: 3,
     covers: [{ albumId: ids.album, width: 500, height: 250, sourceUrl }],
   })
   expect(entries.get(`covers/${ids.album}.jpg`)!.length).toBeLessThanOrEqual(

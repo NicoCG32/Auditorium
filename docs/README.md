@@ -25,7 +25,7 @@
 
 - [**Arquitectura por niveles**](tecnica/01-arquitectura.md): contexto, contenedores, componentes y despliegue web/PWA.
 - [**Dominio y relaciones**](tecnica/02-dominio.md): álbum, edición, pista, catálogo, escucha y ejemplar; modelo lógico.
-- [**Persistencia**](tecnica/03-datos-y-persistencia.md): 19 almacenes IndexedDB DB14, snapshot JSON9, ZIP2 con portadas y audio y cuenta Supabase opcional.
+- [**Persistencia**](tecnica/03-datos-y-persistencia.md): 19 almacenes IndexedDB DB14, snapshot JSON9, ZIP3 con diseño, portadas y audio y cuenta Supabase opcional.
 - [**Flujos y estados**](tecnica/04-flujos-y-estados.md): registro, valoración, retirada, deseos, respaldos, conflictos y sincronización.
 - [**Integraciones y seguridad**](tecnica/05-integraciones-y-seguridad.md): Wikidata, Gemini/Groq, reproducción externa, claves de sesión y RLS.
 
@@ -43,7 +43,7 @@ flowchart TD
     C --> B
     L --> B
     B -. "Snapshot JSON9 sin audio" .-> R[("Supabase opcional")]
-    B --> Z["ZIP2 · portadas + audio + biblioteca"]
+    B --> Z["ZIP3 · diseño + portadas + audio + biblioteca"]
 ```
 
 Este diagrama resume relaciones **lógicas**, no crea un esquema SQL para todos los datos. Para los índices y las claves exactas consulta [Datos y persistencia](tecnica/03-datos-y-persistencia.md).
@@ -87,10 +87,12 @@ Las [ADR](adr/) recogen las decisiones y su contexto histórico. Incluyen el [MV
 
 La web incluye la actualización del **19 de noviembre de 2026**, descrita en el [changelog](../CHANGELOG.md). El ZIP descargable sigue en **1.1.0, del 29 de octubre de 2026** y conserva sus archivos originales. Consulta las notas de la versión instalada para conocer sus funciones.
 
-Los formatos de datos tienen versiones diferentes: **Dexie DB13, respaldo JSON9 y respaldo de audio ZIP1**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
+Los formatos de datos tienen versiones diferentes: **Dexie DB14, respaldo JSON9 y respaldo completo ZIP3**. La sincronización de cuenta envía metadatos, no los archivos musicales locales.
 
 ## Licencias y recursos
 
 La música, las portadas y otros recursos de terceros conservan sus condiciones de uso, separadas de la licencia del software.
 
 [**Revisar licencias y recursos**](DERECHOS_Y_RECURSOS.md) · [**LICENSING.md**](../LICENSING.md).
+
+- [Personalización](PERSONALIZACION.md): wallpapers propios, paletas, presentación y traslado del diseño.
